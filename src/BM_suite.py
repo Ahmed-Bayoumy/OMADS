@@ -17,7 +17,7 @@
 #  with this program. If not, see <http://www.gnu.org/licenses/>.                     #
 #                                                                                     #
 #  You can find information on OMADS at                                               #
-#  https://github.com/Ahmed-Bayoumy/OMADS                                         #
+#  https://github.com/Ahmed-Bayoumy/OMADS                                             #
 # ------------------------------------------------------------------------------------#
 
 from dataclasses import dataclass, field
