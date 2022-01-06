@@ -1,0 +1,39 @@
+{
+  "evaluator":
+    {
+      "blackbox": "g2",
+      "internal": "con",
+      "path": "D:\\Data\\Research\\Code\\NM-POLL\\bm\\constrained",
+      "input": "input.inp",
+      "output": "output.out"},
+
+  "param":
+    {
+      "baseline": [7,8,7,7,8,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7],
+      "lb": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "ub": [10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10],
+      "var_names": ["x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9", "x10",
+        "x11", "x12", "x13", "x14", "x15", "x16", "x17", "x18", "x19", "x20"],
+      "scaling": 1.0,
+      "post_dir": "../examples/bm/constrained/post/G2"
+    },
+
+  "options":
+    {
+      "seed": 3,
+      "budget": 100000,
+      "tol": 1e-12,
+      "psize_init": 1,
+      "display": false,
+      "opportunistic": false,
+      "check_cache": true,
+      "store_cache": true,
+      "collect_y": false,
+      "rich_direction": true,
+      "precision": "high",
+      "save_results": false,
+      "save_coordinates": false,
+      "save_all_best": false,
+      "parallel_mode": false
+    }
+}
