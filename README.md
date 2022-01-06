@@ -16,7 +16,6 @@ MADS-poll step
 ## License & copyright
 
 © Ahmed H. Bayoumy 
-<ahmed.bayoumy@mail.mcgill.ca>
 ---
 ## How to use
 
