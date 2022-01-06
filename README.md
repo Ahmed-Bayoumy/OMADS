@@ -32,7 +32,7 @@ evaluator, param, and options. Here is a brief description of each dictionary an
 
 * `evaluator`: in this dictionary we define the blackbox location and the name of input and output files (if exist)
   * `blackbox`: blackbox executable file name, or the function name if this is an internal function defined within the BM_suite
-  * `internal`: the name of the testing category that holds your internal test function
+  * `internal`: the name of the testing category that holds your internal/external test function or blackbox evaluator
     * `con`: internal constrained single-objective function
     * `uncon`: internal unconctrained single-objective function
     * `exe`: external executable blackbox evaluator
