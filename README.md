@@ -50,7 +50,7 @@ evaluator, param, and options. Here is a brief description of each dictionary an
 * `options`: algorithmic options
   * `seed`: the random generator seed that ensures results reproducibility. This should be an integer value
   * `budget`: the evaluation budget; maximum number of evaluations for the blackbox defined
-  * `tol`: the minimum poll size tolerance; the algorithm terminates once the poll size becomes less than this value
+  * `tol`: the minimum poll size tolerance; the algorithm terminates once the poll size falls below this value
   * `psize_init`: initial poll size
   * `display`: a boolean for displaying verbose outputs per iteration in the terminal window
   * `opportunistic`: a boolean for enabling opportunistic search
