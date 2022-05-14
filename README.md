@@ -72,10 +72,11 @@ evaluator, param, and options. Here is a brief description of each dictionary an
 
 Two benchmarking (BM) suits are provided in the `BM_suite.py` code. The BM suits have different constrained and 
 unconstrained optimization problems with various characteristics. You can run the BM by calling the following commands 
-in the terminal window. 
+in the terminal window. The number entered at the end of the command line represents the number of the BM tests 
+repetition.
 ```commandline
-python OMADS.py bm uncon
-python OMADS.py bm con
+python OMADS.py bm uncon 16
+python OMADS.py bm con 16
 ```
 
 After the BM is finished, a `BM_report.csv` file will be generated in the post directory under 
