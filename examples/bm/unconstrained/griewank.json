@@ -13,7 +13,7 @@
       "lb": [-600, -600],
       "ub": [600, 600],
       "var_names": ["x1", "x2"],
-      "scaling": 10.0,
+      "scaling": 10000.0,
       "post_dir": "../examples/bm/unconstrained/post"
     },
 

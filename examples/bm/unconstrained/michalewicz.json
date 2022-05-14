@@ -9,11 +9,11 @@
 
   "param":
     {
-      "baseline": [0.0,0.0],
+      "baseline": [1.0,1.0],
       "lb": [0, 0],
       "ub": [3.14, 3.14],
       "var_names": ["x1", "x2"],
-      "scaling": 10.0,
+      "scaling": 1.0,
       "post_dir": "../examples/bm/unconstrained/post"
     },
 
