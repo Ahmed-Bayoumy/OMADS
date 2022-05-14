@@ -1,3 +1,4 @@
+"""
 # ------------------------------------------------------------------------------------#
 #  Mesh Adaptive Direct Search - ORTHO-MADS (MADS)                                    #
 #                                                                                     #
@@ -19,6 +20,7 @@
 #  You can find information on OMADS at                                               #
 #  https://github.com/Ahmed-Bayoumy/OMADS                                             #
 # ------------------------------------------------------------------------------------#
+"""
 
 import copy
 import csv
@@ -33,7 +35,7 @@ import time
 
 from dataclasses import dataclass, field
 from typing import List
-from BM_suite import UnconSO, ConSO, Run
+from BMDFO import toy
 from numpy import sum, subtract, add, maximum, minimum, power, inf
 
 
@@ -166,9 +168,9 @@ class Evaluator:
             out: List[float] = [self.read_output()[0], self.read_output()[1:]]
             return out
         elif self.internal == "uncon":
-            f_eval = UnconSO(values)
+            f_eval = toy.UnconSO(values)
         elif self.internal == "con":
-            f_eval = ConSO(values)
+            f_eval = toy.ConSO(values)
         else:
             raise IOError("Incorrect textual input for benchmarking")
         f_eval.dtype.dtype = self._dtype.dtype
@@ -880,7 +882,7 @@ class PreMADS:
     """ Preprocessor for setting up optimization settings and parameters"""
     data: dict
 
-    def initialize(self):
+    def initialize_from_dict(self):
         """ MADS initialization """
         """ 1- Construct the following classes by unpacking their respective dictionaries from the input JSON file """
         options = DefaultOptions(**self.data["options"])
@@ -1031,10 +1033,13 @@ def main(*args):
 
     """ Run preprocessor for the setup of the optimization problem and for the initialization 
     of optimization process """
-    iteration, xmin, poll, options, param, post, out = PreMADS(data).initialize()
+    iteration, xmin, poll, options, param, post, out = PreMADS(data).initialize_from_dict()
 
     """ Set the random seed for results reproducibility """
-    np.random.seed(options.seed)
+    if len(args) < 4:
+        np.random.seed(options.seed)
+    else:
+        np.random.seed(int(args[3]))
 
     """ Start the count down for calculating the runtime indicator """
     tic = time.perf_counter()
@@ -1102,19 +1107,22 @@ def main(*args):
             break
         iteration += 1
 
+    toc = time.perf_counter()
+
     """ If benchmarking, then populate the results in the benchmarking output report """
-    if len(args) > 1 and isinstance(args[1], Run):
-        b: Run = args[1]
+    if len(args) > 1 and isinstance(args[1], toy.Run):
+        b: toy.Run = args[1]
         if b.test_suite == "uncon":
             ncon = 0
         else:
             ncon = len(poll.bb_output[1])
         if len(poll.bb_output) > 0:
-            b.add_row(name=poll.bb_handle.blackbox, nv=len(param.baseline), nc=ncon,
-                      nb_success=poll.nb_success, it=iteration, feval=poll.bb_handle.bb_eval,
-                      psize=poll.mesh.psize, psize_success=poll.mesh.psize_success,
-                      psize_max=poll.mesh.psize_max, hmin=poll.xmin.h, fmin=poll.xmin.f)
-    elif len(args) > 1 and not isinstance(args[1], Run):
+            b.add_row(name=poll.bb_handle.blackbox, run_index=int(args[2]), nv=len(param.baseline), nc=ncon,
+                      nb_success=poll.nb_success, it=iteration, BBEVAL= poll.bb_eval, runtime= toc - tic,
+                      feval=poll.bb_handle.bb_eval, hmin=poll.xmin.h, fmin=poll.xmin.f)
+        print(f"{poll.bb_handle.blackbox}: fmin = {poll.xmin.f:.2f} , hmin= {poll.xmin.h:.2f}")
+
+    elif len(args) > 1 and not isinstance(args[1], toy.Run):
         raise IOError("Could not find " + args[1] + " in the internal BM suite.")
 
     if options.save_results:
@@ -1126,7 +1134,6 @@ def main(*args):
 
     if options.save_coordinates:
         post.output_coordinates(out)
-    toc = time.perf_counter()
     if options.display:
         print("\n ---Run Summary---")
         print(f" Run completed in {toc - tic:.4f} seconds")
@@ -1149,29 +1156,58 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         """ Check if running in benchmarking mode"""
         if sys.argv[1] == "bm":
+            print(f"Benchmrking mode ...")
             p_file = []
             if sys.argv[2] and sys.argv[2] == "uncon":
-                bm: Run = Run(os.path.abspath('../examples/bm/unconstrained/post'))
+                print(f"Running benchmarking suite of unconstrained problems")
+                bm: toy.Run = toy.Run(os.path.abspath('../examples/bm/unconstrained/post'))
                 bm.test_suite = "uncon"
                 bm_root = os.path.abspath('../examples/bm/unconstrained')
             elif sys.argv[2] == "con":
-                bm: Run = Run(os.path.abspath('../examples/bm/constrained/post'))
+                bm: toy.Run = toy.Run(os.path.abspath('../examples/bm/constrained/post'))
                 bm.test_suite = "con"
                 bm_root = os.path.abspath('../examples/bm/constrained')
             else:
                 raise IOError("The textual input for the benchmarking suite is incorrect. Try \"con\" or \"uncon\".")
-
+            # Remove existing BM log files (if any)
+            file = os.path.join(bm.report_path, 'BM_report.csv')
+            if (os.path.exists(file) and os.path.isfile(file)):
+                os.remove(file)
+            # adding header
+            headerList = bm.field_names
+            # converting data frame to csv
+            # open CSV file and assign header
+            with open(file, 'w') as F:
+                dw = csv.DictWriter(F, delimiter=',',
+                                    fieldnames=headerList)
+                dw.writeheader()
             for path, _, filename in os.walk(bm_root):
                 if path == bm_root:
                     p_file = filename
-
-            for i in range(0, len(p_file)):
+            runs: int = 1
+            if len(sys.argv) > 3:
                 try:
-                    _, file_exe = os.path.splitext(p_file[i])
-                    if file_exe == '.json':
-                        main(os.path.join(bm_root, p_file[i]), bm)
-                except RuntimeError:
-                    print("An error occured while running" + p_file[i])
+                    runs = int(sys.argv[3])
+                except:
+                    pass
+            if runs > 1:
+                sl: List[int] = list(range(runs))
+            else:
+                sl: int = -1
+            for run in range(runs):
+                for i in range(0, len(p_file)):
+                    try:
+                        _, file_exe = os.path.splitext(p_file[i])
+                        print(f"Solving {p_file[i]}: run# {run:.0f}: seed is {sl[run]:.0f}")
+                        if file_exe == '.json':
+                            if isinstance(sl, list):
+                                main(os.path.join(bm_root, p_file[i]), bm, run, sl[run])
+                            else:
+                                main(os.path.join(bm_root, p_file[i]), bm, run)
+                    except RuntimeError:
+                        print("An error occured while running" + p_file[i])
+            # Show box plot for the BM stats as an indicator for measuring various algorithmic performance
+            bm.BM_statistics()
         else:
             p_file: str = os.path.abspath(sys.argv[1])
             main(p_file)

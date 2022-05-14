@@ -9,9 +9,9 @@
 
   "param":
     {
-      "baseline": [10.0,10.0],
-      "lb": [-5.0, -5.0],
-      "ub": [10.0, 10.0],
+      "baseline": [2.0,2.0],
+      "lb": [-2.048, -2.048],
+      "ub": [2.048, 2.048],
       "var_names": ["x1", "x2"],
       "scaling": 10.0,
       "post_dir": "../examples/bm/unconstrained/post/rosenbrock"
