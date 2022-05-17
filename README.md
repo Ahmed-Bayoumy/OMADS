@@ -17,20 +17,30 @@ MADS-poll step
 
 © Ahmed H. Bayoumy 
 ---
-## How to use
+## How to
+### Use OMADS package
 
-After installing the libraries listed in the `requirements.txt`, `OMADS.py` can be called directly from a 
-terminal window under the src directory. The path of the JSON template, which contains the problem input parameters, 
-should be entered as an input argument to the `OMADS.py` call. 
+After installing the `OMADS` package from [PYPI](https://pypi.org/) website, the functions and classes of `OMADS` basic module can be imported
+directly to the python script as follows:
 
-```commandline
-python OMADS.py ../examples/rosenbrock.json
+```pycon
+from OMADS import *
 ```
 
-Input parameters are provided in the `JASON` template using predefined attributes (keywords) under three dictionaries; 
-evaluator, param, and options. Here is a brief description of each dictionary and its attributes.
+### Run OMADS from terminal
+After installing the libraries listed in the `requirements.txt`, `OMADS/BASIC.py` can be called directly from a 
+terminal window under the src directory. The path of the JSON template, which contains the problem input parameters, 
+should be entered as an input argument to the `BASIC.py` call. 
 
-* `evaluator`: in this dictionary we define the blackbox location and the name of input and output files (if exist)
+```commandline
+python ./OMADS/BASIC.py ../../tests/unconstrained/rosenbrock.json
+```
+
+## Input parameters
+Input parameters are serialized in a `JSON` template using predefined attributes (keywords) under three dictionaries; 
+`evaluator`, `param`, and `options`. Here is a brief description of each dictionary and its key attributes.
+
+* `evaluator`: in this dictionary, we define the blackbox location and the name of input and output files (if exist)
   * `blackbox`: blackbox executable file name, or the function name if this is an internal function defined within the BM_suite
   * `internal`: the name of the testing category that holds your internal/external test function or blackbox evaluator
     * `con`: internal constrained single-objective function
@@ -45,11 +55,11 @@ evaluator, param, and options. Here is a brief description of each dictionary an
   * `ub`: uber bounds vector
   * `var_names`: list of design variables name
   * `scaling`: scaling factor
-  * `post_dir`: the location of the post directory where results file shall be saved if requested
+  * `post_dir`: the location of the post directory where the results file shall be saved if requested
 ---
 * `options`: algorithmic options
   * `seed`: the random generator seed that ensures results reproducibility. This should be an integer value
-  * `budget`: the evaluation budget; maximum number of evaluations for the blackbox defined
+  * `budget`: the evaluation budget; the maximum number of evaluations for the blackbox defined
   * `tol`: the minimum poll size tolerance; the algorithm terminates once the poll size falls below this value
   * `psize_init`: initial poll size
   * `display`: a boolean for displaying verbose outputs per iteration in the terminal window
@@ -70,14 +80,13 @@ evaluator, param, and options. Here is a brief description of each dictionary an
   
 ## Benchmarking
 
-Two benchmarking (BM) suits are provided in the `BM_suite.py` code. The BM suits have different constrained and 
-unconstrained optimization problems with various characteristics. You can run the BM by calling the following commands 
-in the terminal window. The number entered at the end of the command line represents the number of the BM tests 
-repetition.
-```commandline
-python OMADS.py bm uncon 16
-python OMADS.py bm con 16
+To benchmark `OMADS`, per se, you need to install the non-linear optimization benchmarking package `NOBM` from `pypi.com`.
+Two benchmarking suits are provided under the `BMDFO` benchmarking module; `BMDFO` stands for benchmarking derivative-free optimization algorithms.
+The benchmarking suits have different constrained and  unconstrained optimization problems with various characteristics. 
+The benchmarking package modules can be imported directly to the python script as shown below: 
+```pycon
+from BMDFO import toy
 ```
-
-After the BM is finished, a `BM_report.csv` file will be generated in the post directory under 
-the `examples` folder.
+For more details about the `NOBM` package and its use, check this [link](https://github.com/Ahmed-Bayoumy/NOBM). 
+After running the benchmarking suite using various seed values, which are used to initialize the random number generator, 
+a `BM_report.csv` file will be created in the post directory under the `examples` folder.
