@@ -33,6 +33,6 @@
       "save_results": false,
       "save_coordinates": false,
       "save_all_best": false,
-      "parallel_mode": true
+      "parallel_mode": false
     }
 }
