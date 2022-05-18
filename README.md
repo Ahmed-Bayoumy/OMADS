@@ -3,7 +3,7 @@ A python implementation for the mesh adaptive direct search (MADS) method; ORTHO
 
 ---
 
-**Version 1.0.0**
+**Version 1.1.0**
 
 MADS-poll step
 
@@ -17,17 +17,16 @@ MADS-poll step
 
 © Ahmed H. Bayoumy 
 ---
-## How to
-### Use OMADS package
+## How to use OMADS package
 
-After installing the `OMADS` package from [PYPI](https://pypi.org/) website, the functions and classes of `OMADS` basic module can be imported
-directly to the python script as follows:
+After installing the `OMADS` package from [PYPI](https://pypi.org/) website, the functions and classes of `OMADS` basic 
+module can be imported  directly to the python script as follows:
 
 ```pycon
 from OMADS import *
 ```
 
-### Run OMADS from terminal
+## How to run OMADS from terminal
 After installing the libraries listed in the `requirements.txt`, `OMADS/BASIC.py` can be called directly from a 
 terminal window under the src directory. The path of the JSON template, which contains the problem input parameters, 
 should be entered as an input argument to the `BASIC.py` call. 
@@ -80,13 +79,59 @@ Input parameters are serialized in a `JSON` template using predefined attributes
   
 ## Benchmarking
 
-To benchmark `OMADS`, per se, you need to install the non-linear optimization benchmarking package `NOBM` from `pypi.com`.
-Two benchmarking suits are provided under the `BMDFO` benchmarking module; `BMDFO` stands for benchmarking derivative-free optimization algorithms.
-The benchmarking suits have different constrained and  unconstrained optimization problems with various characteristics. 
-The benchmarking package modules can be imported directly to the python script as shown below: 
+To benchmark `OMADS`, per se, you need to install the non-linear optimization benchmarking project `NOBM` from 
+[PYPI](https://pypi.org/).  Two benchmarking suits are provided under the `BMDFO` package -- `BMDFO` stands for 
+benchmarking derivative-free optimization algorithms.  The benchmarking suits have different constrained and 
+unconstrained optimization problems with various characteristics.  The `BMDFO` modules can be imported directly 
+to the python script as shown below: 
 ```pycon
 from BMDFO import toy
 ```
-For more details about the `NOBM` package and its use, check this [link](https://github.com/Ahmed-Bayoumy/NOBM). 
+For more details about the `NOBM` project and its use, check this [link](https://github.com/Ahmed-Bayoumy/NOBM). 
 After running the benchmarking suite using various seed values, which are used to initialize the random number generator, 
 a `BM_report.csv` file will be created in the post directory under the `examples` folder.
+
+## Example
+
+```pycon
+import OMADS
+import numpy as np
+
+def rosen(x, *argv):
+    x = np.asarray(x)
+    y = [np.sum(100.0 * (x[1:] - x[:-1] ** 2.0) ** 2.0 + (1 - x[:-1]) ** 2.0,
+                axis=0), [0]]
+    return y
+
+eval = {"blackbox": rosen}
+param = {"baseline": [-2.0, -2.0],
+            "lb": [-5, -5],
+            "ub": [10, 10],
+            "var_names": ["x1", "x2"],
+            "scaling": 10.0,
+            "post_dir": "./post"}
+options = {"seed": 0, "budget": 100000, "tol": 1e-12, "display": True}
+
+data = {"evaluator": eval, "param": param, "options":options}
+
+OMADS.main(data)
+
+
+```
+
+### Results
+```text
+ --- Run Summary ---
+ Run completed in 0.0303 seconds
+ Random numbers generator's seed 0
+ xmin = [1.0, 1.0]
+ hmin = 1e-30
+ fmin = 0.0
+ #bb_eval = 185
+ #iteration = 46
+ nb_success = 4
+ psize = 9.094947017729282e-13
+ psize_success = 1.0
+ psize_max = 2.0
+```
+

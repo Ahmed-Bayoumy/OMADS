@@ -148,9 +148,9 @@ class Parameters:
 @dataclass
 class Evaluator:
     """ Define the evaluator attributes and settings """
-    blackbox: str = "rosenbrock"
+    blackbox: Any = "rosenbrock"
     internal: Optional[str] = None
-    path: str = "..\\examples\\Rosen"
+    path: str = "..\\tests\\Rosen"
     input: str = "input.inp"
     output: str = "output.out"
     bb_eval: int = 0
@@ -162,20 +162,30 @@ class Evaluator:
 
     def eval(self, values: List[float]):
         self.bb_eval += 1
-        if self.internal is None or self.internal == "None":
-            self.write_input(values)
-            pwd = os.getcwd()
-            os.chdir(self.path)
-            subprocess.call(self.blackbox)
-            os.chdir(pwd)
-            out = [self.read_output()[0], [self.read_output()[1:]]]
-            return out
+        if self.internal is None or self.internal == "None" or self.internal == "none":
+            if callable(self.blackbox):
+                f_eval = self.blackbox(values)
+                if isinstance(f_eval, list):
+                    return f_eval
+                elif isinstance(f_eval, float) or isinstance(f_eval, int):
+                    return [f_eval, [0]]
+            else:
+                self.write_input(values)
+                pwd = os.getcwd()
+                os.chdir(self.path)
+                subprocess.call(self.blackbox)
+                os.chdir(pwd)
+                out = [self.read_output()[0], [self.read_output()[1:]]]
+                return out
         elif self.internal == "uncon":
             f_eval = toy.UnconSO(values)
         elif self.internal == "con":
             f_eval = toy.ConSO(values)
         else:
-            raise IOError("Incorrect textual input for benchmarking:: "+self.internal)
+            raise IOError(f"Input dict:: evaluator:: internal:: "
+                          f"Incorrect internal method :: {self.internal} :: "
+                          f"it should be a a BM library name, "
+                          f"or None.")
         f_eval.dtype.dtype = self._dtype.dtype
         f_eval.name = self.blackbox
         f_eval.dtype.dtype = self._dtype.dtype
@@ -367,7 +377,7 @@ class Point:
 
     def __eq__(self, other) -> bool:
         return self.n_dimensions is other.n_dimensions and other.coordinates is self.coordinates \
-               and self.is_any_defined() is other.is_any_defined()\
+               and self.is_any_defined() is other.is_any_defined() \
                and self.f is other.f and self.h is other.h
 
     def __lt__(self, other):
@@ -1062,8 +1072,26 @@ def main(*args):
     # TODO: add more checks for more defensive code
 
     """ Parse the parameters files """
-    with open(args[0]) as file:
-        data = json.load(file)
+    if type(args[0]) is dict:
+        data = args[0]
+    elif isinstance(args[0], str):
+        if os.path.exists(os.path.abspath(args[0])):
+            _, file_extension = os.path.splitext(args[0])
+            if file_extension == ".json":
+                try:
+                    with open(args[0]) as file:
+                        data = json.load(file)
+                except ValueError:
+                    raise IOError('invalid json file: ' + args[0])
+            else:
+                raise IOError(f"The input file {args[0]} is not a JSON dictionary. "
+                              f"Currently, OMADS supports JSON files solely!")
+        else:
+            raise IOError(f"Couldn't find {args[0]} file!")
+    else:
+        raise IOError("The first input argument couldn't be recognized. "
+                      "It should be either a dictionary object or a JSON file that holds "
+                      "the required input parameters.")
 
     """ Run preprocessor for the setup of
      the optimization problem and for the initialization
