@@ -9,10 +9,6 @@ MADS-poll step
 
 ---
 
-## Contributors
-
----
-
 ## License & copyright
 
 © Ahmed H. Bayoumy 
