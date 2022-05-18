@@ -1,3 +1,4 @@
+import pytest
 from OMADS import DType, DefaultOptions, Parameters, Evaluator, Point, \
     OrthoMesh, Cache, Directions2n, PreMADS, Output, PostMADS, main
 
@@ -7,6 +8,29 @@ import csv
 from BMDFO import toy
 
 import pandas as pd
+import numpy as np
+
+
+def rosen(x, *argv):
+    x = np.asarray(x)
+    y = [np.sum(100.0 * (x[1:] - x[:-1] ** 2.0) ** 2.0 + (1 - x[:-1]) ** 2.0,
+                axis=0), [0]]
+    return y
+
+
+def test_omads_callable_quick():
+    eval = {"blackbox": rosen}
+    param = {"baseline": [-2.0, -2.0],
+             "lb": [-5, -5],
+             "ub": [10, 10],
+             "var_names": ["x1", "x2"],
+             "scaling": 10.0,
+             "post_dir": "./post"}
+    options = {"seed": 0, "budget": 100000, "tol": 1e-12, "display": True}
+
+    data = {"evaluator": eval, "param": param, "options": options}
+
+    main(data)
 
 
 def test_omads_toy_quick():
@@ -31,6 +55,46 @@ def test_omads_toy_quick():
 
     p_file_3 = os.path.abspath("./tests/Rosen/param.json")
     main(p_file_3)
+
+    data = {
+        "evaluator":
+            {
+                "blackbox": "rosenbrock",
+                "internal": "uncon",
+                "path": os.path.abspath(".\\bm"),
+                "input": "input.inp",
+                "output": "output.out"},
+
+        "param":
+            {
+                "baseline": [-2.0, -2.0],
+                "lb": [-5, -5],
+                "ub": [10, 10],
+                "var_names": ["x1", "x2"],
+                "scaling": 10.0,
+                "post_dir": "./tests/bm/unconstrained/post"
+            },
+
+        "options":
+            {
+                "seed": 0,
+                "budget": 100000,
+                "tol": 1e-12,
+                "psize_init": 1,
+                "display": False,
+                "opportunistic": False,
+                "check_cache": True,
+                "store_cache": True,
+                "collect_y": False,
+                "rich_direction": True,
+                "precision": "high",
+                "save_results": False,
+                "save_coordinates": False,
+                "save_all_best": False,
+                "parallel_mode": False
+            }
+    }
+    main(data)
 
 
 def test_omads_toy_extended():
@@ -57,11 +121,11 @@ def test_omads_toy_uncon_bm():
 
     df = pd.DataFrame(list())
     df.to_csv(file)
-    
+
     bm: toy.Run = toy.Run(os.path.abspath('./tests/bm/unconstrained/post'))
     bm.test_suite = "uncon"
     bm_root = os.path.abspath('./tests/bm/unconstrained')
-    
+
     # get BM parameters file names
     for p, _, filename in os.walk(bm_root):
         if p == bm_root:
@@ -85,7 +149,7 @@ def test_omads_toy_uncon_bm():
                         main(os.path.join(bm_root, p_files[i]), bm, run)
             except RuntimeError:
                 print("An error occured while running" + p_files[i])
-    
+
     # Show box plot for the BM stats as an indicator
     # for measuring various algorithmic performance
     # bm.BM_statistics()
