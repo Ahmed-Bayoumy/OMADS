@@ -108,7 +108,11 @@ options = {"seed": 0, "budget": 100000, "tol": 1e-12, "display": True}
 
 data = {"evaluator": eval, "param": param, "options":options}
 
-OMADS.main(data)
+out = {}
+# out is a dictionary that will hold output data of the final solution. The out dictionary has three keys: "xmin", "fmin" and "hmin"
+
+out = OMADS.main(data)
+
 
 
 ```
