@@ -30,7 +30,8 @@ def test_omads_callable_quick():
 
     data = {"evaluator": eval, "param": param, "options": options}
 
-    main(data)
+    out: Dict = main(data)
+    print(out)
 
 
 def test_omads_toy_quick():
