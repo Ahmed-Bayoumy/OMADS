@@ -1067,7 +1067,7 @@ class PostMADS:
         self.x_incumbent.append(x)
 
 
-def main(*args):
+def main(*args) -> Dict[str, Any]:
     """ Otho-MADS main algorithm """
     # TODO: add more checks for more defensive code
 
@@ -1221,6 +1221,10 @@ def main(*args):
         print(" psize = " + str(poll.mesh.psize))
         print(" psize_success = " + str(poll.mesh.psize_success))
         print(" psize_max = " + str(poll.mesh.psize_max))
+    output: Dict[str, Any] = {"xmin": poll.xmin.coordinates,
+                              "fmin": poll.xmin.f, "hmin": poll.xmin.h}
+
+    return output
 
 
 if __name__ == "__main__":

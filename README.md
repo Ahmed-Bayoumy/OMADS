@@ -3,7 +3,7 @@ MADS-poll step: A python implementation for the mesh adaptive direct search (MAD
 
 ---
 
-**Version 1.1.0**
+**Version 1.2.0**
 
 ---
 
