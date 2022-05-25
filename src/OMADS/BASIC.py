@@ -66,7 +66,7 @@ class DType:
         self._prec = val
         isWin = platform.platform().split('-')[0] == 'Windows'
         if val == "high":
-            if isWin:
+            if isWin or not hasattr(np, 'float128'):
                 # TODO: pop up this warning during initialization
                 """ Warning: MS Windows does not support precision with the {1e-18} resolution of the python
                       numerical library (numpy) so high precision will be
