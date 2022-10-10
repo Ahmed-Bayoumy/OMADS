@@ -1222,7 +1222,14 @@ def main(*args) -> Dict[str, Any]:
         print(" psize_success = " + str(poll.mesh.psize_success))
         print(" psize_max = " + str(poll.mesh.psize_max))
     output: Dict[str, Any] = {"xmin": poll.xmin.coordinates,
-                              "fmin": poll.xmin.f, "hmin": poll.xmin.h}
+                              "fmin": poll.xmin.f, 
+                              "hmin": poll.xmin.h, 
+                              "nbb_evals" : poll.bb_eval, 
+                              "niterations" : iteration, 
+                              "nb_success": poll.nb_success, 
+                              "psize": poll.mesh.psize, 
+                              "psuccess": poll.mesh.psize_success, 
+                              "pmax": poll.mesh.psize_max}
 
     return output
 
