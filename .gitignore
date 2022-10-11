@@ -1,8 +1,6 @@
 .exe
 .idea/
 dist/
-*.toml
-*.cfg
 .mypy_cache/
 .__mypycache__/
 .pytest_cache/
