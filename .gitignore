@@ -9,3 +9,6 @@ src/*.egg-info/
 .tox/
 venv/
 *.python-version
+*.coverage*
+*.pyc
+*.csv

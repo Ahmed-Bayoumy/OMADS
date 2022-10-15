@@ -1,14 +1,14 @@
-import pytest
 from OMADS import DType, DefaultOptions, Parameters, Evaluator, Point, \
     OrthoMesh, Cache, Directions2n, PreMADS, Output, PostMADS, main
 
 import copy
 import os
-import csv
 from BMDFO import toy
 
 import pandas as pd
 import numpy as np
+
+from typing import Dict, List
 
 
 def rosen(x, *argv):
@@ -33,6 +33,20 @@ def test_omads_callable_quick():
     out: Dict = main(data)
     print(out)
 
+def test_omads_callable_quick_parallel():
+    eval = {"blackbox": rosen}
+    param = {"baseline": [-2.0, -2.0],
+             "lb": [-5, -5],
+             "ub": [10, 10],
+             "var_names": ["x1", "x2"],
+             "scaling": 10.0,
+             "post_dir": "./post"}
+    options = {"seed": 0, "budget": 1000, "tol": 1e-6, "display": True, "parallel_mode": True}
+
+    data = {"evaluator": eval, "param": param, "options": options}
+
+    out: Dict = main(data)
+    print(out)
 
 def test_omads_toy_quick():
     assert DType
@@ -54,8 +68,8 @@ def test_omads_toy_quick():
     p_file_2 = os.path.abspath("./tests/bm/constrained/geom_prog.json")
     main(p_file_2)
 
-    p_file_3 = os.path.abspath("./tests/Rosen/param.json")
-    main(p_file_3)
+    # p_file_3 = os.path.abspath("./tests/Rosen/param.json")
+    # main(p_file_3)
 
     data = {
         "evaluator":

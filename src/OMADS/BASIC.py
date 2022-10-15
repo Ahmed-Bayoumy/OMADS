@@ -26,6 +26,7 @@
 import copy
 import csv
 import json
+from multiprocessing import freeze_support
 import os
 import platform
 import subprocess
@@ -33,7 +34,6 @@ import sys
 import numpy as np
 import concurrent.futures
 import time
-
 from dataclasses import dataclass, field
 from typing import List, Optional, Dict, Any
 from BMDFO import toy
@@ -849,7 +849,9 @@ class Directions2n:
             if self.display:
                 print("Cache hit ...")
             stop = True
-            return [stop, index, self.bb_handle.bb_eval, success]
+            bb_eval = copy.deepcopy(self.bb_eval)
+            psize = copy.deepcopy(self.mesh.psize)
+            return [stop, index, self.bb_handle.bb_eval, success, psize, xtry]
 
         """ Evaluation of the blackbox; get output responses """
         self.bb_output = self.bb_handle.eval(xtry.coordinates)
@@ -870,41 +872,50 @@ class Directions2n:
         if self.save_results or self.display:
             self.bb_eval = self.bb_handle.bb_eval
             self.psize = copy.deepcopy(self.mesh.psize)
+            psize = copy.deepcopy(self.mesh.psize)
 
-        """ Check success conditions """
-        if xtry < self.xmin:
-            self.success = True
-            success = True  # <- This redundant variable is important
-            # for managing concurrent parallel execution
-            self.nb_success += 1
-            """ Update the post instant """
-            del self._xmin
-            self._xmin = Point()
-            self._xmin = copy.deepcopy(xtry)
-            if self.display:
-                if self._dtype.dtype == np.float64:
-                    print(f"Success: fmin = {self.xmin.f:.15f} (hmin = {self.xmin.h:.15})")
-                elif self._dtype.dtype == np.float32:
-                    print(f"Success: fmin = {self.xmin.f:.6f} (hmin = {self.xmin.h:.6})")
-                else:
-                    print(f"Success: fmin = {self.xmin.f:.18f} (hmin = {self.xmin.h:.18})")
-
-                # print("xmin= " + str(self.xmin.coordinates))
-            self.mesh.psize_success = copy.deepcopy(self.mesh.psize)
-            self.mesh.psize_max = copy.deepcopy(maximum(self.mesh.psize,
-                                                        self.mesh.psize_max,
-                                                        dtype=self._dtype.dtype))
-
-        """ Check stopping criteria """
-        if self.bb_eval >= self.eval_budget:
-            self.terminate = True
-            return [stop, index, self.bb_handle.bb_eval, success]
+        
 
         if self.success and self.opportunistic and self.iter > 1:
             stop = True
+        
+        """ Check stopping criteria """
+        if self.bb_eval >= self.eval_budget:
+            self.terminate = True
+            stop = True
+            return [stop, index, self.bb_handle.bb_eval, success, psize, xtry]
 
-        return [stop, index, self.bb_handle.bb_eval, success]
+        return [stop, index, self.bb_handle.bb_eval, success, psize, xtry]
+    
+    def master_updates(self, x: List[Point], peval):
+        if peval >= self.eval_budget:
+            self.terminate = True
+        for xtry in x:
+            """ Check success conditions """
+            if xtry < self.xmin:
+                self.success = True
+                success = True  # <- This redundant variable is important
+                # for managing concurrent parallel execution
+                self.nb_success += 1
+                """ Update the post instant """
+                del self._xmin
+                self._xmin = Point()
+                self._xmin = copy.deepcopy(xtry)
+                if self.display:
+                    if self._dtype.dtype == np.float64:
+                        print(f"Success: fmin = {self.xmin.f:.15f} (hmin = {self.xmin.h:.15})")
+                    elif self._dtype.dtype == np.float32:
+                        print(f"Success: fmin = {self.xmin.f:.6f} (hmin = {self.xmin.h:.6})")
+                    else:
+                        print(f"Success: fmin = {self.xmin.f:.18f} (hmin = {self.xmin.h:.18})")
+                
+                self.mesh.psize_success = copy.deepcopy(self.mesh.psize)
+                self.mesh.psize_max = copy.deepcopy(maximum(self.mesh.psize,
+                                                            self.mesh.psize_max,
+                                                            dtype=self._dtype.dtype))
 
+                    
+        
 
 # TODO: More methods and parameters will be added to the
 #  'pre_mads' class when OMADS is used for solving MDO
@@ -1106,6 +1117,7 @@ def main(*args) -> Dict[str, Any]:
 
     """ Start the count down for calculating the runtime indicator """
     tic = time.perf_counter()
+    peval = 0
     while True:
         poll.mesh.update()
         """ Create the set of poll directions """
@@ -1125,6 +1137,7 @@ def main(*args) -> Dict[str, Any]:
         """ Serial evaluation for points in the poll set """
         if not options.parallel_mode:
             for it in range(len(poll.poll_dirs)):
+                peval += 1
                 if poll.terminate:
                     break
                 f = poll.eval_poll_point(it)
@@ -1141,21 +1154,27 @@ def main(*args) -> Dict[str, Any]:
 
         else:
             poll.point_index = -1
+            xt = []
             """ Parallel evaluation for points in the poll set """
-            with concurrent.futures.ThreadPoolExecutor() as executor:
+            with concurrent.futures.ProcessPoolExecutor(4) as executor:
                 results = [executor.submit(poll.eval_poll_point,
                                            it) for it in range(len(poll.poll_dirs))]
                 for f in concurrent.futures.as_completed(results):
-                    if f.result()[0]:
-                        executor.shutdown(wait=False)
-                    else:
-                        if options.save_results:
-                            if options.save_all_best and not f.result()[3]:
-                                continue
-                            post.bb_eval.append(f.result()[2])
-                            post.iter.append(iteration)
-                            post.poll_dirs.append(poll.poll_dirs[f.result()[1]])
-                            post.psize.append(poll.mesh.psize)
+                    # if f.result()[0]:
+                    #     executor.shutdown(wait=False)
+                    # else:
+                    if options.save_results or options.display:
+                        if options.save_all_best and not f.result()[3]:
+                            continue
+                        peval = peval +1
+                        poll.bb_eval = peval
+                        post.bb_eval.append(peval)
+                        post.iter.append(iteration)
+                        post.poll_dirs.append(poll.poll_dirs[f.result()[1]])
+                        post.psize.append(f.result()[4])
+                    xt.append(f.result()[-1])
+
+            poll.master_updates(xt, peval)
 
         """ Update the xmin in post"""
         post.xmin = copy.deepcopy(poll.xmin)
@@ -1233,8 +1252,15 @@ def main(*args) -> Dict[str, Any]:
 
     return output
 
+def rosen(x, *argv):
+    x = np.asarray(x)
+    y = [np.sum(100.0 * (x[1:] - x[:-1] ** 2.0) ** 2.0 + (1 - x[:-1]) ** 2.0,
+                axis=0), [0]]
+    return y
+
 
 if __name__ == "__main__":
+    freeze_support()
     p_file: str = ""
 
     """ Check if an input argument is provided"""
