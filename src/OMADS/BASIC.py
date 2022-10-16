@@ -1,4 +1,4 @@
-"""
+
 # ------------------------------------------------------------------------------------#
 #  Mesh Adaptive Direct Search - ORTHO-MADS (MADS)                                    #
 #                                                                                     #
@@ -21,12 +21,15 @@
 #  https://github.com/Ahmed-Bayoumy/OMADS                                             #
 #  Copyright (C) 2022  Ahmed H. Bayoumy                                               #
 # ------------------------------------------------------------------------------------#
+
+"""
+
 """
 
 import copy
 import csv
 import json
-from multiprocessing import freeze_support
+from multiprocessing import freeze_support, cpu_count
 import os
 import platform
 import subprocess
@@ -129,6 +132,7 @@ class DefaultOptions:
     # true for saving best designs only
     save_all_best: bool = False
     parallel_mode: bool = False
+    np: int = 1
 
 
 @dataclass
@@ -951,6 +955,9 @@ class PreMADS:
         poll.store_cache = options.store_cache
         poll.check_cache = options.check_cache
         poll.display = options.display
+        n_available_cores = cpu_count()
+        if options.parallel_mode and options.np > n_available_cores:
+            options.np == n_available_cores
         """ 6- Initialize blackbox handling subclass by copying
          the evaluator 'ev' instance to the poll object"""
         poll.bb_handle = copy.deepcopy(ev)
@@ -1134,6 +1141,7 @@ def main(*args) -> Dict[str, Any]:
         poll.success = False
         """ Reset the BB output """
         poll.bb_output = []
+        xt = []
         """ Serial evaluation for points in the poll set """
         if not options.parallel_mode:
             for it in range(len(poll.poll_dirs)):
@@ -1141,6 +1149,7 @@ def main(*args) -> Dict[str, Any]:
                 if poll.terminate:
                     break
                 f = poll.eval_poll_point(it)
+                xt.append(f[-1])
                 if not f[0]:
                     post.bb_eval.append(poll.bb_handle.bb_eval)
                     post.iter.append(iteration)
@@ -1154,9 +1163,8 @@ def main(*args) -> Dict[str, Any]:
 
         else:
             poll.point_index = -1
-            xt = []
             """ Parallel evaluation for points in the poll set """
-            with concurrent.futures.ProcessPoolExecutor(4) as executor:
+            with concurrent.futures.ProcessPoolExecutor(options.np) as executor:
                 results = [executor.submit(poll.eval_poll_point,
                                            it) for it in range(len(poll.poll_dirs))]
                 for f in concurrent.futures.as_completed(results):
@@ -1174,7 +1182,7 @@ def main(*args) -> Dict[str, Any]:
                         post.psize.append(f.result()[4])
                     xt.append(f.result()[-1])
 
-            poll.master_updates(xt, peval)
+        poll.master_updates(xt, peval)
 
         """ Update the xmin in post"""
         post.xmin = copy.deepcopy(poll.xmin)
@@ -1261,11 +1269,14 @@ def rosen(x, *argv):
 
 if __name__ == "__main__":
     freeze_support()
-    p_file: str = ""
+    p_file: str = os.path.abspath("/Users/ahmedb/apps/code/Bay_dev/OMADS/tests/bm/unconstrained/rosenbrock.json")
 
     """ Check if an input argument is provided"""
     if len(sys.argv) > 1:
         p_file = os.path.abspath(sys.argv[1])
+        main(p_file)
+    
+    if (p_file != "" and os.path.exists(p_file)):
         main(p_file)
 
     if p_file == "":
