@@ -1269,7 +1269,7 @@ def rosen(x, *argv):
 
 if __name__ == "__main__":
     freeze_support()
-    p_file: str = os.path.abspath("/Users/ahmedb/apps/code/Bay_dev/OMADS/tests/bm/unconstrained/rosenbrock.json")
+    p_file: str = os.path.abspath("")
 
     """ Check if an input argument is provided"""
     if len(sys.argv) > 1:
