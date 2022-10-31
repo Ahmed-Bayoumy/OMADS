@@ -11,10 +11,26 @@ MADS-poll step: A python implementation for the mesh adaptive direct search (MAD
 
 © Ahmed H. Bayoumy 
 ---
+
+## Citation
+
+If you use this code, please cite it as below.
+
+```pycon
+   @software{OMADS_AB,
+   author       = {Bayoumy, A.},
+   title        = {OMADS},
+   year         = 2022,
+   publisher    = {Github},
+   version      = {1.5.0},
+   url          = {https://github.com/Ahmed-Bayoumy/OMADS}
+   }
+```
+
 ## How to use OMADS package
 
 After installing the `OMADS` package from [PYPI](https://pypi.org/) website, the functions and classes of `OMADS` basic 
-module can be imported  directly to the python script as follows:
+module can be imported directly to the python script as follows:
 
 ```pycon
 from OMADS import *

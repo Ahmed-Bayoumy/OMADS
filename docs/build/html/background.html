@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Background &mdash; Read the Docs OMADS 1.6.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="_static/proof.css" type="text/css" />
+      <link rel="stylesheet" href="_static/proof.css" type="text/css" />
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pseudocode@latest/build/pseudocode.min.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/proof.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/pseudocode@latest/build/pseudocode.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+        <script src="_static/katex_autorenderer_background.js"></script>
+        <script src="_static/debug.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Benchmarking" href="benchmarking.html" />
+    <link rel="prev" title="Welcome to OMADS!" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> Read the Docs OMADS
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Technical Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Background</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#when-to-use-omads">When to use OMADS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#mads-algorithm">MADS algorithm</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#initialization-step">Initialization step</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#update-parameters">Update parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#search-step">Search step</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#poll-step">Poll step</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#termination">Termination</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="benchmarking.html">Benchmarking</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Demo Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Code Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="OMADS.html">OMADS package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="indicesAndTables.html">Indices and tables</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Read the Docs OMADS</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Background</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/background.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="background">
+<h1>Background<a class="headerlink" href="#background" title="Permalink to this headline"></a></h1>
+<p>MADS is a derivative free optimization method supported by global convergence properties where it converges to a minimizer regardless of the starting point. The algorithm consists of two steps as shown in <a class="reference internal" href="#f1"><span class="std std-numref">Fig. 1</span></a>. The first step is an optional search step where the user can run a DOE study or a global optimization study, i.e., genetic algorithm (GA), on a set of variables with size <span class="math notranslate nohighlight">\(n\)</span>. The second step is a mandatory local search step called poll-step where the <span class="math notranslate nohighlight">\(2n\)</span> orthogonal poll directions spin around the incumbent solution on the discretized poll frame to randomly choose <span class="math notranslate nohighlight">\(2n\)</span> contiguous directions where the blackbox functions are evaluated on the delimited region containing the poll point.</p>
+<figure class="align-center" id="id6">
+<span id="f1"></span><a class="reference internal image-reference" href="_images/mesh2.png"><img alt="_images/mesh2.png" src="_images/mesh2.png" style="width: 700px;" /></a>
+<figcaption>
+<p><span class="caption-number">Fig. 1 </span><span class="caption-text">OMADS flow chart.</span><a class="headerlink" href="#id6" title="Permalink to this image"></a></p>
+</figcaption>
+</figure>
+<section id="when-to-use-omads">
+<h2>When to use OMADS<a class="headerlink" href="#when-to-use-omads" title="Permalink to this headline"></a></h2>
+<p>If the optimization problem is deterministic and has continuous variables solely, then the following checklist will help you to decide whether using OMADS is a recommended choice from a computational speed perspective.</p>
+<ul class="simple">
+<li><p>If the optimization problem has a known structure where <em>derivatives are explicit</em>, then exploit them by using an appropriate gradient-based method, i.e., SQP.</p></li>
+<li><p>If the problem has unknown derivatives, but they can be reliably approximated and the design space <em>has no differentiability issues</em>, then apply an appropriate gradient-based method that supports a model-based algorithm, i.e., NLPQLP.</p></li>
+<li><p>If the problem has unknown derivatives but can be approximated and the design space <em>has differentiability issues</em>, then apply a derivative-free method that supports model-based algorithms, i.e., COBYLA.</p></li>
+<li><p>If <em>none of the above works</em>, then use blackbox optimization methods like MADS.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>OMADS is a simple variant of MADS with a pythonic flavor, but to use more advanced variants, it is recommended to use NOMAD <span id="id1">[<a class="reference internal" href="index.html#id6" title="C. Audet, S. Digabel, V. Rochon Montplaisir, and C. Tribes. Algorithm 1027: NOMAD Version 4: Nonlinear Optimization with the MADS Algorithm. ACM Transactions on Mathematical Software, 48(3):35:1–35:22, 2022. URL: https://dx.doi.org/10.1145/3544489, doi:10.1145/3544489.">3</a>]</span>. OMADS can also be integrated with the surrogate models library (SML) published on my GitHub repository <span id="id2">[<a class="reference internal" href="index.html#id8" title="A. Bayoumy. SML. 2022. URL: https://github.com/Ahmed-Bayoumy/SML.">4</a>]</span>.</p>
+</div>
+</section>
+<section id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline"></a></h2>
+<p>In this section we present the MADS algorithm. We begin with the following definitions of the mesh and the frame from <span id="id3">[<a class="reference internal" href="index.html#id4" title="C. Audet and J. Dennis. Mesh Adaptive Direct Search Algorithms for Constrained Optimization. SIAM Journal on optimization, 17(1):188–217, 2006.">1</a>, <a class="reference internal" href="index.html#id10" title="C. Audet and W. Hare. Derivative-free and Blackbox Optimization. Volume 2. Springer, 2017.">5</a>]</span>:</p>
+<div class="admonition important">
+<p class="admonition-title">Definition: Mesh and Mesh Size Parameter</p>
+<p>Let <span class="math notranslate nohighlight">\(G \in \mathbb{R}^{n\times n}\)</span> be an invertible matrix and the columns of <span class="math notranslate nohighlight">\(Z \in \mathbb{Z}^{n \times p}\)</span> form a positive spanning set for <span class="math notranslate nohighlight">\(\mathbb{R}^n\)</span>. Define <span class="math notranslate nohighlight">\(D = GZ\)</span>. The mesh of coarseness <span class="math notranslate nohighlight">\(\delta^{k} &gt; 0\)</span> generated by <span class="math notranslate nohighlight">\(D\)</span>, centered at the incumbent solution <span class="math notranslate nohighlight">\(x_{k} ∈ \mathbb{R}^n\)</span>, is defined by
+<span class="math notranslate nohighlight">\(M^{k} := \{ x^{k} + \delta^{k}D_{y} : y \in \mathbb{N}^{p} \subset \mathbb{R}^{n}, \}\)</span>
+where <span class="math notranslate nohighlight">\(\delta^{k}\)</span> is called the mesh size parameter.</p>
+</div>
+<p>What distinguishes MADS from the global pattern search (GPS) algorithm is the idea of creating a new parameter, the frame size parameter <span class="math notranslate nohighlight">\(\Delta^{k}\)</span>, that replaces <span class="math notranslate nohighlight">\(\delta^{k}\)</span> in the poll step. The frame size parameter <span class="math notranslate nohighlight">\(\Delta^{k}\)</span> defines the frame in which polling is done – polling directions spin around the incumbent solution. At every iteration, these two parameters will satisfy <span class="math notranslate nohighlight">\(0 &lt; \delta^{k} ≤ \Delta^{k}\)</span>.</p>
+<div class="admonition important">
+<p class="admonition-title">Definition: Frame and Frame Size Parameter</p>
+<p>Let <span class="math notranslate nohighlight">\(G \in \mathbb{R}^{n\times n}\)</span> be an invertible matrix and the columns of <span class="math notranslate nohighlight">\(Z \in \mathbb{Z}^{n \times p}\)</span> form a positive spanning set for <span class="math notranslate nohighlight">\(\mathbb{R}^n\)</span>. Define <span class="math notranslate nohighlight">\(D = GZ\)</span>. Select a mesh size parameter <span class="math notranslate nohighlight">\(\delta^{k} &gt; 0\)</span> and let <span class="math notranslate nohighlight">\(\Delta^{k}\)</span> be such that <span class="math notranslate nohighlight">\(\delta^{k} \leq \Delta^{k}\)</span>. The frame of extent <span class="math notranslate nohighlight">\(\Delta^{k}\)</span> generated by <span class="math notranslate nohighlight">\(D\)</span>, centered at the incumbent solution <span class="math notranslate nohighlight">\(x_{k} ∈ \mathbb{R}^n\)</span>, is defined by
+<span class="math notranslate nohighlight">\(F^{k} := \{ x \in M^{k} : ||x-x^{k}||_{\infty} \leq \Delta^{k}b \}\)</span>
+with <span class="math notranslate nohighlight">\(b = \text{max}\{ ||d^{\prime}||_{\infty} : d^{\prime} \in \mathbb{D} \}\)</span> and <span class="math notranslate nohighlight">\(\Delta^{k}\)</span> is called the frame size parameter.</p>
+</div>
+<p>In the MADS algorithm, the poll set is constructed by selecting mesh points from inside the frame <span class="math notranslate nohighlight">\(F_{k}\)</span>, and is not necessarily forced to equal <span class="math notranslate nohighlight">\(P_{k}\)</span>. By having the mesh size parameter decrease more rapidly than the frame size parameter, this allows for asymptotically dense selections of poll directions, see <a class="reference internal" href="#f2"><span class="std std-numref">Fig. 2</span></a>.</p>
+<figure class="align-center" id="id7">
+<span id="f2"></span><a class="reference internal image-reference" href="_images/mesh.png"><img alt="_images/mesh.png" src="_images/mesh.png" style="width: 400px;" /></a>
+<figcaption>
+<p><span class="caption-number">Fig. 2 </span><span class="caption-text">Mesh and poll updates.</span><a class="headerlink" href="#id7" title="Permalink to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="mads-algorithm">
+<h2>MADS algorithm<a class="headerlink" href="#mads-algorithm" title="Permalink to this headline"></a></h2>
+<p>In this section we will demonstrate how each step of the MADS algorithm, shown in <a class="reference internal" href="#a1"><span class="std std-numref">Algorithm 1</span></a>, works and how they are implemented in OMADS.</p>
+<div class="pseudocode" id="id8">
+<span id="a1"></span><div class="pseudocode-caption">
+</div><div class="pseudocode-content">
+<pre id="1" style="display:hidden;">
+             % This quicksort algorithm is extracted from Chapter 7, Introduction to Algorithms (3rd edition)
+ \begin{algorithm}
+ \caption{Mesh adaptive direct search (MADS)}
+ \begin{algorithmic}
+ \STATE{Given $f : \mathbb{R}^{n} \mapsto  \mathbb{R} \cup \{ \infty \}$ and a starting point $x^{0} \in \Omega$ and barrier function $f_{\Omega}(x)$}
+ \PROCEDURE{Initialization}{}
+     \STATE{$\Delta^{0} \in (0, \infty)$} initial frame size
+     \STATE{$D=GZ$} positive spanning matrix
+     \STATE{$\tau \in (0,1)$, with $\tau$ rational} mesh size adjustment parameter
+     \STATE{$\epsilon_{\text{stop}} \in [0,\infty)$} stopping tolerance
+     \STATE{$k \gets 0$}  iteration counter
+ \ENDPROCEDURE
+ \PROCEDURE{Update}{}
+     \STATE{set the mesh size parameter to $\delta^{k} = \text{min} \{ \Delta^{k}, (\Delta^{k})^{2} \}$}
+ \ENDPROCEDURE
+ \PROCEDURE{Search}{}
+     \IF{$f_{\Omega}(t) &lt; f_{\Omega}(x^{k})$ for some t in a finite subset $S^{k}$ of $M^{k}$}
+         \STATE set $x^{k+1} \gets t$ and $\Delta^{k+1} \gets \tau^{-1} \Delta^{k}$ and go to 27
+     \ELSE
+         \STATE go to 19
+     \ENDIF
+ \ENDPROCEDURE
+ \PROCEDURE{Poll}{}
+     \STATE select a positive spanning set $\mathbb{D^{k}_{\Delta}}$ such that \\
+     $P^{k}=\{x^{k}+\delta^{k}:d\in\mathbb{D}^{k}_{\Delta}\}$ \\
+     is a subset of the frame $F^{k}$ of extent $\Delta^{k}$
+     \IF{$f_{\Omega}(t) &lt; f_{\Omega}(x^{k})$ for some $t$ in $t \in P^{k}$}
+         \STATE set $x^{k+1} \gets t$ and $\Delta^{k+1} \gets \tau^{-1} \Delta^{k}$
+     \ELSE
+         \STATE set $x^{k+1} \gets x^{k}$ and $\Delta^{k+1} \gets \tau \Delta^{k}$
+     \ENDIF
+ \ENDPROCEDURE
+ \PROCEDURE{Terminate}{}
+     \IF{$\Delta^{k+1}\geq \epsilon_{stop}$}
+         \STATE increament $k \gets k+1$ and go to 9
+     \ELSE
+         \STATE stop
+     \ENDIF
+ \ENDPROCEDURE
+ \end{algorithmic}
+ \end{algorithm}
+        </pre></div></div><section id="initialization-step">
+<h3>Initialization step<a class="headerlink" href="#initialization-step" title="Permalink to this headline"></a></h3>
+<p>In this step, we can set the initial frame size <span class="math notranslate nohighlight">\(\Delta_{0}\)</span>, generate the initial positive spanning set matrix <span class="math notranslate nohighlight">\(D_{0}\)</span>, adjust the initial mesh size and set the termination criteria before firing up the study.</p>
+<p>Let us see how we can do that in OMADS. The class responsible for MADS preprocessing is called ‘PreMADS’ which uses the data dictionaries that hold user inputs required to initialize the algorithm:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot; Run preprocessor for the setup of</span>
+<span class="sd"> the optimization problem and for the initialization</span>
+<span class="sd">of optimization process &quot;&quot;&quot;</span>
+<span class="n">iteration</span><span class="p">,</span> <span class="n">xmin</span><span class="p">,</span> <span class="n">poll</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">param</span><span class="p">,</span> <span class="n">post</span><span class="p">,</span> <span class="n">out</span> <span class="o">=</span> <span class="n">PreMADS</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">initialize_from_dict</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The data dictionary consists of four other dictionaries:</p>
+<ul>
+<li><p>Evaluator settings which has the following five keys:</p>
+<blockquote>
+<div><ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">blackbox</span></code>: The name of the callable or executable file</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">internal</span></code>: Specify whether the evaluator is a callable function, a blackbox executable file, or an internal benchmarking test</p>
+<blockquote>
+<div><ul>
+<li><p>Internal takes one of these values:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">uncon</span></code>: Unconstrained benchmarking</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">con</span></code>: Constrained benchmarking</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">exe</span></code>: Executable blackbox</p></li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">path</span></code>: The evaluation path that should contain the executable file (if any)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">input</span></code>: For the case of blackbox executables, it is the input file required to run the blackbox</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">output</span></code>: For the case of blackbox executables, it is the output file that will be parsed to extract response outputs</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>Example:</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;evaluator&quot;</span><span class="p">:</span>
+  <span class="p">{</span>
+    <span class="s2">&quot;blackbox&quot;</span><span class="p">:</span> <span class="s2">&quot;rosenbrock&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;internal&quot;</span><span class="p">:</span> <span class="s2">&quot;uncon&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;./bm&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;input&quot;</span><span class="p">:</span> <span class="s2">&quot;input.inp&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;output&quot;</span><span class="p">:</span> <span class="s2">&quot;output.out&quot;</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>If the evaluator is a callable functions, the blackbox key has to be assigned to the callable function name, but no need to define other keys under the evaluator dictionary, see the following example.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">eval</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;blackbox&quot;</span><span class="p">:</span> <span class="n">fun</span><span class="p">}</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For blackbox files, the input file should contain one column that have the design vector values that follow the same order of the variables populated in the global design vector. The output file should hold all the evaluated response outputs where the first value in the vector will be assigned to the objective function and the other values will be assigned to the constraint functions, respectively.</p>
+</div>
+<ul>
+<li><p>Parameter settings which has the following six keys:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">baseline</span></code>: The design initial point</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">lb</span></code>: Lower bound</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ub</span></code>: Upper bound</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">var_names</span></code>: Variables name</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">scaling</span></code>: The scaling factor</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">post_dir</span></code>: The post directory</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>Example:</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;param&quot;</span><span class="p">:</span>
+  <span class="p">{</span>
+    <span class="s2">&quot;baseline&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">-</span><span class="mf">2.0</span><span class="p">,</span><span class="o">-</span><span class="mf">2.0</span><span class="p">],</span>
+    <span class="s2">&quot;lb&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">],</span>
+    <span class="s2">&quot;ub&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">],</span>
+    <span class="s2">&quot;var_names&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;x1&quot;</span><span class="p">,</span> <span class="s2">&quot;x2&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;scaling&quot;</span><span class="p">:</span> <span class="mf">10.0</span><span class="p">,</span>
+    <span class="s2">&quot;post_dir&quot;</span><span class="p">:</span> <span class="s2">&quot;./tests/bm/unconstrained/post&quot;</span>
+  <span class="p">},</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Algorithmic options’ dictionary which has the following six keys:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">seed</span></code>: The random generator seed that ensures results reproducibility. This should be an integer value</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">budget</span></code>: The evaluation budget; the maximum number of evaluations for the blackbox defined</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tol</span></code>: The minimum poll size tolerance; the algorithm terminates once the poll size falls below this value</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">psize_init</span></code>: Initial poll size</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">display</span></code>: A boolean for displaying verbose outputs per iteration in the terminal window</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">opportunistic</span></code>: A boolean for enabling opportunistic search</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">check_cache</span></code>: A boolean for checking if the current point is a duplicate by checking its hashed address (integer signature)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">store_cache</span></code>: A boolean for saving evaluated designs in the cache memory</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">collect_y</span></code>: Currently inactive (to be used when the code is integrated with the PyADMM MDO module)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">rich_direction</span></code>: A boolean that enables capturing a rich set of directions in a generalized pattern</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">precision</span></code>: A string character input that controls the <cite>dtype</cite> decimal resolution used by the numerical library <cite>numpy</cite></p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">high</span></code>: <cite>float128</cite> 1e-18</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">medium</span></code>: <cite>float64</cite> 1e-15</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">low</span></code>: <cite>float32</cite> 1e-8</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">save_results</span></code>: A boolean for generating a <cite>MADS.csv</cite> file for the output results under the post directory</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">save_coordinates</span></code>: Saving poll coordinates (spinners) of each iteration in a JASON dictionary template that can be used for visualization</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">save_all_best</span></code>: A boolean for saving only incumbent solutions</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">parallel_mode</span></code>: A boolean for parallel computation of the poll set</p></li>
+</ul>
+</li>
+<li><p>Example:</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;options&quot;</span><span class="p">:</span>
+  <span class="p">{</span>
+    <span class="s2">&quot;seed&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="s2">&quot;budget&quot;</span><span class="p">:</span> <span class="mi">10000</span><span class="p">,</span>
+    <span class="s2">&quot;tol&quot;</span><span class="p">:</span> <span class="mf">1e-12</span><span class="p">,</span>
+    <span class="s2">&quot;psize_init&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s2">&quot;display&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+    <span class="s2">&quot;opportunistic&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
+    <span class="s2">&quot;check_cache&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+    <span class="s2">&quot;store_cache&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+    <span class="s2">&quot;collect_y&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
+    <span class="s2">&quot;rich_direction&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+    <span class="s2">&quot;precision&quot;</span><span class="p">:</span> <span class="s2">&quot;high&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;save_results&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
+    <span class="s2">&quot;save_coordinates&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
+    <span class="s2">&quot;save_all_best&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
+    <span class="s2">&quot;parallel_mode&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
+    <span class="s2">&quot;np&quot;</span><span class="p">:</span> <span class="mi">4</span>
+  <span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="update-parameters">
+<h3>Update parameters<a class="headerlink" href="#update-parameters" title="Permalink to this headline"></a></h3>
+<p>After checking the termination criteria, the mesh parameters update step can be called as by reaching that step all the running serial/parallel processes are supposed to be done. It is important to ensure that poll directions have been evaluated on the same mesh and frame parameters, particularly in parallel points evaluation.</p>
+<p>This is the code used to update the poll and mesh parameters:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">master_updates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Point</span><span class="p">],</span> <span class="n">peval</span><span class="p">):</span>
+  <span class="k">if</span> <span class="n">peval</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eval_budget</span><span class="p">:</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">terminate</span> <span class="o">=</span> <span class="kc">True</span>
+  <span class="k">for</span> <span class="n">xtry</span> <span class="ow">in</span> <span class="n">x</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot; Check success conditions &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">xtry</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">xmin</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">success</span> <span class="o">=</span> <span class="kc">True</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">nb_success</span> <span class="o">+=</span> <span class="mi">1</span>
+      <span class="sd">&quot;&quot;&quot; Update the post instant &quot;&quot;&quot;</span>
+      <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xmin</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_xmin</span> <span class="o">=</span> <span class="n">Point</span><span class="p">()</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_xmin</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">xtry</span><span class="p">)</span>
+      <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">display</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">:</span>
+          <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Success: fmin = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">xmin</span><span class="o">.</span><span class="n">f</span><span class="si">:</span><span class="s2">.15f</span><span class="si">}</span><span class="s2"> (hmin = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">xmin</span><span class="o">.</span><span class="n">h</span><span class="si">:</span><span class="s2">.15</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">:</span>
+          <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Success: fmin = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">xmin</span><span class="o">.</span><span class="n">f</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2"> (hmin = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">xmin</span><span class="o">.</span><span class="n">h</span><span class="si">:</span><span class="s2">.6</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+          <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Success: fmin = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">xmin</span><span class="o">.</span><span class="n">f</span><span class="si">:</span><span class="s2">.18f</span><span class="si">}</span><span class="s2"> (hmin = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">xmin</span><span class="o">.</span><span class="n">h</span><span class="si">:</span><span class="s2">.18</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+
+      <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">psize_success</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">psize</span><span class="p">)</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">psize_max</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">maximum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">psize</span><span class="p">,</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">psize_max</span><span class="p">,</span>
+                            <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="o">.</span><span class="n">dtype</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The update function belongs to the poll class. The method is named <code class="docutils literal notranslate"><span class="pre">master_update</span></code> to refer to the master process in the parallel-space decomposition which will be included in future versions of OMADS.</p>
+</div>
+</section>
+<section id="search-step">
+<h3>Search step<a class="headerlink" href="#search-step" title="Permalink to this headline"></a></h3>
+<p>This step breaks free of local minimizers, and it is restricted to the mesh. The search step is discussed in more details in the documentation of SML and RAF that can be found in <span id="id4">[<a class="reference internal" href="index.html#id8" title="A. Bayoumy. SML. 2022. URL: https://github.com/Ahmed-Bayoumy/SML.">4</a>, <a class="reference internal" href="index.html#id9" title="A. Bayoumy. SML. 2022. URL: https://github.com/Ahmed-Bayoumy/RAF.">6</a>]</span>.</p>
+</section>
+<section id="poll-step">
+<h3>Poll step<a class="headerlink" href="#poll-step" title="Permalink to this headline"></a></h3>
+<p>The MADS algorithm is permitted to select any poll direction such that <span class="math notranslate nohighlight">\(x^{k}+\delta^{k}d\)</span> lies inside the frame where <span class="math notranslate nohighlight">\(\delta^{k}d \leq \Delta^{k}b\)</span> for all <span class="math notranslate nohighlight">\(d \in \mathbb{D}^{k}_{\Delta}\)</span>. Since <span class="math notranslate nohighlight">\(\Delta^{k}&gt;\delta^{k}\)</span> whenever <span class="math notranslate nohighlight">\(\delta^{k} &lt; 1\)</span> which provides flexibility in how the poll set is constructed.</p>
+<p>We will give here a glimpse on the MADS convergence properties and the meaning of the dense sets (richness) of poll directions. In MADS, any direction that is sampled in the limit of a refining sequence must have a nonnegative directional derivative. Moreover, the directions are generated from an ever expanding set of options where the mesh size parameter <span class="math notranslate nohighlight">\(\delta_{k}\)</span> goes to zero more rapidly than the poll size parameter <span class="math notranslate nohighlight">\(\Delta_{k}\)</span>.</p>
+<p>MADS can produce an asymptotically dense set of poll directions that can be demonstrated by using the Householder matrix. Firstly, let’s define the dense subset</p>
+<div class="admonition important">
+<p class="admonition-title">Definition: Asymptotically Dense</p>
+<p>The set <span class="math notranslate nohighlight">\(V \subseteq \mathbb{R}^{n}\)</span> is said to be asymptotically dense if the normalised <span class="math notranslate nohighlight">\(set \{v/||v||:v \in V\}\)</span> is dense on the <em>unit sphere</em> <span class="math notranslate nohighlight">\(S=\{w\in \mathbb{R}^{n} :|w|= 1\}\)</span>.</p>
+</div>
+<p>Now the Householder matrix can be defined as:</p>
+<div class="admonition important">
+<p class="admonition-title">Definition: Householder Matrix</p>
+<p>Let <span class="math notranslate nohighlight">\(V \subseteq \mathbb{R}^{n}\)</span> be a <em>normalized vector</em>. The Householder matrix H associated with <span class="math notranslate nohighlight">\(v\)</span> is <span class="math notranslate nohighlight">\(H:=I-2vv^{T} \in \mathbb{R}^{n \times n}\)</span>, where I is the <span class="math notranslate nohighlight">\(n \times n\)</span> <em>identity matrix</em>.</p>
+</div>
+<p>Let <span class="math notranslate nohighlight">\(v\)</span> be a <em>nonzero</em> in <span class="math notranslate nohighlight">\(\mathbb{R}^{n}\)</span> and <span class="math notranslate nohighlight">\(H\)</span> be the associated <em>Householder</em> matrix. Then for any <span class="math notranslate nohighlight">\(\gamma H [ I-I ]\)</span> forms a maximal positive basis of <span class="math notranslate nohighlight">\(\mathbb{R}^{n}\)</span>.</p>
+<div class="pseudocode" id="id9">
+<span id="a2"></span><div class="pseudocode-caption">
+</div><div class="pseudocode-content">
+<pre id="2" style="display:hidden;">
+             \begin{algorithm}
+ \caption{Creating the set of poll directions}
+ \begin{algorithmic}
+ \PROCEDURE{Create-Householder-matrix}{}
+     \STATE{use $v_{k}$ to create its associated Householder matrix}
+     \STATE{$H^{k} = [h_{1} \, h_{2} \, ..., \, h_{n}]$}
+ \ENDPROCEDURE
+ \PROCEDURE{Create-poll-set}{}
+     \STATE{define $\mathbb{B}^{k} = \{b1,b2, ..., b_{n}\}$ with $b_{j}=\text{round}(\frac{\Delta_{k}}{\delta{k}}\frac{h_{j}}{||h_{j}||_{\infty}})$}
+     \STATE{set $\mathbb{D}^{k}_{\Delta} = \mathbb{B}^{k} \cup (-\mathbb{B}^{k})$ }
+ \ENDPROCEDURE
+
+ \end{algorithmic}
+ \end{algorithm}
+        </pre></div></div><p>In OMADS, <a class="reference internal" href="#a2"><span class="std std-numref">Algorithm 2</span></a> is implemented under the directions class <code class="docutils literal notranslate"><span class="pre">Dirs2n</span></code> in a function called <code class="docutils literal notranslate"><span class="pre">create_housholder</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">create_housholder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">is_rich</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+  <span class="sd">&quot;&quot;&quot;Create householder matrix</span>
+
+<span class="sd">  :param is_rich:  A flag that indicates if the rich direction option is enabled</span>
+<span class="sd">  :type is_rich: bool</span>
+<span class="sd">  :return: The householder matrix</span>
+<span class="sd">  :rtype: np.ndarray</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="n">hhm</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+  <span class="k">if</span> <span class="n">is_rich</span><span class="p">:</span>
+    <span class="n">v_dir</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ran</span><span class="p">())</span>
+    <span class="n">v_dir_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">v_dir</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="n">v_dir_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">v_dir_array</span><span class="p">,</span>
+                <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">v_dir_array</span><span class="p">,</span>
+                        <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="o">.</span><span class="n">dtype</span><span class="p">)),</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="n">hhm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span>
+              <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">v_dir_array</span><span class="p">,</span> <span class="n">v_dir_array</span><span class="o">.</span><span class="n">T</span><span class="p">),</span>
+                    <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span>
+              <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+  <span class="k">else</span><span class="p">:</span>
+    <span class="n">hhm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+  <span class="n">hhm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">hhm</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">hhm</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="o">.</span><span class="n">dtype</span><span class="p">))</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)))</span>
+  <span class="c1"># Rounding( and transpose)</span>
+  <span class="n">tmp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">rho</span><span class="p">,</span> <span class="n">hhm</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+  <span class="n">hhm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">msize</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">tmp</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="o">.</span><span class="n">dtype</span><span class="p">))</span>
+  <span class="n">hhm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">hhm</span><span class="p">,</span> <span class="o">-</span><span class="n">hhm</span><span class="p">)),</span> <span class="bp">self</span><span class="o">.</span><span class="n">scaling</span><span class="p">)</span>
+
+  <span class="k">return</span> <span class="n">hhm</span>
+</pre></div>
+</div>
+<p>Then the generated Householder matrix will be used in the following function to create the poll set:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">create_poll_set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hhm</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">ub</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">lb</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">it</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+  <span class="sd">&quot;&quot;&quot;Create the poll directions</span>
+
+<span class="sd">  :param hhm: Householder matrix</span>
+<span class="sd">  :type hhm: np.ndarray</span>
+<span class="sd">  :param ub: Variables upper bound</span>
+<span class="sd">  :type ub: List[float]</span>
+<span class="sd">  :param lb: Variables lower bound</span>
+<span class="sd">  :type lb: List[float]</span>
+<span class="sd">  :param it: iteration</span>
+<span class="sd">  :type it: int</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">poll_dirs</span>
+  <span class="n">temp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">hhm</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xmin</span><span class="o">.</span><span class="n">coordinates</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+  <span class="c1"># np.random.seed(self._seed)</span>
+  <span class="n">temp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">permutation</span><span class="p">(</span><span class="n">temp</span><span class="p">)</span>
+  <span class="n">temp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">temp</span><span class="p">,</span> <span class="n">ub</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+  <span class="n">temp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">temp</span><span class="p">,</span> <span class="n">lb</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+
+  <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">):</span>
+    <span class="n">tmp</span> <span class="o">=</span> <span class="n">Point</span><span class="p">()</span>
+    <span class="n">tmp</span><span class="o">.</span><span class="n">coordinates</span> <span class="o">=</span> <span class="n">temp</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+    <span class="n">tmp</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">precision</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">precision</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">poll_dirs</span> <span class="o">=</span> <span class="n">tmp</span>
+    <span class="k">del</span> <span class="n">tmp</span>
+  <span class="k">del</span> <span class="n">temp</span>
+
+  <span class="bp">self</span><span class="o">.</span><span class="n">iter</span> <span class="o">=</span> <span class="n">it</span>
+</pre></div>
+</div>
+<p><code class="xref std std-numref docutils literal notranslate"><span class="pre">F3</span></code> depicts the dense directions on the same frame size where</p>
+<figure class="align-center">
+<a class="reference internal image-reference" href="_images/poll_anim.gif"><img alt="_images/poll_anim.gif" src="_images/poll_anim.gif" style="width: 700px;" /></a>
+</figure>
+<p>We recommend you to visit <span id="id5">[<a class="reference internal" href="index.html#id10" title="C. Audet and W. Hare. Derivative-free and Blackbox Optimization. Volume 2. Springer, 2017.">5</a>]</span> for further details on the proofs of Householder positive basis that show how the columns of the associated Householder matrices are asymptotically dense, given a dense set of directions in the unit sphere <em>S</em>.</p>
+</section>
+<section id="termination">
+<h3>Termination<a class="headerlink" href="#termination" title="Permalink to this headline"></a></h3>
+<p>Typically, the algorithm terminates when the evaluation budget is exhausted and/or the poll size falls below the tolerance size.</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to OMADS!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="benchmarking.html" class="btn btn-neutral float-right" title="Benchmarking" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Ahmed Bayoumy, Read the Docs, Inc. &amp; contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

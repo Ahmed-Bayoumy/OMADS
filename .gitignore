@@ -12,3 +12,7 @@ venv/
 *.coverage*
 *.pyc
 *.csv
+docs/source/*
+make.bat
+Makefile
+.vscode
