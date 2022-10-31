@@ -1,0 +1,21 @@
+OMADS package
+=============
+
+Submodules
+----------
+
+OMADS.POLL module
+------------------
+
+.. automodule:: OMADS.POLL
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: OMADS
+   :members:
+   :undoc-members:
+   :show-inheritance:

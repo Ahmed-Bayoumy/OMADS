@@ -1,0 +1,58 @@
+Welcome to OMADS!
+=================
+This is the documentation page of the OMADS python package.
+
+
+About OMADS
+-----------
+OMADS is a python implementation of the mesh adaptive direct search (MADS) local poll-step algorithm that supports orthogonal :math:`2n` directions where :math:`n` is the number of variables. MADS poll-step is developed in :cite:p:`audet2006mesh`. Currently, the basic module of OMADS, implemented in ``POLL.py``, is published on PyPi and further modules that support more variants of MADS will be published on my GitHub page :cite:p:`OMADS_AB` when they are ready.
+
+License & copyright
+-------------------
+
+© Ahmed H. Bayoumy
+
+Citation
+--------
+
+If you use this code, please cite it as below.
+
+.. code-block::
+
+   @software{OMADS_AB,
+   author       = {Bayoumy, A.},
+   title        = {OMADS},
+   year         = 2022,
+   publisher    = {Github},
+   version      = {1.5.0},
+   url          = {https://github.com/Ahmed-Bayoumy/OMADS}
+   }
+
+References
+----------
+.. bibliography:: refs.bib
+   :style: unsrt
+
+
+
+.. Hidden TOCs
+
+.. toctree::
+   :caption: Technical Documentation
+
+   background
+   benchmarking 
+
+.. toctree::
+   :caption: Demo Documentation
+
+   tutorials
+
+.. toctree::
+   :caption: Code Documentation
+
+   OMADS
+   indicesAndTables
+
+
+
