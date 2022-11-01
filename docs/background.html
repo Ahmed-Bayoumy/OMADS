@@ -108,7 +108,7 @@
 </figure>
 <section id="when-to-use-omads">
 <h2>When to use OMADS<a class="headerlink" href="#when-to-use-omads" title="Permalink to this headline"></a></h2>
-<p>Suppose the optimization problem is deterministic and has continuous variables solely. In that case, the following checklist will help you decide whether using OMADS is recommended from a computational speed perspective.</p>
+<p>Suppose the optimization problem is deterministic and has continuous variables solely. In that case, the following checklist will help you decide whether OMADS is a recommended choice from a computational speed perspective.</p>
 <ul class="simple">
 <li><p>If the optimization problem has a known structure where <em>derivatives are explicit</em>, exploit them using an appropriate gradient-based method, i.e., SQP.</p></li>
 <li><p>If the problem has unknown derivatives that can be reliably approximated and the design space <em>has no differentiability issues</em>, then apply an appropriate gradient-based method that supports a model-based algorithm, i.e., NLPQLP.</p></li>
