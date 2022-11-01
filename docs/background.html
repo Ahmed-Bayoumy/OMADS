@@ -110,14 +110,14 @@
 <h2>When to use OMADS<a class="headerlink" href="#when-to-use-omads" title="Permalink to this headline"></a></h2>
 <p>Suppose the optimization problem is deterministic and has continuous variables solely. In that case, the following checklist will help you decide whether using OMADS is recommended from a computational speed perspective.</p>
 <ul class="simple">
-<li><p>If the optimization problem has a known structure where <em>derivatives are explicit</em>, then exploit them by using an appropriate gradient-based method, i.e., SQP.</p></li>
-<li><p>If the problem has unknown derivatives, but they can be reliably approximated and the design space <em>has no differentiability issues</em>, then apply an appropriate gradient-based method that supports a model-based algorithm, i.e., NLPQLP.</p></li>
+<li><p>If the optimization problem has a known structure where <em>derivatives are explicit</em>, exploit them using an appropriate gradient-based method, i.e., SQP.</p></li>
+<li><p>If the problem has unknown derivatives that can be reliably approximated and the design space <em>has no differentiability issues</em>, then apply an appropriate gradient-based method that supports a model-based algorithm, i.e., NLPQLP.</p></li>
 <li><p>If the problem has unknown derivatives but can be approximated and the design space <em>has differentiability issues</em>, then apply a derivative-free method that supports model-based algorithms, i.e., COBYLA.</p></li>
-<li><p>If <em>none of the above works</em>, then use blackbox optimization methods like MADS.</p></li>
+<li><p>If <em>none of the above works</em>, use blackbox optimization methods like MADS.</p></li>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>OMADS is a simple variant of MADS with a pythonic flavor, but to use more advanced variants, it is recommended to use NOMAD <span id="id1">[<a class="reference internal" href="index.html#id6" title="C. Audet, S. Digabel, V. Rochon Montplaisir, and C. Tribes. Algorithm 1027: NOMAD Version 4: Nonlinear Optimization with the MADS Algorithm. ACM Transactions on Mathematical Software, 48(3):35:1–35:22, 2022. URL: https://dx.doi.org/10.1145/3544489, doi:10.1145/3544489.">3</a>]</span>. OMADS can also be integrated with the surrogate models library (SML) published on my GitHub repository <span id="id2">[<a class="reference internal" href="index.html#id8" title="A. Bayoumy. SML. 2022. URL: https://github.com/Ahmed-Bayoumy/SML.">4</a>]</span>.</p>
+<p>OMADS is a simple variant of MADS with a pythonic flavor. For more advanced algorithmic variants of MADS, it is recommended to use NOMAD <span id="id1">[<a class="reference internal" href="index.html#id6" title="C. Audet, S. Digabel, V. Rochon Montplaisir, and C. Tribes. Algorithm 1027: NOMAD Version 4: Nonlinear Optimization with the MADS Algorithm. ACM Transactions on Mathematical Software, 48(3):35:1–35:22, 2022. URL: https://dx.doi.org/10.1145/3544489, doi:10.1145/3544489.">3</a>]</span>. OMADS can also be integrated with the surrogate models' library (SML) published on my GitHub repository <span id="id2">[<a class="reference internal" href="index.html#id8" title="A. Bayoumy. SML. 2022. URL: https://github.com/Ahmed-Bayoumy/SML.">4</a>]</span>.</p>
 </div>
 </section>
 <section id="introduction">
@@ -146,7 +146,7 @@ with <span class="math notranslate nohighlight">\(b = \text{max}\{ ||d^{\prime}|
 </section>
 <section id="mads-algorithm">
 <h2>MADS algorithm<a class="headerlink" href="#mads-algorithm" title="Permalink to this headline"></a></h2>
-<p>In this section we will demonstrate how each step of the MADS algorithm, shown in <a class="reference internal" href="#a1"><span class="std std-numref">Algorithm 1</span></a>, works and how they are implemented in OMADS.</p>
+<p>In this section, we will demonstrate how each step of the MADS algorithm, shown in <a class="reference internal" href="#a1"><span class="std std-numref">Algorithm 1</span></a>, works and how they are implemented in OMADS.</p>
 <div class="pseudocode" id="id8">
 <span id="a1"></span><div class="pseudocode-caption">
 </div><div class="pseudocode-content">
