@@ -99,7 +99,7 @@
              
   <section id="background">
 <h1>Background<a class="headerlink" href="#background" title="Permalink to this headline"></a></h1>
-<p>MADS is a derivative free optimization method supported by global convergence properties where it converges to a minimizer regardless of the starting point. The algorithm consists of two steps as shown in <a class="reference internal" href="#f1"><span class="std std-numref">Fig. 1</span></a>. The first step is an optional search step where the user can run a DOE study or a global optimization study, i.e., genetic algorithm (GA), on a set of variables with size <span class="math notranslate nohighlight">\(n\)</span>. The second step is a mandatory local search step called poll-step where the <span class="math notranslate nohighlight">\(2n\)</span> orthogonal poll directions spin around the incumbent solution on the discretized poll frame to randomly choose <span class="math notranslate nohighlight">\(2n\)</span> contiguous directions where the blackbox functions are evaluated on the delimited region containing the poll point.</p>
+<p>MADS is a derivative-free optimization method supported by global convergence properties where it converges to a minimizer regardless of the starting point. The algorithm consists of two steps, as shown in <a class="reference internal" href="#f1"><span class="std std-numref">Fig. 1</span></a>. The first step is an optional search step where the user can run a DOE study or a global optimization study, i.e., genetic algorithm (GA), on a set of variables with size <span class="math notranslate nohighlight">\(n\)</span>. The second step is a mandatory local search step called poll-step. In this step, the <span class="math notranslate nohighlight">\(2n\)</span> orthogonal poll directions spin around the incumbent solution on the discretized poll frame to randomly choose <span class="math notranslate nohighlight">\(2n\)</span> contiguous directions where the blackbox functions are evaluated on the delimited region containing the poll point.</p>
 <figure class="align-center" id="id6">
 <span id="f1"></span><a class="reference internal image-reference" href="_images/mesh2.png"><img alt="_images/mesh2.png" src="_images/mesh2.png" style="width: 700px;" /></a>
 <figcaption>
@@ -108,7 +108,7 @@
 </figure>
 <section id="when-to-use-omads">
 <h2>When to use OMADS<a class="headerlink" href="#when-to-use-omads" title="Permalink to this headline"></a></h2>
-<p>If the optimization problem is deterministic and has continuous variables solely, then the following checklist will help you to decide whether using OMADS is a recommended choice from a computational speed perspective.</p>
+<p>Suppose the optimization problem is deterministic and has continuous variables solely. In that case, the following checklist will help you decide whether using OMADS is recommended from a computational speed perspective.</p>
 <ul class="simple">
 <li><p>If the optimization problem has a known structure where <em>derivatives are explicit</em>, then exploit them by using an appropriate gradient-based method, i.e., SQP.</p></li>
 <li><p>If the problem has unknown derivatives, but they can be reliably approximated and the design space <em>has no differentiability issues</em>, then apply an appropriate gradient-based method that supports a model-based algorithm, i.e., NLPQLP.</p></li>
