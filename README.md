@@ -1,5 +1,7 @@
 # OMADS
-MADS-poll step: A python implementation for the mesh adaptive direct search (MADS) method; ORTHO-MADS algorithm
+MADS-poll step: A python implementation for the mesh adaptive direct search (MADS) method; ORTHO-MADS algorithm.
+
+For technical and code documentation, please visit [OMADS Webpage](https://ahmed-bayoumy.github.io/OMADS/).
 
 ---
 
