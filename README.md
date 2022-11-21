@@ -44,7 +44,7 @@ terminal window under the src directory. The path of the JSON template, which co
 should be entered as an input argument to the `BASIC.py` call. 
 
 ```commandline
-python ./OMADS/BASIC.py ../../tests/unconstrained/rosenbrock.json
+python ./OMADS/POLL.py ../../tests/unconstrained/rosenbrock.json
 ```
 
 ## Input parameters
