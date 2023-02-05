@@ -210,3 +210,5 @@ def test_omads_toy_con_bm():
   # Show box plot for the BM stats as an indicator
   # for measuring various algorithmic performance
   # bm.BM_statistics()
+
+main(os.path.abspath(os.path.join("./tests/bm/constrained", "tc_spring.json")))

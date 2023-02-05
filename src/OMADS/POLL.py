@@ -43,6 +43,7 @@ from dataclasses import dataclass, field
 from typing import Callable, List, Optional, Dict, Any
 from BMDFO import toy
 from numpy import sum, subtract, add, maximum, minimum, power, inf
+from enum import Enum, auto
 
 
 @dataclass
@@ -184,7 +185,13 @@ class Options:
   parallel_mode: bool = False
   np: int = 1
 
-
+class VAR_TYPE(Enum):
+  CONTINUOUS = auto()
+  INTEGER = auto()
+  DISCRETE = auto()
+  BINARY = auto()
+  CATEGORICAL = auto()
+  ORDINAL = auto()
 
 @dataclass
 class Parameters:
@@ -203,7 +210,9 @@ class Parameters:
   var_names: List[str] = field(default_factory=lambda: ["x1", "x2"])
   scaling: float = 10.0
   post_dir: str = os.path.abspath(".\\")
-  # TODO: support more variable types
+  var_type: List[str] = None
+  var_sets: Dict = None
+  # COMPLETE: support more variable types
   # TODO: give better control on variabls' resolution (mesh granularity)
   # var_type: List[str] = field(default_factory=["cont", "cont"])
   # resolution: List[int] = field(default_factory=["cont", "cont"])
@@ -265,6 +274,7 @@ class Evaluator:
             except:
               evalerr = True
               logging.error(f"Callable {str(self.blackbox)} evaluation returned an error at the poll point {values}")
+              f_eval = [inf, [inf]]
           else:
             raise IOError(f'The callable {str(self.blackbox)} requires {npar} input args, but only one input can be provided! You can introduce other input parameters to the callable function using the constants list.')
         else:
@@ -399,6 +409,39 @@ class Point:
   _signature: int = 0
   # numpy double data type precision
   _dtype: DType = DType()
+  # Variables type
+  _var_type: List[int] = None
+  # Discrete set
+  _sets: Dict = None
+
+  _var_link: List[str] = None
+
+  @property
+  def var_link(self):
+    return self._var_link
+  
+  @var_link.setter
+  def var_link(self, value: Any) -> Any:
+    self._var_link = value
+  
+
+  @property
+  def var_type(self) -> List[int]:
+    return self._var_type
+  
+  @var_type.setter
+  def var_type(self, value: List[int]):
+    self._var_type = value
+
+  @property
+  def sets(self):
+    return self._sets
+  
+  @sets.setter
+  def sets(self, value: Any) -> Any:
+    self._sets = value
+  
+  
 
   @property
   def dtype(self):
@@ -975,7 +1018,7 @@ class Dirs2n:
   def ran(self):
     return np.random.random(self._n).astype(dtype=self._dtype.dtype)
 
-  def create_housholder(self, is_rich: bool) -> np.ndarray:
+  def create_housholder(self, is_rich: bool, domain: List[int] = None) -> np.ndarray:
     """Create householder matrix
 
     :param is_rich:  A flag that indicates if the rich direction option is enabled
@@ -983,6 +1026,13 @@ class Dirs2n:
     :return: The householder matrix
     :rtype: np.ndarray
     """
+    if domain is None:
+      domain = [VAR_TYPE.CONTINUOUS] * self._n
+    elif len(domain) != self._n:
+      raise IOError("Number of dimensions doesn't match the size of the variables type list invoked to Dirs2n::create_householder.")
+    elif not isinstance(domain, list):
+      raise IOError("The variables domain type input invoked to Dirs2n::create_householder should be of type list.")
+    
     hhm: np.ndarray
     if is_rich:
       v_dir = copy.deepcopy(self.ran())
@@ -1001,11 +1051,24 @@ class Dirs2n:
     # Rounding( and transpose)
     tmp = np.multiply(self.mesh.rho, hhm, dtype=self._dtype.dtype)
     hhm = np.transpose(np.multiply(self.mesh.msize, np.ceil(tmp), dtype=self._dtype.dtype))
-    hhm = np.dot(np.vstack((hhm, -hhm)), self.scaling)
+    hhm = np.dot(hhm, self.scaling)
+
+    for i in range(len(domain)):
+      if domain[i] == VAR_TYPE.DISCRETE or domain[i] == VAR_TYPE.BINARY or domain[i] == VAR_TYPE.INTEGER:
+        hhm[i][i] = int(np.floor((-1 if i%2 else 1) - 2**self.mesh.msize))
+      elif domain[i] == VAR_TYPE.CATEGORICAL:
+        hhm[i][i] = np.ceil(np.random.random(1).astype(dtype=self._dtype.dtype))
+      else:
+        for j in range(len(domain)):
+          if domain[j] != VAR_TYPE.CONTINUOUS:
+            hhm[i][j] = int(np.floor(-1 + 2**self.mesh.msize))
+    
+
+    hhm = np.vstack((hhm, -hhm))
 
     return hhm
 
-  def create_poll_set(self, hhm: np.ndarray, ub: List[float], lb: List[float], it: int):
+  def create_poll_set(self, hhm: np.ndarray, ub: List[float], lb: List[float], it: int, var_type: List, var_sets: Dict, var_link: List[str]):
     """Create the poll directions
 
     :param hhm: Householder matrix
@@ -1026,6 +1089,9 @@ class Dirs2n:
 
     for k in range(2 * self.dim):
       tmp = Point()
+      tmp.sets = copy.deepcopy(var_sets)
+      tmp.var_type = copy.deepcopy(var_type)
+      tmp.var_link = copy.deepcopy(var_link)
       tmp.coordinates = temp[k]
       tmp.dtype.precision = self.dtype.precision
       self.poll_dirs = tmp
@@ -1079,7 +1145,16 @@ class Dirs2n:
       return [stop, index, self.bb_handle.bb_eval, success, psize, xtry]
 
     """ Evaluation of the blackbox; get output responses """
-    self.bb_output = self.bb_handle.eval(xtry.coordinates)
+    if xtry.sets is not None and isinstance(xtry.sets,dict):
+      p: List[Any] = []
+      for i in range(len(xtry.var_type)):
+        if (xtry.var_type[i] == VAR_TYPE.DISCRETE or xtry.var_type[i] == VAR_TYPE.CATEGORICAL) and xtry.var_link[i] is not None:
+          p.append(xtry.sets[xtry.var_link[i]][int(xtry.coordinates[i])])
+        else:
+          p.append(xtry.coordinates[i])
+      self.bb_output = self.bb_handle.eval(p)
+    else:
+      self.bb_output = self.bb_handle.eval(xtry.coordinates)
 
     """
       Evaluate the poll point:
@@ -1186,12 +1261,65 @@ class PreMADS:
     if options.display:
       print(" Evaluation of the starting points")
     x_start.coordinates = param.baseline
+    x_start.sets = param.var_sets
+    """ 8- Set the variables type """
+    if param.var_type is not None:
+      c= 0
+      x_start.var_type = []
+      x_start.var_link = []
+      for k in param.var_type:
+        c+= 1
+        if k.lower()[0] == "r":
+          x_start.var_type.append(VAR_TYPE.CONTINUOUS)
+          x_start.var_link.append(None)
+        elif k.lower()[0] == "i":
+          x_start.var_type.append(VAR_TYPE.INTEGER)
+          x_start.var_link.append(None)
+        elif k.lower()[0] == "d":
+          x_start.var_type.append(VAR_TYPE.DISCRETE)
+          if x_start.sets is not None and isinstance(x_start.sets, dict):
+            if x_start.sets[k.split('_')[1]] is not None:
+              x_start.var_link.append(k.split('_')[1])
+              if param.ub[c-1] > len(x_start.sets[k.split('_')[1]])-1:
+                param.ub[c-1] = len(x_start.sets[k.split('_')[1]])-1
+              if param.lb[c-1] < 0:
+                param.lb[c-1] = 0
+            else:
+              x_start.var_link.append(None)
+        elif k.lower()[0] == "c":
+          x_start.var_type.append(VAR_TYPE.CATEGORICAL)
+          if x_start.sets is not None and isinstance(x_start.sets, dict):
+            if x_start.sets[k.split('_')[1:][0]] is not None:
+              x_start.var_link.append(k.split('_')[1])
+            else:
+              x_start.var_link.append(None)
+        elif k.lower()[0] == "o":
+          x_start.var_type.append(VAR_TYPE.ORDINAL)
+          x_start.var_link.append(None)
+          # TODO: Implementation in progress
+        elif k.lower()[0] == "b":
+          x_start.var_type.append(VAR_TYPE.BINARY)
+        else:
+          x_start.var_type.append(VAR_TYPE.CONTINUOUS)
+          x_start.var_link.append(None)
+
+    
     x_start.dtype.precision = options.precision
-    poll.bb_output = poll.bb_handle.eval(x_start.coordinates)
+    if x_start.sets is not None and isinstance(x_start.sets,dict):
+      p: List[Any] = []
+      for i in range(len(x_start.var_type)):
+        if (x_start.var_type[i] == VAR_TYPE.DISCRETE or x_start.var_type[i] == VAR_TYPE.CATEGORICAL) and x_start.var_link[i] is not None:
+          p.append(x_start.sets[x_start.var_link[i]][int(x_start.coordinates[i])])
+        else:
+          p.append(x_start.coordinates[i])
+      poll.bb_output = poll.bb_handle.eval(p)
+    else:
+      poll.bb_output = poll.bb_handle.eval(x_start.coordinates)
+
     x_start.__eval__(poll.bb_output)
-    """ 8- Copy the starting point object to the poll's  minimizer subclass """
+    """ 9- Copy the starting point object to the poll's  minimizer subclass """
     poll.xmin = copy.deepcopy(x_start)
-    """ 9- Hold the starting point in the poll
+    """ 10- Hold the starting point in the poll
      directions subclass and define problem parameters"""
     poll.poll_dirs.append(x_start)
     poll.scale(ub=param.ub, lb=param.lb, factor=param.scaling)
@@ -1353,10 +1481,11 @@ def main(*args) -> Dict[str, Any]:
   while True:
     poll.mesh.update()
     """ Create the set of poll directions """
-    hhm = poll.create_housholder(options.rich_direction)
+    hhm = poll.create_housholder(options.rich_direction, domain=xmin.var_type)
     poll.create_poll_set(hhm=hhm,
                ub=param.ub,
-               lb=param.lb, it=iteration)
+               lb=param.lb, it=iteration, var_type=xmin.var_type, var_sets=xmin.sets, var_link = xmin.var_link)
+
     """ Save current poll directions and incumbent solution
      so they can be saved later in the post dir """
     if options.save_coordinates:
