@@ -212,6 +212,8 @@ class Parameters:
   post_dir: str = os.path.abspath(".\\")
   var_type: List[str] = None
   var_sets: Dict = None
+  constants: List = None
+  constants_name: List = None
   # COMPLETE: support more variable types
   # TODO: give better control on variabls' resolution (mesh granularity)
   # var_type: List[str] = field(default_factory=["cont", "cont"])
@@ -1233,6 +1235,8 @@ class PreMADS:
     param = Parameters(**self.data["param"])
     ev = Evaluator(**self.data["evaluator"])
     ev.dtype.precision = options.precision
+    if param.constants != None:
+      ev.constants = copy.deepcopy(param.constants)
     """ 2- Initialize iteration number and construct a point instant for the starting point """
     iteration: int = 0
     x_start = Point()
