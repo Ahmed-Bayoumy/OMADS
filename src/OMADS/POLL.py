@@ -1606,7 +1606,18 @@ def main(*args) -> Dict[str, Any]:
     print(" psize = " + str(poll.mesh.psize))
     print(" psize_success = " + str(poll.mesh.psize_success))
     print(" psize_max = " + str(poll.mesh.psize_max))
-  output: Dict[str, Any] = {"xmin": poll.xmin.coordinates,
+  xmin = poll.xmin
+  """ Evaluation of the blackbox; get output responses """
+  if xmin.sets is not None and isinstance(xmin.sets,dict):
+    p: List[Any] = []
+    for i in range(len(xmin.var_type)):
+      if (xmin.var_type[i] == VAR_TYPE.DISCRETE or xmin.var_type[i] == VAR_TYPE.CATEGORICAL) and xmin.var_link[i] is not None:
+        p.append(xmin.sets[xmin.var_link[i]][int(xmin.coordinates[i])])
+      else:
+        p.append(xmin.coordinates[i])
+  else:
+    p = xmin.coordinates
+  output: Dict[str, Any] = {"xmin": p,
                 "fmin": poll.xmin.f,
                 "hmin": poll.xmin.h,
                 "nbb_evals" : poll.bb_eval,
