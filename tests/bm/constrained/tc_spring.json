@@ -38,5 +38,12 @@
       "save_coordinates": false,
       "save_all_best": false,
       "parallel_mode": false
+    },
+
+    "sampling" : {
+      "method": 2,
+      "ns": 60,
+      "visualize": false,
+      "criterion": "ExactSE"
     }
 }
