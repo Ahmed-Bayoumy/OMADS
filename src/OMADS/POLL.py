@@ -184,6 +184,7 @@ class Options:
   save_all_best: bool = False
   parallel_mode: bool = False
   np: int = 1
+  extend: Any = None
 
 class VAR_TYPE(Enum):
   CONTINUOUS = auto()
@@ -214,6 +215,7 @@ class Parameters:
   var_sets: Dict = None
   constants: List = None
   constants_name: List = None
+  Failure_stop: bool = None
   # COMPLETE: support more variable types
   # TODO: give better control on variabls' resolution (mesh granularity)
   # var_type: List[str] = field(default_factory=["cont", "cont"])
@@ -264,30 +266,43 @@ class Evaluator:
     self.bb_eval += 1
     if self.internal is None or self.internal == "None" or self.internal == "none":
       if callable(self.blackbox):
-        sig = signature(self.blackbox)
-        npar = len(sig.parameters) 
-        # Get input arguments defined for the callable 
-        inputs = str(sig).replace("(", "").replace(")", "").replace(" ","").split(',')
-        # Check if user constants list is defined and if the number of input args of the callable matches what OMADS expects 
-        if self.constants is None:
-          if (npar == 1 or (npar> 0 and npar <= 2 and ('*argv' in inputs))):
-            try:
-              f_eval = self.blackbox(values)
-            except:
-              evalerr = True
-              logging.error(f"Callable {str(self.blackbox)} evaluation returned an error at the poll point {values}")
-              f_eval = [inf, [inf]]
+        is_object = False
+        try:
+          sig = signature(self.blackbox)
+        except:
+          is_object = True
+          pass
+        if not is_object:
+          npar = len(sig.parameters) 
+          # Get input arguments defined for the callable 
+          inputs = str(sig).replace("(", "").replace(")", "").replace(" ","").split(',')
+          # Check if user constants list is defined and if the number of input args of the callable matches what OMADS expects 
+          if self.constants is None:
+            if (npar == 2 or (npar> 0 and npar <= 3 and ('*argv' in inputs))):
+              try:
+                f_eval = self.blackbox(values)
+              except:
+                evalerr = True
+                logging.error(f"Callable {str(self.blackbox)} evaluation returned an error at the poll point {values}")
+                f_eval = [inf, [inf]]
+            else:
+              raise IOError(f'The callable {str(self.blackbox)} requires {npar} input args, but only one input can be provided! You can introduce other input parameters to the callable function using the constants list.')
           else:
-            raise IOError(f'The callable {str(self.blackbox)} requires {npar} input args, but only one input can be provided! You can introduce other input parameters to the callable function using the constants list.')
+            if (npar == 2 or (npar> 0 and npar <= 3 and ('*argv' in inputs))):
+              try:
+                f_eval = self.blackbox(values, self.constants)
+              except:
+                evalerr = True
+                logging.error(f"Callable {str(self.blackbox)} evaluation returned an error at the poll point {values}")
+            else:
+              raise IOError(f'The callable {str(self.blackbox)} requires {npar} input args, but only two input args can be provided as the constants list is defined!')
         else:
-          if (npar == 2 or (npar> 0 and npar <= 3 and ('*argv' in inputs))):
-            try:
-              f_eval = self.blackbox(values, self.constants)
-            except:
-              evalerr = True
-              logging.error(f"Callable {str(self.blackbox)} evaluation returned an error at the poll point {values}")
-          else:
-            raise IOError(f'The callable {str(self.blackbox)} requires {npar} input args, but only two input args can be provided as the constants list is defined!')
+          try:
+            f_eval = self.blackbox(values)
+          except:
+            evalerr = True
+            logging.error(f"Callable {str(self.blackbox)} evaluation returned an error at the poll point {values}")
+            f_eval = [inf, [inf]]
         if isinstance(f_eval, list):
           return f_eval
         elif isinstance(f_eval, float) or isinstance(f_eval, int):
@@ -778,7 +793,11 @@ class Cache:
     :return: A boolean flag indicate whether the point exist in the cache memory
     :rtype: bool
     """
-    return x.signature in self.hash_id
+    is_dup = x.signature in self.hash_id
+    if not is_dup:
+      self.add_to_cache(x)
+
+    return is_dup
 
   def get_index(self, x: Point)->int:
     """Get the index of hash value, associated with the point x, if that point was saved in the cach memory
@@ -799,9 +818,15 @@ class Cache:
     :param x: Evaluated point to be saved in the cache memory
     :type x: Point
     """
-    if not self.is_duplicate(x):
+    if not isinstance(x, list):
       hash_value: int = hash(tuple(x.coordinates))
       self._cache_dict[hash_value] = x
+      self._hash_ID.append(hash(tuple(x.coordinates)))
+    else:
+      for i in range(len(x)):
+        hash_value: int = hash(tuple(x[i].coordinates))
+        self._cache_dict[hash_value] = x[i]
+        self._hash_ID.append(hash(tuple(x[i].coordinates)))
 
 
 @dataclass
@@ -837,6 +862,7 @@ class Dirs2n:
   _seed: int = 0
   _terminate: bool = False
   _bb_output: List[float] = field(default_factory=list)
+  Failure_stop: bool = None
 
   @property
   def bb_output(self) -> List[float]:
@@ -1237,30 +1263,39 @@ class PreMADS:
     ev.dtype.precision = options.precision
     if param.constants != None:
       ev.constants = copy.deepcopy(param.constants)
-    """ 2- Initialize iteration number and construct a point instant for the starting point """
+    
     iteration: int = 0
+    """ 2- Initialize iteration number and construct a point instant for the starting point """
+    extend = options.extend is not None and isinstance(options.extend, Dirs2n)
     x_start = Point()
-    """ 3- Construct an instant for the poll 2n orthogonal directions class object """
-    poll = Dirs2n()
-    poll.dtype.precision = options.precision
-    """ 4- Construct an instant for the mesh subclass object by inheriting
-     initial parameters from mesh_params() """
-    poll.mesh = OrthoMesh()
-    """ 5- Assign optional algorithmic parameters to the constructed poll instant  """
-    poll.opportunistic = options.opportunistic
-    poll.seed = options.seed
-    poll.mesh.dtype.precision = options.precision
-    poll.mesh.psize = options.psize_init
-    poll.eval_budget = options.budget
-    poll.store_cache = options.store_cache
-    poll.check_cache = options.check_cache
-    poll.display = options.display
+
+    if not extend:
+      """ 3- Construct an instant for the poll 2n orthogonal directions class object """
+      poll = Dirs2n()
+      if param.Failure_stop != None and isinstance(param.Failure_stop, bool):
+        poll.Failure_stop = param.Failure_stop
+      poll.dtype.precision = options.precision
+      """ 4- Construct an instant for the mesh subclass object by inheriting
+      initial parameters from mesh_params() """
+      poll.mesh = OrthoMesh()
+      """ 5- Assign optional algorithmic parameters to the constructed poll instant  """
+      poll.opportunistic = options.opportunistic
+      poll.seed = options.seed
+      poll.mesh.dtype.precision = options.precision
+      poll.mesh.psize = options.psize_init
+      poll.eval_budget = options.budget
+      poll.store_cache = options.store_cache
+      poll.check_cache = options.check_cache
+      poll.display = options.display
+    else:
+      poll = options.extend
+    
     n_available_cores = cpu_count()
     if options.parallel_mode and options.np > n_available_cores:
       options.np == n_available_cores
     """ 6- Initialize blackbox handling subclass by copying
      the evaluator 'ev' instance to the poll object"""
-    poll.bb_handle = copy.deepcopy(ev)
+    poll.bb_handle = ev
     """ 7- Evaluate the starting point """
     if options.display:
       print(" Evaluation of the starting points")
@@ -1328,7 +1363,8 @@ class PreMADS:
     poll.poll_dirs.append(x_start)
     poll.scale(ub=param.ub, lb=param.lb, factor=param.scaling)
     poll.dim = x_start.n_dimensions
-    poll.hashtable = Cache()
+    if not extend:
+      poll.hashtable = Cache()
     """ 10- Initialize the number of successful points
      found and check if the starting minimizer performs better
     than the worst (f = inf) """
@@ -1553,8 +1589,10 @@ def main(*args) -> Dict[str, Any]:
 
     if options.display:
       print(post)
+    
+    Failure_check = poll.Failure_stop is not None and poll.Failure_stop and not poll.success
 
-    if abs(poll.mesh.psize) < options.tol or poll.bb_eval >= options.budget or poll.terminate:
+    if (Failure_check and poll.bb_eval >= options.budget) or (abs(poll.mesh.psize) < options.tol or poll.bb_eval >= options.budget or poll.terminate):
       break
     iteration += 1
 
@@ -1625,9 +1663,10 @@ def main(*args) -> Dict[str, Any]:
                 "nb_success": poll.nb_success,
                 "psize": poll.mesh.psize,
                 "psuccess": poll.mesh.psize_success,
-                "pmax": poll.mesh.psize_max}
+                "pmax": poll.mesh.psize_max,
+                "msize": poll.mesh.msize}
 
-  return output
+  return output, poll
 
 def rosen(x, p, *argv):
   x = np.asarray(x)
