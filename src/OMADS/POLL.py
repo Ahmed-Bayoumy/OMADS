@@ -1688,17 +1688,18 @@ def eggHolder(individual):
   return [f, [0]]
 
 if __name__ == "__main__":
-    freeze_support()
-    p_file: str = os.path.abspath("")
+  freeze_support()
+  p_file: str = os.path.abspath("")
 
-    """ Check if an input argument is provided"""
-    if len(sys.argv) > 1:
-      p_file = os.path.abspath(sys.argv[1])
-      main(p_file)
+  """ Check if an input argument is provided"""
+  if len(sys.argv) > 1:
+    p_file = os.path.abspath(sys.argv[1])
+    main(p_file)
 
-    if (p_file != "" and os.path.exists(p_file)):
-      main(p_file)
+  if (p_file != "" and os.path.exists(p_file)):
+    main(p_file)
 
-    if p_file == "":
-      raise IOError("Undefined input args."
-              " Please specify an appropriate input (parameters) jason file")
+  if p_file == "":
+    raise IOError("Undefined input args."
+            " Please specify an appropriate input (parameters) jason file")
+

@@ -1,3 +1,4 @@
+from enum import auto, Enum
 import json
 from multiprocessing import freeze_support, cpu_count
 import os
@@ -13,6 +14,11 @@ from typing import List, Dict, Any, Callable, Protocol, Optional
 import concurrent.futures
 from matplotlib import pyplot as plt
 
+class SAMPLING_METHOD(Enum):
+  FULLFACTORIAL: int = auto()
+  LH: int = auto()
+  RS: int = auto()
+  HALTON: int = auto()
 
 @dataclass
 class global_exploration:
@@ -127,17 +133,17 @@ class global_exploration:
     
     self.ns = nsamples
 
-    if self.sampling_t == explore.SAMPLING_METHOD.FULLFACTORIAL.value:
+    if self.sampling_t == SAMPLING_METHOD.FULLFACTORIAL.value:
       sampling = explore.FullFactorial(ns=nsamples, vlim=v, w=np.array([0.1, 0.05]), c=True)
-    elif self.sampling_t == explore.SAMPLING_METHOD.LH.value: 
+    elif self.sampling_t == SAMPLING_METHOD.LH.value: 
       sampling = explore.LHS(ns=nsamples, vlim=v)
       self.seed += np.random.randint(0, 10000)
       sampling.options["randomness"] = self.seed
       sampling.options["criterion"] = self.sampling_criter
       sampling.options["msize"] = self.mesh.msize
-    elif self.sampling_t == explore.SAMPLING_METHOD.RS.value:
+    elif self.sampling_t == SAMPLING_METHOD.RS.value:
       sampling = explore.RS(ns=nsamples, vlim=v)
-    elif self.sampling_t == explore.SAMPLING_METHOD.HALTON.value:
+    elif self.sampling_t == SAMPLING_METHOD.HALTON.value:
       sampling = explore.halton(ns=nsamples, vlim=v, is_ham=True)
     
     Ps= copy.deepcopy(sampling.generate_samples())
@@ -253,7 +259,7 @@ class global_exploration:
                               dtype=self._dtype.dtype))
 @dataclass
 class search_sampling:
-  method: int = explore.SAMPLING_METHOD.LH.value
+  method: int = SAMPLING_METHOD.LH.value
   ns: int = 3        
   visualize: bool = False
   criterion: str = None
@@ -527,10 +533,12 @@ def main(*args) -> Dict[str, Any]:
     post.xmin = copy.deepcopy(search.xmin)
 
     """ Updates """
-    if search.success:
-      search.mesh.psize = np.multiply(search.mesh.psize, 2, dtype=search.dtype.dtype)
-    else:
-      search.mesh.psize = np.divide(search.mesh.psize, 2, dtype=search.dtype.dtype)
+    # if search.success:
+    #   search.mesh.psize = np.multiply(search.mesh.psize, 2, dtype=search.dtype.dtype)
+    #   search.vicinity_ratio = search.mesh.psize / 2
+    # else:
+    #   search.mesh.psize = np.divide(search.mesh.psize, 2, dtype=search.dtype.dtype)
+    #   search.vicinity_ratio = search.mesh.psize * 2
 
     if options.display:
       print(post)
@@ -649,11 +657,11 @@ def test_omads_callable_quick():
        "var_names": ["x1", "x2"],
        "scaling": 15.0,
        "post_dir": "./post",
-       "failure_stop": False}
+       "Failure_stop": False}
   sampling = {
-    "method": explore.SAMPLING_METHOD.LH.value,
+    "method": SAMPLING_METHOD.LH.value,
     "ns": 10,
-    "visualize": False
+    "visualize": True
   }
   options = {"seed": 0, "budget": 100000, "tol": 1e-12, "display": True}
 
@@ -661,6 +669,7 @@ def test_omads_callable_quick():
 
   out: Dict = main(data)
   print(out)
+
 
 
 if __name__ == "__main__":
@@ -672,9 +681,9 @@ if __name__ == "__main__":
       p_file = os.path.abspath(sys.argv[1])
       main(p_file)
 
-    if (p_file != "" and os.path.exists(p_file)):
-      main(p_file)
+    # if (p_file != "" and os.path.exists(p_file)):
+    #   main(p_file)
 
-    if p_file == "":
-      raise IOError("Undefined input args."
-              " Please specify an appropriate input (parameters) jason file")
+    # if p_file == "":
+    #   raise IOError("Undefined input args."
+    #           " Please specify an appropriate input (parameters) jason file")
