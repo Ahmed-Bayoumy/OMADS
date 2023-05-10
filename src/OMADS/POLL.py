@@ -44,6 +44,8 @@ from typing import Callable, List, Optional, Dict, Any
 from BMDFO import toy
 from numpy import sum, subtract, add, maximum, minimum, power, inf
 from enum import Enum, auto
+import random
+
 
 
 @dataclass
@@ -194,6 +196,27 @@ class VAR_TYPE(Enum):
   CATEGORICAL = auto()
   ORDINAL = auto()
 
+class BARRIER_TYPES(Enum):
+  EB = auto()
+  PB = auto()
+  PEB = auto()
+  RB = auto()
+
+class SUCCESS_TYPES(Enum):
+  US = auto()
+  PS = auto()
+  FS = auto()
+  
+class MPP(Enum):
+  LAMBDA = 0.
+  RHO = 0.00005
+
+class DESIGN_STATUS(Enum):
+  FEASIBLE = auto()
+  INFEASIBLE = auto()
+  ERROR = auto()
+  UNEVALUATED = auto()
+
 @dataclass
 class Parameters:
   """ Variables and algorithmic parameters 
@@ -216,10 +239,33 @@ class Parameters:
   constants: List = None
   constants_name: List = None
   Failure_stop: bool = None
+  problem_name: str = "unknown"
+  best_known: List[float] = None
+  constraints_type: List[BARRIER_TYPES] = None
+  h_max: float = 0
+  RHO: float = 0.00005
+  LAMBDA: List[float] = None
+  name: str = "undefined"
   # COMPLETE: support more variable types
   # TODO: give better control on variabls' resolution (mesh granularity)
   # var_type: List[str] = field(default_factory=["cont", "cont"])
   # resolution: List[int] = field(default_factory=["cont", "cont"])
+
+  def get_barrier_type(self):
+    if self.constraints_type is not None:
+      if isinstance(self.constraints_type, list):
+        for i in range(len(self.constraints_type)):
+          if self.constraints_type[i] == BARRIER_TYPES.PB:
+            return BARRIER_TYPES.PB
+      else:
+        if self.constraints_type == BARRIER_TYPES.PB:
+            return BARRIER_TYPES.PB
+
+    
+    return BARRIER_TYPES.EB
+  
+  def get_h_max_0 (self):
+    return self.h_max
 
 
 @dataclass
@@ -433,15 +479,89 @@ class Point:
 
   _var_link: List[str] = None
 
+  _status: DESIGN_STATUS = DESIGN_STATUS.UNEVALUATED
+
+  _constraints_type: List[BARRIER_TYPES] = None
+
+  _is_EB_passed: bool = False
+
+  _LAMBDA: List[float] = None
+  _RHO: float = MPP.RHO.value
+
+  _hmax: float = 1.
+
+  Eval_time: float = 0.
+
+  source: str = "Current run"
+
+  Model: str = "Simulation"
+
+  _hzero: float = None
+
   @property
-  def var_link(self):
+  def hzero(self):
+    if self._hzero is None:
+      return self._dtype.zero
+    else:
+      return self._hzero
+  
+  @hzero.setter
+  def hzero(self, value: Any) -> Any:
+    self._hzero = value
+  
+
+  @property
+  def hmax(self) -> float:
+    if self._hmax == 0.:
+      return self._dtype.zero
+    return self._hmax
+  
+  @hmax.setter
+  def hmax(self, value: float):
+    self._hmax = value
+  
+
+  @property
+  def RHO(self) -> float:
+    return self._RHO
+  
+  @RHO.setter
+  def RHO(self, value: float):
+    self._RHO = value
+  
+  @property
+  def LAMBDA(self) -> float:
+    return self._LAMBDA
+  
+  @LAMBDA.setter
+  def LAMBDA(self, value: float):
+    self._LAMBDA = value
+  
+
+  @property
+  def var_link(self) -> Any:
     return self._var_link
   
   @var_link.setter
-  def var_link(self, value: Any) -> Any:
+  def var_link(self, value: Any):
     self._var_link = value
   
-
+  @property
+  def status(self) -> DESIGN_STATUS:
+    return self._status
+  
+  @status.setter
+  def status(self, value: DESIGN_STATUS):
+    self._status = value
+  
+  @property
+  def is_EB_passed(self) -> bool:
+    return self._is_EB_passed
+  
+  @is_EB_passed.setter
+  def is_EB_passed(self, value: bool):
+    self._is_EB_passed = value
+  
   @property
   def var_type(self) -> List[int]:
     return self._var_type
@@ -449,6 +569,15 @@ class Point:
   @var_type.setter
   def var_type(self, value: List[int]):
     self._var_type = value
+  
+  @property
+  def constraints_type(self) -> List[BARRIER_TYPES]:
+    return self._constraints_type
+  
+  @constraints_type.setter
+  def constraints_type(self, value: List[BARRIER_TYPES]):
+    self._constraints_type = value
+  
 
   @property
   def sets(self):
@@ -548,11 +677,11 @@ class Point:
     del self._f
 
   @property
-  def freal(self):
+  def fobj(self):
     return self._freal
 
-  @freal.setter
-  def freal(self, other: float):
+  @fobj.setter
+  def fobj(self, other: float):
     self._freal = other
 
   @property
@@ -604,8 +733,8 @@ class Point:
          and self.f is other.f and self.h is other.h
 
   def __lt__(self, other):
-    return (other.h > self._dtype.zero > self.__dh__(other=other)) or \
-         ((self._dtype.zero > self.h >= 0.0) and
+    return (other.h > (self.hmax if self._is_EB_passed else self._dtype.zero) > self.__dh__(other=other)) or \
+         (((self.hmax if self._is_EB_passed else self._dtype.zero) > self.h >= 0.0) and
         self.__df__(other=other) < 0)
 
   def __le__(self, other):
@@ -643,20 +772,75 @@ class Point:
     """ Evaluate point """
     """ Objective function """
     self.f = bb_output[0]
-    self.freal = bb_output[0]
+    self.fobj = bb_output[0]
     """ Inequality constraints (can be an empty vector) """
     self.c_ineq = bb_output[1]
-    """ Aggregate constraints """
+    if not isinstance(self.c_ineq, list):
+      self.c_ineq = [self.c_ineq]
+    self.evaluated = True
+    """ Check the multiplier matrix """
+    if self.LAMBDA is None:
+      self.LAMBDA = []
+      for _ in range(len(self.c_ineq)):
+        self.LAMBDA.append(MPP.LAMBDA.value)
+    else:
+      if len(self.c_ineq) != len(self.LAMBDA):
+        for _ in range(len(self.LAMBDA), len(self.c_ineq)):
+          self.LAMBDA.append(MPP.LAMBDA.value)
+    """ Check and adapt the barriers matrix"""
+    if self.constraints_type is not None:
+      if len(self.c_ineq) != len(self.constraints_type):
+        if len(self.c_ineq) > len(self.constraints_type):
+          for _ in range(len(self.constraints_type), len(self.c_ineq)):
+            self.constraints_type.append(BARRIER_TYPES.EB)
+        else:
+          for i in range(len(self.c_ineq), len(self.constraints_type)):
+            del self.constraints_type[-1]
+    else:
+      self.constraints_type = []
+      for _ in range(len(self.c_ineq)):
+        self.constraints_type.append(BARRIER_TYPES.EB)
+    """ Check if all extreme barriers are satisfied """
+    cEB = []
+    for i in range(len(self.c_ineq)):
+      if self.constraints_type[i] == BARRIER_TYPES.EB:
+        cEB.append(self.c_ineq[i])
+    if isinstance(cEB, list) and len(cEB) >= 1:
+      hEB = sum(power(maximum(cEB, self._dtype.zero,
+                   dtype=self._dtype.dtype), 2, dtype=self._dtype.dtype))
+    else:
+      hEB = self._dtype.zero
+    if hEB <= self.hzero:
+      self.is_EB_passed = True
+    else:
+      self.is_EB_passed = False
+      self.status = DESIGN_STATUS.INFEASIBLE
+      self.__penalize__(extreme= True)
+      return
+    """ Aggregate all constraints """
     self.h = sum(power(maximum(self.c_ineq, self._dtype.zero,
                    dtype=self._dtype.dtype), 2, dtype=self._dtype.dtype))
     if np.isnan(self.h) or np.any(np.isnan(self.c_ineq)):
       self.h = inf
-    """ Penalize the objective """
-    if np.isnan(self.f) or self.h > self._dtype.zero:
-      self.__penalize__()
+      self.status = DESIGN_STATUS.ERROR
 
-  def __penalize__(self):
-    self.f = inf
+    """ Penalize relaxable constraints violation """
+    if np.isnan(self.f) or self.h > self.hzero:
+      if self.h > np.round(self.hmax, 2):
+        self.__penalize__(extreme=False)
+      self.status = DESIGN_STATUS.INFEASIBLE
+    else:
+      self.status = DESIGN_STATUS.FEASIBLE
+
+  def __penalize__(self, extreme: bool=True):
+    if len(self.c_ineq) > len(self.LAMBDA):
+      self.LAMBDA += [self.LAMBDA[-1]] * abs(len(self.LAMBDA)-len(self.c_ineq))
+    if len(self.c_ineq) < len(self.LAMBDA):
+      del self.LAMBDA[len(self.c_ineq):]
+    if extreme:
+      self.f = inf
+    else:
+      self.f = self.fobj + np.dot(self.LAMBDA, self.c_ineq) + ((1/(2*self.RHO)) * self.h if self.RHO > 0. else np.inf)
 
   def __is_duplicate__(self, other) -> bool:
     return other.signature is self._signature
@@ -675,6 +859,239 @@ class Point:
 
 
 @dataclass
+class Barrier:
+  _params: Parameters = None
+  _eval_type: int = 1
+  _h_max: float = 0
+  _best_feasible: Point = None
+  _ref: Point = None
+  _filter: List[Point] = None
+  _prefilter: int = 0
+  _rho_leaps: float = 0.1
+  _prim_poll_center: Point = None
+  _sec_poll_center: Point = None
+  _peb_changes: int = 0
+  _peb_filter_reset: int = 0
+  _peb_lop: List[Point] = None
+  _all_inserted: List[Point] = None
+  _one_eval_succ: int = None
+  _success: int = None
+
+  def __init__(self, p: Parameters, eval_type: int = 1):
+    self._h_max = p.get_h_max_0()
+    self._params = p
+    self._eval_type = eval_type
+
+
+  def insert_feasible(self, x: Point) -> SUCCESS_TYPES:
+    fx: float
+    fx_bf: float
+    if self._best_feasible is not None:
+      fx_bf = self._best_feasible.fobj
+    else:
+      self._best_feasible = copy.deepcopy(x)
+      return SUCCESS_TYPES.FS
+    fx = x.fobj
+
+    if (fx is None or fx_bf is None):
+      raise IOError("insert_feasible(): one point has no f value")
+    
+    if (fx < fx_bf):
+      self._best_feasible = copy.deepcopy(x)
+      return SUCCESS_TYPES.FS
+    
+    return SUCCESS_TYPES.US
+  
+  def filter_insertion(self, x:Point) -> bool:
+    if not x._is_EB_passed:
+      return
+    if self._filter is None:
+      self._filter = []
+      self._filter.append(x)
+      insert = True
+    else:
+      insert = False
+      it = 0
+      while it != len(self._filter):
+        if (x<self._filter[it]):
+          del self._filter[it]
+          insert = True
+          continue
+        it += 1
+      
+      if not insert:
+        insert = True
+        for it in range(len(self._filter)):
+          if self._filter[it].fobj < x.fobj:
+            insert = False
+            break
+      
+      if insert:
+        self._filter.append(x)
+    
+    return insert
+
+
+  def insert_infeasible(self, x: Point):
+    insert: bool = self.filter_insertion(x=x)
+    if not self._ref:
+      return SUCCESS_TYPES.PS
+    
+    hx = x.h
+    fx = x.fobj
+    hr = self._ref.h
+    fr = self._ref.fobj
+
+    # Failure
+    if hx > hr or (hx == hr and fx >= fr):
+      return SUCCESS_TYPES.US
+    
+    # Partial success
+    if (fx > fr):
+      return SUCCESS_TYPES.PS
+    
+    #  FULL success
+    return SUCCESS_TYPES.FS
+
+  def get_best_infeasible(self):
+    return self._filter[-1]
+  
+  def get_best_infeasible_min_viol(self):
+    return self._filter[0]
+  
+  def select_poll_center(self):
+    best_infeasible: Point = self.get_best_infeasible()
+    self._sec_poll_center = None
+    if not self._best_feasible and not best_infeasible:
+      self._prim_poll_center = None
+      return
+    if not best_infeasible:
+      self._prim_poll_center = self._best_feasible
+      return
+    
+    if not self._best_feasible:
+      self._prim_poll_center = best_infeasible
+      return
+    
+    last_poll_center: Point = Point()
+    if self._params.get_barrier_type() == BARRIER_TYPES.PB:
+      last_poll_center = self._prim_poll_center
+      if best_infeasible.fobj < (self._best_feasible.fobj-self._rho_leaps):
+        self._prim_poll_center = best_infeasible
+        self._sec_poll_center = self._best_feasible
+      else:
+        self._prim_poll_center = self._best_feasible
+        self._sec_poll_center = best_infeasible
+
+      if last_poll_center is None or self._prim_poll_center != last_poll_center:
+        self._rho_leaps += 1
+
+  def set_h_max(self, h_max):
+    self._h_max = np.round(h_max, 2)
+    if self._filter is not None:
+      if self._filter[0].h > self._h_max:
+        self._filter = None
+        return
+    if self._filter is not None:
+      it = 0
+      while it != len(self._filter):
+        if (self._filter[it].h>self._h_max):
+          del self._filter[it]
+          continue
+        it += 1
+
+  def insert(self, x: Point):
+    """/*---------------------------------------------------------*/
+      /*         insertion of an Eval_Point in the barrier       */
+      /*---------------------------------------------------------*/
+    """
+    if not x.evaluated:
+      raise RuntimeError("This points hasn't been evaluated yet and cannot be inserted to the barrier object!")
+    
+    if (x.status == DESIGN_STATUS.ERROR):
+      self._one_eval_succ = SUCCESS_TYPES.US
+    if self._all_inserted is None:
+      self._all_inserted = []
+    self._all_inserted.append(x)
+    h = x.h
+    if x.status == DESIGN_STATUS.INFEASIBLE and (not x.is_EB_passed or x.h > self._h_max):
+      self._one_eval_succ = SUCCESS_TYPES.US
+      return
+    
+    # insert_feasible or insert_infeasible:
+    self._one_eval_succ = self.insert_feasible(x) if x.status == DESIGN_STATUS.FEASIBLE else self.insert_infeasible(x)
+
+    if self._success is None or self._one_eval_succ.value > self._success.value:
+      self._success = self._one_eval_succ
+
+
+  def insert_VNS(self):
+    pass
+
+  def update_and_reset_success(self):
+    """/*------------------------------------------------------------*/
+      /*  barrier update: invoked by Evaluator_Control::eval_lop()  */
+      /*------------------------------------------------------------*/
+    """
+    if self._params.get_barrier_type() == BARRIER_TYPES.PB and self._success != SUCCESS_TYPES.US:
+      if self._success == SUCCESS_TYPES.PS:
+        if self._filter is None:
+          raise RuntimeError("filter empty after a partial success")
+        it = len(self._filter)-1
+        while True:
+          if (self._filter[it].h<self._h_max):
+            self.set_h_max(self._filter[it].h)
+            break
+          if it == 0:
+            break
+            # raise RuntimeError("could not find a filter point with h < h_max after a partial success")
+          it -= 1
+      if self._filter is not None:
+        self._ref = self.get_best_infeasible()
+      if self._ref is not None:
+        self.set_h_max(self._ref.h)
+        if self._ref.status is DESIGN_STATUS.INFEASIBLE:
+          self.insert_infeasible(self._ref)
+        
+        if self._ref.status is DESIGN_STATUS.FEASIBLE:
+          self.insert_feasible(self._ref)
+        
+        if not (self._ref.status is DESIGN_STATUS.INFEASIBLE or self._ref.status is DESIGN_STATUS.INFEASIBLE):
+          self.insert(self._ref)
+
+        
+    
+    # reset success types:
+    self._one_eval_succ = self._success = SUCCESS_TYPES.US
+
+    
+
+  def reset(self):
+    """/*---------------------------------------------------------*/
+      /*                    reset the barrier                    */
+      /*---------------------------------------------------------*/"""
+
+    self._prefilter = None
+    self._filter = None
+    # self._h_max = self._params._h_max_0()
+    self._best_feasible   = None
+    self._ref             = None
+    self._rho_leaps       = 0
+    self._poll_center     = None
+    self._sec_poll_center = None
+    
+    # if ( self._peb_changes > 0 ):
+    #     self._params.reset_PEB_changes()
+    
+    self._peb_changes      = 0
+    self._peb_filter_reset = 0
+    
+    self._peb_lop = None
+    self._all_inserted = None
+    
+    self._one_eval_succ = _success = SUCCESS_TYPES.US
+
+@dataclass
 class OrthoMesh:
   """ Mesh coarsness update class
 
@@ -688,9 +1105,9 @@ class OrthoMesh:
   :param _dtype: numpy double data type precision
 
   """
-  _delta: float = -1.0  # mesh size
-  _Delta: float = -1.0  # poll size
-  _rho: float = -1.0  # poll size to mesh size ratio
+  _delta: float = 1.0  # mesh size
+  _Delta: float = 1.0  # poll size
+  _rho: float = 1.0  # poll size to mesh size ratio
   # TODO: manage the poll size granularity for discrete variables
   # See: Audet et. al, The mesh adaptive direct search algorithm for
   # granular and discrete variable
@@ -844,6 +1261,7 @@ class Dirs2n:
   _defined: List[bool] = field(default_factory=lambda: [False])
   scaling: List[List[float]] = field(default_factory=list)
   _xmin: Point = Point()
+  _x_sc: Point = Point()
   _nb_success: int = 0
   _bb_eval: int = field(default_factory=int)
   _psize: float = field(default_factory=float)
@@ -863,6 +1281,18 @@ class Dirs2n:
   _terminate: bool = False
   _bb_output: List[float] = field(default_factory=list)
   Failure_stop: bool = None
+  RHO: float = MPP.RHO
+  LAMBDA: List[float] = None
+  hmax: float = 1.
+
+  @property
+  def x_sc(self) -> Point:
+    return self._x_sc
+  
+  @x_sc.setter
+  def x_sc(self, value: Point):
+    self._x_sc = value
+  
 
   @property
   def bb_output(self) -> List[float]:
@@ -1046,7 +1476,7 @@ class Dirs2n:
   def ran(self):
     return np.random.random(self._n).astype(dtype=self._dtype.dtype)
 
-  def create_housholder(self, is_rich: bool, domain: List[int] = None) -> np.ndarray:
+  def create_housholder(self, is_rich: bool, domain: List[int] = None, is_oneDir: bool=False) -> np.ndarray:
     """Create householder matrix
 
     :param is_rich:  A flag that indicates if the rich direction option is enabled
@@ -1091,12 +1521,15 @@ class Dirs2n:
           if domain[j] != VAR_TYPE.CONTINUOUS:
             hhm[i][j] = int(np.floor(-1 + 2**self.mesh.msize))
     
+    if is_oneDir:
+      return hhm
+    else:
+      hhm = np.vstack((hhm, -hhm))
 
-    hhm = np.vstack((hhm, -hhm))
 
     return hhm
 
-  def create_poll_set(self, hhm: np.ndarray, ub: List[float], lb: List[float], it: int, var_type: List, var_sets: Dict, var_link: List[str]):
+  def create_poll_set(self, hhm: np.ndarray, ub: List[float], lb: List[float], it: int, var_type: List, var_sets: Dict, var_link: List[str], c_types: List[BARRIER_TYPES]=None, is_prim: bool = True):
     """Create the poll directions
 
     :param hhm: Householder matrix
@@ -1108,8 +1541,11 @@ class Dirs2n:
     :param it: iteration
     :type it: int
     """
-    del self.poll_dirs
-    temp = np.add(hhm, np.array(self.xmin.coordinates), dtype=self._dtype.dtype)
+    if is_prim:
+      del self.poll_dirs
+      temp = np.add(hhm, np.array(self.xmin.coordinates), dtype=self._dtype.dtype)
+    else:
+      temp = np.add(hhm, np.array(self.x_sc.coordinates), dtype=self._dtype.dtype)
     # np.random.seed(self._seed)
     temp = np.random.permutation(temp)
     temp = np.minimum(temp, ub, dtype=self._dtype.dtype)
@@ -1117,6 +1553,7 @@ class Dirs2n:
 
     for k in range(2 * self.dim):
       tmp = Point()
+      tmp.constraints_type = copy.deepcopy([xb for xb in c_types] if isinstance(c_types, list) else [c_types])
       tmp.sets = copy.deepcopy(var_sets)
       tmp.var_type = copy.deepcopy(var_type)
       tmp.var_link = copy.deepcopy(var_link)
@@ -1144,10 +1581,33 @@ class Dirs2n:
         temp.append(s_array[k][j])
       self.scaling.append(temp)
       del temp
+  
+  def gauss_perturbation(self, p: Point, npts: int = 5) -> List[Point]:
+    lb = self.lb
+    ub = self.ub
+    # np.random.seed(self.seed)
+    cs = np.zeros((npts, p.n_dimensions))
+    pts: List[Point] = [0] * npts
+    mp = 1.
+    for k in range(p.n_dimensions):
+      cs[:, k] = np.random.normal(loc=p.coordinates[k], scale=self.mesh.msize, size=(npts,))
+      for i in range(npts):
+        if cs[i, k] < lb[k]:
+          cs[i, k] = lb[k]
+        if cs[i, k] > ub[k]:
+          cs[i, k] = ub[k]
+    
+    for i in range(npts):
+      pts[i] = Point()
+      pts[i].coordinates = copy.deepcopy(cs[i, :])
+    
+    return pts
+
 
   def eval_poll_point(self, index: int):
     """ Evaluate the point i on the poll set """
     """ Set the dynamic index for this point """
+    tic = time.perf_counter()
     self.point_index = index
     """ Initialize stopping and success conditions"""
     stop: bool = False
@@ -1160,13 +1620,24 @@ class Dirs2n:
 
     """ Check the cache memory; check if the trial point
      is a duplicate (it has already been evaluated) """
-    if (
-        self.check_cache
-        and self.hashtable.size > 0
-        and self.hashtable.is_duplicate(xtry)
-    ):
+    unique_p_trials: int = 0
+    is_duplicate: bool = (self.check_cache and self.hashtable.size > 0 and self.hashtable.is_duplicate(xtry))
+    while is_duplicate and unique_p_trials < 5:
       if self.display:
-        print("Cache hit ...")
+        print(f'Cache hit. Trial# {unique_p_trials}: Looking for a non-duplicate in the vicinity of the duplicate point ...')
+      xtries: List[Point] = self.gauss_perturbation(p=xtry, npts=len(self.poll_dirs)*2)
+      for tr in range(len(xtries)):
+        is_duplicate = self.hashtable.is_duplicate(xtries[tr])
+        if is_duplicate:
+           continue 
+        else:
+          xtry = copy.deepcopy(xtries[tr])
+          break
+      unique_p_trials += 1
+
+    if (is_duplicate):
+      if self.display:
+        print("Cache hit ... Failed to find a non-duplicate alternative.")
       stop = True
       bb_eval = copy.deepcopy(self.bb_eval)
       psize = copy.deepcopy(self.mesh.psize)
@@ -1186,12 +1657,37 @@ class Dirs2n:
 
     """
       Evaluate the poll point:
+        - Set multipliers and penalty
         - Evaluate objective function
         - Evaluate constraint functions (can be an empty vector)
         - Aggregate constraints
         - Penalize the objective (extreme barrier)
     """
+    xtry.LAMBDA = copy.deepcopy(self.LAMBDA)
+    xtry.RHO = copy.deepcopy(self.RHO)
+    xtry.hmax = copy.deepcopy(self.hmax)
     xtry.__eval__(self.bb_output)
+    toc = time.perf_counter()
+    xtry.Eval_time = (toc - tic)
+
+    """ Update multipliers and penalty """
+    if self.LAMBDA == None:
+      self.LAMBDA = self.xmin.LAMBDA
+    if len(xtry.c_ineq) > len(self.LAMBDA):
+      self.LAMBDA += [self.LAMBDA[-1]] * abs(len(self.LAMBDA)-len(xtry.c_ineq))
+    if len(xtry.c_ineq) < len(self.LAMBDA):
+      del self.LAMBDA[len(xtry.c_ineq):]
+    for i in range(len(xtry.c_ineq)):
+      if self.RHO == 0.:
+        self.RHO = 0.001
+      self.LAMBDA[i] = copy.deepcopy(max(self.dtype.zero, self.LAMBDA[i] + (1/self.RHO)*xtry.c_ineq[i]))
+    
+    if xtry.status == DESIGN_STATUS.FEASIBLE:
+      self.RHO *= copy.deepcopy(0.5)
+
+    # if xtry < self.xmin:
+    #   self.success = True
+    #   success = True
 
     """ Add to the cache memory """
     if self.store_cache:
@@ -1200,7 +1696,7 @@ class Dirs2n:
     if self.save_results or self.display:
       self.bb_eval = self.bb_handle.bb_eval
       self.psize = copy.deepcopy(self.mesh.psize)
-      psize = copy.deepcopy(self.mesh.psize)
+    psize = copy.deepcopy(self.mesh.psize)
 
 
 
@@ -1215,12 +1711,18 @@ class Dirs2n:
 
     return [stop, index, self.bb_handle.bb_eval, success, psize, xtry]
 
-  def master_updates(self, x: List[Point], peval):
+  def master_updates(self, x: List[Point], peval, save_all_best: bool = False, save_all:bool = False):
     if peval >= self.eval_budget:
       self.terminate = True
+    x_post: List[Point] = []
     for xtry in x:
       """ Check success conditions """
-      if xtry < self.xmin:
+      is_infeas_dom: bool = (self.xmin.status == xtry.status == DESIGN_STATUS.INFEASIBLE and (xtry.h < self.xmin.h and xtry.h <= xtry.hmax and xtry.fobj <= self.xmin.fobj) )
+      is_feas_dom: bool = (self.xmin.status == xtry.status == DESIGN_STATUS.FEASIBLE and xtry < self.xmin)
+      is_infea_improving: bool = (self.xmin.status == DESIGN_STATUS.FEASIBLE and xtry.status == DESIGN_STATUS.INFEASIBLE and (xtry.fobj < self.xmin.fobj and xtry.h <= xtry.hmax))
+      is_feas_improving: bool = (self.xmin.status == DESIGN_STATUS.INFEASIBLE and xtry.status == DESIGN_STATUS.FEASIBLE and (xtry.fobj < self.xmin.fobj))
+      success = False
+      if (xtry.is_EB_passed and (is_infeas_dom or is_feas_dom or is_infea_improving or is_feas_improving)):
         self.success = True
         success = True  # <- This redundant variable is important
         # for managing concurrent parallel execution
@@ -1238,9 +1740,13 @@ class Dirs2n:
             print(f"Success: fmin = {self.xmin.f:.18f} (hmin = {self.xmin.h:.18})")
 
         self.mesh.psize_success = copy.deepcopy(self.mesh.psize)
-        self.mesh.psize_max = copy.deepcopy(maximum(self.mesh.psize,
+        self.mesh.psize_max = copy.deepcopy(np.maximum(self.mesh.psize,
                               self.mesh.psize_max,
                               dtype=self._dtype.dtype))
+      if (save_all_best and success) or (save_all):
+        x_post.append(xtry)
+
+    return x_post
 
 
 
@@ -1259,12 +1765,26 @@ class PreMADS:
      their respective dictionaries from the input JSON file """
     options = Options(**self.data["options"])
     param = Parameters(**self.data["param"])
+    B = Barrier(param)
     ev = Evaluator(**self.data["evaluator"])
     ev.dtype.precision = options.precision
     if param.constants != None:
       ev.constants = copy.deepcopy(param.constants)
     
-    iteration: int = 0
+    if param.constraints_type is not None and isinstance(param.constraints_type, list):
+      for i in range(len(param.constraints_type)):
+        if param.constraints_type[i] == BARRIER_TYPES.PB.name or param.constraints_type[i] == BARRIER_TYPES.PB:
+          param.constraints_type[i] = BARRIER_TYPES.PB
+        elif param.constraints_type[i] == BARRIER_TYPES.RB.name or param.constraints_type[i] == BARRIER_TYPES.RB:
+          param.constraints_type[i] = BARRIER_TYPES.RB
+        elif param.constraints_type[i] == BARRIER_TYPES.PEB.name or param.constraints_type[i] == BARRIER_TYPES.PEB:
+          param.constraints_type[i] = BARRIER_TYPES.PEB
+        else:
+          param.constraints_type[i] = BARRIER_TYPES.EB
+    elif param.constraints_type is not None:
+      param.constraints_type = BARRIER_TYPES(param.constraints_type)
+  
+    iteration: int =  0
     """ 2- Initialize iteration number and construct a point instant for the starting point """
     extend = options.extend is not None and isinstance(options.extend, Dirs2n)
     x_start = Point()
@@ -1296,11 +1816,16 @@ class PreMADS:
     """ 6- Initialize blackbox handling subclass by copying
      the evaluator 'ev' instance to the poll object"""
     poll.bb_handle = ev
+    poll.bb_handle.bb_eval = ev.bb_eval
     """ 7- Evaluate the starting point """
     if options.display:
       print(" Evaluation of the starting points")
     x_start.coordinates = param.baseline
     x_start.sets = param.var_sets
+    if param.constraints_type is not None and isinstance(param.constraints_type, list):
+      x_start.constraints_type = [xb for xb in param.constraints_type]
+    elif param.constraints_type is not None:
+      x_start.constraints_type = [param.constraints_type]
     """ 8- Set the variables type """
     if param.var_type is not None:
       c= 0
@@ -1354,10 +1879,21 @@ class PreMADS:
       poll.bb_output = poll.bb_handle.eval(p)
     else:
       poll.bb_output = poll.bb_handle.eval(x_start.coordinates)
-
+    x_start.hmax = B._h_max
+    x_start.RHO = param.RHO
+    if param.LAMBDA is None:
+      param.LAMBDA = [0] * len(x_start.c_ineq)
+    if not isinstance(param.LAMBDA, list):
+      param.LAMBDA = [param.LAMBDA]
+    if len(x_start.c_ineq) > len(param.LAMBDA):
+      param.LAMBDA += [param.LAMBDA[-1]] * abs(len(param.LAMBDA)-len(x_start.c_ineq))
+    if len(x_start.c_ineq) < len(param.LAMBDA):
+      del param.LAMBDA[len(x_start.c_ineq):]
+    x_start.LAMBDA = param.LAMBDA
     x_start.__eval__(poll.bb_output)
     """ 9- Copy the starting point object to the poll's  minimizer subclass """
-    poll.xmin = copy.deepcopy(x_start)
+    if not extend:
+      poll.xmin = copy.deepcopy(x_start)
     """ 10- Hold the starting point in the poll
      directions subclass and define problem parameters"""
     poll.poll_dirs.append(x_start)
@@ -1369,12 +1905,19 @@ class PreMADS:
      found and check if the starting minimizer performs better
     than the worst (f = inf) """
     poll.nb_success = 0
-    if poll.xmin < Point():
+    if not extend and poll.xmin < Point():
       poll.mesh.psize_success = poll.mesh.psize
       poll.mesh.psize_max = maximum(poll.mesh.psize,
                       poll.mesh.psize_max,
                       dtype=poll.dtype.dtype)
       poll.poll_dirs = [poll.xmin]
+    elif extend and x_start < poll.xmin:
+      poll.xmin = copy.deepcopy(x_start)
+      poll.mesh.psize = np.multiply(poll.mesh.psize, 2, dtype=poll.dtype.dtype)
+    elif extend and x_start >= poll.xmin:
+      poll.mesh.psize = np.divide(poll.mesh.psize, 2, dtype=poll.dtype.dtype)
+
+
     """ 11- Construct the results postprocessor class object 'post' """
     post = PostMADS(x_incumbent=[poll.xmin], xmin=poll.xmin, poll_dirs=[poll.xmin])
     post.psize.append(poll.mesh.psize)
@@ -1390,12 +1933,12 @@ class PreMADS:
     if options.store_cache:
       poll.hashtable.hash_id = x_start
     """ 13- Initialize the output results file object  """
-    out = Output(file_path=param.post_dir, vnames=param.var_names)
+    out = Output(file_path=param.post_dir, vnames=param.var_names, pname=param.name, runfolder=f'{param.name}_run')
     if options.display:
       print("End of the evaluation of the starting points")
     iteration += 1
 
-    return iteration, x_start, poll, options, param, post, out
+    return iteration, x_start, poll, options, param, post, out, B
 
 
 @dataclass
@@ -1406,27 +1949,42 @@ class Output:
   vnames: List[str]
   file_writer: Any = field(init=False)
   field_names: List[str] = field(default_factory=list)
+  pname: str = "MADS0"
+  runfolder: str = "undefined"
+  replace: bool = True
+  stepName: str = "Poll"
 
   def __post_init__(self):
     if not os.path.exists(self.file_path):
       os.mkdir(self.file_path)
-    self.field_names = ['Iter no.', 'Eval no.', 'poll_size', 'hmin', 'fmin']
+    self.field_names = [f'{"Runtime (Sec)".rjust(25)}', f'{"Iteration".rjust(25)}', f'{"Evaluation #".rjust(25)}', f'{"Step:".rjust(25)}', f'{"Source".rjust(25)}', f'{"Model_name".rjust(25)}', f'{"Delta".rjust(25)}', f'{"Status".rjust(25)}', f'{"phi".rjust(25)}', f'{"fobj".rjust(25)}', f'{"max(c_in)".rjust(25)}', f'{"Penalty_parameter".rjust(25)}', f'{"Multipliers".rjust(25)}', f'{"hmax".rjust(25)}']
     for k in self.vnames:
-      self.field_names.append(k)
-    with open(os.path.abspath(self.file_path + '/MADS.csv'), 'w', newline='') as f:
-      self.file_writer = csv.DictWriter(f, fieldnames=self.field_names)
-      self.file_writer.writeheader()
+      self.field_names.append(f'{f"{k}".rjust(25)}')
+    sp = os.path.join(self.file_path, self.runfolder)
+    if not os.path.exists(sp):
+      os.makedirs(sp)
+    if self.replace:
+      with open(os.path.abspath( sp + f'/{self.pname}.csv'), 'w', newline='') as f:
+        self.file_writer = csv.DictWriter(f, fieldnames=self.field_names)
+        self.file_writer.writeheader()
 
-  def add_row(self, iterno: int,
+  def add_row(self, eval_time: int, iterno: int,
         evalno: int,
+        source: str,
+        Mname: str,
         poll_size: float,
-        h: float, f: float,
-        x: List[float]):
-    row = {'Iter no.': iterno, 'Eval no.': evalno,
-         'poll_size': poll_size, 'hmin': h, 'fmin': f}
-    for k in range(5, len(self.field_names)):
-      row[self.field_names[k]] = x[k - 5]
-    with open(os.path.abspath(os.path.join(self.file_path, 'MADS.csv')),
+        status: str,
+        fobj: float,
+        h: float, f: float, rho: float, L: List[float], hmax: float,
+        x: List[float], stepName: str):
+    row = {f'{"Runtime (Sec)".rjust(25)}': f'{f"{eval_time}".rjust(25)}', f'{"Iteration".rjust(25)}': f'{f"{iterno}".rjust(25)}', f'{"Evaluation #".rjust(25)}': f'{f"{evalno}".rjust(25)}', f'{"Step:".rjust(25)}': f'{f"{stepName}".rjust(25)}', f'{"Source".rjust(25)}': f'{f"{source}".rjust(25)}', f'{"Model_name".rjust(25)}': f'{f"{Mname}".rjust(25)}', f'{"Delta".rjust(25)}': f'{f"{poll_size}".rjust(25)}', f'{"Status".rjust(25)}': f'{f"{status}".rjust(25)}', f'{"phi".rjust(25)}': f'{f"{f}".rjust(25)}', f'{"fobj".rjust(25)}': f'{f"{fobj}".rjust(25)}', f'{"max(c_in)".rjust(25)}': f'{f"{h}".rjust(25)}', f'{"Penalty_parameter".rjust(25)}': f'{f"{rho}".rjust(25)}', f'{"Multipliers".rjust(25)}': f'{f"{max(L)}".rjust(25)}', f'{"hmax".rjust(25)}': f'{f"{hmax}".rjust(25)}'}
+    # row = {'Iter no.': iterno, 'Eval no.': evalno,
+    #      'poll_size': poll_size, 'hmin': h, 'fmin': f}
+    ss = 0
+    for k in range(14, len(self.field_names)):
+      row[self.field_names[k]] = f'{f"{x[ss]}".rjust(25)}'
+      ss += 1
+    with open(os.path.abspath(os.path.join(os.path.join(self.file_path, self.runfolder), f'{self.pname}.csv')),
           'a', newline='') as File:
       self.file_writer = csv.DictWriter(File, fieldnames=self.field_names)
       self.file_writer.writerow(row)
@@ -1443,17 +2001,26 @@ class PostMADS:
   iter: List[int] = field(default_factory=list)
   bb_eval: List[int] = field(default_factory=list)
   psize: List[float] = field(default_factory=list)
-
+  step_name: List[str] = None
   def output_results(self, out: Output):
     """ Create a results file from the saved cache"""
     counter = 0
     for p in self.poll_dirs:
-      out.add_row(iterno=self.iter[counter],
-            evalno=self.bb_eval[counter], poll_size=self.psize[counter],
-            h=p.h,
-            f=p.f,
-            x=p.coordinates)
-      counter += 1
+      if p.evaluated and counter < len(self.iter):
+        out.add_row(eval_time= p.Eval_time,
+              iterno=self.iter[counter],
+              evalno=self.bb_eval[counter], poll_size=self.psize[counter],
+              source=p.source,
+              Mname=p.Model,
+              f=p.f,
+              status=p.status.name,
+              h=max(p.c_ineq),
+              fobj=p.fobj,
+              rho=p.RHO,
+              L=p.LAMBDA,
+              x=p.coordinates,
+              hmax=p.hmax, stepName="Poll-2n" if self.step_name is None else self.step_name[counter])
+        counter += 1
 
   def output_coordinates(self, out: Output):
     """ Save spinners in a json file """
@@ -1472,7 +2039,7 @@ class PostMADS:
   def __str__(self):
     return f'{"iteration= "} {self.iter[-1]}, {"bbeval= "} ' \
          f'{self.bb_eval[-1]}, {"psize= "} {self.psize[-1]}, ' \
-         f'{"hmin = "} 'f'{self.xmin.h}, {"fmin = "} {self.xmin.f}'
+         f'{"hmin = "} 'f'{self.xmin.h}, {"status:"} {self.xmin.status.name} {", fmin = "} {self.xmin.f}'
 
   def __add_to_cache__(self, x: Point):
     self.x_incumbent.append(x)
@@ -1507,7 +2074,10 @@ def main(*args) -> Dict[str, Any]:
   """ Run preprocessor for the setup of
    the optimization problem and for the initialization
   of optimization process """
-  iteration, xmin, poll, options, param, post, out = PreMADS(data).initialize_from_dict()
+  iteration, xmin, poll, options, param, post, out, B = PreMADS(data).initialize_from_dict()
+  out.stepName = "Poll"
+  
+
 
   """ Set the random seed for results reproducibility """
   if len(args) < 4:
@@ -1518,13 +2088,33 @@ def main(*args) -> Dict[str, Any]:
   """ Start the count down for calculating the runtime indicator """
   tic = time.perf_counter()
   peval = 0
+  LAMBDA_k = xmin.LAMBDA
+  RHO_k = xmin.RHO
   while True:
     poll.mesh.update()
     """ Create the set of poll directions """
     hhm = poll.create_housholder(options.rich_direction, domain=xmin.var_type)
+    poll.lb = param.lb
+    poll.ub = param.ub
+    if B is not None:
+      if B._filter is not None:
+        B.select_poll_center()
+        B.update_and_reset_success()
+      else:
+        B.insert(xmin)
+    poll.hmax = B._h_max
     poll.create_poll_set(hhm=hhm,
                ub=param.ub,
-               lb=param.lb, it=iteration, var_type=xmin.var_type, var_sets=xmin.sets, var_link = xmin.var_link)
+               lb=param.lb, it=iteration, var_type=xmin.var_type, var_sets=xmin.sets, var_link = xmin.var_link, c_types=param.constraints_type, is_prim=True)
+    
+    if B._sec_poll_center is not None and B._sec_poll_center.evaluated:
+      poll.x_sc = B._sec_poll_center
+      poll.create_poll_set(hhm=hhm,
+               ub=param.ub,
+               lb=param.lb, it=iteration, var_type=B._sec_poll_center.var_type, var_sets=B._sec_poll_center.sets, var_link = B._sec_poll_center.var_link, c_types=param.constraints_type, is_prim=False)
+    
+    poll.LAMBDA = LAMBDA_k
+    poll.RHO = RHO_k
 
     """ Save current poll directions and incumbent solution
      so they can be saved later in the post dir """
@@ -1548,10 +2138,6 @@ def main(*args) -> Dict[str, Any]:
           post.bb_eval.append(poll.bb_handle.bb_eval)
           post.iter.append(iteration)
           post.psize.append(poll.mesh.psize)
-          if options.save_results:
-            if options.save_all_best and not f[3]:
-              continue
-            post.poll_dirs.append(poll.poll_dirs[it])
         else:
           continue
 
@@ -1566,23 +2152,34 @@ def main(*args) -> Dict[str, Any]:
           #     executor.shutdown(wait=False)
           # else:
           if options.save_results or options.display:
-            if options.save_all_best and not f.result()[3]:
-              continue
             peval = peval +1
             poll.bb_eval = peval
             post.bb_eval.append(peval)
             post.iter.append(iteration)
-            post.poll_dirs.append(poll.poll_dirs[f.result()[1]])
+            # post.poll_dirs.append(poll.poll_dirs[f.result()[1]])
             post.psize.append(f.result()[4])
           xt.append(f.result()[-1])
 
-    poll.master_updates(xt, peval)
+    xpost: List[Point] = poll.master_updates(xt, peval, save_all_best=options.save_all_best, save_all=options.save_results)
+    if options.save_results:
+      for i in range(len(xpost)):
+        post.poll_dirs.append(xpost[i])
+    for xv in xt:
+      if xv.evaluated:
+        B.insert(xv)
 
     """ Update the xmin in post"""
     post.xmin = copy.deepcopy(poll.xmin)
 
     """ Updates """
-    if poll.success:
+    pev = 0.
+    for p in poll.poll_dirs:
+      if p.evaluated:
+        pev += 1
+    # if pev != poll.poll_dirs and not poll.success:
+    #   poll.seed += 1
+    goToSearch: bool = (pev == 0 and poll.Failure_stop is not None and poll.Failure_stop)
+    if poll.success and not goToSearch:
       poll.mesh.psize = np.multiply(poll.mesh.psize, 2, dtype=poll.dtype.dtype)
     else:
       poll.mesh.psize = np.divide(poll.mesh.psize, 2, dtype=poll.dtype.dtype)
@@ -1590,11 +2187,15 @@ def main(*args) -> Dict[str, Any]:
     if options.display:
       print(post)
     
-    Failure_check = poll.Failure_stop is not None and poll.Failure_stop and not poll.success
-
-    if (Failure_check and poll.bb_eval >= options.budget) or (abs(poll.mesh.psize) < options.tol or poll.bb_eval >= options.budget or poll.terminate):
+    LAMBDA_k = poll.LAMBDA
+    RHO_k = poll.RHO
+    
+    Failure_check = iteration > 0 and poll.Failure_stop is not None and poll.Failure_stop and (not poll.success or goToSearch)
+    
+    if (Failure_check or poll.bb_eval >= options.budget) or (abs(poll.mesh.psize) < options.tol or poll.bb_eval >= options.budget or poll.terminate):
       break
     iteration += 1
+    
 
   toc = time.perf_counter()
 
