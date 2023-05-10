@@ -18,7 +18,11 @@
         "S1": [2,5,7,8,10,15]
       },
       "scaling": 10,
-      "post_dir": "./tests/bm/constrained/post"
+      "constraints_type": ["PB", "PB", "PB", "PB"],
+      "LAMBDA": [5, 5, 5, 5],
+      "RHO": 1,
+      "post_dir": "./tests/bm/constrained/post",
+      "h_max": 10
     },
 
   "options":
@@ -27,7 +31,7 @@
       "budget": 100000,
       "tol": 1e-12,
       "psize_init": 1.0,
-      "display": true,
+      "display": false,
       "opportunistic": false,
       "check_cache": true,
       "store_cache": true,
@@ -40,10 +44,10 @@
       "parallel_mode": false
     },
 
-    "sampling" : {
-      "method": 2,
-      "ns": 60,
-      "visualize": false,
-      "criterion": "ExactSE"
+    "search": {
+      "type": "VNS",
+      "s_method": "LH",
+      "ns": 100,
+      "visualize": false
     }
 }
