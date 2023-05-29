@@ -324,7 +324,7 @@ class Evaluator:
           inputs = str(sig).replace("(", "").replace(")", "").replace(" ","").split(',')
           # Check if user constants list is defined and if the number of input args of the callable matches what OMADS expects 
           if self.constants is None:
-            if (npar == 2 or (npar> 0 and npar <= 3 and ('*argv' in inputs))):
+            if (npar == 1 or (npar> 0 and npar <= 3 and ('*argv' in inputs))):
               try:
                 f_eval = self.blackbox(values)
               except:
@@ -1550,8 +1550,12 @@ class Dirs2n:
     temp = np.random.permutation(temp)
     temp = np.minimum(temp, ub, dtype=self._dtype.dtype)
     temp = np.maximum(temp, lb, dtype=self._dtype.dtype)
-
-    for k in range(2 * self.dim):
+    temp = np.unique(temp, axis=0)
+    if isinstance(temp, list) or isinstance(temp, np.ndarray):
+      ndirs = len(temp) if isinstance(temp[0], list) or isinstance(temp[0], np.ndarray) else 1
+    else:
+      ndirs = 0
+    for k in range(ndirs):
       tmp = Point()
       tmp.constraints_type = copy.deepcopy([xb for xb in c_types] if isinstance(c_types, list) else [c_types])
       tmp.sets = copy.deepcopy(var_sets)
@@ -1590,7 +1594,12 @@ class Dirs2n:
     pts: List[Point] = [0] * npts
     mp = 1.
     for k in range(p.n_dimensions):
-      cs[:, k] = np.random.normal(loc=p.coordinates[k], scale=self.mesh.msize, size=(npts,))
+      if p.var_type[k] == VAR_TYPE.CONTINUOUS:
+        cs[:, k] = np.random.normal(loc=p.coordinates[k], scale=self.mesh.msize, size=(npts,))
+      elif p.var_type[k] == VAR_TYPE.INTEGER or p.var_type[k] == VAR_TYPE.CATEGORICAL or p.var_type[k] == VAR_TYPE.DISCRETE:
+        cs[:, k] = np.random.randint(low=lb[k], high=ub[k], size=(npts,))
+        for i in range(npts):
+          cs[i, k] = int(cs[i, k])
       for i in range(npts):
         if cs[i, k] < lb[k]:
           cs[i, k] = lb[k]
@@ -1598,7 +1607,7 @@ class Dirs2n:
           cs[i, k] = ub[k]
     
     for i in range(npts):
-      pts[i] = Point()
+      pts[i] = p
       pts[i].coordinates = copy.deepcopy(cs[i, :])
     
     return pts
@@ -1625,6 +1634,8 @@ class Dirs2n:
     while is_duplicate and unique_p_trials < 5:
       if self.display:
         print(f'Cache hit. Trial# {unique_p_trials}: Looking for a non-duplicate in the vicinity of the duplicate point ...')
+      if xtry.var_type is None:
+        xtry.var_type = self.xmin.var_type
       xtries: List[Point] = self.gauss_perturbation(p=xtry, npts=len(self.poll_dirs)*2)
       for tr in range(len(xtries)):
         is_duplicate = self.hashtable.is_duplicate(xtries[tr])
@@ -1759,7 +1770,7 @@ class PreMADS:
   """ Preprocessor for setting up optimization settings and parameters"""
   data: Dict[Any, Any]
 
-  def initialize_from_dict(self):
+  def initialize_from_dict(self, xs: Point):
     """ MADS initialization """
     """ 1- Construct the following classes by unpacking
      their respective dictionaries from the input JSON file """
@@ -1787,7 +1798,12 @@ class PreMADS:
     iteration: int =  0
     """ 2- Initialize iteration number and construct a point instant for the starting point """
     extend = options.extend is not None and isinstance(options.extend, Dirs2n)
-    x_start = Point()
+    is_xs = False
+    if xs is None or not isinstance(xs, Point) or not xs.evaluated:
+      x_start = Point()
+    else:
+      x_start = xs
+      is_xs = True
 
     if not extend:
       """ 3- Construct an instant for the poll 2n orthogonal directions class object """
@@ -1820,12 +1836,13 @@ class PreMADS:
     """ 7- Evaluate the starting point """
     if options.display:
       print(" Evaluation of the starting points")
-    x_start.coordinates = param.baseline
-    x_start.sets = param.var_sets
-    if param.constraints_type is not None and isinstance(param.constraints_type, list):
-      x_start.constraints_type = [xb for xb in param.constraints_type]
-    elif param.constraints_type is not None:
-      x_start.constraints_type = [param.constraints_type]
+    if not is_xs:
+      x_start.coordinates = param.baseline
+      x_start.sets = param.var_sets
+      if param.constraints_type is not None and isinstance(param.constraints_type, list):
+        x_start.constraints_type = [xb for xb in param.constraints_type]
+      elif param.constraints_type is not None:
+        x_start.constraints_type = [param.constraints_type]
     """ 8- Set the variables type """
     if param.var_type is not None:
       c= 0
@@ -1876,9 +1893,11 @@ class PreMADS:
           p.append(x_start.sets[x_start.var_link[i]][int(x_start.coordinates[i])])
         else:
           p.append(x_start.coordinates[i])
-      poll.bb_output = poll.bb_handle.eval(p)
+      if not is_xs:
+        poll.bb_output = poll.bb_handle.eval(p)
     else:
-      poll.bb_output = poll.bb_handle.eval(x_start.coordinates)
+       if not is_xs:
+        poll.bb_output = poll.bb_handle.eval(x_start.coordinates)
     x_start.hmax = B._h_max
     x_start.RHO = param.RHO
     if param.LAMBDA is None:
@@ -1890,7 +1909,8 @@ class PreMADS:
     if len(x_start.c_ineq) < len(param.LAMBDA):
       del param.LAMBDA[len(x_start.c_ineq):]
     x_start.LAMBDA = param.LAMBDA
-    x_start.__eval__(poll.bb_output)
+    if not is_xs:
+      x_start.__eval__(poll.bb_output)
     """ 9- Copy the starting point object to the poll's  minimizer subclass """
     if not extend:
       poll.xmin = copy.deepcopy(x_start)

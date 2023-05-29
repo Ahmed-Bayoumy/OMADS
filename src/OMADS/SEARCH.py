@@ -13,6 +13,7 @@ import copy
 from typing import List, Dict, Any, Callable, Protocol, Optional
 import concurrent.futures
 from matplotlib import pyplot as plt
+import random
 
 class SAMPLING_METHOD(Enum):
   FULLFACTORIAL: int = auto()
@@ -98,7 +99,18 @@ class VNS(VNS_data):
     cs = np.zeros((self._ns_dist[0], mean.n_dimensions))
     # pts: List[Point] = [Point()] * self._ns_dist[0]
     for i in range(mean.n_dimensions):
-      cs[:, i] = np.random.normal(loc=mean.coordinates[i], scale=self._rho, size=(self._ns_dist[0],))
+      if mean.var_type is not None:
+        if mean.var_type[i] == VAR_TYPE.CONTINUOUS:
+          cs[:, i] = np.random.normal(loc=mean.coordinates[i], scale=self._rho, size=(self._ns_dist[0],))
+        elif mean.var_type[i] == VAR_TYPE.INTEGER or mean.var_type[i] == VAR_TYPE.DISCRETE:
+          cs[:, i] = np.random.randint(low=int(mean.coordinates[i]-self._rho), high=int(np.ceil(mean.coordinates[i]+(self._rho if self._rho>0 else 0.001))), size=(self._ns_dist[0],))
+        elif mean.var_type[i] == VAR_TYPE.CATEGORICAL:
+          stemp = np.linspace(self.params.lb[i], self.params.ub[i], int(self.params.ub[i]-self.params.lb[i])+1).tolist()
+          cs[:len(stemp), i] = random.sample(stemp, len(stemp))
+        else:
+          cs[:, i] = [mean.coordinates[i]]*self._ns_dist[0]
+      else:
+        cs[:, i] = np.random.normal(loc=mean.coordinates[i], scale=self._rho, size=(self._ns_dist[0],))
     
     return cs
 
@@ -114,7 +126,15 @@ class VNS(VNS_data):
       delta = 0.
       if val[i]<=0. or 0 < val[i] <= 0.5:
         delta = 5- val[i]
-      cs[:, i] = np.random.gamma(shape=(mean.coordinates[i]+delta)/self._rho, scale=self._rho, size=(self._ns_dist[1],))-delta
+      if mean.var_type is not None:
+        if mean.var_type[i] == VAR_TYPE.CONTINUOUS:
+          cs[:, i] = np.random.gamma(shape=(mean.coordinates[i]+delta)/self._rho, scale=self._rho, size=(self._ns_dist[1],))-delta
+        elif mean.var_type[i] == VAR_TYPE.INTEGER or mean.var_type[i] == VAR_TYPE.CATEGORICAL or mean.var_type[i] == VAR_TYPE.DISCRETE:
+          cs[:, i] = np.random.randint(low=int(mean.coordinates[i]-self._rho), high=int(np.ceil(mean.coordinates[i]+(self._rho if self._rho>0 else 0.001))), size=(self._ns_dist[1],))
+        else:
+          cs[:, i] = [mean.coordinates[i]]*self._ns_dist[1]
+      else:
+        cs[:, i] = np.random.gamma(shape=(mean.coordinates[i]+delta)/self._rho, scale=self._rho, size=(self._ns_dist[1],))-delta
     
     return cs
 
@@ -125,7 +145,16 @@ class VNS(VNS_data):
     cs = np.zeros((self._ns_dist[2], mean.n_dimensions))
     # pts: List[Point] = [Point()] * self._ns_dist[2]
     for i in range(mean.n_dimensions):
-      cs[:, i] = (np.random.exponential(scale=self._rho, size=self._ns_dist[2]))+mean.coordinates[i]
+      if mean.var_type is not None:
+        if mean.var_type[i] == VAR_TYPE.CONTINUOUS:
+          cs[:, i] = (np.random.exponential(scale=self._rho, size=self._ns_dist[2]))+mean.coordinates[i]
+        elif mean.var_type[i] == VAR_TYPE.INTEGER or mean.var_type[i] == VAR_TYPE.CATEGORICAL or mean.var_type[i] == VAR_TYPE.DISCRETE:
+          cs[:, i] = np.random.randint(low=int(mean.coordinates[i]-self._rho), high=int(np.ceil(mean.coordinates[i]+(self._rho if self._rho>0 else 0.001))), size=(self._ns_dist[2],))
+        else:
+          cs[:, i] = [mean.coordinates[i]]*self._ns_dist[2]
+      else:
+        cs[:, i] = (np.random.exponential(scale=self._rho, size=self._ns_dist[2]))+mean.coordinates[i]
+
     
     # for i in range(self._ns_dist[2]):
     #   pts[i].coordinates = copy.deepcopy(cs[i, :])
@@ -143,7 +172,15 @@ class VNS(VNS_data):
       delta = 0.
       if val[i]<=0. or 0 < val[i] <= 0.5:
         delta = 5- val[i]
-      cs[:, i] = (np.random.poisson(lam=(mean.coordinates[i]+delta), size=(self._ns_dist[3],))-delta)*self._rho
+      if mean.var_type is not None:
+        if mean.var_type[i] == VAR_TYPE.CONTINUOUS:
+          cs[:, i] = (np.random.poisson(lam=(mean.coordinates[i]+delta), size=(self._ns_dist[3],))-delta)*self._rho
+        elif mean.var_type[i] == VAR_TYPE.INTEGER or mean.var_type[i] == VAR_TYPE.CATEGORICAL or mean.var_type[i] == VAR_TYPE.DISCRETE:
+          cs[:, i] = np.random.randint(low=int(mean.coordinates[i]-self._rho), high=int(np.ceil(mean.coordinates[i]+(self._rho if self._rho>0 else 0.001))), size=(self._ns_dist[3],))
+        else:
+          cs[:, i] = [mean.coordinates[i]]*self._ns_dist[3]
+      else:
+        cs[:, i] = (np.random.poisson(lam=(mean.coordinates[i]+delta), size=(self._ns_dist[3],))-delta)*self._rho
     
     return cs
 
@@ -158,7 +195,15 @@ class VNS(VNS_data):
       delta = 0.
       if val[i]<=0. or 0 < val[i] <= 0.5:
         delta = 5- val[i]
-      cs[:, i] = (np.random.binomial(n=(mean.coordinates[i]+delta)/((1/self._rho) if self._rho > 1. else self._rho), p=(1/self._rho) if self._rho > 1. else self._rho, size=(self._ns_dist[4],))-delta)
+      if mean.var_type is not None:
+        if mean.var_type[i] == VAR_TYPE.CONTINUOUS:
+          cs[:, i] = (np.random.binomial(n=(mean.coordinates[i]+delta)/((1/self._rho) if self._rho > 1. else self._rho), p=(1/self._rho) if self._rho > 1. else self._rho, size=(self._ns_dist[4],))-delta)
+        elif mean.var_type[i] == VAR_TYPE.INTEGER or mean.var_type[i] == VAR_TYPE.CATEGORICAL or mean.var_type[i] == VAR_TYPE.DISCRETE:
+          cs[:, i] = np.random.randint(low=int(mean.coordinates[i]-self._rho), high=int(np.ceil(mean.coordinates[i]+(self._rho if self._rho>0 else 0.001))), size=(self._ns_dist[4],))
+        else:
+          cs[:, i] = [mean.coordinates[i]]*self._ns_dist[4]
+      else:
+        cs[:, i] = (np.random.binomial(n=(mean.coordinates[i]+delta)/((1/self._rho) if self._rho > 1. else self._rho), p=(1/self._rho) if self._rho > 1. else self._rho, size=(self._ns_dist[4],))-delta)
     
     # for i in range(self._ns_dist[2]):
     #   pts[i].coordinates = copy.deepcopy(cs[i, :])
@@ -220,9 +265,11 @@ class VNS(VNS_data):
     if x.status is DESIGN_STATUS.FEASIBLE:
       for i in range(len(self._dist)):
         temp = self.generate_samples(x_inc=x, dist= self._dist[i])
+        temp = np.unique(temp, axis=0)
         for p in temp:
-          samples[c, :] = p
-          c += 1
+          if p not in samples:
+            samples[c, :] = p
+            c += 1
     
     ns_dist_old = self._ns_dist
     self._ns_dist = [int(0.1*xds) for xds in self._ns_dist]
@@ -230,10 +277,12 @@ class VNS(VNS_data):
     if self.active_barrier._sec_poll_center is not None and self.active_barrier.get_best_infeasible().evaluated:
       for i in range(len(self._dist)):
         temp = self.generate_samples(x_inc= self.active_barrier.get_best_infeasible(), dist= self._dist[i])
+        temp = np.unique(temp, axis=0)
         for p in temp:
           samples = np.vstack((samples, p))
           c += 1
     self._ns_dist = ns_dist_old
+    samples = np.unique(samples, axis=0)
     return samples
       
 
@@ -400,7 +449,13 @@ class efficient_exploration:
     if ref == None:
       ref = [0.]*len(x)
     for i in range(len(x)):
-      x[i] = ref[i] + (np.round((x[i]-ref[i])/self.mesh.msize) * self.mesh.msize)
+      if self.xmin.var_type[i] != VAR_TYPE.CATEGORICAL:
+        if self.xmin.var_type[i] == VAR_TYPE.CONTINUOUS:
+          x[i] = ref[i] + (np.round((x[i]-ref[i])/self.mesh.msize) * self.mesh.msize)
+        else:
+           x[i] = int(ref[i] + int(int((x[i]-ref[i])/self.mesh.msize) * self.mesh.msize))
+      else:
+        x[i] = int(x[i])
       if x[i] < self.prob_params.lb[i]:
         x[i] = self.prob_params.lb[i] + (self.prob_params.lb[i] - x[i])
         if x[i] > self.prob_params.ub[i]:
@@ -427,7 +482,7 @@ class efficient_exploration:
       self.samples[i].sets = self.xmin.sets
       self.samples[i].var_link = self.xmin.var_link
       self.samples[i].n_dimensions = len(samples[i, :])
-      self.samples[i]._coords = copy.deepcopy(samples[i, :])
+      self.samples[i].coordinates = copy.deepcopy(samples[i, :])
 
 
   def gauss_perturbation(self, p: Point, npts: int = 5) -> List[Point]:
@@ -438,7 +493,12 @@ class efficient_exploration:
     pts: List[Point] = [0] * npts
     mp = 1.
     for k in range(p.n_dimensions):
-      cs[:, k] = np.random.normal(loc=p.coordinates[k], scale=self.mesh.msize, size=(npts,))
+      if p.var_type[k] == VAR_TYPE.CONTINUOUS:
+        cs[:, k] = np.random.normal(loc=p.coordinates[k], scale=self.mesh.msize, size=(npts,))
+      elif p.var_type[k] == VAR_TYPE.INTEGER or p.var_type[k] == VAR_TYPE.DISCRETE or p.var_type[k] == VAR_TYPE.CATEGORICAL:
+        cs[:, k] = np.random.randint(low=lb[k], high=ub[k], size=(npts,))
+      else:
+        cs[:, k] = [p.coordinates[k]]*npts
       for i in range(npts):
         if cs[i, k] < lb[k]:
           cs[i, k] = lb[k]
@@ -446,7 +506,7 @@ class efficient_exploration:
           cs[i, k] = ub[k]
     
     for i in range(npts):
-      pts[i] = Point()
+      pts[i] = p
       pts[i].coordinates = copy.deepcopy(cs[i, :])
     
     return pts
@@ -472,7 +532,10 @@ class efficient_exploration:
     while is_duplicate and unique_p_trials < 5:
       if self.display:
         print(f'Cache hit. Trial# {unique_p_trials}: Looking for a non-duplicate in the vicinity of the duplicate point ...')
-      xtries: List[Point] = self.gauss_perturbation(p=xtry, npts=len(self.poll_dirs)*2)
+      if xtry.var_type is None:
+        xtry.var_type = self.xmin.var_type
+      
+      xtries: List[Point] = self.gauss_perturbation(p=xtry, npts=len(self.samples)*2)
       for tr in range(len(xtries)):
         is_duplicate = self.hashtable.is_duplicate(xtries[tr])
         if is_duplicate:
@@ -866,7 +929,8 @@ def main(*args) -> Dict[str, Any]:
     search.ns = sum(search_VN._ns_dist)
 
 
-  
+  search.lb = param.lb
+  search.ub = param.ub
 
   LAMBDA_k = xmin.LAMBDA
   RHO_k = xmin.RHO

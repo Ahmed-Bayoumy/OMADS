@@ -8,11 +8,13 @@ import OMADS.SEARCH as SS
 from typing import List, Dict, Any, Callable, Protocol, Optional
 import numpy as np
 
-def search_step(iteration: int, search: SS.efficient_exploration = None, B: SS.Barrier = None, LAMBDA_k: float=None, RHO_k: float=None, search_VN: SS.VNS = None, post: PS.PostMADS=None, out: PS.Output=None, options: PS.Options=None, xmin: SS.Point=None, peval: int=0):
+def search_step(iteration: int, search: SS.efficient_exploration = None, B: SS.Barrier = None, LAMBDA_k: float=None, RHO_k: float=None, search_VN: SS.VNS = None, post: PS.PostMADS=None, out: PS.Output=None, options: PS.Options=None, xmin: SS.Point=None, peval: int=0, HT: Any=None):
   search.xmin = xmin
   search.mesh.update()
   search.LAMBDA = LAMBDA_k
   search.RHO = RHO_k
+  if HT is not None:
+    search.hashtable = HT
   if B is not None:
     B.insert(search.xmin)
     if B._filter is not None:
@@ -53,6 +55,10 @@ def search_step(iteration: int, search: SS.efficient_exploration = None, B: SS.B
   search.bb_output = []
   xt = []
   """ Serial evaluation for points in the poll set """
+  if search_VN is not None:
+    search.lb = search_VN.params.lb
+    search.ub = search_VN.params.ub
+  
   if not options.parallel_mode:
     for it in range(len(search.samples)):
       if search.terminate:
@@ -116,7 +122,7 @@ def search_step(iteration: int, search: SS.efficient_exploration = None, B: SS.B
   # iteration += 1
   return search, B, post, out, search.LAMBDA, search.RHO, search.xmin, peval
 
-def poll_step(iteration: int, poll: PS.Dirs2n = None, B: SS.Barrier = None, LAMBDA_k: float=None, RHO_k: float=None, param: PS.Parameters=None, post: PS.PostMADS=None, xmin: PS.Point=None, out: PS.Output=None, options: PS.Options=None, peval: int = 0):
+def poll_step(iteration: int, poll: PS.Dirs2n = None, B: SS.Barrier = None, LAMBDA_k: float=None, RHO_k: float=None, param: PS.Parameters=None, post: PS.PostMADS=None, xmin: PS.Point=None, out: PS.Output=None, options: PS.Options=None, peval: int = 0, HT: Any = None):
   poll.xmin = xmin
   poll.mesh.update()
   """ Create the set of poll directions """
@@ -124,6 +130,8 @@ def poll_step(iteration: int, poll: PS.Dirs2n = None, B: SS.Barrier = None, LAMB
   poll.lb = param.lb
   poll.ub = param.ub
   poll.xmin = copy.deepcopy(xmin)
+  if HT is not None:
+    poll.hashtable = HT
   B.insert(xmin)
   if B is not None:
     if B._filter is not None:
@@ -261,9 +269,11 @@ def main(*args) -> Dict[str, Any]:
   poll: PS.Dirs2n
   search: SS.efficient_exploration
   _, _, search, _, _, _, _, _ = SS.PreExploration(data).initialize_from_dict()
-  iteration, xmin, poll, options, param, post, out, B = PS.PreMADS(data).initialize_from_dict()
+  iteration, xmin, poll, options, param, post, out, B = PS.PreMADS(data).initialize_from_dict(xs=search.xmin)
   out.stepName = "Poll"
   post.step_name = [f'Search: {search.type}']
+
+  HT = poll.hashtable
   
   # if MADS_LINK.REPLACE is not None and not MADS_LINK.REPLACE:
   #   out.replace = False
@@ -286,13 +296,18 @@ def main(*args) -> Dict[str, Any]:
     search.ns = sum(search_VN._ns_dist)
   else:
     search_VN = None
+  
+  search.lb = param.lb
+  search.ub = param.ub
 
   while True:
     """ Run search step (Optional) """
     if not poll.success or iteration == 1:
-      search, B, post, out, LAMBDA_k, RHO_k, xmin, peval = search_step(search=search, B=B, LAMBDA_k=LAMBDA_k, RHO_k=RHO_k, iteration=iteration , search_VN=search_VN, post=post, out=out, options=options, xmin=xmin, peval=peval)
+      search, B, post, out, LAMBDA_k, RHO_k, xmin, peval = search_step(search=search, B=B, LAMBDA_k=LAMBDA_k, RHO_k=RHO_k, iteration=iteration , search_VN=search_VN, post=post, out=out, options=options, xmin=xmin, peval=peval, HT=HT)
     """ Run the poll step (Mandatory step) """
-    poll, B, post, out, LAMBDA_k, RHO_k, xmin, peval = poll_step(iteration=iteration, poll=poll, B=B, LAMBDA_k=LAMBDA_k, RHO_k=RHO_k, param=param, post=post, xmin=xmin, out=out, options=options, peval=peval)
+    HT = search.hashtable
+    poll, B, post, out, LAMBDA_k, RHO_k, xmin, peval = poll_step(iteration=iteration, poll=poll, B=B, LAMBDA_k=LAMBDA_k, RHO_k=RHO_k, param=param, post=post, xmin=xmin, out=out, options=options, peval=peval, HT=HT)
+    HT = poll.hashtable
     xmin = poll.xmin
     search.mesh = copy.deepcopy(poll.mesh)
     search.psize = copy.deepcopy(poll.psize)
