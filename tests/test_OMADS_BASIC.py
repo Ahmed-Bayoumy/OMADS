@@ -1,5 +1,4 @@
-from OMADS import DType, Options, Parameters, Evaluator, Point, \
-  OrthoMesh, Cache, Dirs2n, PreMADS, Output, PostMADS, main
+from OMADS import POLL, SEARCH, MADS
 
 import copy
 import os
@@ -26,11 +25,24 @@ def test_omads_callable_quick():
        "var_names": ["x1", "x2"],
        "scaling": 10.0,
        "post_dir": "./post"}
-  options = {"seed": 0, "budget": 100000, "tol": 1e-12, "display": True}
+  sampling = {
+                    "method": SEARCH.explore.SAMPLING_METHOD.LH.value,
+                    "ns": int((2+1)*(2+2)/2)+50,
+                    "visualize": False,
+                    "criterion": None
+                  }
+  options = {"seed": 0, "budget": 100000, "tol": 1e-12, "display": True, "check_cache": True, "store_cache": True, "rich_direction": True,}
+  search = {
+      "type": "sampling",
+      "s_method": "LH",
+      "ns": 10,
+      "visualize": False
+    }
+  data = {"evaluator": eval, "param": param, "options": options, "sampling": sampling, "search": search}
 
-  data = {"evaluator": eval, "param": param, "options": options}
+  
 
-  out: Dict = main(data)
+  out: Dict = MADS.main(data)
   print(out)
 
 def test_omads_callable_quick_parallel():
@@ -42,31 +54,54 @@ def test_omads_callable_quick_parallel():
        "scaling": 10.0,
        "post_dir": "./post"}
   options = {"seed": 0, "budget": 1000, "tol": 1e-6, "display": True, "parallel_mode": True}
+  sampling = {
+                    "method": SEARCH.explore.SAMPLING_METHOD.LH.value,
+                    "ns": int((2+1)*(2+2)/2)+50,
+                    "visualize": False,
+                    "criterion": None
+                  }
+  search = {
+      "type": "sampling",
+      "s_method": "LH",
+      "ns": 10,
+      "visualize": False
+    }
+  data = {"evaluator": eval, "param": param, "options": options, "sampling": sampling, "search": search}
 
-  data = {"evaluator": eval, "param": param, "options": options}
-
-  out: Dict = main(data)
+  out: Dict = MADS.main(data)
   print(out)
 
 def test_omads_toy_quick():
-  assert DType
-  assert Options
-  assert Parameters
-  assert Evaluator
-  assert Point
-  assert OrthoMesh
-  assert Cache
-  assert Dirs2n
-  assert PreMADS
-  assert Output
-  assert PostMADS
-  assert main
+  assert POLL.DType
+  assert POLL.Options
+  assert POLL.Parameters
+  assert POLL.Evaluator
+  assert POLL.Point
+  assert POLL.OrthoMesh
+  assert POLL.Cache
+  assert POLL.Dirs2n
+  assert POLL.PreMADS
+  assert POLL.Output
+  assert POLL.PostMADS
+  assert POLL.main
 
   p_file_1 = os.path.abspath("./tests/bm/unconstrained/rosenbrock.json")
-  main(p_file_1)
+  POLL.main(p_file_1)
 
   p_file_2 = os.path.abspath("./tests/bm/constrained/geom_prog.json")
-  main(p_file_2)
+  POLL.main(p_file_2)
+
+  p_file_3 = os.path.abspath("./tests/bm/unconstrained/rosenbrock.json")
+  SEARCH.main(p_file_3)
+
+  p_file_4 = os.path.abspath("./tests/bm/constrained/geom_prog.json")
+  SEARCH.main(p_file_4)
+
+  p_file_5 = os.path.abspath("./tests/bm/unconstrained/rosenbrock.json")
+  MADS.main(p_file_5)
+
+  p_file_6 = os.path.abspath("./tests/bm/constrained/geom_prog.json")
+  MADS.main(p_file_6)
 
   # p_file_3 = os.path.abspath("./tests/Rosen/param.json")
   # main(p_file_3)
@@ -107,9 +142,17 @@ def test_omads_toy_quick():
         "save_coordinates": False,
         "save_all_best": False,
         "parallel_mode": False
-      }
+      },
+
+    "search": {
+      "type": "sampling",
+      "s_method": "LH",
+      "ns": 10,
+      "visualize": False
+    }
   }
-  main(data)
+
+  MADS.main(data)
 
 
 def test_omads_toy_extended():
@@ -120,10 +163,14 @@ def test_omads_toy_extended():
             "speed_reducer", "wbeam"]
 
   for name in uncon_test_names:
-    main(os.path.abspath(os.path.join("./tests/bm/unconstrained", name + ".json")))
+    POLL.main(os.path.abspath(os.path.join("./tests/bm/unconstrained", name + ".json")))
+    SEARCH.main(os.path.abspath(os.path.join("./tests/bm/unconstrained", name + ".json")))
+    MADS.main(os.path.abspath(os.path.join("./tests/bm/unconstrained", name + ".json")))
 
   for name in con_test_names:
-    main(os.path.abspath(os.path.join("./tests/bm/constrained", name + ".json")))
+    POLL.main(os.path.abspath(os.path.join("./tests/bm/constrained", name + ".json")))
+    SEARCH.main(os.path.abspath(os.path.join("./tests/bm/constrained", name + ".json")))
+    MADS.main(os.path.abspath(os.path.join("./tests/bm/constrained", name + ".json")))
 
 
 def test_omads_toy_uncon_bm():
@@ -159,9 +206,9 @@ def test_omads_toy_uncon_bm():
         print(f"Solving {p_files[i]}: run# {run:.0f}: seed is {sl[run]:.0f}")
         if file_exe == '.json':
           if ms:
-            main(os.path.join(bm_root, p_files[i]), bm, run, sl[run])
+            MADS.main(os.path.join(bm_root, p_files[i]), bm, run, sl[run])
           else:
-            main(os.path.join(bm_root, p_files[i]), bm, run)
+            MADS.main(os.path.join(bm_root, p_files[i]), bm, run)
       except RuntimeError:
         print("An error occured while running" + p_files[i])
 
@@ -202,11 +249,16 @@ def test_omads_toy_con_bm():
         _, file_exe = os.path.splitext(p_files[i])
         if file_exe == '.json':
           if ms:
-            main(os.path.join(bm_root, p_files[i]), bm, run, sl[run])
+            MADS.main(os.path.join(bm_root, p_files[i]), bm, run, sl[run])
           else:
-            main(os.path.join(bm_root, p_files[i]), bm, run)
+            MADS.main(os.path.join(bm_root, p_files[i]), bm, run)
       except RuntimeError:
         print("An error occured while running" + p_files[i])
   # Show box plot for the BM stats as an indicator
   # for measuring various algorithmic performance
   # bm.BM_statistics()
+
+# MADS.main(os.path.abspath(os.path.join("./tests/bm/constrained", "tc_spring.json")))
+# test_omads_toy_extended()
+# test_omads_toy_uncon_bm()
+# test_omads_toy_con_bm()

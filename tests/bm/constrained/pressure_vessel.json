@@ -9,19 +9,25 @@
 
   "param":
     {
+      "name": "pressure_vessel",
       "baseline": [99, 99, 50, 200],
       "lb": [1, 1, 10, 10],
       "ub": [99,99,200, 200],
       "var_names": ["x1", "x2", "x3", "x4"],
-      "scaling": 200,
-      "post_dir": "./tests/bm/constrained/post"
+      "scaling": [98,98,190,190],
+      "constraints_type": ["PB", "EB", "PB", "PB"],
+      "LAMBDA": [5, 5, 5, 5],
+      "RHO": 0.0001,
+      "post_dir": "./tests/bm/constrained/post",
+      "h_max": 1,
+      "Failure_stop": false
     },
 
   "options":
     {
       "seed": 0,
       "budget": 100000,
-      "tol": 1e-12,
+      "tol": 1e-18,
       "psize_init": 1.0,
       "display": false,
       "opportunistic": false,
@@ -30,9 +36,16 @@
       "collect_y": false,
       "rich_direction": true,
       "precision": "high",
-      "save_results": false,
+      "save_results": true,
       "save_coordinates": false,
-      "save_all_best": false,
-      "parallel_mode": false
+      "save_all_best": true,
+      "parallel_mode": false,
+      "np": 1
+    },
+    "search": {
+      "type": "VNS",
+      "s_method": "LH",
+      "ns": 100,
+      "visualize": false
     }
 }

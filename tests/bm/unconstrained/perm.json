@@ -34,5 +34,11 @@
       "save_coordinates": false,
       "save_all_best": false,
       "parallel_mode": false
+    },
+    "search": {
+      "type": "VNS",
+      "s_method": "LH",
+      "ns": 100,
+      "visualize": false
     }
 }

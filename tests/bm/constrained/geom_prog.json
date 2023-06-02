@@ -14,7 +14,11 @@
       "ub": [1e6,1e6,1e6,1e6,1e6,1e6,1e6,1e6,1e6,1e6],
       "var_names": ["x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9", "x10"],
       "scaling": 9e5,
-      "post_dir": "./tests/bm/constrained/post"
+      "constraints_type": ["PB", "PB", "PB","PB", "PB", "PB"],
+      "LAMBDA": [5, 5, 5, 5, 5, 5],
+      "RHO": 1,
+      "post_dir": "./tests/bm/constrained/post",
+      "h_max": 10
     },
 
   "options":
@@ -34,5 +38,11 @@
       "save_coordinates": false,
       "save_all_best": false,
       "parallel_mode": false
+    },
+    "search": {
+      "type": "VNS",
+      "s_method": "LH",
+      "ns": 100,
+      "visualize": false
     }
 }

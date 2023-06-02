@@ -34,5 +34,16 @@
       "save_coordinates": false,
       "save_all_best": false,
       "parallel_mode": false
+    },
+    "sampling": {
+      "method": 2,
+      "ns": 20,
+      "visualize": true
+    },
+    "search": {
+      "type": "VNS",
+      "s_method": "LH",
+      "ns": 100,
+      "visualize": false
     }
 }
