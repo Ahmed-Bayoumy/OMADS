@@ -1770,7 +1770,7 @@ class PreMADS:
   """ Preprocessor for setting up optimization settings and parameters"""
   data: Dict[Any, Any]
 
-  def initialize_from_dict(self, xs: Point):
+  def initialize_from_dict(self, xs: Point=None):
     """ MADS initialization """
     """ 1- Construct the following classes by unpacking
      their respective dictionaries from the input JSON file """
