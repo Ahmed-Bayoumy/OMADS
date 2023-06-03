@@ -1,11 +1,11 @@
-from setuptools import setupsetup, find_packages
+from setuptools import setup, find_packages
 
 if __name__ == "__main__":
   setup(
     name="OMADS",
     author="Ahmed H. Bayoumy",
     author_email="ahmed.bayoumy@mail.mcgill.ca",
-    version='2.0.0',
+    version='2.1.0',
     packages=find_packages(include=['SLML', 'SLML.*']),
     description="Statistical Learning Models Library",
     install_requires=[

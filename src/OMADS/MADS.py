@@ -30,6 +30,7 @@ import OMADS.POLL as PS
 import OMADS.SEARCH as SS
 from typing import List, Dict, Any, Callable, Protocol, Optional
 import numpy as np
+from BMDFO import toy
 
 def search_step(iteration: int, search: SS.efficient_exploration = None, B: SS.Barrier = None, LAMBDA_k: float=None, RHO_k: float=None, search_VN: SS.VNS = None, post: PS.PostMADS=None, out: PS.Output=None, options: PS.Options=None, xmin: SS.Point=None, peval: int=0, HT: Any=None):
   search.xmin = xmin

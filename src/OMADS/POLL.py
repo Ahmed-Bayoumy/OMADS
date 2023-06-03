@@ -1634,7 +1634,10 @@ class Dirs2n:
       if self.display:
         print(f'Cache hit. Trial# {unique_p_trials}: Looking for a non-duplicate in the vicinity of the duplicate point ...')
       if xtry.var_type is None:
-        xtry.var_type = self.xmin.var_type
+        if self.xmin.var_type is not None:
+          xtry.var_type = self.xmin.var_type
+        else:
+          xtry.var_type = [VAR_TYPE.CONTINUOUS] * len(self.xmin.coordinates)
       xtries: List[Point] = self.gauss_perturbation(p=xtry, npts=len(self.poll_dirs)*2)
       for tr in range(len(xtries)):
         is_duplicate = self.hashtable.is_duplicate(xtries[tr])

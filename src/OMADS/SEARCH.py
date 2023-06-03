@@ -37,6 +37,8 @@ from typing import List, Dict, Any, Callable, Protocol, Optional
 import concurrent.futures
 from matplotlib import pyplot as plt
 import random
+from BMDFO import toy
+
 
 class SAMPLING_METHOD(Enum):
   FULLFACTORIAL: int = auto()
@@ -471,6 +473,8 @@ class efficient_exploration:
   def project_coords_to_mesh(self, x:List[float], ref: List[float] = None):
     if ref == None:
       ref = [0.]*len(x)
+    if self.xmin.var_type is None:
+      self.xmin.var_type = [VAR_TYPE.CONTINUOUS] * len(self.xmin.coordinates)
     for i in range(len(x)):
       if self.xmin.var_type[i] != VAR_TYPE.CATEGORICAL:
         if self.xmin.var_type[i] == VAR_TYPE.CONTINUOUS:
@@ -556,7 +560,10 @@ class efficient_exploration:
       if self.display:
         print(f'Cache hit. Trial# {unique_p_trials}: Looking for a non-duplicate in the vicinity of the duplicate point ...')
       if xtry.var_type is None:
-        xtry.var_type = self.xmin.var_type
+        if self.xmin.var_type is not None:
+          xtry.var_type = self.xmin.var_type
+        else:
+          xtry.var_type = [VAR_TYPE.CONTINUOUS] * len(self.xmin.coordinates)
       
       xtries: List[Point] = self.gauss_perturbation(p=xtry, npts=len(self.samples)*2)
       for tr in range(len(xtries)):

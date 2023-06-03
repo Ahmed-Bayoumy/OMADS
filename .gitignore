@@ -1,6 +1,5 @@
 .exe
 .idea/
-dist/
 .mypy_cache/
 .__mypycache__/
 .pytest_cache/
@@ -20,3 +19,5 @@ exdata
 ppdata
 post
 docs-dev
+build/
+test_OMADS_COMPERHENSIVE.py
