@@ -29,7 +29,7 @@ jobs:
         pip install flake8 pytest pytest-cov
         pip install wheel
         python setup.py sdist bdist_wheel
-        pip install dist/OMADS-2.0.0-py3-none-any.whl
+        pip install dist/*.whl
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Lint with flake8
       run: |
