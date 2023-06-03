@@ -181,4 +181,6 @@ out = OMADS.main(data)
  psize_max = 2.0
 ```
 
-https://ahmed-bayoumy.github.io/OMADS/_videos/RB.mp4
+https://github.com/Ahmed-Bayoumy/OMADS/assets/22842095/5dc72c34-4722-4d93-8c84-d17f5595556d
+
+
