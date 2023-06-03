@@ -1,3 +1,4 @@
+[![pages-build-deployment](https://github.com/Ahmed-Bayoumy/OMADS/actions/workflows/pages/pages-build-deployment/badge.svg?branch=DEV)](https://github.com/Ahmed-Bayoumy/OMADS/actions/workflows/pages/pages-build-deployment)
 # OMADS
 MADS-poll step: A python implementation for the mesh adaptive direct search (MADS) method; ORTHO-MADS algorithm.
 
