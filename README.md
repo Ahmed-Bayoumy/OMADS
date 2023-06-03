@@ -104,6 +104,7 @@ Input parameters are serialized in a `JSON` template using predefined attributes
   * `save_coordinates`: saving poll coordinates (spinners) of each iteration in a JASON dictionary template that can be used for visualization
   * `save_all_best`: a boolean for saving only incumbent solutions
   * `parallel_mode`: a boolean for parallel computation of the poll set
+---
 * `search`: the search step options
    * `type`: search type can take one of the following values 
       * `VNS`: variable neighbor search 
