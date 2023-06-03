@@ -100,11 +100,24 @@ Input parameters are serialized in a `JSON` template using predefined attributes
   * `save_coordinates`: saving poll coordinates (spinners) of each iteration in a JASON dictionary template that can be used for visualization
   * `save_all_best`: a boolean for saving only incumbent solutions
   * `parallel_mode`: a boolean for parallel computation of the poll set
+* `search`: the search step options
+   * `type`: search type can take one of the following values 
+      * `VNS`: variable neighbor search 
+      * `sampling`: sampling search
+      * `BO`: Bayesian optimization (TODO: not published yet as it is still in the testing and BM phase)
+      * `NM`: Nelder-Mead (TODO: not published yet as it is still in the testing and BM phase)
+      * `PSO`: particle swarm optimization (TODO: not published yet as it is in the testing phase)
+      * `CMA-ES`: covariance matrix adaptation evolution strategy (TODO: not published yet as it is in the testing phase)
+   * `s_method`: can take one of the following values
+      * `LH`: Latin Hypercube sampling\
+      * `RS`: random sampling
+      * `HALTON`: Halton sampling
+   * `ns`: number of samples
 ---
   
 ## Benchmarking
 
-To benchmark `OMADS`, per se, you need to install the non-linear optimization benchmarking project `NOBM` from 
+To benchmark `OMADS`, per se, you need to install the non-linear optimization benchmarking project `NOBM` (will be installed automatically when you install `OMADS`) from 
 [PYPI](https://pypi.org/).  Two benchmarking suits are provided under the `BMDFO` package -- `BMDFO` stands for 
 benchmarking derivative-free optimization algorithms.  The benchmarking suits have different constrained and 
 unconstrained optimization problems with various characteristics.  The `BMDFO` modules can be imported directly 
