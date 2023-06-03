@@ -37,6 +37,8 @@ from typing import List, Dict, Any, Callable, Protocol, Optional
 import concurrent.futures
 from matplotlib import pyplot as plt
 import random
+from BMDFO import toy
+
 
 class SAMPLING_METHOD(Enum):
   FULLFACTORIAL: int = auto()
