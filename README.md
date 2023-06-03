@@ -29,7 +29,7 @@ If you use this code, please cite it as below.
    title        = {OMADS},
    year         = 2022,
    publisher    = {Github},
-   version      = {1.5.0},
+   version      = {2.0.0},
    url          = {https://github.com/Ahmed-Bayoumy/OMADS}
    }
 ```
