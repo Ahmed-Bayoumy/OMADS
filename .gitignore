@@ -1,6 +1,5 @@
 .exe
 .idea/
-dist/
 .mypy_cache/
 .__mypycache__/
 .pytest_cache/
