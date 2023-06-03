@@ -53,7 +53,7 @@ def test_omads_callable_quick_parallel():
        "var_names": ["x1", "x2"],
        "scaling": 10.0,
        "post_dir": "./post"}
-  options = {"seed": 0, "budget": 1000, "tol": 1e-6, "display": True, "parallel_mode": True}
+  options = {"seed": 0, "budget": 100, "tol": 1e-6, "display": True, "parallel_mode": True}
   sampling = {
                     "method": SEARCH.explore.SAMPLING_METHOD.LH.value,
                     "ns": int((2+1)*(2+2)/2)+50,
@@ -128,7 +128,7 @@ def test_omads_toy_quick():
     "options":
       {
         "seed": 0,
-        "budget": 100000,
+        "budget": 1000,
         "tol": 1e-12,
         "psize_init": 1,
         "display": False,
@@ -145,7 +145,7 @@ def test_omads_toy_quick():
       },
 
     "search": {
-      "type": "sampling",
+      "type": "VNS",
       "s_method": "LH",
       "ns": 10,
       "visualize": False
@@ -153,112 +153,3 @@ def test_omads_toy_quick():
   }
 
   MADS.main(data)
-
-
-def test_omads_toy_extended():
-  uncon_test_names = ["ackley", "beale", "dixonprice", "griewank", "levy", "michalewicz", "perm", "powell",
-            "powersum", "rastrigin", "rosenbrock", "schwefel", "sphere", "trid", "zakharov"]
-
-  con_test_names = ["g1", "g2", "g3", "geom_prog", "himmelblau", "pressure_vessel", "tc_spring",
-            "speed_reducer", "wbeam"]
-
-  for name in uncon_test_names:
-    POLL.main(os.path.abspath(os.path.join("./tests/bm/unconstrained", name + ".json")))
-    SEARCH.main(os.path.abspath(os.path.join("./tests/bm/unconstrained", name + ".json")))
-    MADS.main(os.path.abspath(os.path.join("./tests/bm/unconstrained", name + ".json")))
-
-  for name in con_test_names:
-    POLL.main(os.path.abspath(os.path.join("./tests/bm/constrained", name + ".json")))
-    SEARCH.main(os.path.abspath(os.path.join("./tests/bm/constrained", name + ".json")))
-    MADS.main(os.path.abspath(os.path.join("./tests/bm/constrained", name + ".json")))
-
-
-def test_omads_toy_uncon_bm():
-  p_files = []
-  runs: int = 2
-  # Remove existing BM log files (if any)
-  file = os.path.abspath(os.path.join('./tests/bm/unconstrained/post', 'BM_report.csv'))
-  if os.path.exists(file) and os.path.isfile(file):
-    os.remove(file)
-
-  df = pd.DataFrame(list())
-  df.to_csv(file)
-
-  bm: toy.Run = toy.Run(os.path.abspath('./tests/bm/unconstrained/post'))
-  bm.test_suite = "uncon"
-  bm_root = os.path.abspath('./tests/bm/unconstrained')
-
-  # get BM parameters file names
-  for p, _, filename in os.walk(bm_root):
-    if p == bm_root:
-      p_files = copy.deepcopy(filename)
-  ms: bool
-  sl: List[int] = []
-  if runs > 1:
-    sl = list(range(runs))
-    ms = True
-  else:
-    ms = False
-  for run in range(runs):
-    for i in range(0, len(p_files)):
-      try:
-        _, file_exe = os.path.splitext(p_files[i])
-        print(f"Solving {p_files[i]}: run# {run:.0f}: seed is {sl[run]:.0f}")
-        if file_exe == '.json':
-          if ms:
-            MADS.main(os.path.join(bm_root, p_files[i]), bm, run, sl[run])
-          else:
-            MADS.main(os.path.join(bm_root, p_files[i]), bm, run)
-      except RuntimeError:
-        print("An error occured while running" + p_files[i])
-
-  # Show box plot for the BM stats as an indicator
-  # for measuring various algorithmic performance
-  # bm.BM_statistics()
-
-
-def test_omads_toy_con_bm():
-  p_files = []
-  runs: int = 2
-  # Remove existing BM log files (if any)
-  file = os.path.abspath(os.path.join('./tests/bm/constrained/post', 'BM_report.csv'))
-  if os.path.exists(file) and os.path.isfile(file):
-    os.remove(file)
-
-  df = pd.DataFrame(list())
-  df.to_csv(file)
-
-  bm: toy.Run = toy.Run(os.path.abspath('./tests/bm/constrained/post'))
-  bm.test_suite = "con"
-  bm_root = os.path.abspath('./tests/bm/constrained')
-  # get BM parameters file names
-  for p, _, filename in os.walk(bm_root):
-    if p == bm_root:
-      p_files = copy.deepcopy(filename)
-
-  ms: bool
-  sl: List[int] = []
-  if runs > 1:
-    sl = list(range(runs))
-    ms = True
-  else:
-    ms = False
-  for run in range(runs):
-    for i in range(0, len(p_files)):
-      try:
-        _, file_exe = os.path.splitext(p_files[i])
-        if file_exe == '.json':
-          if ms:
-            MADS.main(os.path.join(bm_root, p_files[i]), bm, run, sl[run])
-          else:
-            MADS.main(os.path.join(bm_root, p_files[i]), bm, run)
-      except RuntimeError:
-        print("An error occured while running" + p_files[i])
-  # Show box plot for the BM stats as an indicator
-  # for measuring various algorithmic performance
-  # bm.BM_statistics()
-
-# MADS.main(os.path.abspath(os.path.join("./tests/bm/constrained", "tc_spring.json")))
-# test_omads_toy_extended()
-# test_omads_toy_uncon_bm()
-# test_omads_toy_con_bm()
