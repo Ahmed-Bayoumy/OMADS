@@ -10,7 +10,7 @@ For technical and code documentation, please visit [OMADS Webpage](https://ahmed
 
 ---
 
-**Version 2.0.0**
+**Version 2.1.0**
 
 ---
 
@@ -29,7 +29,7 @@ If you use this code, please cite it as below.
    title        = {OMADS},
    year         = 2022,
    publisher    = {Github},
-   version      = {2.0.0},
+   version      = {2.1.0},
    url          = {https://github.com/Ahmed-Bayoumy/OMADS}
    }
 ```
