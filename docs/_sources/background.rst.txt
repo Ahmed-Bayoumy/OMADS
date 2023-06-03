@@ -1,6 +1,6 @@
 Background
 ####################
-MADS is a derivative free optimization method supported by global convergence properties where it converges to a minimizer regardless of the starting point. The algorithm consists of two steps as shown in :numref:`F1`. The first step is an optional search step where the user can run a DOE study or a global optimization study, i.e., genetic algorithm (GA), on a set of variables with size :math:`n`. The second step is a mandatory local search step called poll-step where the :math:`2n` orthogonal poll directions spin around the incumbent solution on the discretized poll frame to randomly choose :math:`2n` contiguous directions where the blackbox functions are evaluated on the delimited region containing the poll point.
+MADS is a derivative-free optimization method supported by global convergence properties where it converges to a minimizer regardless of the starting point. The algorithm consists of two steps as shown in :numref:`F1`. The first step is an optional search step where the user can run a DOE study or a global optimization study, i.e., genetic algorithm (GA), on a set of variables with size :math:`n`. The second step is a mandatory local search step called poll-step where the :math:`2n` orthogonal poll directions spin around the incumbent solution on the discretized poll frame to randomly choose :math:`2n` contiguous directions where the blackbox functions are evaluated on the delimited region containing the poll point.
 
 .. _F1:
 .. figure:: Figures/mesh2.png
@@ -12,7 +12,7 @@ MADS is a derivative free optimization method supported by global convergence pr
 When to use OMADS
 =================
 
-If the optimization problem is deterministic and has continuous variables solely, then the following checklist will help you to decide whether using OMADS is a recommended choice from a computational speed perspective.
+If the optimization problem is deterministic, then the following checklist will help you to decide whether using OMADS is a recommended choice from a computational speed perspective.
 
 * If the optimization problem has a known structure where *derivatives are explicit*, then exploit them by using an appropriate gradient-based method, i.e., SQP. 
 
@@ -24,12 +24,12 @@ If the optimization problem is deterministic and has continuous variables solely
 
 .. note::
 
-   OMADS is a simple variant of MADS with a pythonic flavor, but to use more advanced variants, it is recommended to use NOMAD :cite:p:`nomad4paper`. OMADS can also be integrated with the surrogate models library (SML) published on my GitHub repository :cite:p:`SML_AB`.
+   OMADS is a simple variant of MADS with a pythonic flavor, but to use more advanced variants, it is recommended to use NOMAD :cite:p:`nomad4paper`. OMADS can also be integrated with the surrogate models library (SLML) published on my GitHub repository :cite:p:`SML_AB`.
 
 Introduction
 ============
 
-In this section we present the MADS algorithm. We begin with the following definitions of the mesh and the frame from :cite:p:`audet2017derivative,audet2006mesh`:
+In this section, we present the MADS algorithm. We begin with the following definitions of the mesh and the frame from :cite:p:`audet2017derivative,audet2006mesh`:
 
 .. Important::
    
@@ -59,7 +59,7 @@ In the MADS algorithm, the poll set is constructed by selecting mesh points from
 MADS algorithm
 ==============
 
-In this section we will demonstrate how each step of the MADS algorithm, shown in :numref:`A1`, works and how they are implemented in OMADS.
+In this section, we will demonstrate how each step of the MADS algorithm, shown in :numref:`A1`, works and how they are implemented in OMADS.
 
 .. _A1:
 .. pcode::
@@ -116,14 +116,14 @@ Let us see how we can do that in OMADS. The class responsible for MADS preproces
 .. code-block::
 
   """ Run preprocessor for the setup of
-   the optimization problem and for the initialization
+   the optimization problem and the initialization
   of optimization process """
   iteration, xmin, poll, options, param, post, out = PreMADS(data).initialize_from_dict()
 
 
 The data dictionary consists of four other dictionaries:
 
-* Evaluator settings which has the following five keys:
+* Evaluator settings which have the following five keys:
 
     * ``blackbox``: The name of the callable or executable file
 
@@ -155,7 +155,7 @@ The data dictionary consists of four other dictionaries:
       "input": "input.inp",
       "output": "output.out"}
 
-If the evaluator is a callable functions, the blackbox key has to be assigned to the callable function name, but no need to define other keys under the evaluator dictionary, see the following example.
+If the evaluator is a callable function, the blackbox key has to be assigned to the callable function name, but no need to define other keys under the evaluator dictionary, see the following example.
 
 
 .. code-block:: python
@@ -164,17 +164,30 @@ If the evaluator is a callable functions, the blackbox key has to be assigned to
 
 
 .. note::
-  For blackbox files, the input file should contain one column that have the design vector values that follow the same order of the variables populated in the global design vector. The output file should hold all the evaluated response outputs where the first value in the vector will be assigned to the objective function and the other values will be assigned to the constraint functions, respectively.
+  For blackbox files, the input file should contain one column that has the design vector values that follow the same order as the variables populated in the global design vector. The output file should hold all the evaluated response outputs where the first value in the vector will be assigned to the objective function and the other values will be assigned to the constraint functions, respectively.
 
 
-* Parameter settings which has the following six keys:
+* Parameter settings that have the following keys:
 
+    * ``name``: Run name (important for saving the output files in the post directory. If not specified the output folder will be named as ``unknown``) 
     * ``baseline``: The design initial point
     * ``lb``: Lower bound 
     * ``ub``: Upper bound 
     * ``var_names``: Variables name
+    * ``var_types``: Variables type
+      * ``R``: Continuous variable (real value)
+      * ``I``: Integer variable
+      * ``C_<set name>``: Categorical variable. A set name from the sets dictionary should be added after the underscore that follows the `C`
+      * ``D_<set name>``: Discrete variable. A set name from the sets dictionary should be added after the underscore that follows ``D``
+    * ``Sets``: a dictionary where its keys refer to the set name and their value should be assigned to a list of values (the values can be of heterogeneous type)
     * ``scaling``: The scaling factor
     * ``post_dir``: The post directory
+    * ``constraints_type``: List of the constraints barrier type
+      * ``PB``: Progressive barrier
+      * ``EB``: Extreme barrier
+    * ``LAMBDA``: List of the initial Lagrangian multipliers value assigned to the constraints
+    * ``RHO``: List of the initial penalty parameter
+    * ``hmax``: The maximum feasibility threshold
 
 * Example:
 
@@ -182,22 +195,52 @@ If the evaluator is a callable functions, the blackbox key has to be assigned to
 
   "param":
     {
-      "baseline": [-2.0,-2.0],
-      "lb": [-5, -5],
-      "ub": [10, 10],
-      "var_names": ["x1", "x2"],
-      "scaling": 10.0,
-      "post_dir": "./tests/bm/unconstrained/post"
+      "name": "pressure_vessel",
+      "baseline": [99, 99, 50, 200],
+      "lb": [1, 1, 10, 10],
+      "ub": [99,99,200, 200],
+      "var_names": ["x1", "x2", "x3", "x4"],
+      "scaling": [98,98,190,190],
+      "constraints_type": ["PB", "EB", "PB", "PB"],
+      "LAMBDA": [5, 5, 5, 5],
+      "RHO": 0.0001,
+      "post_dir": "./tests/bm/constrained/post",
+      "h_max": 1
     },
 
-* Algorithmic options' dictionary which has the following six keys:
+* Search step options dictionary which has the following keys:
+  * ``search``: The search step options
+  * ``type``: Search type can take one of the following values
+    * ``VNS``: Variable neighbor search
+    * ``sampling``: Sampling search
+    * ``BO``: Bayesian optimization (TODO: not published yet as it is still in the testing and BM phase)
+    * ``NM``: Nelder-Mead (TODO: not published yet as it is still in the testing and BM phase)
+    * ``PSO``: Particle swarm optimization (TODO: not published yet as it is in the testing phase)
+    * ``CMA-ES``: Covariance matrix adaptation evolution strategy (TODO: not published yet as it is in the testing phase)
+  * ``s_method``: Can take one of the following values
+    * ``LH``: Latin Hypercube sampling\
+    * ``RS``: Random sampling
+    * ``HALTON``: Halton sampling
+  * ``ns``: Number of samples
+
+* Example:
+
+.. code-block:: python
+
+  "search": {
+      "type": "VNS",
+      "s_method": "LH",
+      "ns": 100
+    }
+
+* Algorithmic options dictionary which has the following keys:
 
   * ``seed``: The random generator seed that ensures results reproducibility. This should be an integer value
   * ``budget``: The evaluation budget; the maximum number of evaluations for the blackbox defined
   * ``tol``: The minimum poll size tolerance; the algorithm terminates once the poll size falls below this value
   * ``psize_init``: Initial poll size
   * ``display``: A boolean for displaying verbose outputs per iteration in the terminal window
-  * ``opportunistic``: A boolean for enabling opportunistic search
+  * ``opportunistic``: A boolean for enabling an opportunistic search
   * ``check_cache``: A boolean for checking if the current point is a duplicate by checking its hashed address (integer signature)
   * ``store_cache``: A boolean for saving evaluated designs in the cache memory
   * ``collect_y``: Currently inactive (to be used when the code is integrated with the PyADMM MDO module)
@@ -241,7 +284,7 @@ If the evaluator is a callable functions, the blackbox key has to be assigned to
 
 Update parameters
 -----------------
-After checking the termination criteria, the mesh parameters update step can be called as by reaching that step all the running serial/parallel processes are supposed to be done. It is important to ensure that poll directions have been evaluated on the same mesh and frame parameters, particularly in parallel points evaluation.
+After checking the termination criteria, the mesh parameters update step can be called by reaching that step all the running serial/parallel processes are supposed to be done. It is important to ensure that poll directions have been evaluated on the same mesh and frame parameters, particularly in parallel points evaluation.
 
 This is the code used to update the poll and mesh parameters:
 
@@ -278,7 +321,7 @@ This is the code used to update the poll and mesh parameters:
 Search step
 -----------
 
-This step breaks free of local minimizers, and it is restricted to the mesh. The search step is discussed in more details in the documentation of SML and RAF that can be found in :cite:p:`SML_AB, RAF_AB`.
+This step breaks free of local minimizers, and it is restricted to the mesh. The search step is discussed in more details in the documentation of StatML and RAF that can be found in :cite:p:`SML_AB, RAF_AB`.
 
 
 Poll step
@@ -286,7 +329,7 @@ Poll step
 
 The MADS algorithm is permitted to select any poll direction such that :math:`x^{k}+\delta^{k}d` lies inside the frame where :math:`\delta^{k}d \leq \Delta^{k}b` for all :math:`d \in \mathbb{D}^{k}_{\Delta}`. Since :math:`\Delta^{k}>\delta^{k}` whenever :math:`\delta^{k} < 1` which provides flexibility in how the poll set is constructed.
 
-We will give here a glimpse on the MADS convergence properties and the meaning of the dense sets (richness) of poll directions. In MADS, any direction that is sampled in the limit of a refining sequence must have a nonnegative directional derivative. Moreover, the directions are generated from an ever expanding set of options where the mesh size parameter :math:`\delta_{k}` goes to zero more rapidly than the poll size parameter :math:`\Delta_{k}`.
+We will give here a glimpse of the MADS convergence properties and the meaning of the dense sets (richness) of poll directions. In MADS, any direction that is sampled in the limit of a refining sequence must have a nonnegative directional derivative. Moreover, the directions are generated from an ever-expanding set of options where the mesh size parameter :math:`\delta_{k}` goes to zero more rapidly than the poll size parameter :math:`\Delta_{k}`.
 
 MADS can produce an asymptotically dense set of poll directions that can be demonstrated by using the Householder matrix. Firstly, let's define the dense subset
 
