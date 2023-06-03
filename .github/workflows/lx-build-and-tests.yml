@@ -13,7 +13,7 @@ permissions:
   contents: read
 
 jobs:
-  lx-build-and-test:
+  lx-build-and-tests:
 
     runs-on: ubuntu-latest
 
