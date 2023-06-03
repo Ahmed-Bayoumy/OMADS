@@ -10,7 +10,7 @@ For technical and code documentation, please visit [OMADS Webpage](https://ahmed
 
 ---
 
-**Version 1.5.0**
+**Version 2.2.0**
 
 ---
 
