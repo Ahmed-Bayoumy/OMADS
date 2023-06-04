@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tutorials &mdash; Read the Docs OMADS 1.6.0 documentation</title>
+  <title>Tutorials &mdash; Read the Docs OMADS 2.1.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/proof.css" type="text/css" />
@@ -116,7 +116,7 @@
 \[f(x_{1}, x_{2})=(1-x_{1})^{2}+100(x_{2}-x_{1}^{2})^{2}.\]</div>
 <p>Rosenbrock function has curved contours, where its global minimum is in a parabolic banana-type valley. For some optimization algorithms, it is easy to find that region, but it is hard to find the global minimum as the function values in the valley do not palpably change.</p>
 <p>The problem formulation can be introduced to OMADS as follows:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">OMADS</span> <span class="kn">import</span> <span class="n">main</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">OMADS</span> <span class="kn">import</span> <span class="n">POLL</span><span class="p">,</span> <span class="n">SEARCH</span><span class="p">,</span> <span class="n">MADS</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span>
 
 <span class="k">def</span> <span class="nf">rosen</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
@@ -138,7 +138,7 @@
 
 <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;evaluator&quot;</span><span class="p">:</span> <span class="nb">eval</span><span class="p">,</span> <span class="s2">&quot;param&quot;</span><span class="p">:</span> <span class="n">param</span><span class="p">,</span> <span class="s2">&quot;options&quot;</span><span class="p">:</span> <span class="n">options</span><span class="p">}</span>
 
-<span class="n">main</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="n">POLL</span><span class="o">.</span><span class="n">main</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The following summary is printed after running the previous snippet:</p>
@@ -170,7 +170,7 @@
 <p>The alpine function has non-smooth characteristics that might hinder some gradient-based algorithms from hitting the global minimum point.</p>
 <p>The function has the following design space characteristics: non-smooth (non-continuous), non-convex, separable, differentiable, multimodal, non-random, and non-parametric.</p>
 <p>The problem formulation can be introduced to OMADS as follows:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">OMADS</span> <span class="kn">import</span> <span class="n">main</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">OMADS</span> <span class="kn">import</span> <span class="n">POLL</span><span class="p">,</span> <span class="n">SEARCH</span><span class="p">,</span> <span class="n">MADS</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span>
 
 <span class="k">def</span> <span class="nf">alpine</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
@@ -190,7 +190,7 @@
 
 <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;evaluator&quot;</span><span class="p">:</span> <span class="nb">eval</span><span class="p">,</span> <span class="s2">&quot;param&quot;</span><span class="p">:</span> <span class="n">param</span><span class="p">,</span> <span class="s2">&quot;options&quot;</span><span class="p">:</span> <span class="n">options</span><span class="p">}</span>
 
-<span class="n">main</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="n">POLL</span><span class="o">.</span><span class="n">main</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The following summary is printed after running the previous snippet:</p>
@@ -224,7 +224,7 @@
 \[f(x_{1}, x_{2})= -200 \exp^{(-0.2 \sqrt{x^{2}_{1} + x^{2}_{2}})} + 5\exp^{(\cos(3x_{1})+\sin(3x_{2}))}.\]</div>
 <p>The function has the following design space characteristics: non-continuous, non-convex, non-separable, differentiable, multimodal, non-random, non-parametric</p>
 <p>The problem formulation can be introduced to OMADS as follows:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">OMADS</span> <span class="kn">import</span> <span class="n">main</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">OMADS</span> <span class="kn">import</span> <span class="n">POLL</span><span class="p">,</span> <span class="n">SEARCH</span><span class="p">,</span> <span class="n">MADS</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span>
 
 <span class="k">def</span> <span class="nf">Ackley3</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
@@ -243,7 +243,7 @@
 
 <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;evaluator&quot;</span><span class="p">:</span> <span class="nb">eval</span><span class="p">,</span> <span class="s2">&quot;param&quot;</span><span class="p">:</span> <span class="n">param</span><span class="p">,</span> <span class="s2">&quot;options&quot;</span><span class="p">:</span> <span class="n">options</span><span class="p">}</span>
 
-<span class="n">main</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="n">POLL</span><span class="o">.</span><span class="n">main</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The following summary is printed after running the previous snippet:</p>
@@ -274,7 +274,7 @@
 \[f(x_{1}, x_{2})= -(x_{2}+47)(\sin(\sqrt{|x_{2}+0.5x_{2}+47|}))-x\sin(\sqrt{|x_{1}-(x_{2}+47)|}).\]</div>
 <p>The function has the following design space characteristics: non-continuous, non-convex, non-separable, differentiable, multimodal, non-random, non-parametric</p>
 <p>The problem formulation can be introduced to OMADS as follows:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">OMADS</span> <span class="kn">import</span> <span class="n">main</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">OMADS</span> <span class="kn">import</span> <span class="n">POLL</span><span class="p">,</span> <span class="n">SEARCH</span><span class="p">,</span> <span class="n">MADS</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span>
 
 <span class="k">def</span> <span class="nf">eggHolder</span><span class="p">(</span><span class="n">individual</span><span class="p">):</span>
@@ -296,7 +296,7 @@
 
 <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;evaluator&quot;</span><span class="p">:</span> <span class="nb">eval</span><span class="p">,</span> <span class="s2">&quot;param&quot;</span><span class="p">:</span> <span class="n">param</span><span class="p">,</span> <span class="s2">&quot;options&quot;</span><span class="p">:</span> <span class="n">options</span><span class="p">}</span>
 
-<span class="n">main</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="n">POLL</span><span class="o">.</span><span class="n">main</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The following summary is printed after running the previous snippet:</p>
@@ -328,7 +328,7 @@
 <section id="user-parameters">
 <h3>User parameters<a class="headerlink" href="#user-parameters" title="Permalink to this headline"></a></h3>
 <p>Some use cases require introducing constant parameters to the evaluator callable function. In this case, it is recommended to add those constants in the <code class="docutils literal notranslate"><span class="pre">constants</span></code> key, which is of type <code class="docutils literal notranslate"><span class="pre">List</span></code>, under the <code class="docutils literal notranslate"><span class="pre">evaluator</span></code> dictionary. The parameters index in the constants list should follow the same indices used by the callable function. The callable function can have an extra open input arguments’ field <code class="docutils literal notranslate"><span class="pre">*argv</span></code>, but that pointer should be handled carefully within the callable function to avoid error evaluations. The first input argument is reserved for variables, and the second one is reserved for the <code class="docutils literal notranslate"><span class="pre">constants</span></code> list (if defined). The following example highlights how to define user parameters.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">OMADS</span> <span class="kn">import</span> <span class="n">main</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">OMADS</span> <span class="kn">import</span> <span class="n">POLL</span><span class="p">,</span> <span class="n">SEARCH</span><span class="p">,</span> <span class="n">MADS</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
@@ -352,7 +352,7 @@
 
 <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;evaluator&quot;</span><span class="p">:</span> <span class="nb">eval</span><span class="p">,</span> <span class="s2">&quot;param&quot;</span><span class="p">:</span> <span class="n">param</span><span class="p">,</span> <span class="s2">&quot;options&quot;</span><span class="p">:</span> <span class="n">options</span><span class="p">}</span>
 
-<span class="n">main</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="n">POLL</span><span class="o">.</span><span class="n">main</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>

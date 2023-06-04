@@ -2,9 +2,9 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-  <meta name="keywords" content="OMADS, optimization, solver, optimization-algorithms, blackbox-optimization, MADS, blackbox-optimizer, mathematical-algorithms, derivative-free-optimization, direct-search, simulation-based-optimization">
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Welcome to OMADS! &mdash; Read the Docs OMADS 1.5.0 documentation</title>
+  <title>Welcome to OMADS! &mdash; Read the Docs OMADS 2.1.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/proof.css" type="text/css" />
@@ -85,10 +85,10 @@
              
   <section id="welcome-to-omads">
 <h1>Welcome to OMADS!<a class="headerlink" href="#welcome-to-omads" title="Permalink to this headline"></a></h1>
-<p>This is the documentation page of OMADS python package.</p>
+<p>This is the documentation page of the OMADS python package.</p>
 <section id="about-omads">
 <h2>About OMADS<a class="headerlink" href="#about-omads" title="Permalink to this headline"></a></h2>
-<p>OMADS provides the mesh adaptive direct search (MADS) algorithm — a blackbox optimization algorithm. The package specifically provides an implementation of the MADS local search step called poll-step developed in <span id="id1">[<a class="reference internal" href="#id4" title="C. Audet and J. Dennis. Mesh Adaptive Direct Search Algorithms for Constrained Optimization. SIAM Journal on optimization, 17(1):188–217, 2006.">1</a>]</span>. Currently, the basic module of OMADS, implemented in <code class="docutils literal notranslate"><span class="pre">POLL.py</span></code>, is published in PyPi. Future modules that support more advanced variants of MADS will be published in <span id="id2">[<a class="reference internal" href="#id7" title="A. Bayoumy. OMADS. 2022. URL: https://github.com/Ahmed-Bayoumy/OMADS.">2</a>]</span>.</p>
+<p>OMADS is a python implementation of the mesh adaptive direct search (MADS) algorithm that supports orthogonal <span class="math notranslate nohighlight">\(2n\)</span> directions where <span class="math notranslate nohighlight">\(n\)</span> is the number of variables. MADS is a direct search method that has global convergence properties <span id="id1">[<a class="reference internal" href="#id4" title="C. Audet and J. Dennis. Mesh Adaptive Direct Search Algorithms for Constrained Optimization. SIAM Journal on optimization, 17(1):188–217, 2006.">1</a>]</span>. The latest version of OMADS provides three modules; <code class="docutils literal notranslate"><span class="pre">POLL.py</span></code>, <code class="docutils literal notranslate"><span class="pre">SEARCH.py</span></code> and <code class="docutils literal notranslate"><span class="pre">MADS.py</span></code>. Each module can work per se to solve an optimization problem given an appropriate problem setup. <code class="docutils literal notranslate"><span class="pre">OMADS</span></code> is published on PyPi and maintained on my GitHub page <span id="id2">[<a class="reference internal" href="#id7" title="A. Bayoumy. OMADS: Orthogonal Mesh Adaptive Direct Search. 2022. URL: https://github.com/Ahmed-Bayoumy/OMADS, doi:10.5281/zenodo.7212701.">2</a>]</span>.</p>
 </section>
 <section id="license-copyright">
 <h2>License &amp; copyright<a class="headerlink" href="#license-copyright" title="Permalink to this headline"></a></h2>
@@ -102,7 +102,7 @@
 <span class="n">title</span>        <span class="o">=</span> <span class="p">{</span><span class="n">OMADS</span><span class="p">},</span>
 <span class="n">year</span>         <span class="o">=</span> <span class="mi">2022</span><span class="p">,</span>
 <span class="n">publisher</span>    <span class="o">=</span> <span class="p">{</span><span class="n">Github</span><span class="p">},</span>
-<span class="n">version</span>      <span class="o">=</span> <span class="p">{</span><span class="mf">1.5.0</span><span class="p">},</span>
+<span class="n">version</span>      <span class="o">=</span> <span class="p">{</span><span class="mf">2.1.0</span><span class="p">},</span>
 <span class="n">url</span>          <span class="o">=</span> <span class="p">{</span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">Ahmed</span><span class="o">-</span><span class="n">Bayoumy</span><span class="o">/</span><span class="n">OMADS</span><span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -116,19 +116,19 @@
 <dd><p>C. Audet and J. Dennis. Mesh Adaptive Direct Search Algorithms for Constrained Optimization. <em>SIAM Journal on optimization</em>, 17(1):188–217, 2006.</p>
 </dd>
 <dt class="label" id="id7"><span class="brackets"><a class="fn-backref" href="#id2">2</a></span></dt>
-<dd><p>A. Bayoumy. OMADS. 2022. URL: <a class="reference external" href="https://github.com/Ahmed-Bayoumy/OMADS">https://github.com/Ahmed-Bayoumy/OMADS</a>.</p>
+<dd><p>A. Bayoumy. OMADS: Orthogonal Mesh Adaptive Direct Search. 2022. URL: <a class="reference external" href="https://github.com/Ahmed-Bayoumy/OMADS">https://github.com/Ahmed-Bayoumy/OMADS</a>, <a class="reference external" href="https://doi.org/10.5281/zenodo.7212701">doi:10.5281/zenodo.7212701</a>.</p>
 </dd>
 <dt class="label" id="id6"><span class="brackets">3</span></dt>
 <dd><p>C. Audet, S. Digabel, V. Rochon Montplaisir, and C. Tribes. Algorithm 1027: NOMAD Version 4: Nonlinear Optimization with the MADS Algorithm. <em>ACM Transactions on Mathematical Software</em>, 48(3):35:1–35:22, 2022. URL: <a class="reference external" href="https://dx.doi.org/10.1145/3544489">https://dx.doi.org/10.1145/3544489</a>, <a class="reference external" href="https://doi.org/10.1145/3544489">doi:10.1145/3544489</a>.</p>
 </dd>
 <dt class="label" id="id8"><span class="brackets">4</span></dt>
-<dd><p>A. Bayoumy. SML. 2022. URL: <a class="reference external" href="https://github.com/Ahmed-Bayoumy/SML">https://github.com/Ahmed-Bayoumy/SML</a>.</p>
+<dd><p>A. Bayoumy. StatLML: Statistical Machine Learning Library. 2022. URL: <a class="reference external" href="https://github.com/Ahmed-Bayoumy/SLML">https://github.com/Ahmed-Bayoumy/SLML</a>.</p>
 </dd>
 <dt class="label" id="id10"><span class="brackets">5</span></dt>
 <dd><p>C. Audet and W. Hare. <em>Derivative-free and Blackbox Optimization</em>. Volume 2. Springer, 2017.</p>
 </dd>
 <dt class="label" id="id9"><span class="brackets">6</span></dt>
-<dd><p>A. Bayoumy. SML. 2022. URL: <a class="reference external" href="https://github.com/Ahmed-Bayoumy/RAF">https://github.com/Ahmed-Bayoumy/RAF</a>.</p>
+<dd><p>A. Bayoumy. RAF: Relative Adequacy Framework. 2022. URL: <a class="reference external" href="https://github.com/Ahmed-Bayoumy/RAF">https://github.com/Ahmed-Bayoumy/RAF</a>.</p>
 </dd>
 </dl>
 </div>
@@ -187,6 +187,8 @@
 <li class="toctree-l1"><a class="reference internal" href="OMADS.html">OMADS package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="OMADS.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="OMADS.html#module-OMADS.POLL">OMADS.POLL module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="OMADS.html#omads-search-module">OMADS.SEARCH module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="OMADS.html#omads-mads-module">OMADS.MADS module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="OMADS.html#module-OMADS">Module contents</a></li>
 </ul>
 </li>
