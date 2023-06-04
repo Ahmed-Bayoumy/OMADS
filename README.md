@@ -70,7 +70,7 @@ Input parameters are serialized in a `JSON` template using predefined attributes
 * `param`: problem setup
   * `baseline`: this is the initial starting point (initial design vector)
   * `lb`: lower bounds vector
-  * `ub`: uber bounds vector
+  * `ub`: upper bounds vector
   * `var_names`: list of design variables name
   * `var_types`: list of the variables type
      * `R`: real variable
