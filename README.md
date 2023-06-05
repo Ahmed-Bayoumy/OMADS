@@ -3,7 +3,7 @@
 [![win-build-and-pytest](https://github.com/Ahmed-Bayoumy/OMADS/actions/workflows/win-build-and-pytest.yml/badge.svg)](https://github.com/Ahmed-Bayoumy/OMADS/actions/workflows/win-build-and-pytest.yml)
 [![macos-build-and-pytest](https://github.com/Ahmed-Bayoumy/OMADS/actions/workflows/macos-build-and-pytest.yml/badge.svg)](https://github.com/Ahmed-Bayoumy/OMADS/actions/workflows/macos-build-and-pytest.yml)
 
-<img width="632" alt="OMADS_logo" src="https://github.com/Ahmed-Bayoumy/OMADS/assets/22842095/fa40b893-9653-4019-baf5-1377619a7105">
+<img width="603" alt="OMADS_logo" src="https://github.com/Ahmed-Bayoumy/OMADS/assets/22842095/356d4bb1-5490-4258-89e2-45ef0d23a13c">
 
 # OMADS
 MADS: A python implementation for the mesh adaptive direct search (MADS) method; ORTHO-MADS algorithm.
