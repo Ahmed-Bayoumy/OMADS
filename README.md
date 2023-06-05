@@ -3,6 +3,8 @@
 [![win-build-and-pytest](https://github.com/Ahmed-Bayoumy/OMADS/actions/workflows/win-build-and-pytest.yml/badge.svg)](https://github.com/Ahmed-Bayoumy/OMADS/actions/workflows/win-build-and-pytest.yml)
 [![macos-build-and-pytest](https://github.com/Ahmed-Bayoumy/OMADS/actions/workflows/macos-build-and-pytest.yml/badge.svg)](https://github.com/Ahmed-Bayoumy/OMADS/actions/workflows/macos-build-and-pytest.yml)
 
+<img width="561" alt="OMADS-logo" src="https://github.com/Ahmed-Bayoumy/OMADS/assets/22842095/c8f1b52c-d28e-48f1-83df-d4bb32ff6395">
+
 # OMADS
 MADS: A python implementation for the mesh adaptive direct search (MADS) method; ORTHO-MADS algorithm.
 
@@ -44,7 +46,7 @@ from OMADS import *
 ```
 
 ## How to run OMADS from terminal
-After installing `OMADS` the `SEARCH`, `POLL`, or `MADS` modules can be called directly from a 
+After installing `OMADS` the `SEARCH`, `POLL`, and `MADS` modules can be called directly from a 
 terminal window under the src directory. The path of the JSON template, which contains the problem input parameters, 
 should be entered as an input argument to the aforementioned modules call. 
 
