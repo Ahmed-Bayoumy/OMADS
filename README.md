@@ -57,7 +57,7 @@ python ./OMADS/MADS.py ../../tests/unconstrained/rosenbrock.json
 ```
 
 ## Input parameters
-Input parameters are serialized in a `JSON` template using predefined attributes (keywords) under three dictionaries; 
+Input parameters are serialized in a `JSON` template using predefined attributes (keywords) under four dictionaries; 
 `evaluator`, `param`, `options` and `search`. Here is a brief description of each dictionary and its key attributes.
 
 * `evaluator`: in this dictionary, we define the blackbox location and the name of input and output files (if exist)
