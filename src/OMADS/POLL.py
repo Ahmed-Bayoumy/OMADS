@@ -330,6 +330,13 @@ class Evaluator:
                 evalerr = True
                 logging.error(f"Callable {str(self.blackbox)} evaluation returned an error at the poll point {values}")
                 f_eval = [inf, [inf]]
+            elif (npar == 2 and ('*argv' not in inputs)):
+              try:
+                f_eval = self.blackbox(values)
+              except:
+                evalerr = True
+                logging.error(f"Callable {str(self.blackbox)} evaluation returned an error at the poll point {values}")
+                f_eval = [inf, [inf]]
             else:
               raise IOError(f'The callable {str(self.blackbox)} requires {npar} input args, but only one input can be provided! You can introduce other input parameters to the callable function using the constants list.')
           else:
@@ -829,6 +836,7 @@ class Point:
         self.__penalize__(extreme=False)
       self.status = DESIGN_STATUS.INFEASIBLE
     else:
+      self.hmax = copy.deepcopy(self.h)
       self.status = DESIGN_STATUS.FEASIBLE
 
   def __penalize__(self, extreme: bool=True):
@@ -1680,6 +1688,7 @@ class Dirs2n:
     xtry.RHO = copy.deepcopy(self.RHO)
     xtry.hmax = copy.deepcopy(self.hmax)
     xtry.__eval__(self.bb_output)
+    self.hmax = copy.deepcopy(xtry.hmax)
     toc = time.perf_counter()
     xtry.Eval_time = (toc - tic)
 
@@ -1730,12 +1739,13 @@ class Dirs2n:
     x_post: List[Point] = []
     for xtry in x:
       """ Check success conditions """
-      is_infeas_dom: bool = (self.xmin.status == xtry.status == DESIGN_STATUS.INFEASIBLE and (xtry.h < self.xmin.h and xtry.h <= xtry.hmax and xtry.fobj <= self.xmin.fobj) )
+      is_infeas_dom: bool = (self.xmin.status == xtry.status == DESIGN_STATUS.INFEASIBLE and (xtry.h < self.xmin.h) )
       is_feas_dom: bool = (self.xmin.status == xtry.status == DESIGN_STATUS.FEASIBLE and xtry < self.xmin)
-      is_infea_improving: bool = (self.xmin.status == DESIGN_STATUS.FEASIBLE and xtry.status == DESIGN_STATUS.INFEASIBLE and (xtry.fobj < self.xmin.fobj and xtry.h <= xtry.hmax))
+      is_infea_improving: bool = (self.xmin.status == DESIGN_STATUS.FEASIBLE and xtry.status == DESIGN_STATUS.INFEASIBLE and (xtry.fobj < self.xmin.fobj and xtry.h <= self.xmin.hmax))
       is_feas_improving: bool = (self.xmin.status == DESIGN_STATUS.INFEASIBLE and xtry.status == DESIGN_STATUS.FEASIBLE and (xtry.fobj < self.xmin.fobj))
+      
       success = False
-      if (xtry.is_EB_passed and (is_infeas_dom or is_feas_dom or is_infea_improving or is_feas_improving)):
+      if ((is_infeas_dom or is_feas_dom or is_infea_improving or is_feas_improving)):
         self.success = True
         success = True  # <- This redundant variable is important
         # for managing concurrent parallel execution
@@ -1825,6 +1835,7 @@ class PreMADS:
       poll.store_cache = options.store_cache
       poll.check_cache = options.check_cache
       poll.display = options.display
+      poll.scaling
     else:
       poll = options.extend
     
@@ -1913,6 +1924,7 @@ class PreMADS:
     x_start.LAMBDA = param.LAMBDA
     if not is_xs:
       x_start.__eval__(poll.bb_output)
+      B._h_max = x_start.hmax
     """ 9- Copy the starting point object to the poll's  minimizer subclass """
     if not extend:
       poll.xmin = copy.deepcopy(x_start)
@@ -2227,7 +2239,7 @@ def main(*args) -> Dict[str, Any]:
     if b.test_suite == "uncon":
       ncon = 0
     else:
-      ncon = len(poll.bb_output[1])
+      ncon = len(poll.xmin.c_eq) + len(poll.xmin.c_ineq)
     if len(poll.bb_output) > 0:
       b.add_row(name=poll.bb_handle.blackbox,
             run_index=int(args[2]),
