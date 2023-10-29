@@ -9,24 +9,24 @@
 
   "param":
     {
-      "baseline": [1,1,1,1,1,1,1,1,1,1],
+      "baseline": [1E5,1E5,1E5,1E5,1E5,1E5,1E5,1E5,1E5,1E5],
       "lb": [1e-6,1e-6,1e-6,1e-6,1e-6,1e-6,1e-6,1e-6,1e-6,1e-6],
       "ub": [1e6,1e6,1e6,1e6,1e6,1e6,1e6,1e6,1e6,1e6],
       "var_names": ["x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9", "x10"],
-      "scaling": 9e5,
+      "scaling": 10,
       "constraints_type": ["PB", "PB", "PB","PB", "PB", "PB"],
-      "LAMBDA": [5, 5, 5, 5, 5, 5],
-      "RHO": 1,
+      "LAMBDA": [1E5, 1E5, 1E5, 1E5, 1E5, 1E5],
+      "RHO": 1.0,
       "post_dir": "./tests/bm/constrained/post",
-      "h_max": 10
+      "h_max": 0.0
     },
 
   "options":
     {
-      "seed": 3,
+      "seed": 10000,
       "budget": 100000,
       "tol": 1e-12,
-      "psize_init": 1.0,
+      "psize_init": 2.0,
       "display": false,
       "opportunistic": false,
       "check_cache": true,

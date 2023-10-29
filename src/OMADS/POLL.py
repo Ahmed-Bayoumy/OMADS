@@ -330,6 +330,13 @@ class Evaluator:
                 evalerr = True
                 logging.error(f"Callable {str(self.blackbox)} evaluation returned an error at the poll point {values}")
                 f_eval = [inf, [inf]]
+            elif (npar == 2 and ('*argv' not in inputs)):
+              try:
+                f_eval = self.blackbox(values)
+              except:
+                evalerr = True
+                logging.error(f"Callable {str(self.blackbox)} evaluation returned an error at the poll point {values}")
+                f_eval = [inf, [inf]]
             else:
               raise IOError(f'The callable {str(self.blackbox)} requires {npar} input args, but only one input can be provided! You can introduce other input parameters to the callable function using the constants list.')
           else:
@@ -488,6 +495,8 @@ class Point:
   _RHO: float = MPP.RHO.value
 
   _hmax: float = 1.
+
+  _hmin: float = inf
 
   Eval_time: float = 0.
 
@@ -684,6 +693,14 @@ class Point:
     self._freal = other
 
   @property
+  def hmin(self):
+    return self._hmin
+
+  @hmin.setter
+  def hmin(self, other: float):
+    self._hmin = other
+
+  @property
   def c_ineq(self):
     return self._c_ineq
 
@@ -801,24 +818,40 @@ class Point:
         self.constraints_type.append(BARRIER_TYPES.EB)
     """ Check if all extreme barriers are satisfied """
     cEB = []
+    cPB = []
+    self.cPB = []
     for i in range(len(self.c_ineq)):
       if self.constraints_type[i] == BARRIER_TYPES.EB:
         cEB.append(self.c_ineq[i])
+      else:
+        cPB.append(self.c_ineq[i])
     if isinstance(cEB, list) and len(cEB) >= 1:
       hEB = sum(power(maximum(cEB, self._dtype.zero,
                    dtype=self._dtype.dtype), 2, dtype=self._dtype.dtype))
     else:
       hEB = self._dtype.zero
+    if isinstance(cPB, list) and len(cPB) >= 1:
+      hPB = sum(power(maximum(cPB, self._dtype.zero,
+                   dtype=self._dtype.dtype), 2, dtype=self._dtype.dtype))
+      self.cPB = cPB
+    else:
+      hPB = self._dtype.zero
     if hEB <= self.hzero:
       self.is_EB_passed = True
+      if hPB > self.hzero:
+        self.status = DESIGN_STATUS.INFEASIBLE
+      self.h = copy.deepcopy(hPB)
+      if hPB < self.hmax:
+        self.hmax = copy.deepcopy(hPB)
     else:
       self.is_EB_passed = False
       self.status = DESIGN_STATUS.INFEASIBLE
+      self.h = copy.deepcopy(hEB)
       self.__penalize__(extreme= True)
       return
     """ Aggregate all constraints """
-    self.h = sum(power(maximum(self.c_ineq, self._dtype.zero,
-                   dtype=self._dtype.dtype), 2, dtype=self._dtype.dtype))
+    # self.h = sum(power(maximum(self.c_ineq, self._dtype.zero,
+    #                dtype=self._dtype.dtype), 2, dtype=self._dtype.dtype))
     if np.isnan(self.h) or np.any(np.isnan(self.c_ineq)):
       self.h = inf
       self.status = DESIGN_STATUS.ERROR
@@ -829,17 +862,20 @@ class Point:
         self.__penalize__(extreme=False)
       self.status = DESIGN_STATUS.INFEASIBLE
     else:
+      self.hmax = copy.deepcopy(self.h)
       self.status = DESIGN_STATUS.FEASIBLE
 
   def __penalize__(self, extreme: bool=True):
-    if len(self.c_ineq) > len(self.LAMBDA):
-      self.LAMBDA += [self.LAMBDA[-1]] * abs(len(self.LAMBDA)-len(self.c_ineq))
-    if len(self.c_ineq) < len(self.LAMBDA):
-      del self.LAMBDA[len(self.c_ineq):]
+    if len(self.cPB) > len(self.LAMBDA):
+      self.LAMBDA += [self.LAMBDA[-1]] * abs(len(self.LAMBDA)-len(self.cPB))
+    if len(self.cPB) < len(self.LAMBDA):
+      del self.LAMBDA[len(self.cPB):]
     if extreme:
       self.f = inf
+      self.hmin = inf
     else:
-      self.f = self.fobj + np.dot(self.LAMBDA, self.c_ineq) + ((1/(2*self.RHO)) * self.h if self.RHO > 0. else np.inf)
+      self.hmin = np.dot(self.LAMBDA, self.cPB) + ((1/(2*self.RHO)) * self.h if self.RHO > 0. else np.inf)
+      self.f = self.fobj + self.hmin
 
   def __is_duplicate__(self, other) -> bool:
     return other.signature is self._signature
@@ -1546,6 +1582,7 @@ class Dirs2n:
     else:
       temp = np.add(hhm, np.array(self.x_sc.coordinates), dtype=self._dtype.dtype)
     # np.random.seed(self._seed)
+    np.random.seed(seed=self.seed+self.iter*123)
     temp = np.random.permutation(temp)
     temp = np.minimum(temp, ub, dtype=self._dtype.dtype)
     temp = np.maximum(temp, lb, dtype=self._dtype.dtype)
@@ -1584,6 +1621,23 @@ class Dirs2n:
         temp.append(s_array[k][j])
       self.scaling.append(temp)
       del temp
+  
+  def directional_scaling(self, p: Point, npts: int = 5) -> List[Point]:
+    lb = self.lb
+    ub = self.ub
+    # np.random.seed(self.seed)
+    scaling = [self.mesh.msize, 2*self.mesh.msize]
+    p_trials: List[Point] = [0]*len(scaling)
+    for k in range(len(scaling)):
+      p_trials[k] = copy.deepcopy(p)
+      p_trials[k].coordinates = copy.deepcopy(np.subtract(p_trials[k].coordinates, scaling[k]))
+      for i in range(p_trials[k].n_dimensions):
+        if p_trials[k].coordinates[i] < lb[k]:
+          p_trials[k].coordinates[i] = copy.deepcopy(lb[k])
+        if p_trials[k].coordinates[i] > ub[k]:
+          p_trials[k].coordinates[i] = copy.deepcopy(ub[k])
+    
+    return p_trials
   
   def gauss_perturbation(self, p: Point, npts: int = 5) -> List[Point]:
     lb = self.lb
@@ -1630,23 +1684,24 @@ class Dirs2n:
      is a duplicate (it has already been evaluated) """
     unique_p_trials: int = 0
     is_duplicate: bool = (self.check_cache and self.hashtable.size > 0 and self.hashtable.is_duplicate(xtry))
-    while is_duplicate and unique_p_trials < 5:
-      if self.display:
-        print(f'Cache hit. Trial# {unique_p_trials}: Looking for a non-duplicate in the vicinity of the duplicate point ...')
-      if xtry.var_type is None:
-        if self.xmin.var_type is not None:
-          xtry.var_type = self.xmin.var_type
-        else:
-          xtry.var_type = [VAR_TYPE.CONTINUOUS] * len(self.xmin.coordinates)
-      xtries: List[Point] = self.gauss_perturbation(p=xtry, npts=len(self.poll_dirs)*2)
-      for tr in range(len(xtries)):
-        is_duplicate = self.hashtable.is_duplicate(xtries[tr])
-        if is_duplicate:
-           continue 
-        else:
-          xtry = copy.deepcopy(xtries[tr])
-          break
-      unique_p_trials += 1
+    # TODO: The commented logic below needs more investigation to make sure that it doesn't hurt.
+    # while is_duplicate and unique_p_trials < 5:
+    #   if self.display:
+    #     print(f'Cache hit. Trial# {unique_p_trials}: Looking for a non-duplicate along the poll direction where the duplicate point is located...')
+    #   if xtry.var_type is None:
+    #     if self.xmin.var_type is not None:
+    #       xtry.var_type = self.xmin.var_type
+    #     else:
+    #       xtry.var_type = [VAR_TYPE.CONTINUOUS] * len(self.xmin.coordinates)
+    #   xtries: List[Point] = self.directional_scaling(p=xtry, npts=len(self.poll_dirs)*2)
+    #   for tr in range(len(xtries)):
+    #     is_duplicate = self.hashtable.is_duplicate(xtries[tr])
+    #     if is_duplicate:
+    #        continue 
+    #     else:
+    #       xtry = copy.deepcopy(xtries[tr])
+    #       break
+    #   unique_p_trials += 1
 
     if (is_duplicate):
       if self.display:
@@ -1680,20 +1735,21 @@ class Dirs2n:
     xtry.RHO = copy.deepcopy(self.RHO)
     xtry.hmax = copy.deepcopy(self.hmax)
     xtry.__eval__(self.bb_output)
+    self.hmax = copy.deepcopy(xtry.hmax)
     toc = time.perf_counter()
     xtry.Eval_time = (toc - tic)
 
     """ Update multipliers and penalty """
     if self.LAMBDA == None:
       self.LAMBDA = self.xmin.LAMBDA
-    if len(xtry.c_ineq) > len(self.LAMBDA):
-      self.LAMBDA += [self.LAMBDA[-1]] * abs(len(self.LAMBDA)-len(xtry.c_ineq))
-    if len(xtry.c_ineq) < len(self.LAMBDA):
-      del self.LAMBDA[len(xtry.c_ineq):]
-    for i in range(len(xtry.c_ineq)):
+    if len(xtry.cPB) > len(self.LAMBDA):
+      self.LAMBDA += [self.LAMBDA[-1]] * abs(len(self.LAMBDA)-len(xtry.cPB))
+    if len(xtry.cPB) < len(self.LAMBDA):
+      del self.LAMBDA[len(xtry.cPB):]
+    for i in range(len(xtry.cPB)):
       if self.RHO == 0.:
         self.RHO = 0.001
-      self.LAMBDA[i] = copy.deepcopy(max(self.dtype.zero, self.LAMBDA[i] + (1/self.RHO)*xtry.c_ineq[i]))
+      self.LAMBDA[i] = copy.deepcopy(max(self.dtype.zero, self.LAMBDA[i] + (1/self.RHO)*xtry.cPB[i]))
     
     if xtry.status == DESIGN_STATUS.FEASIBLE:
       self.RHO *= copy.deepcopy(0.5)
@@ -1730,12 +1786,13 @@ class Dirs2n:
     x_post: List[Point] = []
     for xtry in x:
       """ Check success conditions """
-      is_infeas_dom: bool = (self.xmin.status == xtry.status == DESIGN_STATUS.INFEASIBLE and (xtry.h < self.xmin.h and xtry.h <= xtry.hmax and xtry.fobj <= self.xmin.fobj) )
-      is_feas_dom: bool = (self.xmin.status == xtry.status == DESIGN_STATUS.FEASIBLE and xtry < self.xmin)
-      is_infea_improving: bool = (self.xmin.status == DESIGN_STATUS.FEASIBLE and xtry.status == DESIGN_STATUS.INFEASIBLE and (xtry.fobj < self.xmin.fobj and xtry.h <= xtry.hmax))
-      is_feas_improving: bool = (self.xmin.status == DESIGN_STATUS.INFEASIBLE and xtry.status == DESIGN_STATUS.FEASIBLE and (xtry.fobj < self.xmin.fobj))
+      is_infeas_dom: bool = (xtry.status == DESIGN_STATUS.INFEASIBLE and (xtry.h < self.xmin.h) )
+      is_feas_dom: bool = (xtry.status == DESIGN_STATUS.FEASIBLE and xtry.fobj < self.xmin.fobj)
+      is_infea_improving: bool = (self.xmin.status == DESIGN_STATUS.FEASIBLE and xtry.status == DESIGN_STATUS.INFEASIBLE and (xtry.fobj < self.xmin.fobj and xtry.h <= self.xmin.hmax))
+      is_feas_improving: bool = (self.xmin.status == DESIGN_STATUS.INFEASIBLE and xtry.status == DESIGN_STATUS.FEASIBLE and xtry.fobj < self.xmin.fobj)
+      
       success = False
-      if (xtry.is_EB_passed and (is_infeas_dom or is_feas_dom or is_infea_improving or is_feas_improving)):
+      if ((is_infeas_dom or is_feas_dom)):
         self.success = True
         success = True  # <- This redundant variable is important
         # for managing concurrent parallel execution
@@ -1744,6 +1801,7 @@ class Dirs2n:
         del self._xmin
         self._xmin = Point()
         self._xmin = copy.deepcopy(xtry)
+        self.hmax = copy.deepcopy(xtry.hmax)
         if self.display:
           if self._dtype.dtype == np.float64:
             print(f"Success: fmin = {self.xmin.f:.15f} (hmin = {self.xmin.h:.15})")
@@ -1825,6 +1883,7 @@ class PreMADS:
       poll.store_cache = options.store_cache
       poll.check_cache = options.check_cache
       poll.display = options.display
+      poll.scaling
     else:
       poll = options.extend
     
@@ -1906,13 +1965,11 @@ class PreMADS:
       param.LAMBDA = [0] * len(x_start.c_ineq)
     if not isinstance(param.LAMBDA, list):
       param.LAMBDA = [param.LAMBDA]
-    if len(x_start.c_ineq) > len(param.LAMBDA):
-      param.LAMBDA += [param.LAMBDA[-1]] * abs(len(param.LAMBDA)-len(x_start.c_ineq))
-    if len(x_start.c_ineq) < len(param.LAMBDA):
-      del param.LAMBDA[len(x_start.c_ineq):]
+    
     x_start.LAMBDA = param.LAMBDA
     if not is_xs:
       x_start.__eval__(poll.bb_output)
+      B._h_max = x_start.hmax
     """ 9- Copy the starting point object to the poll's  minimizer subclass """
     if not extend:
       poll.xmin = copy.deepcopy(x_start)
@@ -1999,7 +2056,7 @@ class Output:
         fobj: float,
         h: float, f: float, rho: float, L: List[float], hmax: float,
         x: List[float], stepName: str):
-    row = {f'{"Runtime (Sec)".rjust(25)}': f'{f"{eval_time}".rjust(25)}', f'{"Iteration".rjust(25)}': f'{f"{iterno}".rjust(25)}', f'{"Evaluation #".rjust(25)}': f'{f"{evalno}".rjust(25)}', f'{"Step:".rjust(25)}': f'{f"{stepName}".rjust(25)}', f'{"Source".rjust(25)}': f'{f"{source}".rjust(25)}', f'{"Model_name".rjust(25)}': f'{f"{Mname}".rjust(25)}', f'{"Delta".rjust(25)}': f'{f"{poll_size}".rjust(25)}', f'{"Status".rjust(25)}': f'{f"{status}".rjust(25)}', f'{"phi".rjust(25)}': f'{f"{f}".rjust(25)}', f'{"fobj".rjust(25)}': f'{f"{fobj}".rjust(25)}', f'{"max(c_in)".rjust(25)}': f'{f"{h}".rjust(25)}', f'{"Penalty_parameter".rjust(25)}': f'{f"{rho}".rjust(25)}', f'{"Multipliers".rjust(25)}': f'{f"{max(L)}".rjust(25)}', f'{"hmax".rjust(25)}': f'{f"{hmax}".rjust(25)}'}
+    row = {f'{"Runtime (Sec)".rjust(25)}': f'{f"{eval_time}".rjust(25)}', f'{"Iteration".rjust(25)}': f'{f"{iterno}".rjust(25)}', f'{"Evaluation #".rjust(25)}': f'{f"{evalno}".rjust(25)}', f'{"Step:".rjust(25)}': f'{f"{stepName}".rjust(25)}', f'{"Source".rjust(25)}': f'{f"{source}".rjust(25)}', f'{"Model_name".rjust(25)}': f'{f"{Mname}".rjust(25)}', f'{"Delta".rjust(25)}': f'{f"{poll_size}".rjust(25)}', f'{"Status".rjust(25)}': f'{f"{status}".rjust(25)}', f'{"phi".rjust(25)}': f'{f"{f}".rjust(25)}', f'{"fobj".rjust(25)}': f'{f"{fobj}".rjust(25)}', f'{"max(c_in)".rjust(25)}': f'{f"{h}".rjust(25)}', f'{"Penalty_parameter".rjust(25)}': f'{f"{rho}".rjust(25)}', f'{"Multipliers".rjust(25)}': f'{f"{max(L) if len(L)>0 else None}".rjust(25)}', f'{"hmax".rjust(25)}': f'{f"{hmax}".rjust(25)}'}
     # row = {'Iter no.': iterno, 'Eval no.': evalno,
     #      'poll_size': poll_size, 'hmin': h, 'fmin': f}
     ss = 0
@@ -2114,6 +2171,7 @@ def main(*args) -> Dict[str, Any]:
   RHO_k = xmin.RHO
   while True:
     poll.mesh.update()
+    poll.LAMBDA = copy.deepcopy(xmin.LAMBDA)
     """ Create the set of poll directions """
     hhm = poll.create_housholder(options.rich_direction, domain=xmin.var_type)
     poll.lb = param.lb
@@ -2124,7 +2182,7 @@ def main(*args) -> Dict[str, Any]:
         B.update_and_reset_success()
       else:
         B.insert(xmin)
-    poll.hmax = B._h_max
+    poll.hmax = xmin.hmax
     poll.create_poll_set(hhm=hhm,
                ub=param.ub,
                lb=param.lb, it=iteration, var_type=xmin.var_type, var_sets=xmin.sets, var_link = xmin.var_link, c_types=param.constraints_type, is_prim=True)
@@ -2183,6 +2241,7 @@ def main(*args) -> Dict[str, Any]:
           xt.append(f.result()[-1])
 
     xpost: List[Point] = poll.master_updates(xt, peval, save_all_best=options.save_all_best, save_all=options.save_results)
+    xmin = copy.deepcopy(poll.xmin)
     if options.save_results:
       for i in range(len(xpost)):
         post.poll_dirs.append(xpost[i])
@@ -2227,7 +2286,7 @@ def main(*args) -> Dict[str, Any]:
     if b.test_suite == "uncon":
       ncon = 0
     else:
-      ncon = len(poll.bb_output[1])
+      ncon = len(poll.xmin.c_eq) + len(poll.xmin.c_ineq)
     if len(poll.bb_output) > 0:
       b.add_row(name=poll.bb_handle.blackbox,
             run_index=int(args[2]),
@@ -2260,14 +2319,14 @@ def main(*args) -> Dict[str, Any]:
     print(f" Random numbers generator's seed {options.seed}")
     print(" xmin = " + str(poll.xmin))
     print(" hmin = " + str(poll.xmin.h))
-    print(" fmin = " + str(poll.xmin.f))
+    print(" fmin = " + str(poll.xmin.fobj))
     print(" #bb_eval = " + str(poll.bb_eval))
     print(" #iteration = " + str(iteration))
     print(" nb_success = " + str(poll.nb_success))
     print(" psize = " + str(poll.mesh.psize))
     print(" psize_success = " + str(poll.mesh.psize_success))
     print(" psize_max = " + str(poll.mesh.psize_max))
-  xmin = poll.xmin
+  xmin = copy.deepcopy(poll.xmin)
   """ Evaluation of the blackbox; get output responses """
   if xmin.sets is not None and isinstance(xmin.sets,dict):
     p: List[Any] = []
