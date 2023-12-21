@@ -45,7 +45,7 @@ from numpy import sum, subtract, add, maximum, minimum, power, inf
 from enum import Enum, auto
 import random
 
-
+from ._msg_handler import logger, MSG_TYPE
 
 @dataclass
 class DType:
@@ -868,7 +868,7 @@ class Point:
   def __penalize__(self, extreme: bool=True):
     if len(self.cPB) > len(self.LAMBDA):
       self.LAMBDA += [self.LAMBDA[-1]] * abs(len(self.LAMBDA)-len(self.cPB))
-    if len(self.cPB) < len(self.LAMBDA):
+    if 0 < len(self.cPB) < len(self.LAMBDA):
       del self.LAMBDA[len(self.cPB):]
     if extreme:
       self.f = inf
@@ -1319,6 +1319,7 @@ class Dirs2n:
   RHO: float = MPP.RHO
   LAMBDA: List[float] = None
   hmax: float = 1.
+  log: logger = None
 
   @property
   def x_sc(self) -> Point:
@@ -1671,6 +1672,8 @@ class Dirs2n:
     """ Set the dynamic index for this point """
     tic = time.perf_counter()
     self.point_index = index
+    if self.log is not None:
+      self.log.log_msg(msg=f"Evaluate point # {index}... \n", msg_type=MSG_TYPE.INFO)
     """ Initialize stopping and success conditions"""
     stop: bool = False
     """ Copy the point i to a trial one """
@@ -1738,6 +1741,8 @@ class Dirs2n:
     self.hmax = copy.deepcopy(xtry.hmax)
     toc = time.perf_counter()
     xtry.Eval_time = (toc - tic)
+    if self.log is not None:
+      self.log.log_msg(msg=f"Completed evaluation of point # {index} in {xtry.Eval_time} seconds. \n", msg_type=MSG_TYPE.INFO)
 
     """ Update multipliers and penalty """
     if self.LAMBDA == None:
@@ -1829,15 +1834,22 @@ class Dirs2n:
 class PreMADS:
   """ Preprocessor for setting up optimization settings and parameters"""
   data: Dict[Any, Any]
+  log: logger = None
 
-  def initialize_from_dict(self, xs: Point=None):
+  def initialize_from_dict(self, log: logger = None, xs: Point=None):
     """ MADS initialization """
     """ 1- Construct the following classes by unpacking
      their respective dictionaries from the input JSON file """
+    self.log = copy.deepcopy(log)
+    if self.log is not None:
+      self.log.log_msg(msg="---------------- Preprocess the POLL step ----------------", msg_type=MSG_TYPE.INFO)
+      self.log.log_msg(msg="- Reading the input dictionaries", msg_type=MSG_TYPE.INFO)
     options = Options(**self.data["options"])
     param = Parameters(**self.data["param"])
     B = Barrier(param)
     ev = Evaluator(**self.data["evaluator"])
+    if self.log is not None:
+      self.log.log_msg(msg="- Set the POLL configurations", msg_type=MSG_TYPE.INFO)
     ev.dtype.precision = options.precision
     if param.constants != None:
       ev.constants = copy.deepcopy(param.constants)
@@ -1897,6 +1909,8 @@ class PreMADS:
     """ 7- Evaluate the starting point """
     if options.display:
       print(" Evaluation of the starting points")
+      if self.log is not None:
+        self.log.log_msg(msg="- Evaluate the starting point", msg_type=MSG_TYPE.INFO)
     if not is_xs:
       x_start.coordinates = param.baseline
       x_start.sets = param.var_sets
@@ -1904,6 +1918,7 @@ class PreMADS:
         x_start.constraints_type = [xb for xb in param.constraints_type]
       elif param.constraints_type is not None:
         x_start.constraints_type = [param.constraints_type]
+    
     """ 8- Set the variables type """
     if param.var_type is not None:
       c= 0
@@ -1962,9 +1977,10 @@ class PreMADS:
     x_start.hmax = B._h_max
     x_start.RHO = param.RHO
     if param.LAMBDA is None:
-      param.LAMBDA = [0] * len(x_start.c_ineq)
+      param.LAMBDA = [0]
     if not isinstance(param.LAMBDA, list):
       param.LAMBDA = [param.LAMBDA]
+    x_start.LAMBDA = param.LAMBDA
     
     x_start.LAMBDA = param.LAMBDA
     if not is_xs:
@@ -2015,6 +2031,9 @@ class PreMADS:
     out = Output(file_path=param.post_dir, vnames=param.var_names, pname=param.name, runfolder=f'{param.name}_run')
     if options.display:
       print("End of the evaluation of the starting points")
+      if self.log is not None:
+        self.log.log_msg(msg="- End of the evaluation of the starting points", msg_type=MSG_TYPE.INFO)
+
     iteration += 1
 
     return iteration, x_start, poll, options, param, post, out, B
@@ -2103,7 +2122,7 @@ class PostMADS:
 
   def output_coordinates(self, out: Output):
     """ Save spinners in a json file """
-    with open(out.file_path + "/coords.json", "w") as json_file:
+    with open(out.file_path + f"/{out.runfolder}/coords.json", "w") as json_file:
       dict_out = {}
       for ii, ob in enumerate(self.coords, start=1):
         entry: Dict[Any, Any] = {}
@@ -2113,9 +2132,10 @@ class PostMADS:
         entry['x_incumbent'] = self.x_incumbent[ii - 1].coordinates
         dict_out[ii] = entry
         del entry
-        json.dump(dict_out, json_file, indent=4, sort_keys=True)
+      json.dump(dict_out, json_file, indent=4, sort_keys=True)
 
   def __str__(self):
+    """ Initialize the log file """
     return f'{"iteration= "} {self.iter[-1]}, {"bbeval= "} ' \
          f'{self.bb_eval[-1]}, {"psize= "} {self.psize[-1]}, ' \
          f'{"hmin = "} 'f'{self.xmin.h}, {"status:"} {self.xmin.status.name} {", fmin = "} {self.xmin.f}'
@@ -2127,6 +2147,8 @@ class PostMADS:
 def main(*args) -> Dict[str, Any]:
   """ Otho-MADS main algorithm """
   # TODO: add more checks for more defensive code
+
+  
 
   """ Parse the parameters files """
   if type(args[0]) is dict:
@@ -2150,10 +2172,14 @@ def main(*args) -> Dict[str, Any]:
             "It should be either a dictionary object or a JSON file that holds "
             "the required input parameters.")
 
+  """ Initialize the log file """
+  log = logger()
+  log.initialize(data["param"]["post_dir"] + "/OMADS.log")
+
   """ Run preprocessor for the setup of
    the optimization problem and for the initialization
   of optimization process """
-  iteration, xmin, poll, options, param, post, out, B = PreMADS(data).initialize_from_dict()
+  iteration, xmin, poll, options, param, post, out, B = PreMADS(data).initialize_from_dict(log=log)
   out.stepName = "Poll"
   
 
@@ -2170,6 +2196,8 @@ def main(*args) -> Dict[str, Any]:
   LAMBDA_k = xmin.LAMBDA
   RHO_k = xmin.RHO
   while True:
+    del poll.poll_dirs
+    poll.poll_dirs = []
     poll.mesh.update()
     poll.LAMBDA = copy.deepcopy(xmin.LAMBDA)
     """ Create the set of poll directions """
@@ -2188,6 +2216,8 @@ def main(*args) -> Dict[str, Any]:
                lb=param.lb, it=iteration, var_type=xmin.var_type, var_sets=xmin.sets, var_link = xmin.var_link, c_types=param.constraints_type, is_prim=True)
     
     if B._sec_poll_center is not None and B._sec_poll_center.evaluated:
+      del poll.poll_dirs
+      # poll.poll_dirs = []
       poll.x_sc = B._sec_poll_center
       poll.create_poll_set(hhm=hhm,
                ub=param.ub,
@@ -2207,6 +2237,7 @@ def main(*args) -> Dict[str, Any]:
     poll.bb_output = []
     xt = []
     """ Serial evaluation for points in the poll set """
+    poll.log = log
     if not options.parallel_mode:
       for it in range(len(poll.poll_dirs)):
         peval += 1
@@ -2266,6 +2297,8 @@ def main(*args) -> Dict[str, Any]:
       poll.mesh.psize = np.divide(poll.mesh.psize, 2, dtype=poll.dtype.dtype)
 
     if options.display:
+      if log is not None:
+        log.log_msg(msg=post.__str__(), msg_type=MSG_TYPE.INFO)
       print(post)
     
     LAMBDA_k = poll.LAMBDA
@@ -2302,6 +2335,8 @@ def main(*args) -> Dict[str, Any]:
     print(f"{poll.bb_handle.blackbox}: fmin = {poll.xmin.f:.2f} , hmin= {poll.xmin.h:.2f}")
 
   elif len(args) > 1 and not isinstance(args[1], toy.Run):
+    if log is not None:
+      log.log_msg(msg="Could not find " + args[1] + " in the internal BM suite.", msg_type=MSG_TYPE.ERROR)
     raise IOError("Could not find " + args[1] + " in the internal BM suite.")
 
   if options.save_results:
@@ -2309,10 +2344,29 @@ def main(*args) -> Dict[str, Any]:
 
   if options.display:
     print(" end of orthogonal MADS ")
+    if log is not None:
+      log.log_msg(msg=" end of orthogonal MADS " + args[1] + " in the internal BM suite.", msg_type=MSG_TYPE.INFO)
     print(" Final objective value: " + str(poll.xmin.f) + ", hmin= " + str(poll.xmin.h))
+    if log is not None:
+      log.log_msg(msg=" Final objective value: " + args[1] + " in the internal BM suite.", msg_type=MSG_TYPE.INFO)
 
   if options.save_coordinates:
     post.output_coordinates(out)
+  
+  if log is not None:
+    log.log_msg(msg="\n ---Run Summary--- \n", msg_type=MSG_TYPE.INFO)
+    log.log_msg(msg=f" Run completed in {toc - tic:.4f} seconds\n", msg_type=MSG_TYPE.INFO)
+    log.log_msg(msg=f" Random numbers generator's seed {options.seed} \n", msg_type=MSG_TYPE.INFO)
+    log.log_msg(msg=f" xmin = {poll.xmin.__str__()} \n", msg_type=MSG_TYPE.INFO)
+    log.log_msg(msg=f" hmin = {poll.xmin.h} \n", msg_type=MSG_TYPE.INFO)
+    log.log_msg(msg=f" fmin {poll.xmin.fobj}", msg_type=MSG_TYPE.INFO)
+    log.log_msg(msg=f" #bb_eval =  {poll.bb_eval} \n", msg_type=MSG_TYPE.INFO)
+    log.log_msg(msg=f" #iteration =  {iteration} \n", msg_type=MSG_TYPE.INFO)
+    log.log_msg(msg=f"  nb_success = {poll.nb_success} \n", msg_type=MSG_TYPE.INFO)
+    log.log_msg(msg=f" psize = {poll.mesh.psize} \n", msg_type=MSG_TYPE.INFO)
+    log.log_msg(msg=f" psize_success = {poll.mesh.psize_success} \n", msg_type=MSG_TYPE.INFO)
+    log.log_msg(msg=f" psize_max = {poll.mesh.psize_max} \n", msg_type=MSG_TYPE.INFO)
+  
   if options.display:
     print("\n ---Run Summary---")
     print(f" Run completed in {toc - tic:.4f} seconds")
@@ -2325,7 +2379,8 @@ def main(*args) -> Dict[str, Any]:
     print(" nb_success = " + str(poll.nb_success))
     print(" psize = " + str(poll.mesh.psize))
     print(" psize_success = " + str(poll.mesh.psize_success))
-    print(" psize_max = " + str(poll.mesh.psize_max))
+    print(" psize_max = " + poll.mesh.psize_max)
+    
   xmin = copy.deepcopy(poll.xmin)
   """ Evaluation of the blackbox; get output responses """
   if xmin.sets is not None and isinstance(xmin.sets,dict):

@@ -38,7 +38,7 @@ import concurrent.futures
 from matplotlib import pyplot as plt
 import random
 from BMDFO import toy
-
+from ._msg_handler import MSG_TYPE, logger
 
 class SAMPLING_METHOD(Enum):
   FULLFACTORIAL: int = auto()
@@ -557,6 +557,7 @@ class efficient_exploration:
     unique_p_trials: int = 0
     is_duplicate: bool = (self.check_cache and self.hashtable.size > 0 and self.hashtable.is_duplicate(xtry))
     while is_duplicate and unique_p_trials < 5:
+      self.log.log_msg(f'Cache hit. Trial# {unique_p_trials}: Looking for a non-duplicate in the vicinity of the duplicate point ...', MSG_TYPE.INFO)
       if self.display:
         print(f'Cache hit. Trial# {unique_p_trials}: Looking for a non-duplicate in the vicinity of the duplicate point ...')
       if xtry.var_type is None:
@@ -576,6 +577,7 @@ class efficient_exploration:
       unique_p_trials += 1
 
     if (is_duplicate):
+      self.log.log_msg("Cache hit ... Failed to find a non-duplicate alternative.", MSG_TYPE.INFO)
       if self.display:
         print("Cache hit ... Failed to find a non-duplicate alternative.")
       stop = True
@@ -713,15 +715,21 @@ class search_sampling:
 class PreExploration:
   """ Preprocessor for setting up optimization settings and parameters"""
   data: Dict[Any, Any]
-
-  def initialize_from_dict(self):
+  log: logger = None
+  def initialize_from_dict(self, log: logger = None, xs: Point=None):
     """ MADS initialization """
     """ 1- Construct the following classes by unpacking
      their respective dictionaries from the input JSON file """
+    self.log = copy.deepcopy(log)
+    if self.log is not None:
+      self.log.log_msg(msg="---------------- Preprocess the SEARCH step ----------------", msg_type=MSG_TYPE.INFO)
+      self.log.log_msg(msg="- Reading the input dictionaries", msg_type=MSG_TYPE.INFO)
     options = Options(**self.data["options"])
     param = Parameters(**self.data["param"])
     B = Barrier(param)
     ev = Evaluator(**self.data["evaluator"])
+    if self.log is not None:
+      self.log.log_msg(msg="- Set the SEARCH configurations", msg_type=MSG_TYPE.INFO)
     search_step = search_sampling(**self.data["search"])
     ev.dtype.precision = options.precision
     if param.constants != None:
@@ -785,6 +793,8 @@ class PreExploration:
     """ 7- Evaluate the starting point """
     if options.display:
       print(" Evaluation of the starting points")
+      if self.log is not None:
+        self.log.log_msg(msg="- Evaluation of the starting points...", msg_type=MSG_TYPE.INFO)
     x_start.coordinates = param.baseline
     x_start.sets = param.var_sets
     """ 8- Set the variables type """
@@ -891,6 +901,8 @@ class PreExploration:
     out = Output(file_path=param.post_dir, vnames=param.var_names, pname=param.name, runfolder=f'{param.name}_run', replace=True)
     if options.display:
       print("End of the evaluation of the starting points")
+      if self.log is not None:
+        self.log.log_msg(msg="- End of the evaluation of the starting points.", msg_type=MSG_TYPE.INFO)
     iteration += 1
 
     return iteration, x_start, search, options, param, post, out, B
@@ -924,10 +936,14 @@ def main(*args) -> Dict[str, Any]:
             "It should be either a dictionary object or a JSON file that holds "
             "the required input parameters.")
 
+  """ Initialize the log file """
+  log = logger()
+  log.initialize(data["param"]["post_dir"] + "/OMADS.log")
+
   """ Run preprocessor for the setup of
    the optimization problem and for the initialization
   of optimization process """
-  iteration, xmin, search, options, param, post, out, B = PreExploration(data).initialize_from_dict()
+  iteration, xmin, search, options, param, post, out, B = PreExploration(data).initialize_from_dict(log=log)
 
   """ Set the random seed for results reproducibility """
   if len(args) < 4:
@@ -1090,8 +1106,11 @@ def main(*args) -> Dict[str, Any]:
     else:
       search.mesh.psize = search.mesh.msize = np.divide(search.mesh.msize, 2, dtype=search.dtype.dtype)
       search.update_local_region(region="contract")
-
+    
+    
     if options.display:
+      if log is not None:
+        log.log_msg(msg=post.__str__(), msg_type=MSG_TYPE.INFO)
       print(post)
 
     Failure_check = iteration > 0 and search.Failure_stop is not None and search.Failure_stop and not search.success
@@ -1107,12 +1126,30 @@ def main(*args) -> Dict[str, Any]:
     post.output_results(out)
 
   if options.display:
+    if log is not None:
+      log.log_msg(" end of orthogonal MADS ", MSG_TYPE.INFO)
     print(" end of orthogonal MADS ")
+    if log is not None:
+      log.log_msg(" Final objective value: " + str(search.xmin.f) + ", hmin= " + str(search.xmin.h), MSG_TYPE.INFO)
     print(" Final objective value: " + str(search.xmin.f) + ", hmin= " + str(search.xmin.h))
 
   if options.save_coordinates:
     post.output_coordinates(out)
+  
+  if log is not None:
+    log.log_msg("\n ---Run Summary---", MSG_TYPE.INFO)
+    log.log_msg(f" Run completed in {toc - tic:.4f} seconds", MSG_TYPE.INFO)
+    log.log_msg(f" Random numbers generator's seed {options.seed}", MSG_TYPE.INFO)
+    log.log_msg(" xmin = " + str(search.xmin), MSG_TYPE.INFO)
+    log.log_msg(" hmin = " + str(search.xmin.h), MSG_TYPE.INFO)
+    log.log_msg(" fmin = " + str(search.xmin.f), MSG_TYPE.INFO)
+    log.log_msg(" #bb_eval = " + str(search.bb_handle.bb_eval), MSG_TYPE.INFO)
+    log.log_msg(" #iteration = " + str(iteration), MSG_TYPE.INFO)
+    log.log_msg(" nb_success = " + str(search.nb_success), MSG_TYPE.INFO)
+
   if options.display:
+    
+    
     print("\n ---Run Summary---")
     print(f" Run completed in {toc - tic:.4f} seconds")
     print(f" Random numbers generator's seed {options.seed}")
@@ -1122,9 +1159,7 @@ def main(*args) -> Dict[str, Any]:
     print(" #bb_eval = " + str(search.bb_eval))
     print(" #iteration = " + str(iteration))
     print(" nb_success = " + str(search.nb_success))
-    print(" psize = " + str(search.mesh.psize))
-    print(" psize_success = " + str(search.mesh.psize_success))
-    print(" psize_max = " + str(search.mesh.psize_max))
+    print(" mesh_size = " + str(search.mesh.psize))
   xmin = search.xmin
   """ Evaluation of the blackbox; get output responses """
   if xmin.sets is not None and isinstance(xmin.sets,dict):
