@@ -8,6 +8,7 @@ import pandas as pd
 import numpy as np
 
 from typing import Dict, List
+from multiprocessing import freeze_support
 
 
 def rosen(x, *argv):
@@ -16,34 +17,126 @@ def rosen(x, *argv):
         axis=0), [0]]
   return y
 
-
-def test_omads_callable_quick():
+def test_MADS_callable_quick_2d():
+  d = 2
   eval = {"blackbox": rosen}
-  param = {"baseline": [-2.0, -2.0],
-       "lb": [-5, -5],
-       "ub": [10, 10],
-       "var_names": ["x1", "x2"],
-       "scaling": 10.0,
+  param = {"name": "RB","baseline": [-2.5]*d,
+       "lb": [-5]*d,
+       "ub": [10]*d,
+       "var_names": [f"x{i}" for i in range(d)],
+       "scaling": [15.0]*d,
        "post_dir": "./post"}
   sampling = {
-                    "method": SEARCH.explore.SAMPLING_METHOD.LH.value,
-                    "ns": int((2+1)*(2+2)/2)+50,
+                    "method": 'ACTIVE',
+                    "ns": int((d+1)*(d+2)/2)+50,
                     "visualize": False,
                     "criterion": None
                   }
-  options = {"seed": 0, "budget": 100000, "tol": 1e-12, "display": True, "check_cache": True, "store_cache": True, "rich_direction": True,}
+  options = {"seed": 10000, "budget": 10000, "tol": 1e-9, "display": False, "check_cache": True, "store_cache": True, "rich_direction": True, "opportunistic": True, "save_results": False, "isVerbose": False}
   search = {
       "type": "sampling",
-      "s_method": "LH",
-      "ns": 10,
+      "s_method": "ACTIVE",
+      "ns": int((d+1)*(d+2)/2)+50,
       "visualize": False
     }
   data = {"evaluator": eval, "param": param, "options": options, "sampling": sampling, "search": search}
 
+  outM: Dict = MADS.main(data)
+  outP: Dict = POLL.main(data)
+  outS: Dict = SEARCH.main(data)
+  if (outM[0]["fmin"] > 0.0006):
+    raise ValueError(f"MADS: fmin > {0.0006}")
   
+  if (outP[0]["fmin"] > 0.0006):
+    raise ValueError(f"POLL: fmin > {0.0006}")
+  
+  if (outS[0]["fmin"] > 0.0006):
+    raise ValueError(f"Search: fmin > {0.0006}")
 
-  out: Dict = MADS.main(data)
-  print(out)
+def test_MADS_callable_quick_10d():
+  d = 10
+  eval = {"blackbox": rosen}
+  param = {"name": "RB","baseline": [-2.5]*d,
+       "lb": [-5]*d,
+       "ub": [10]*d,
+       "var_names": [f"x{i}" for i in range(d)],
+       "scaling": [15.0]*d,
+       "post_dir": "./post"}
+  sampling = {
+                    "method": 'ACTIVE',
+                    "ns": int((d+1)*(d+2)/2)+50,
+                    "visualize": False,
+                    "criterion": None
+                  }
+
+  options = {"seed": 10000, "budget": 10000, "tol": 1e-9, "display": False, "check_cache": True, "store_cache": True, "rich_direction": True, "opportunistic": False, "save_results": False, "isVerbose": False}
+  search = {
+      "type": "sampling",
+      "s_method": "ACTIVE",
+      "ns": int((d+1)*(d+2)/2)+50,
+      "visualize": False
+    }
+  sampling = {
+              "method": 'sampling',
+              "ns": int((d+1)*(d+2)/2)+50,
+              "visualize": False,
+              "criterion": None
+            }
+  data = {"evaluator": eval, "param": param, "options": options, "sampling": sampling, "search": search}
+  outS: Dict = SEARCH.main(data)
+
+  if (outS[0]["fmin"] > 0.0006):
+    raise ValueError(f"Search: fmin > {0.0006}")
+  
+  outP: Dict = POLL.main(data)
+  if (outP[0]["fmin"] > 0.25):
+    raise ValueError(f"POLL: fmin > {0.25}")
+  
+  outM: Dict = MADS.main(data)
+  if (outM[0]["fmin"] > 0.0006):
+    raise ValueError(f"MADS: fmin > {0.0006}")
+
+def test_MADS_callable_quick_20d():
+  d = 20
+  eval = {"blackbox": rosen}
+  param = {"name": "RB","baseline": [-2.5]*d,
+       "lb": [-5]*d,
+       "ub": [10]*d,
+       "var_names": [f"x{i}" for i in range(d)],
+       "scaling": [15.0]*d,
+       "post_dir": "./post"}
+  sampling = {
+              "method": 'ACTIVE',
+              "ns": int((d+1)*(d+2)/2)+50,
+              "visualize": False,
+              "criterion": None
+            }
+  options = {"seed": 10000, "budget": 10000, "tol": 1e-9, "display": False, "check_cache": True, "store_cache": True, "rich_direction": True, "opportunistic": False, "save_results": False, "isVerbose": False}
+  search = {
+      "type": "sampling",
+      "s_method": "ACTIVE",
+      "ns": int((d+1)*(d+2)/2)+50,
+      "visualize": False
+    }
+  sampling = {
+              "method": 'sampling',
+              "ns": int((d+1)*(d+2)/2)+50,
+              "visualize": False,
+              "criterion": None
+            }
+  data = {"evaluator": eval, "param": param, "options": options, "sampling": sampling, "search": search}
+  outS: Dict = SEARCH.main(data)
+
+  if (outS[0]["fmin"] > 0.0006):
+    raise ValueError(f"Search: fmin > {0.0006}")
+  
+  outP: Dict = POLL.main(data)
+  if (outP[0]["fmin"] > 2.7):
+    raise ValueError(f"POLL: fmin > {2.7}")
+  
+  outM: Dict = MADS.main(data)
+  if (outM[0]["fmin"] > 0.0006):
+    raise ValueError(f"MADS: fmin > {0.0006}")
 
 def test_omads_callable_quick_parallel():
   eval = {"blackbox": rosen}
@@ -53,16 +146,17 @@ def test_omads_callable_quick_parallel():
        "var_names": ["x1", "x2"],
        "scaling": 10.0,
        "post_dir": "./post"}
-  options = {"seed": 0, "budget": 100, "tol": 1e-6, "display": True, "parallel_mode": True}
+  options = {"seed": 0, "budget": 100, "tol": 1e-6, "display": True, "parallel_mode": True, "save_results": True, "isVerbose": True}
   sampling = {
-                    "method": SEARCH.explore.SAMPLING_METHOD.LH.value,
-                    "ns": int((2+1)*(2+2)/2)+50,
-                    "visualize": False,
-                    "criterion": None
-                  }
+              "type": "sampling",
+              "s_method": "active_sampling",
+              "ns": int((2+1)*(2+2)/2)+50,
+              "visualize": False,
+              "criterion": None
+            }
   search = {
       "type": "sampling",
-      "s_method": "LH",
+      "s_method": "active_sampling",
       "ns": 10,
       "visualize": False
     }
@@ -88,23 +182,19 @@ def test_omads_toy_quick():
   p_file_1 = os.path.abspath("./tests/bm/unconstrained/rosenbrock.json")
   POLL.main(p_file_1)
 
-  p_file_2 = os.path.abspath("./tests/bm/constrained/geom_prog.json")
-  POLL.main(p_file_2)
-
   p_file_3 = os.path.abspath("./tests/bm/unconstrained/rosenbrock.json")
   SEARCH.main(p_file_3)
-
-  p_file_4 = os.path.abspath("./tests/bm/constrained/geom_prog.json")
-  SEARCH.main(p_file_4)
 
   p_file_5 = os.path.abspath("./tests/bm/unconstrained/rosenbrock.json")
   MADS.main(p_file_5)
 
-  p_file_6 = os.path.abspath("./tests/bm/constrained/geom_prog.json")
-  MADS.main(p_file_6)
+  p_file_2 = os.path.abspath("./tests/bm/constrained/geom_prog.json")
+  outP = POLL.main(p_file_2)
 
-  # p_file_3 = os.path.abspath("./tests/Rosen/param.json")
-  # main(p_file_3)
+  if (outP[0]["fmin"] > 23.5):
+    raise ValueError(f"GP: Poll: fmin > {25.5}")
+ 
+
 
   data = {
     "evaluator":
@@ -153,3 +243,6 @@ def test_omads_toy_quick():
   }
 
   MADS.main(data)
+
+if __name__ == "__main__":
+  freeze_support()

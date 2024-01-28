@@ -28,14 +28,17 @@ import os
 import sys
 import OMADS.POLL as PS
 import OMADS.SEARCH as SS
-from typing import List, Dict, Any, Callable, Protocol, Optional
+from typing import List, Dict, Any
 import numpy as np
 from BMDFO import toy
-from ._msg_handler import MSG_TYPE, logger
 import time
 
+from ._common import *
+from .Barriers import Barrier
 
 def search_step(iteration: int, search: SS.efficient_exploration = None, B: SS.Barrier = None, LAMBDA_k: float=None, RHO_k: float=None, search_VN: SS.VNS = None, post: PS.PostMADS=None, out: PS.Output=None, options: PS.Options=None, xmin: SS.Point=None, peval: int=0, HT: Any=None, log:logger = None):
+  """ Reset success boolean """
+  search.success = False
   tic = time.perf_counter()
   search.log = log
   search.xmin = xmin
@@ -78,8 +81,7 @@ def search_step(iteration: int, search: SS.efficient_exploration = None, B: SS.B
   if options.save_coordinates:
     post.coords.append(search.samples)
     post.x_incumbent.append(search.xmin)
-  """ Reset success boolean """
-  search.success = False
+
   """ Reset the BB output """
   search.bb_output = []
   xt = []
@@ -95,9 +97,9 @@ def search_step(iteration: int, search: SS.efficient_exploration = None, B: SS.B
       f = search.evaluate_sample_point(it)
       xt.append(f[-1])
       if not f[0]:
-        post.bb_eval.append(search.bb_handle.bb_eval)
+        peval = peval +1
+        post.bb_eval.append(peval)
         post.step_name.append(f'Search: {search.type}')
-        peval += 1
         post.iter.append(iteration)
         post.psize.append(search.mesh.psize)
       else:
@@ -137,10 +139,12 @@ def search_step(iteration: int, search: SS.efficient_exploration = None, B: SS.B
   """ Updates """
   if search.success:
     search.mesh.psize = search.mesh.msize = np.multiply(search.mesh.msize, 2, dtype=search.dtype.dtype)
-    search.update_local_region(region="expand")
+    if search.sampling_t != "ACTIVE":
+      search.update_local_region(region="expand")
   else:
     search.mesh.psize = search.mesh.msize = np.divide(search.mesh.msize, 2, dtype=search.dtype.dtype)
-    search.update_local_region(region="contract")
+    if search.sampling_t != "ACTIVE":
+      search.update_local_region(region="contract")
   
   
   if options.display:
@@ -210,13 +214,13 @@ def poll_step(iteration: int, poll: PS.Dirs2n = None, B: SS.Barrier = None, LAMB
   """ Serial evaluation for points in the poll set """
   if not options.parallel_mode:
     for it in range(len(poll.poll_dirs)):
-      peval += 1
       if poll.terminate:
         break
       f = poll.eval_poll_point(it)
       xt.append(f[-1])
       if not f[0]:
-        post.bb_eval.append(poll.bb_handle.bb_eval)
+        peval += 1
+        post.bb_eval.append(peval)
         post.step_name.append(f'Poll-2n')
         post.iter.append(iteration)
         post.psize.append(poll.mesh.psize)
@@ -323,19 +327,19 @@ def main(*args) -> Dict[str, Any]:
             "the required input parameters.")
   
   """ Initialize the log file """
-  log = PS.logger()
+  log = logger()
   log.initialize(data["param"]["post_dir"] + "/OMADS.log")
 
   """ Run preprocessor for the setup of
    the optimization problem and for the initialization
   of optimization process """
   iteration: int
-  xmin: PS.Point
-  options: PS.Options
-  param: PS.Parameters 
-  post: PS.PostMADS 
-  out: PS.Output 
-  B: PS.Barrier
+  xmin: Point
+  options: Options
+  param: Parameters 
+  post: PostMADS 
+  out: Output 
+  B: Barrier
   poll: PS.Dirs2n
   search: SS.efficient_exploration
   log.log_msg(msg="Preprocess the search step...", msg_type=PS.MSG_TYPE.INFO)
@@ -374,11 +378,18 @@ def main(*args) -> Dict[str, Any]:
 
   while True:
     """ Run search step (Optional) """
-    if not poll.success or iteration == 1:
+    # TODO: This rule cannot be generalized -- needs further invistigation
+    # if poll.dim > 10 and poll.mesh.psize >= 1E-4:
+    #   canSearch = False
+    # else:
+    canSearch = True
+
+    if canSearch and (not poll.success or iteration == 1):
       log.log_msg(f"------- Iteration # {iteration}: Run the search step -------", MSG_TYPE.INFO)
+      search.iter = iteration
       search, B, post, out, LAMBDA_k, RHO_k, xmin, peval = search_step(search=search, B=B, LAMBDA_k=LAMBDA_k, RHO_k=RHO_k, iteration=iteration , search_VN=search_VN, post=post, out=out, options=options, xmin=xmin, peval=peval, HT=HT, log=log)
+      HT = search.hashtable
     """ Run the poll step (Mandatory step) """
-    HT = search.hashtable
     log.log_msg(f"------- Iteration # {iteration}: Run the poll step -------", MSG_TYPE.INFO)
     poll, B, post, out, LAMBDA_k, RHO_k, xmin, peval = poll_step(iteration=iteration, poll=poll, B=B, LAMBDA_k=LAMBDA_k, RHO_k=RHO_k, param=param, post=post, xmin=xmin, out=out, options=options, peval=peval, HT=HT, log=log)
     HT = poll.hashtable
@@ -388,15 +399,15 @@ def main(*args) -> Dict[str, Any]:
     """ Check stopping criteria"""
     pt = (abs(poll.mesh.psize) < options.tol)
     st = (abs(search.mesh.psize) < options.tol)
-    if (pt or st or search.bb_eval+poll.bb_eval >= options.budget):
+    if (pt or st or search.bb_eval + poll.bb_eval >= options.budget):
+      log.log_msg(f"\n--------------- Termination of MADS  ---------------", MSG_TYPE.INFO)
       if pt:
         log.log_msg(f"Termination criterion hit: the poll size is below the minimum threshold defined.", MSG_TYPE.INFO)
       if st:
         log.log_msg(f"Termination criterion hit: the mesh size is below the minimum threshold defined.", MSG_TYPE.INFO)
-      if (search.bb_eval+poll.bb_eval >= options.budget):
-        log.log_msg(f"Termination criterion hit: Evaluation budget is exhasted.", MSG_TYPE.INFO)
-      
-      log.log_msg(f"--------------- Termination of MADS  ---------------", MSG_TYPE.INFO)
+      if (search.bb_eval + poll.bb_eval >= options.budget):
+        log.log_msg(f"Termination criterion hit: Evaluation budget is exhausted.", MSG_TYPE.INFO)
+      log.log_msg(f"----------------------------------------------------\n", MSG_TYPE.INFO)
       break
     iteration += 1
     
@@ -452,13 +463,17 @@ def main(*args) -> Dict[str, Any]:
   if log is not None:
     log.log_msg(msg=" --- MADS Run Summary--- ", msg_type=MSG_TYPE.INFO)
     log.log_msg(msg=f" Run completed in {toc - tic:.4f} seconds", msg_type=MSG_TYPE.INFO)
-    log.log_msg(msg=f" Random numbers generator's seed {options.seed} \n", msg_type=MSG_TYPE.INFO)
+    log.log_msg(msg=f" # of successful search steps = {search.n_successes}", msg_type=MSG_TYPE.INFO)
+    log.log_msg(msg=f" # of successful poll steps = {poll.n_successes}", msg_type=MSG_TYPE.INFO)
+    log.log_msg(msg=f" Run completed in {toc - tic:.4f} seconds", msg_type=MSG_TYPE.INFO)
+    log.log_msg(msg=f" Random numbers generator's seed {options.seed}", msg_type=MSG_TYPE.INFO)
     log.log_msg(msg=f" xmin = {poll.xmin.__str__()} ", msg_type=MSG_TYPE.INFO)
     log.log_msg(msg=f" hmin = {poll.xmin.h} ", msg_type=MSG_TYPE.INFO)
     log.log_msg(msg=f" fmin {poll.xmin.fobj}", msg_type=MSG_TYPE.INFO)
-    log.log_msg(msg=f" #bb_eval =  {poll.bb_eval} ", msg_type=MSG_TYPE.INFO)
-    log.log_msg(msg=f" #iteration =  {iteration} ", msg_type=MSG_TYPE.INFO)
-    log.log_msg(msg=f"  nb_success = {poll.nb_success} ", msg_type=MSG_TYPE.INFO)
+    log.log_msg(msg=f" Search step # BB evals =  {search.bb_eval} ", msg_type=MSG_TYPE.INFO)
+    log.log_msg(msg=f" Poll step # BB evals =  {poll.bb_eval} ", msg_type=MSG_TYPE.INFO)
+    log.log_msg(msg=f" Total # BB evals =  {poll.bb_eval + search.bb_eval} ", msg_type=MSG_TYPE.INFO)
+    log.log_msg(msg=f" #iterations =  {iteration} ", msg_type=MSG_TYPE.INFO)
     log.log_msg(msg=f" psize = {poll.mesh.psize} ", msg_type=MSG_TYPE.INFO)
     log.log_msg(msg=f" psize_success = {poll.mesh.psize_success} ", msg_type=MSG_TYPE.INFO)
     log.log_msg(msg=f" psize_max = {poll.mesh.psize_max} ", msg_type=MSG_TYPE.INFO)

@@ -5,7 +5,7 @@ if __name__ == "__main__":
     name="OMADS",
     author="Ahmed H. Bayoumy",
     author_email="ahmed.bayoumy@mail.mcgill.ca",
-    version='2312',
+    version='2401',
     packages=find_packages(include=['SLML', 'SLML.*']),
     description="Statistical Learning Models Library",
     install_requires=[
@@ -15,6 +15,7 @@ if __name__ == "__main__":
       'pandas>=1.5.2',
       'scipy>=1.9.3',
       'setuptools>=58.1.0',
+      'samplersLib>1.0.0',
       'StatLML>=2.0.0'
     ],
     extras_require={

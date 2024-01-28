@@ -27,24 +27,26 @@ from multiprocessing import freeze_support, cpu_count
 import os
 import sys
 import time
-import SLML as explore
+import samplersLib as explore
 import numpy as np
 from dataclasses import dataclass, field
-from abc import ABC, abstractmethod
-from OMADS.POLL import Options, VAR_TYPE, Parameters, Point, Cache, Evaluator, OrthoMesh, PostMADS, Output, DType, SUCCESS_TYPES, Barrier, BARRIER_TYPES, Dirs2n, DESIGN_STATUS
 import copy
-from typing import List, Dict, Any, Callable, Protocol, Optional
+from typing import List, Dict, Any
 import concurrent.futures
 from matplotlib import pyplot as plt
 import random
 from BMDFO import toy
-from ._msg_handler import MSG_TYPE, logger
+from .Point import Point
+from .Barriers import Barrier
+from ._common import *
+from .Directions import *
 
 class SAMPLING_METHOD(Enum):
   FULLFACTORIAL: int = auto()
   LH: int = auto()
   RS: int = auto()
   HALTON: int = auto()
+  ACTIVE: int = auto()
 
 class SEARCH_TYPE(Enum):
   SAMPLING: int = auto()
@@ -346,6 +348,11 @@ class efficient_exploration:
   LAMBDA: List[float] = None
   RHO: float = 0.0005
   hmax: float = 0.
+  log: logger = None
+  AS: explore.samplers.activeSampling = None
+  best_samples: int = 0
+  estGrid: explore.samplers.sampling = None
+  n_successes: int = 0 
 
   @property
   def type(self):
@@ -411,13 +418,69 @@ class efficient_exploration:
         if x:
           self.scaling[k][0] = 1.0
     s_array = np.diag(self.scaling)
+
+  def get_list_of_coords_from_list_of_points(self, xps: List[Point] = None) -> np.ndarray:
+    coords_array = np.zeros((len(xps), self.dim))
+    for i in range(len(xps)):
+      coords_array[i, :] = xps[i].coordinates
+    
+    return coords_array
+
+
+  def generate_2ngrid(self, vlim: np.ndarray = None, x_incumbent: Point = None, p_in: float = 0.01) -> np.ndarray:
+    grid = Dirs2n()
+    grid.mesh = OrthoMesh()
+    """ 5- Assign optional algorithmic parameters to the constructed poll instant  """
+    grid.seed = int(self.seed + self.iter)
+    grid.mesh.dtype.precision = "medium"
+    grid.mesh.psize = p_in
+    grid.scaling = self.scaling
+    grid.dim = self.dim
+    grid._n = self.dim
+    grid.xmin = x_incumbent
+    grid.scale(ub=vlim[:, 0], lb=vlim[:, 1], factor=self.scaling)
+    hhm = grid.create_housholder(False, domain=self.xmin.var_type)
+    grid.lb = vlim[:, 0]
+    grid.ub = vlim[:, 1]
+    grid.hmax = self.xmin.hmax
+    
+    grid.create_poll_set(hhm=hhm,
+              ub=grid.ub,
+              lb=grid.lb, it=self.iter, var_type=self.xmin.var_type, var_sets=self.xmin.sets, var_link = self.xmin.var_link, c_types=None, is_prim=True)
+    
+    return self.get_list_of_coords_from_list_of_points(grid.poll_dirs)
+
+
+  def HD_grid(self, n: int =3, vlim: np.ndarray = None) -> np.ndarray:
+    grid_points = None
+    
+    if n <= 2* self.dim:
+      x_inc = Point()
+      x_inc.coordinates = self.hashtable.get_best_cache_points(nsamples=n)[0]
+      grid_points = self.generate_2ngrid(vlim=vlim, x_incumbent=x_inc, p_in=self.psize)[:n]
+    else:
+      grid_points: np.ndarray
+      for i in range(int(n/(2*self.dim))+1):
+        x_inc = Point()
+        x_inc.coordinates = self.hashtable.get_best_cache_points(nsamples=n)[i]
+        temp = self.generate_2ngrid(vlim=vlim, x_incumbent=x_inc, p_in=1/(self.iter+i)) #add different incumbents from ordered cache matrix
+        if i == 0:
+          grid_points = temp
+        else:
+          grid_points = np.vstack((grid_points, temp))
+    
+    return grid_points[:n, :]
+
   
-  def generate_sample_points(self, nsamples: int = None) -> List[Point]:
+  def generate_sample_points(self, nsamples: int = None, samples_in: np.ndarray = None) -> List[Point]:
     """ Generate the sample points """
     xlim = []
     self.nvars = len(self.prob_params.baseline)
+    is_AS = False
     v = np.empty((self.nvars, 2))
-    if self.xmin and self.iter > 1:
+    if self.bb_handle.bb_eval + nsamples > self.eval_budget:
+      nsamples = self.eval_budget + self.bb_handle.bb_eval
+    if self.xmin and self.iter > 1 and self.sampling_t != SAMPLING_METHOD.ACTIVE.name:
       for i in range(len(self.prob_params.lb)):
         D = abs(self.prob_params.ub[i] - self.prob_params.lb[i])
         lb = copy.deepcopy(self.xmin.coordinates[i]-(D * self.vicinity_ratio[i]))
@@ -438,36 +501,96 @@ class efficient_exploration:
         v[i] = [lb, ub]
     if nsamples is None:
       nsamples = int((self.nvars+1)*(self.nvars+2)/2)
-    
+    is_lhs = False
     self.ns = nsamples
     resize = False
     clipping = True
-    self.seed += np.random.randint(0, 10000)
-
+    # self.seed += np.random.randint(0, 10000)
     if self.sampling_t == SAMPLING_METHOD.FULLFACTORIAL.name:
-      sampling = explore.FullFactorial(ns=nsamples, vlim=v, w=self.weights, c=clipping)
+      sampling = explore.samplers.FullFactorial(ns=nsamples, vlim=v, w=self.weights, c=clipping)
       if clipping:
         resize = True
     elif self.sampling_t == SAMPLING_METHOD.RS.name:
-      sampling = explore.RS(ns=nsamples, vlim=v)
+      sampling = explore.samplers.RS(ns=nsamples, vlim=v)
       sampling.options["randomness"] = self.seed
     elif self.sampling_t == SAMPLING_METHOD.HALTON.name:
-      sampling = explore.halton(ns=nsamples, vlim=v, is_ham=True)
-    else:
-      sampling = explore.LHS(ns=nsamples, vlim=v)
+      sampling = explore.samplers.halton(ns=nsamples, vlim=v, is_ham=True)
+    elif self.sampling_t == SAMPLING_METHOD.LH.name:
+      sampling = explore.samplers.LHS(ns=nsamples, vlim=v)
       sampling.options["randomness"] = self.seed
       sampling.options["criterion"] = self.sampling_criter
       sampling.options["msize"] = self.mesh.msize
+      is_lhs = True
+    else:
+      if self.iter == 1 or len(self.hashtable._cache_dict) < nsamples:# or self.n_successes / (self.iter) <= 0.25:
+        sampling = explore.samplers.halton(ns=nsamples, vlim=v)
+        sampling.options["randomness"] = self.seed + self.iter
+        sampling.options["criterion"] = self.sampling_criter
+        sampling.options["msize"] = self.mesh.msize
+        sampling.options["varLimits"] = v
+      else:
+        # if len(self.hashtable._best_hash_ID) > self.best_samples:
+        # if len(self.hashtable._best_hash_ID) > self.best_samples:
+        self.best_samples = len(self.hashtable._best_hash_ID)
+        self.AS = explore.samplers.activeSampling(data=self.hashtable.get_best_cache_points(nsamples=nsamples), 
+                                                  n_r=nsamples, 
+                                                  vlim=v, 
+                                                  kernel_type="Gaussian" if self.dim <= 30 else "Silverman", 
+                                                  bw_method="SILVERMAN", 
+                                                  seed=int(self.seed + self.iter))
+        # estGrid = explore.FullFactorial(ns=nsamples, vlim=v, w=self.weights, c=clipping)
+        if self.estGrid is None:
+          if self.dim <= 30:
+            self.estGrid = explore.samplers.FullFactorial(ns=nsamples, vlim=v, w=self.weights, c=clipping)
+          # else:
+          #   if (self.iter % 2) == 0:
+          #     self.estGrid = explore.samplers.halton(ns=nsamples, vlim=v)
+          #   else:
+          #     self.estGrid = explore.samplers.RS(ns=nsamples, vlim=v)
+          #     self.estGrid.set_options(c=self.sampling_criter, r= self.seed + self.iter)
+          #   self.estGrid.options["msize"] = self.mesh.msize
 
-    
-    Ps= copy.deepcopy(sampling.generate_samples())
+        # self.estGrid.set_options(c=self.sampling_criter, r=int(self.seed + self.iter))
+        self.AS.kernel.bw_method = "SILVERMAN"
+        if self.dim <=30:
+          S = self.estGrid.generate_samples()
+        else:
+          if True: #(self.iter % 2) == 0:
+            if self.estGrid == None:
+              self.estGrid = explore.samplers.LHS(ns=nsamples, vlim=v)
+              S = self.estGrid.generate_samples()
+            else:
+              S = self.estGrid.expand_lhs(x=self.hashtable.get_best_cache_points(nsamples=nsamples), n_points=nsamples, method="ExactSE")
+          else:
+            S = self.HD_grid(n=nsamples, vlim=v)
+        if nsamples < len(S):
+          self.AS.kernel.estimate_pdf(S[:nsamples, :])
+        else:
+          self.AS.kernel.estimate_pdf(S)
+        is_AS = True
+
+    if self.iter > 1 and is_lhs:
+      Ps = copy.deepcopy(sampling.expand_lhs(x=self.map_samples_from_points_to_coords(), n_points=nsamples, method= "basic"))
+    else:
+      if is_AS:
+        Ps = copy.deepcopy(self.AS.resample(size=nsamples, seed=int(self.seed + self.iter)))
+      else:
+        Ps= copy.deepcopy(sampling.generate_samples())
+
+    if False:
+      self.df =  pd.DataFrame(Ps, columns=[f'x{i}' for i in range(self.dim)])
+      pd.plotting.scatter_matrix(self.df, alpha=0.2)
+      plt.show()
     if resize:
       self.ns = len(Ps)
       nsamples = len(Ps)
 
     # if self.xmin is not None:
     #   self.visualize_samples(self.xmin.coordinates[0], self.xmin.coordinates[1])
-    self.map_samples_from_coords_to_points(Ps)
+    if self.iter > 1 and is_lhs:
+      self.map_samples_from_coords_to_points(Ps[len(Ps)-nsamples:])
+    else:
+      self.map_samples_from_coords_to_points(Ps)
     return v, Ps
   
   def project_coords_to_mesh(self, x:List[float], ref: List[float] = None):
@@ -510,6 +633,9 @@ class efficient_exploration:
       self.samples[i].var_link = self.xmin.var_link
       self.samples[i].n_dimensions = len(samples[i, :])
       self.samples[i].coordinates = copy.deepcopy(samples[i, :])
+  
+  def map_samples_from_points_to_coords(self):
+    return np.array([x.coordinates for x in self.samples])
 
 
   def gauss_perturbation(self, p: Point, npts: int = 5) -> List[Point]:
@@ -543,6 +669,8 @@ class efficient_exploration:
     """ Set the dynamic index for this point """
     tic = time.perf_counter()
     self.point_index = index
+    if self.log is not None and self.log.isVerbose:
+      self.log.log_msg(msg=f"Evaluate sample point # {index}...", msg_type=MSG_TYPE.INFO)
     """ Initialize stopping and success conditions"""
     stop: bool = False
     """ Copy the point i to a trial one """
@@ -556,28 +684,29 @@ class efficient_exploration:
      is a duplicate (it has already been evaluated) """
     unique_p_trials: int = 0
     is_duplicate: bool = (self.check_cache and self.hashtable.size > 0 and self.hashtable.is_duplicate(xtry))
-    while is_duplicate and unique_p_trials < 5:
-      self.log.log_msg(f'Cache hit. Trial# {unique_p_trials}: Looking for a non-duplicate in the vicinity of the duplicate point ...', MSG_TYPE.INFO)
-      if self.display:
-        print(f'Cache hit. Trial# {unique_p_trials}: Looking for a non-duplicate in the vicinity of the duplicate point ...')
-      if xtry.var_type is None:
-        if self.xmin.var_type is not None:
-          xtry.var_type = self.xmin.var_type
-        else:
-          xtry.var_type = [VAR_TYPE.CONTINUOUS] * len(self.xmin.coordinates)
+    # while is_duplicate and unique_p_trials < 5:
+    #   self.log.log_msg(f'Cache hit. Trial# {unique_p_trials}: Looking for a non-duplicate in the vicinity of the duplicate point ...', MSG_TYPE.INFO)
+    #   if self.display:
+    #     print(f'Cache hit. Trial# {unique_p_trials}: Looking for a non-duplicate in the vicinity of the duplicate point ...')
+    #   if xtry.var_type is None:
+    #     if self.xmin.var_type is not None:
+    #       xtry.var_type = self.xmin.var_type
+    #     else:
+    #       xtry.var_type = [VAR_TYPE.CONTINUOUS] * len(self.xmin.coordinates)
       
-      xtries: List[Point] = self.gauss_perturbation(p=xtry, npts=len(self.samples)*2)
-      for tr in range(len(xtries)):
-        is_duplicate = self.hashtable.is_duplicate(xtries[tr])
-        if is_duplicate:
-           continue 
-        else:
-          xtry = copy.deepcopy(xtries[tr])
-          break
-      unique_p_trials += 1
+      # xtries: List[Point] = self.gauss_perturbation(p=xtry, npts=len(self.samples)*2)
+      # for tr in range(len(xtries)):
+      #   is_duplicate = self.hashtable.is_duplicate(xtries[tr])
+      #   if is_duplicate:
+      #      continue 
+      #   else:
+      #     xtry = copy.deepcopy(xtries[tr])
+      #     break
+      # unique_p_trials += 1
 
     if (is_duplicate):
-      self.log.log_msg("Cache hit ... Failed to find a non-duplicate alternative.", MSG_TYPE.INFO)
+      if self.log is not None and self.log.isVerbose:
+        self.log.log_msg(msg="Cache hit ... Failed to find a non-duplicate alternative.", msg_type=MSG_TYPE.INFO)
       if self.display:
         print("Cache hit ... Failed to find a non-duplicate alternative.")
       stop = True
@@ -611,6 +740,7 @@ class efficient_exploration:
     xtry.hmax = copy.deepcopy(self.hmax)
     xtry.constraints_type = copy.deepcopy(self.prob_params.constraints_type)
     xtry.__eval__(self.bb_output)
+    self.hashtable.add_to_best_cache(xtry)
     toc = time.perf_counter()
     xtry.Eval_time = (toc - tic)
 
@@ -630,14 +760,17 @@ class efficient_exploration:
     
     if xtry.status == DESIGN_STATUS.FEASIBLE:
       self.RHO *= copy.deepcopy(0.5)
+    
+    if self.log is not None and self.log.isVerbose:
+      self.log.log_msg(msg=f"Completed evaluation of point # {index} in {xtry.Eval_time} seconds, ftry={xtry.f}, status={xtry.status.name} and htry={xtry.h}. \n", msg_type=MSG_TYPE.INFO)
 
     """ Add to the cache memory """
     if self.store_cache:
       self.hashtable.hash_id = xtry
 
-    if self.save_results or self.display:
-      self.bb_eval = self.bb_handle.bb_eval
-      self.psize = copy.deepcopy(self.mesh.psize)
+    # if self.save_results or self.display:
+    self.bb_eval = self.bb_handle.bb_eval
+    self.psize = copy.deepcopy(self.mesh.psize)
     psize = copy.deepcopy(self.mesh.psize)
 
 
@@ -649,8 +782,6 @@ class efficient_exploration:
     if self.bb_eval >= self.eval_budget:
       self.terminate = True
       stop = True
-      return [stop, index, self.bb_handle.bb_eval, success, psize, xtry]
-
     return [stop, index, self.bb_handle.bb_eval, success, psize, xtry]
 
   def master_updates(self, x: List[Point], peval, save_all_best: bool = False, save_all:bool = False):
@@ -661,12 +792,13 @@ class efficient_exploration:
     for xtry in x:
       c += 1
       """ Check success conditions """
-      is_infeas_dom: bool = (self.xmin.status == xtry.status == DESIGN_STATUS.INFEASIBLE and (xtry.h < self.xmin.h and xtry.h <= xtry.hmax and xtry.fobj <= self.xmin.fobj) )
-      is_feas_dom: bool = (self.xmin.status == xtry.status == DESIGN_STATUS.FEASIBLE and xtry < self.xmin)
-      is_infea_improving: bool = (self.xmin.status == DESIGN_STATUS.FEASIBLE and xtry.status == DESIGN_STATUS.INFEASIBLE and (xtry.fobj < self.xmin.fobj and xtry.h <= xtry.hmax))
-      is_feas_improving: bool = (self.xmin.status == DESIGN_STATUS.INFEASIBLE and xtry.status == DESIGN_STATUS.FEASIBLE and (xtry.fobj < self.xmin.fobj))
+      is_infeas_dom: bool = (xtry.status == DESIGN_STATUS.INFEASIBLE and (xtry.h < self.xmin.h) )
+      is_feas_dom: bool = (xtry.status == DESIGN_STATUS.FEASIBLE and xtry.fobj < self.xmin.fobj)
+      is_infea_improving: bool = (self.xmin.status == DESIGN_STATUS.FEASIBLE and xtry.status == DESIGN_STATUS.INFEASIBLE and (xtry.fobj < self.xmin.fobj and xtry.h <= self.xmin.hmax))
+      is_feas_improving: bool = (self.xmin.status == DESIGN_STATUS.INFEASIBLE and xtry.status == DESIGN_STATUS.FEASIBLE and xtry.fobj < self.xmin.fobj)
+
       success = False
-      if (xtry.is_EB_passed and (is_infeas_dom or is_feas_dom or is_infea_improving or is_feas_improving)):
+      if ((is_infeas_dom or is_feas_dom)):
         self.success = True
         success = True  # <- This redundant variable is important
         # for managing concurrent parallel execution
@@ -687,9 +819,12 @@ class efficient_exploration:
         self.mesh.psize_max = copy.deepcopy(np.maximum(self.mesh.psize,
                               self.mesh.psize_max,
                               dtype=self._dtype.dtype))
+
       if (save_all_best and success) or (save_all):
         x_post.append(xtry)
-
+    
+    if self.success:
+      self.n_successes += 1
     return x_post
         
   def update_local_region(self, region="expand"):
@@ -726,6 +861,7 @@ class PreExploration:
       self.log.log_msg(msg="- Reading the input dictionaries", msg_type=MSG_TYPE.INFO)
     options = Options(**self.data["options"])
     param = Parameters(**self.data["param"])
+    log.isVerbose = options.isVerbose
     B = Barrier(param)
     ev = Evaluator(**self.data["evaluator"])
     if self.log is not None:
@@ -885,6 +1021,8 @@ class PreExploration:
       search.samples = [search.xmin]
     """ 11- Construct the results postprocessor class object 'post' """
     post = PostMADS(x_incumbent=[search.xmin], xmin=search.xmin, poll_dirs=[search.xmin])
+    post.step_name = []
+    post.step_name.append(f'Search: {search.type}')
     post.psize.append(search.mesh.psize)
     post.bb_eval.append(search.bb_handle.bb_eval)
     post.iter.append(iteration)
@@ -906,9 +1044,6 @@ class PreExploration:
     iteration += 1
 
     return iteration, x_start, search, options, param, post, out, B
-  
-
-  
 
 def main(*args) -> Dict[str, Any]:
   """ Otho-MADS main algorithm """
@@ -981,8 +1116,11 @@ def main(*args) -> Dict[str, Any]:
   LAMBDA_k = xmin.LAMBDA
   RHO_k = xmin.RHO
 
+  log.log_msg(msg=f"---------------- Run the SEARCH step ({search.sampling_t}) ----------------", msg_type=MSG_TYPE.INFO)
+
   while True:
     search.mesh.update()
+    search.iter = iteration
     if B is not None:
       if B._filter is not None:
         B.select_poll_center()
@@ -1052,6 +1190,9 @@ def main(*args) -> Dict[str, Any]:
     search.bb_output = []
     xt = []
     """ Serial evaluation for points in the poll set """
+    if log is not None and log.isVerbose:
+      log.log_msg(f"----------- Evaluate Search iteration # {iteration}-----------", msg_type=MSG_TYPE.INFO)
+    search.log = log
     if not options.parallel_mode:
       for it in range(len(search.samples)):
         if search.terminate:
@@ -1061,6 +1202,7 @@ def main(*args) -> Dict[str, Any]:
         if not f[0]:
           post.bb_eval.append(search.bb_handle.bb_eval)
           peval += 1
+          post.step_name.append(f'Search: {search.type}')
           post.iter.append(iteration)
           post.psize.append(search.mesh.psize)
         else:
@@ -1080,6 +1222,7 @@ def main(*args) -> Dict[str, Any]:
             peval = peval +1
             search.bb_eval = peval
             post.bb_eval.append(peval)
+            post.step_name.append(f'Search: {search.type}')
             post.iter.append(iteration)
             # post.poll_dirs.append(poll.poll_dirs[f.result()[1]])
             post.psize.append(f.result()[4])
@@ -1101,26 +1244,59 @@ def main(*args) -> Dict[str, Any]:
 
     """ Updates """
     if search.success:
-      search.mesh.psize = search.mesh.msize = np.multiply(search.mesh.msize, 2, dtype=search.dtype.dtype)
-      search.update_local_region(region="expand")
+      search.mesh.psize = np.multiply(search.mesh.psize, 2, dtype=search.dtype.dtype)
+      if search.sampling_t != SAMPLING_METHOD.ACTIVE.name:
+        search.update_local_region(region="expand")
     else:
-      search.mesh.psize = search.mesh.msize = np.divide(search.mesh.msize, 2, dtype=search.dtype.dtype)
-      search.update_local_region(region="contract")
+      search.mesh.psize = np.divide(search.mesh.psize, 2, dtype=search.dtype.dtype)
+      if search.sampling_t != SAMPLING_METHOD.ACTIVE.name:
+        search.update_local_region(region="contract")
     
-    
+    if log is not None:
+      log.log_msg(msg=post.__str__(), msg_type=MSG_TYPE.INFO)
     if options.display:
-      if log is not None:
-        log.log_msg(msg=post.__str__(), msg_type=MSG_TYPE.INFO)
       print(post)
 
     Failure_check = iteration > 0 and search.Failure_stop is not None and search.Failure_stop and not search.success
-    if (Failure_check) or (abs(search.mesh.msize) < options.tol or search.bb_eval >= options.budget or search.terminate):
+    if (Failure_check) or (abs(search.psize) < options.tol or search.bb_handle.bb_eval >= options.budget or search.terminate):
+      log.log_msg(f"\n--------------- Termination of the search step  ---------------", MSG_TYPE.INFO)
+      if (abs(search.psize) < options.tol):
+        log.log_msg("Termination criterion hit: the mesh size is below the minimum threshold defined.", MSG_TYPE.INFO)
+      if (search.bb_handle.bb_eval >= options.budget or search.terminate):
+        log.log_msg("Termination criterion hit: evaluation budget is exhausted.", MSG_TYPE.INFO)
+      if (Failure_check):
+        log.log_msg(f"Termination criterion hit (optional): failed to find a successful point in iteration # {iteration}.", MSG_TYPE.INFO)
+      log.log_msg(f"-----------------------------------------------------------------\n", MSG_TYPE.INFO)
       break
     iteration += 1
 
   toc = time.perf_counter()
 
-  
+  """ If benchmarking, then populate the results in the benchmarking output report """
+  if len(args) > 1 and isinstance(args[1], toy.Run):
+    b: toy.Run = args[1]
+    if b.test_suite == "uncon":
+      ncon = 0
+    else:
+      ncon = len(search.xmin.c_eq) + len(search.xmin.c_ineq)
+    if len(search.bb_output) > 0:
+      b.add_row(name=search.bb_handle.blackbox,
+            run_index=int(args[2]),
+            nv=len(param.baseline),
+            nc=ncon,
+            nb_success=search.nb_success,
+            it=iteration,
+            BBEVAL=search.bb_eval,
+            runtime=toc - tic,
+            feval=search.bb_handle.bb_eval,
+            hmin=search.xmin.h,
+            fmin=search.xmin.f)
+    print(f"{search.bb_handle.blackbox}: fmin = {search.xmin.f:.2f} , hmin= {search.xmin.h:.2f}")
+
+  elif len(args) > 1 and not isinstance(args[1], toy.Run):
+    if log is not None:
+      log.log_msg(msg="Could not find " + args[1] + " in the internal BM suite.", msg_type=MSG_TYPE.ERROR)
+    raise IOError("Could not find " + args[1] + " in the internal BM suite.")
 
   if options.save_results:
     post.output_results(out)
@@ -1139,13 +1315,14 @@ def main(*args) -> Dict[str, Any]:
   if log is not None:
     log.log_msg("\n ---Run Summary---", MSG_TYPE.INFO)
     log.log_msg(f" Run completed in {toc - tic:.4f} seconds", MSG_TYPE.INFO)
+    log.log_msg(msg=f" # of successful search steps = {search.n_successes}", msg_type=MSG_TYPE.INFO)
     log.log_msg(f" Random numbers generator's seed {options.seed}", MSG_TYPE.INFO)
     log.log_msg(" xmin = " + str(search.xmin), MSG_TYPE.INFO)
     log.log_msg(" hmin = " + str(search.xmin.h), MSG_TYPE.INFO)
     log.log_msg(" fmin = " + str(search.xmin.f), MSG_TYPE.INFO)
     log.log_msg(" #bb_eval = " + str(search.bb_handle.bb_eval), MSG_TYPE.INFO)
     log.log_msg(" #iteration = " + str(iteration), MSG_TYPE.INFO)
-    log.log_msg(" nb_success = " + str(search.nb_success), MSG_TYPE.INFO)
+    
 
   if options.display:
     

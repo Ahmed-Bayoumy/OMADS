@@ -15,6 +15,7 @@ docs/source/*
 make.bat
 Makefile
 .vscode
+.archive.dist
 exdata
 ppdata
 post
