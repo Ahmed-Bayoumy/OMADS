@@ -15,8 +15,7 @@ if __name__ == "__main__":
       'pandas>=1.5.2',
       'scipy>=1.9.3',
       'setuptools>=58.1.0',
-      'samplersLib>=24.1.3',
-      'StatLML>=2.0.0'
+      'samplersLib>=24.1.3'
     ],
     extras_require={
         'interactive': ['matplotlib>=3.5.2', 'plotly>=5.14.1'],
