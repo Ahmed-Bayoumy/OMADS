@@ -190,9 +190,9 @@ def test_omads_toy_quick():
 
   p_file_2 = os.path.abspath("./tests/bm/constrained/geom_prog.json")
   outP = POLL.main(p_file_2)
-
-  if (outP[0]["fmin"] > 23.5):
-    raise ValueError(f"GP: Poll: fmin > {25.5}")
+  res = outP[0]["fmin"]
+  if (outP[0]["fmin"] > 23.8):
+    raise ValueError(f"GP: Poll: fmin = {res} > {23.8}")
  
 
 

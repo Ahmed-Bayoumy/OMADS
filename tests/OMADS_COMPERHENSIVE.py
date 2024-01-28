@@ -175,7 +175,7 @@ def test_omads_toy_con_GP():
   outP = POLL.main(os.path.join(bm_root, 'geom_prog.json'), bm, 0)
 
   if (outP[0]["fmin"] > 23.5):
-    raise ValueError(f"Search: fmin > {25.5}")
+    raise ValueError(f"Search: fmin > {23.5}")
   
   outM = MADS.main(os.path.join(bm_root, 'geom_prog.json'), bm, 0)
 
