@@ -280,6 +280,8 @@ def main(*args) -> Dict[str, Any]:
 
   """ Initialize the log file """
   log = logger()
+  if not os.path.exists(data["param"]["post_dir"]):
+     os.mkdir(data["param"]["post_dir"])
   log.initialize(data["param"]["post_dir"] + "/OMADS.log")
 
   """ Run preprocessor for the setup of
