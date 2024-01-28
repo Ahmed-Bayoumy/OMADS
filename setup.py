@@ -9,13 +9,14 @@ if __name__ == "__main__":
     packages=find_packages(include=['SLML', 'SLML.*']),
     description="Statistical Learning Models Library",
     install_requires=[
+      'samplersLib>=24.1.3',
       'cocopp==2.6.3',
       'NOBM>=1.0.1',
       'numpy>=1.22.4',
       'pandas>=1.5.2',
       'scipy>=1.9.3',
-      'setuptools>=58.1.0',
-      'samplersLib>=24.1.3'
+      'setuptools>=58.1.0'
+      
     ],
     extras_require={
         'interactive': ['matplotlib>=3.5.2', 'plotly>=5.14.1'],
