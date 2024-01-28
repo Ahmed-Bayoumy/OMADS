@@ -9,6 +9,7 @@
 
   "param":
     {
+      "name": "GP",
       "baseline": [1E5,1E5,1E5,1E5,1E5,1E5,1E5,1E5,1E5,1E5],
       "lb": [1e-6,1e-6,1e-6,1e-6,1e-6,1e-6,1e-6,1e-6,1e-6,1e-6],
       "ub": [1e6,1e6,1e6,1e6,1e6,1e6,1e6,1e6,1e6,1e6],
@@ -34,15 +35,15 @@
       "collect_y": false,
       "rich_direction": true,
       "precision": "high",
-      "save_results": false,
+      "save_results": true,
       "save_coordinates": false,
       "save_all_best": false,
       "parallel_mode": false
     },
     "search": {
-      "type": "VNS",
-      "s_method": "LH",
-      "ns": 100,
+      "type": "sampling",
+      "s_method": "ACTIVE",
+      "ns": 500,
       "visualize": false
     }
 }

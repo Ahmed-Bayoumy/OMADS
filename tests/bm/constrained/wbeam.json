@@ -10,16 +10,17 @@
 
   "param":
     {
+      "name": "wbeam",
       "baseline": [1.0, 5.0, 5.0, 0.2],
       "lb": [0.125, 0.1, 0.1, 0.1],
       "ub": [2.0, 10.0, 10.0, 2.0],
       "var_names": ["x1", "x2", "x3", "x4"],
       "scaling": 1.0,
       "constraints_type": ["PB", "PB", "PB","PB", "PB"],
-      "LAMBDA": [5, 5, 5, 5, 5],
+      "LAMBDA": [1E5, 1E5, 1E5, 1E5, 1E5],
       "RHO": 1,
       "post_dir": "./tests/bm/constrained/post",
-      "h_max": 10
+      "h_max": 0.0
     },
 
   "options":
@@ -35,15 +36,15 @@
       "collect_y": false,
       "rich_direction": true,
       "precision": "high",
-      "save_results": false,
-      "save_coordinates": false,
+      "save_results": true,
+      "save_coordinates": true,
       "save_all_best": false,
       "parallel_mode": false
     },
     "search": {
-      "type": "VNS",
-      "s_method": "LH",
-      "ns": 100,
+      "type": "sampling",
+      "s_method": "ACTIVE",
+      "ns": 200,
       "visualize": false
     }
 }
