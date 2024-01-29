@@ -147,20 +147,13 @@ def test_omads_callable_quick_parallel():
        "scaling": 10.0,
        "post_dir": "./post"}
   options = {"seed": 0, "budget": 100, "tol": 1e-6, "display": True, "parallel_mode": True, "save_results": True, "isVerbose": True}
-  sampling = {
-              "type": "sampling",
-              "s_method": "active_sampling",
-              "ns": int((2+1)*(2+2)/2)+50,
-              "visualize": False,
-              "criterion": None
-            }
   search = {
       "type": "sampling",
-      "s_method": "active_sampling",
+      "s_method": "ACTIVE",
       "ns": 10,
       "visualize": False
     }
-  data = {"evaluator": eval, "param": param, "options": options, "sampling": sampling, "search": search}
+  data = {"evaluator": eval, "param": param, "options": options, "search": search}
 
   out: Dict = MADS.main(data)
   print(out)
