@@ -14,7 +14,8 @@ if __name__ == "__main__":
       'NOBM>=1.0.1',
       'numpy>=1.22.4',
       'pandas>=1.5.2',
-      'setuptools>=58.1.0'
+      'setuptools>=58.1.0',
+      'pyDOE2==1.3.0'
       
     ],
     extras_require={
