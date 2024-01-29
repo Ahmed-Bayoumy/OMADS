@@ -12,10 +12,11 @@ if __name__ == "__main__":
       'samplersLib>=24.1.3',
       'cocopp==2.6.3',
       'NOBM>=1.0.1',
-      'numpy>=1.22.4',
+      'numpy==1.22.4',
       'pandas>=1.5.2',
       'setuptools>=58.1.0',
-      'pyDOE2==1.3.0'
+      'pyDOE2==1.3.0',
+      'scipy==1.8.1'
       
     ],
     extras_require={
