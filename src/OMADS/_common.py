@@ -35,7 +35,7 @@ class logger:
     self.log.setLevel(logging.DEBUG) 
     cur_time = time.strftime("%Y-%m-%d, %H:%M:%S", time.localtime())
     self.log_msg(msg=f"###################################################### \n", msg_type=MSG_TYPE.INFO)
-    self.log_msg(msg=f"################# OMADS ver. 2312 #################### \n", msg_type=MSG_TYPE.INFO)
+    self.log_msg(msg=f"################# OMADS ver. 2401 #################### \n", msg_type=MSG_TYPE.INFO)
     self.log_msg(msg=f"############### {cur_time} ################# \n", msg_type=MSG_TYPE.INFO)
 
     # Remove all handlers associated with the root logger object.
