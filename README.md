@@ -116,6 +116,7 @@ Input parameters are serialized in a `JSON` template using predefined attributes
       * `PSO`: particle swarm optimization (TODO: not published yet as it is in the testing phase)
       * `CMA-ES`: covariance matrix adaptation evolution strategy (TODO: not published yet as it is in the testing phase)
    * `s_method`: can take one of the following values
+      * `ACTIVE`: Online active sampling using kernel density estimators (KDE) 
       * `LH`: Latin Hypercube sampling\
       * `RS`: random sampling
       * `HALTON`: Halton sampling
