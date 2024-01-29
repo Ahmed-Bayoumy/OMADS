@@ -6,15 +6,14 @@ if __name__ == "__main__":
     author="Ahmed H. Bayoumy",
     author_email="ahmed.bayoumy@mail.mcgill.ca",
     version='2401',
-    packages=find_packages(include=['SLML', 'SLML.*']),
-    description="Statistical Learning Models Library",
+    packages=find_packages(include=['OMADS', 'OMADS.*']),
+    description="Mesh Adaptive Direct Search (MADS)",
     install_requires=[
       'samplersLib>=24.1.3',
       'cocopp==2.6.3',
       'NOBM>=1.0.1',
       'numpy>=1.22.4',
       'pandas>=1.5.2',
-      'scipy>=1.9.3',
       'setuptools>=58.1.0'
       
     ],

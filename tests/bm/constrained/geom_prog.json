@@ -35,7 +35,7 @@
       "collect_y": false,
       "rich_direction": true,
       "precision": "high",
-      "save_results": true,
+      "save_results": false,
       "save_coordinates": false,
       "save_all_best": false,
       "parallel_mode": false
