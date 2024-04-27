@@ -11,7 +11,7 @@ if __name__ == "__main__":
     install_requires=[
       'samplersLib>=24.1.3',
       'cocopp==2.6.3',
-      'NOBM>=1.0.1',
+      'NOBM>=2404',
       'numpy==1.23.2',
       'pandas>=1.5.2',
       'setuptools>=58.1.0',
