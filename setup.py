@@ -15,8 +15,8 @@ if __name__ == "__main__":
       'numpy==1.23.2',
       'pandas>=1.5.2',
       'setuptools>=58.1.0',
-      'pyDOE2>=1.3.0',
-      'scipy>=1.8.1'
+      'pyDOE2==1.3.0',
+      'scipy==1.13.0'
       
     ],
     extras_require={
