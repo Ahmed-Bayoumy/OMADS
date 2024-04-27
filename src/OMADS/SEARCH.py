@@ -319,11 +319,11 @@ class VNS(VNS_data):
 class efficient_exploration:
   mesh: OrthoMesh  = field(default_factory=OrthoMesh)
   _success: bool = False
-  _xmin: Point = Point()
-  prob_params: Parameters = Parameters()
+  _xmin: Point = None
+  prob_params: Parameters = None
   sampling_t: int = 3
   _seed: int = 0
-  _dtype: DType = DType()
+  _dtype: DType = None
   iter: int = 1
   vicinity_ratio: np.ndarray = None
   vicinity_min: float = 0.001
@@ -332,7 +332,7 @@ class efficient_exploration:
   store_cache: bool = True
   check_cache: bool = True
   display: bool = False
-  bb_handle: Evaluator = Evaluator()
+  bb_handle: Evaluator = None
   bb_output: List = None
   samples: List[Point] = None
   hashtable: Cache = None
@@ -353,6 +353,12 @@ class efficient_exploration:
   best_samples: int = 0
   estGrid: explore.samplers.sampling = None
   n_successes: int = 0 
+
+  def __post_init__(self):
+    self._xmin = Point()
+    self.bb_handle = Evaluator()
+    self._dtype = DType()
+    self.prob_params = Parameters()
 
   @property
   def type(self):
@@ -483,8 +489,8 @@ class efficient_exploration:
     if self.xmin and self.iter > 1 and self.sampling_t != SAMPLING_METHOD.ACTIVE.name:
       for i in range(len(self.prob_params.lb)):
         D = abs(self.prob_params.ub[i] - self.prob_params.lb[i])
-        lb = copy.deepcopy(self.xmin.coordinates[i]-(D * self.vicinity_ratio[i]))
-        ub = copy.deepcopy(self.xmin.coordinates[i]+(D * self.vicinity_ratio[i]))
+        lb = copy.deepcopy(self.xmin.coordinates[i]-(D * self.vicinity_ratio[i][0]))
+        ub = copy.deepcopy(self.xmin.coordinates[i]+(D * self.vicinity_ratio[i][0]))
         if lb <= self.prob_params.lb[i]:
           lb = copy.deepcopy(self.prob_params.lb[i])
         elif  lb >= self.prob_params.ub[i]:
