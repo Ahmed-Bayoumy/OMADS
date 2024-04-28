@@ -18,8 +18,8 @@ class Dirs2n:
   _n: int = 0
   _defined: List[bool] = field(default_factory=lambda: [False])
   scaling: List[List[float]] = field(default_factory=list)
-  _xmin: Point = Point()
-  _x_sc: Point = Point()
+  _xmin: Point = None
+  _x_sc: Point = None
   _nb_success: int = 0
   _bb_eval: int = field(default_factory=int)
   _psize: float = field(default_factory=float)
@@ -32,7 +32,7 @@ class Dirs2n:
   mesh: OrthoMesh = field(default_factory=OrthoMesh)
   _opportunistic: bool = False
   _eval_budget: int = 100
-  _dtype: DType = DType()
+  _dtype: DType = None
   bb_handle: Evaluator = field(default_factory=Evaluator)
   _success: bool = False
   _seed: int = 0
@@ -45,6 +45,11 @@ class Dirs2n:
   log: logger = None
   n_successes: int = 0
 
+  def __post_init__(self):
+    self._dtype = DType()
+    self._xmin: Point = Point()
+    self._x_sc: Point = Point()
+
   @property
   def x_sc(self) -> Point:
     return self._x_sc
@@ -53,7 +58,6 @@ class Dirs2n:
   def x_sc(self, value: Point):
     self._x_sc = value
   
-
   @property
   def bb_output(self) -> List[float]:
     return self._bb_output

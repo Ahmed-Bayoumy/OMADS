@@ -106,6 +106,8 @@ def test_MADS_callable_quick_20d():
        "var_names": [f"x{i}" for i in range(d)],
        "scaling": [15.0]*d,
        "post_dir": "./post"}
+  isWin = platform.platform().split('-')[0] == 'Windows'
+
   sampling = {
               "method": 'ACTIVE',
               "ns": int((d+1)*(d+2)/2)+50,
@@ -119,12 +121,7 @@ def test_MADS_callable_quick_20d():
       "ns": int((d+1)*(d+2)/2)+50,
       "visualize": False
     }
-  sampling = {
-              "method": 'sampling',
-              "ns": int((d+1)*(d+2)/2)+50,
-              "visualize": False,
-              "criterion": None
-            }
+
   data = {"evaluator": eval, "param": param, "options": options, "sampling": sampling, "search": search}
   outS: Dict = SEARCH.main(data)
 

@@ -19,17 +19,17 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: Set up Python 3.10
+    - name: Set up Python 3.11
       uses: actions/setup-python@v3
       with:
-        python-version: "3.10"
+        python-version: "3.11"
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install flake8 pytest pytest-cov
         pip install wheel
         python setup.py sdist bdist_wheel
-        pip install dist/OMADS-2401-py3-none-any.whl
+        pip install dist/OMADS-2404.1-py3-none-any.whl
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names

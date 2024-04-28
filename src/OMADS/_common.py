@@ -302,8 +302,11 @@ class Evaluator:
   output: str = "output.out"
   constants: List = None
   bb_eval: int = 0
-  _dtype: DType = DType()
+  _dtype: DType = None
   timeout: float = 1000000.
+
+  def __post_init__(self):
+    self._dtype = DType()
 
   @property
   def dtype(self):
@@ -477,7 +480,10 @@ class OrthoMesh:
   psize_max: float = 0.0
   psize_success: float = 0.0
   # numpy double data type precision
-  _dtype: DType = DType()
+  _dtype: DType = None
+
+  def __post_init__(self):
+    self._dtype = DType()
 
   @property
   def dtype(self):

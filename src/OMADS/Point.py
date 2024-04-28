@@ -42,7 +42,7 @@ class Point:
   # hash signature, in the cache memory
   _signature: int = 0
   # numpy double data type precision
-  _dtype: DType = DType()
+  _dtype: DType = None
   # Variables type
   _var_type: List[int] = None
   # Discrete set
@@ -70,6 +70,9 @@ class Point:
   Model: str = "Simulation"
 
   _hzero: float = None
+
+  def __post_init__(self):
+    self._dtype = DType()
 
   @property
   def hzero(self):
