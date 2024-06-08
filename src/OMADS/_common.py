@@ -15,6 +15,33 @@ from ._globals import *
 from BMDFO import toy
 from inspect import signature
 import subprocess
+from multiprocessing import cpu_count
+
+@dataclass
+class validator:
+
+  def checkInputFile(self, args) -> dict:
+    if type(args[0]) is dict:
+      data = args[0]
+    elif isinstance(args[0], str):
+      if os.path.exists(os.path.abspath(args[0])):
+        _, file_extension = os.path.splitext(args[0])
+        if file_extension == ".json":
+          try:
+            with open(args[0]) as file:
+              data = json.load(file)
+          except ValueError:
+            raise IOError('invalid json file: ' + args[0])
+        else:
+          raise IOError(f"The input file {args[0]} is not a JSON dictionary. "
+                  f"Currently, OMADS supports JSON files solely!")
+      else:
+        raise IOError(f"Couldn't find {args[0]} file!")
+    else:
+      raise IOError("The first input argument couldn't be recognized. "
+              "It should be either a dictionary object or a JSON file that holds "
+              "the required input parameters.")
+    return data
 
 @dataclass
 class logger:

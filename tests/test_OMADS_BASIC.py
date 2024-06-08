@@ -1,10 +1,8 @@
 from OMADS import POLL, SEARCH, MADS
-
+from matplotlib import pyplot as plt
 import copy
 import os
 from BMDFO import toy
-
-import pandas as pd
 import numpy as np
 
 from typing import Dict, List
@@ -17,6 +15,15 @@ def rosen(x, *argv):
   y = [np.sum(100.0 * (x[1:] - x[:-1] ** 2.0) ** 2.0 + (1 - x[:-1]) ** 2.0,
         axis=0), [0]]
   return y
+
+
+def thin_con(x):
+  f = np.sqrt((x[0]-20)**2 + (x[1]-1)**2)
+  c1 = np.sin(x[0])-0.1-x[1]
+  c2 = x[1] - np.sin(x[0])
+  y = [f, [c1, c2]]
+  return y
+
 
 def test_MADS_callable_quick_2d():
   d = 2
@@ -53,6 +60,39 @@ def test_MADS_callable_quick_2d():
   
   if (outS[0]["fmin"] > 0.0006):
     raise ValueError(f"Search: fmin > {0.0006}")
+
+def test_MADS_callable_quick_const_2d():
+  d = 2
+  eval = {"blackbox": thin_con}
+  param = {"name": "thin_con","baseline": [0, -10],
+       "lb": [0, -10],
+       "ub": [25, 10],
+       "var_names": [f"x{i}" for i in range(d)],
+       "constraints_type": ["PB", "PB"],
+       "scaling": [20.0]*d,
+       "post_dir": "./post"}
+  sampling = {
+                    "method": 'LH',
+                    "ns": 100,
+                    "visualize": False,
+                    "criterion": None
+                  }
+  options = {"seed": 1234, "budget": 2000, "tol": 1e-9, "display": False, "check_cache": True, "store_cache": True, "rich_direction": True, "opportunistic": False, "save_results": False, "isVerbose": False}
+  search = {
+      "type": "sampling",
+      "s_method": "ACTIVE",
+      "ns": 100,
+      "visualize": False
+    }
+  data = {"evaluator": eval, "param": param, "options": options, "sampling": sampling, "search": search}
+
+  outM: Dict = MADS.main(data)
+
+  if (outM[0]["fmin"] > 0.098):
+    raise ValueError(f"MADS: fmin > {0.098}")
+
+  
+
 
 def test_MADS_callable_quick_10d():
   d = 10
@@ -165,7 +205,7 @@ def test_omads_toy_quick():
   assert POLL.OrthoMesh
   assert POLL.Cache
   assert POLL.Dirs2n
-  assert POLL.PreMADS
+  assert POLL.PrePoll
   assert POLL.Output
   assert POLL.PostMADS
   assert POLL.main
