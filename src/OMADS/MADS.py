@@ -347,7 +347,7 @@ def main(*args) -> Dict[str, Any]:
   log.log_msg(msg="Preprocess the search step...", msg_type=PS.MSG_TYPE.INFO)
   _, _, search, _, _, _, _, _ = SS.PreExploration(data).initialize_from_dict(log=log)
   log.log_msg(msg="Preprocess the MADS algorithim...", msg_type=PS.MSG_TYPE.INFO)
-  iteration, xmin, poll, options, param, post, out, B = PS.PreMADS(data).initialize_from_dict(log=log, xs=search.xmin)
+  iteration, xmin, poll, options, param, post, out, B = PS.PrePoll(data).initialize_from_dict(log=log, xs=search.xmin)
   out.stepName = "Poll"
   post.step_name = [f'Search: {search.type}']
 

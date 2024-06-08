@@ -139,3 +139,42 @@ class MSG_TYPE(Enum):
   ERROR = auto()
   INFO = auto()
   CRITICAL = auto()
+
+class SAMPLING_METHOD(Enum):
+  FULLFACTORIAL: int = auto()
+  LH: int = auto()
+  RS: int = auto()
+  HALTON: int = auto()
+  ACTIVE: int = auto()
+
+class SEARCH_TYPE(Enum):
+  SAMPLING: int = auto()
+  SURROGATE: int = auto()
+  VNS: int = auto()
+  BAYESIAN: int = auto()
+  NM: int = auto()
+  PSO: int = auto()
+
+class DIST_TYPE(Enum):
+  GAUSS: int = auto()
+  GAMMA: int = auto()
+  EXPONENTIAL: int = auto()
+  BIONOMIAL: int = auto()
+  POISSON: int = auto()
+
+class STOP_TYPE(Enum):
+  NO_STOP: int = auto()
+  ERROR: int = auto()
+  UNKNOWN_STOP_REASON: int = auto()
+  CTRL_C: int = auto()
+  USER_STOPPED: int = auto()
+  MESH_PREC_REACHED: int = auto()
+  X0_FAIL: int = auto()
+  P1_FAIL: int = auto()
+  DELTA_M_MIN_REACHED: int = auto()
+  DELTA_P_MIN_REACHED: int = auto()
+  MAX_TIME_REACHED: int = auto()
+  MAX_BB_EVAL_REACHED: int = auto()
+  MAX_SGTE_EVAL_REACHED: int = auto()
+  F_TARGET_REACHED: int = auto()
+  MAX_CACHE_MEMORY_REACHED: int = auto()
