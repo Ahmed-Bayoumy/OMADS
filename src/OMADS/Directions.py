@@ -1,4 +1,27 @@
-from .Point import Point
+# ------------------------------------------------------------------------------------#
+#  Mesh Adaptive Direct Search - ORTHO-MADS (MADS)                                    #
+#                                                                                     #
+#  Author: Ahmed H. Bayoumy                                                           #
+#  email: ahmed.bayoumy@mail.mcgill.ca                                                #
+#                                                                                     #
+#  This program is free software: you can redistribute it and/or modify it under the  #
+#  terms of the GNU Lesser General Public License as published by the Free Software   #
+#  Foundation, either version 3 of the License, or (at your option) any later         #
+#  version.                                                                           #
+#                                                                                     #
+#  This program is distributed in the hope that it will be useful, but WITHOUT ANY    #
+#  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A    #
+#  PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more details.   #
+#                                                                                     #
+#  You should have received a copy of the GNU Lesser General Public License along     #
+#  with this program. If not, see <http://www.gnu.org/licenses/>.                     #
+#                                                                                     #
+#  You can find information on OMADS at                                               #
+#  https://github.com/Ahmed-Bayoumy/OMADS                                             #
+#  Copyright (C) 2022  Ahmed H. Bayoumy                                               #
+# ------------------------------------------------------------------------------------#
+
+from .Points import CandidatePoint
 from .Barriers import *
 from ._common import *
 from dataclasses import dataclass, field
@@ -13,13 +36,13 @@ class Dirs2n:
     :param _n: Number of directions
     :param _defined: A boolean that indicate if the poll points are defined
   """
-  _poll_dirs: List[Point] = field(default_factory=list)
+  _poll_dirs: List[CandidatePoint] = field(default_factory=list)
   _point_index: List[int] = field(default_factory=list)
   _n: int = 0
   _defined: List[bool] = field(default_factory=lambda: [False])
   scaling: List[List[float]] = field(default_factory=list)
-  _xmin: Point = None
-  _x_sc: Point = None
+  _xmin: CandidatePoint = None
+  _x_sc: CandidatePoint = None
   _nb_success: int = 0
   _bb_eval: int = field(default_factory=int)
   _psize: float = field(default_factory=float)
@@ -47,15 +70,15 @@ class Dirs2n:
 
   def __post_init__(self):
     self._dtype = DType()
-    self._xmin: Point = Point()
-    self._x_sc: Point = Point()
+    self._xmin: CandidatePoint = CandidatePoint()
+    self._x_sc: CandidatePoint = CandidatePoint()
 
   @property
-  def x_sc(self) -> Point:
+  def x_sc(self) -> CandidatePoint:
     return self._x_sc
   
   @x_sc.setter
-  def x_sc(self, value: Point):
+  def x_sc(self, value: CandidatePoint):
     self._x_sc = value
   
   @property
@@ -186,7 +209,7 @@ class Dirs2n:
     return self._poll_dirs
 
   @poll_dirs.setter
-  def poll_dirs(self, p: Point):
+  def poll_dirs(self, p: CandidatePoint):
     self._poll_dirs.append(p)
 
   @poll_dirs.deleter
@@ -223,7 +246,7 @@ class Dirs2n:
     return self._xmin
 
   @xmin.setter
-  def xmin(self, other: Point):
+  def xmin(self, other: CandidatePoint):
     self._xmin = other
 
   @property
@@ -321,7 +344,7 @@ class Dirs2n:
     else:
       ndirs = 0
     for k in range(ndirs):
-      tmp = Point()
+      tmp = CandidatePoint()
       tmp.constraints_type = copy.deepcopy([xb for xb in c_types] if isinstance(c_types, list) else [c_types])
       tmp.sets = copy.deepcopy(var_sets)
       tmp.var_type = copy.deepcopy(var_type)
@@ -351,12 +374,12 @@ class Dirs2n:
       self.scaling.append(temp)
       del temp
   
-  def directional_scaling(self, p: Point, npts: int = 5) -> List[Point]:
+  def directional_scaling(self, p: CandidatePoint, npts: int = 5) -> List[CandidatePoint]:
     lb = self.lb
     ub = self.ub
     # np.random.seed(self.seed)
     scaling = [self.mesh.msize, 2*self.mesh.msize]
-    p_trials: List[Point] = [0]*len(scaling)
+    p_trials: List[CandidatePoint] = [0]*len(scaling)
     for k in range(len(scaling)):
       p_trials[k] = copy.deepcopy(p)
       p_trials[k].coordinates = copy.deepcopy(np.subtract(p_trials[k].coordinates, scaling[k]))
@@ -368,12 +391,12 @@ class Dirs2n:
     
     return p_trials
   
-  def gauss_perturbation(self, p: Point, npts: int = 5) -> List[Point]:
+  def gauss_perturbation(self, p: CandidatePoint, npts: int = 5) -> List[CandidatePoint]:
     lb = self.lb
     ub = self.ub
     # np.random.seed(self.seed)
     cs = np.zeros((npts, p.n_dimensions))
-    pts: List[Point] = [0] * npts
+    pts: List[CandidatePoint] = [0] * npts
     mp = 1.
     for k in range(p.n_dimensions):
       if p.var_type[k] == VAR_TYPE.CONTINUOUS:
@@ -405,7 +428,7 @@ class Dirs2n:
     """ Initialize stopping and success conditions"""
     stop: bool = False
     """ Copy the point i to a trial one """
-    xtry: Point = self.poll_dirs[index]
+    xtry: CandidatePoint = self.poll_dirs[index]
     """ This is a success bool parameter used for
      filtering out successful designs to be printed
     in the output results file"""
@@ -518,10 +541,10 @@ class Dirs2n:
 
     return [stop, index, self.bb_handle.bb_eval, success, psize, xtry]
 
-  def master_updates(self, x: List[Point], peval, save_all_best: bool = False, save_all:bool = False):
+  def master_updates(self, x: List[CandidatePoint], peval, save_all_best: bool = False, save_all:bool = False):
     if peval >= self.eval_budget:
       self.terminate = True
-    x_post: List[Point] = []
+    x_post: List[CandidatePoint] = []
     for xtry in x:
       """ Check success conditions """
       is_infeas_dom: bool = (xtry.status == DESIGN_STATUS.INFEASIBLE and (xtry.h < self.xmin.h) )
@@ -538,7 +561,7 @@ class Dirs2n:
         self.nb_success += 1
         """ Update the post instant """
         del self._xmin
-        self._xmin = Point()
+        self._xmin = CandidatePoint()
         self._xmin = copy.deepcopy(xtry)
         self.hmax = copy.deepcopy(xtry.hmax)
         if self.display:

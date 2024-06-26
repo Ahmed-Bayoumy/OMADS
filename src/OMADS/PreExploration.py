@@ -7,7 +7,7 @@ class PreExploration:
   """ Preprocessor for setting up optimization settings and parameters"""
   data: Dict[Any, Any]
   log: logger = None
-  def initialize_from_dict(self, log: logger = None, xs: Point=None):
+  def initialize_from_dict(self, log: logger = None, xs: CandidatePoint=None):
     """ MADS initialization """
     """ 1- Construct the following classes by unpacking
      their respective dictionaries from the input JSON file """
@@ -42,7 +42,7 @@ class PreExploration:
     
     """ 2- Initialize iteration number and construct a point instant for the starting point """
     iteration: int =  0
-    x_start = Point()
+    x_start = CandidatePoint()
     """ 3- Construct an instant for the poll 2n orthogonal directions class object """
     extend = options.extend is not None and isinstance(options.extend, efficient_exploration)
     if not extend:
@@ -169,7 +169,7 @@ class PreExploration:
      found and check if the starting minimizer performs better
     than the worst (f = inf) """
     search.nb_success = 0
-    if search.xmin < Point():
+    if search.xmin < CandidatePoint():
       search.mesh.psize_success = search.mesh.psize
       search.mesh.psize_max = np.maximum(search.mesh.psize,
                       search.mesh.psize_max,

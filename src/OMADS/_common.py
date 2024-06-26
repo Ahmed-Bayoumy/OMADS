@@ -8,7 +8,7 @@ import os
 from typing import List, Dict, Any, Optional
 from numpy import sum, subtract, add, maximum, minimum, power, inf
 import numpy as np
-from .Point import Point
+from .Points import CandidatePoint
 import csv
 import json
 from ._globals import *
@@ -257,10 +257,10 @@ class Output:
 class PostMADS:
   """ Results postprocessor
   """
-  x_incumbent: List[Point]
-  xmin: Point
-  coords: List[List[Point]] = field(default_factory=list)
-  poll_dirs: List[Point] = field(default_factory=list)
+  x_incumbent: List[CandidatePoint]
+  xmin: CandidatePoint
+  coords: List[List[CandidatePoint]] = field(default_factory=list)
+  poll_dirs: List[CandidatePoint] = field(default_factory=list)
   iter: List[int] = field(default_factory=list)
   bb_eval: List[int] = field(default_factory=list)
   psize: List[float] = field(default_factory=list)
@@ -305,7 +305,7 @@ class PostMADS:
          f'{self.bb_eval[-1]}, {"psize= "} {self.psize[-1]}, ' \
          f'{"hmin = "} 'f'{self.xmin.h}, {"status: "} {self.xmin.status.name} {", fmin = "} {self.xmin.f}'
 
-  def __add_to_cache__(self, x: Point):
+  def __add_to_cache__(self, x: CandidatePoint):
     self.x_incumbent.append(x)
 
 @dataclass
@@ -586,7 +586,7 @@ class Cache:
     return self._hash_ID
 
   @hash_id.setter
-  def hash_id(self, other: Point):
+  def hash_id(self, other: CandidatePoint):
     if hash(tuple(other.coordinates)) not in self._hash_ID:
       self._hash_ID.append(hash(tuple(other.coordinates)))
   
@@ -610,7 +610,7 @@ class Cache:
     """
     return len(self.hash_id)
 
-  def is_duplicate(self, x: Point) -> bool:
+  def is_duplicate(self, x: CandidatePoint) -> bool:
     """Check if the point is in the cache memory
 
     :param x: Design point
@@ -624,7 +624,7 @@ class Cache:
 
     return is_dup
 
-  def get_index(self, x: Point)->int:
+  def get_index(self, x: CandidatePoint)->int:
     """Get the index of hash value, associated with the point x, if that point was saved in the cach memory
 
     :param x: Input point
@@ -637,7 +637,7 @@ class Cache:
       return self.hash_id.index(hash_value)
     return -1
 
-  def add_to_cache(self, x: Point):
+  def add_to_cache(self, x: CandidatePoint):
     """Save the point x to the cache memory
 
     :param x: Evaluated point to be saved in the cache memory
@@ -654,7 +654,7 @@ class Cache:
         self._hash_ID.append(hash(tuple(x[i].coordinates)))
     
   
-  def add_to_best_cache(self, x: Point):
+  def add_to_best_cache(self, x: CandidatePoint):
     if not isinstance(x, list):
       if len(self._cache_dict) > 1:
         is_infeas_dom: bool = (x.status == DESIGN_STATUS.INFEASIBLE and (x.h < self._cache_dict[self._best_hash_ID[0]].h) )

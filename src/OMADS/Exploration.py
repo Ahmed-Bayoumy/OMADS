@@ -1,5 +1,5 @@
 
-from .Point import Point
+from .Points import CandidatePoint
 from .Barriers import Barrier
 from ._common import *
 from .Directions import *
@@ -11,14 +11,14 @@ from ._globals import *
 
 @dataclass
 class VNS_data:
-  fixed_vars: List[Point] = None
+  fixed_vars: List[CandidatePoint] = None
   nb_search_pts: int = 0
   stop: bool = False
   stop_reason: STOP_TYPE = STOP_TYPE.NO_STOP
   success: SUCCESS_TYPES = SUCCESS_TYPES.US
   count_search: bool = False
-  new_feas_inc: Point = None
-  new_infeas_inc: Point = None
+  new_feas_inc: CandidatePoint = None
+  new_infeas_inc: CandidatePoint = None
   params: Parameters = None
   # true_barrier: Barrier = None
   # sgte_barrier: Barrier = None
@@ -31,7 +31,7 @@ class VNS(VNS_data):
   """
   _k: int = 1
   _k_max: int = 100
-  _old_x: Point = None
+  _old_x: CandidatePoint = None
   _dist: List[DIST_TYPE] = None
   _ns_dist: List[int] = None
   _rho: float = 0.1
@@ -48,7 +48,7 @@ class VNS(VNS_data):
     self.active_barrier = active_barrier
     self.params = params
   
-  def draw_from_gauss(self, mean: Point) -> List[Point]:
+  def draw_from_gauss(self, mean: CandidatePoint) -> List[CandidatePoint]:
     """_summary_
     """
     np.random.seed(self._seed)
@@ -71,7 +71,7 @@ class VNS(VNS_data):
     return cs
 
   
-  def draw_from_gamma(self, mean: Point) -> List[Point]:
+  def draw_from_gamma(self, mean: CandidatePoint) -> List[CandidatePoint]:
     """_summary_
     """
     np.random.seed(self._seed)
@@ -94,7 +94,7 @@ class VNS(VNS_data):
     
     return cs
 
-  def draw_from_exp(self, mean: Point) -> List[Point]:
+  def draw_from_exp(self, mean: CandidatePoint) -> List[CandidatePoint]:
     """_summary_
     """
     np.random.seed(self._seed)
@@ -117,7 +117,7 @@ class VNS(VNS_data):
 
     return cs
   
-  def draw_from_poisson(self, mean: Point) -> List[Point]:
+  def draw_from_poisson(self, mean: CandidatePoint) -> List[CandidatePoint]:
     """_summary_
     """
     np.random.seed(self._seed)
@@ -140,7 +140,7 @@ class VNS(VNS_data):
     
     return cs
 
-  def draw_from_binomial(self, mean: Point) -> List[Point]:
+  def draw_from_binomial(self, mean: CandidatePoint) -> List[CandidatePoint]:
     """_summary_
     """
     np.random.seed(self._seed)
@@ -166,7 +166,7 @@ class VNS(VNS_data):
 
     return cs
 
-  def generate_samples(self, x_inc: Point, dist: DIST_TYPE)->List[float]:
+  def generate_samples(self, x_inc: CandidatePoint, dist: DIST_TYPE)->List[float]:
     """_summary_
     """
     if not x_inc.evaluated:
@@ -197,7 +197,7 @@ class VNS(VNS_data):
     # opt_only_sgte = self.params._opt_only_sgte
 
     # point x
-    x: Point = self.active_barrier._best_feasible
+    x: CandidatePoint = self.active_barrier._best_feasible
     if (x is None or not x.evaluated) and self.active_barrier._filter is not None:
       x = self.active_barrier.get_best_infeasible()
     
@@ -248,7 +248,7 @@ class VNS(VNS_data):
 class efficient_exploration:
   mesh: OrthoMesh  = field(default_factory=OrthoMesh)
   _success: bool = False
-  _xmin: Point = None
+  _xmin: CandidatePoint = None
   prob_params: Parameters = None
   sampling_t: int = 3
   _seed: int = 0
@@ -263,7 +263,7 @@ class efficient_exploration:
   display: bool = False
   bb_handle: Evaluator = None
   bb_output: List = None
-  samples: List[Point] = None
+  samples: List[CandidatePoint] = None
   hashtable: Cache = None
   _dim: int = 0
   nb_success: int = 0
@@ -282,9 +282,10 @@ class efficient_exploration:
   best_samples: int = 0
   estGrid: explore.samplers.sampling = None
   n_successes: int = 0 
+  bb_eval: Any = None
 
   def __post_init__(self):
-    self._xmin = Point()
+    self._xmin = CandidatePoint()
     self.bb_handle = Evaluator()
     self._dtype = DType()
     self.prob_params = Parameters()
@@ -354,7 +355,7 @@ class efficient_exploration:
           self.scaling[k][0] = 1.0
     s_array = np.diag(self.scaling)
 
-  def get_list_of_coords_from_list_of_points(self, xps: List[Point] = None) -> np.ndarray:
+  def get_list_of_coords_from_list_of_points(self, xps: List[CandidatePoint] = None) -> np.ndarray:
     coords_array = np.zeros((len(xps), self.dim))
     for i in range(len(xps)):
       coords_array[i, :] = xps[i].coordinates
@@ -362,7 +363,7 @@ class efficient_exploration:
     return coords_array
 
 
-  def generate_2ngrid(self, vlim: np.ndarray = None, x_incumbent: Point = None, p_in: float = 0.01) -> np.ndarray:
+  def generate_2ngrid(self, vlim: np.ndarray = None, x_incumbent: CandidatePoint = None, p_in: float = 0.01) -> np.ndarray:
     grid = Dirs2n()
     grid.mesh = OrthoMesh()
     """ 5- Assign optional algorithmic parameters to the constructed poll instant  """
@@ -390,13 +391,13 @@ class efficient_exploration:
     grid_points = None
     
     if n <= 2* self.dim:
-      x_inc = Point()
+      x_inc = CandidatePoint()
       x_inc.coordinates = self.hashtable.get_best_cache_points(nsamples=n)[0]
       grid_points = self.generate_2ngrid(vlim=vlim, x_incumbent=x_inc, p_in=self.psize)[:n]
     else:
       grid_points: np.ndarray
       for i in range(int(n/(2*self.dim))+1):
-        x_inc = Point()
+        x_inc = CandidatePoint()
         x_inc.coordinates = self.hashtable.get_best_cache_points(nsamples=n)[i]
         temp = self.generate_2ngrid(vlim=vlim, x_incumbent=x_inc, p_in=1/(self.iter+i)) #add different incumbents from ordered cache matrix
         if i == 0:
@@ -407,7 +408,7 @@ class efficient_exploration:
     return grid_points[:n, :]
 
   
-  def generate_sample_points(self, nsamples: int = None, samples_in: np.ndarray = None) -> List[Point]:
+  def generate_sample_points(self, nsamples: int = None, samples_in: np.ndarray = None) -> List[CandidatePoint]:
     """ Generate the sample points """
     xlim = []
     self.nvars = len(self.prob_params.baseline)
@@ -557,9 +558,9 @@ class efficient_exploration:
     for i in range(len(samples)):
       samples[i, :] = self.project_coords_to_mesh(samples[i, :], ref=np.subtract(self.prob_params.ub , self.prob_params.lb).tolist())
     samples = np.unique(samples, axis=0)
-    self.samples: List[Point] = [0] *len(samples)
+    self.samples: List[CandidatePoint] = [0] *len(samples)
     for i in range(len(samples)):
-      self.samples[i] = Point()
+      self.samples[i] = CandidatePoint()
       if self.xmin.var_type is not None:
         self.samples[i].var_type = self.xmin.var_type
       else:
@@ -573,12 +574,12 @@ class efficient_exploration:
     return np.array([x.coordinates for x in self.samples])
 
 
-  def gauss_perturbation(self, p: Point, npts: int = 5) -> List[Point]:
+  def gauss_perturbation(self, p: CandidatePoint, npts: int = 5) -> List[CandidatePoint]:
     lb = self.lb
     ub = self.ub
     # np.random.seed(self.seed)
     cs = np.zeros((npts, p.n_dimensions))
-    pts: List[Point] = [0] * npts
+    pts: List[CandidatePoint] = [0] * npts
     mp = 1.
     for k in range(p.n_dimensions):
       if p.var_type[k] == VAR_TYPE.CONTINUOUS:
@@ -609,7 +610,7 @@ class efficient_exploration:
     """ Initialize stopping and success conditions"""
     stop: bool = False
     """ Copy the point i to a trial one """
-    xtry: Point = self.samples[index]
+    xtry: CandidatePoint = self.samples[index]
     """ This is a success bool parameter used for
      filtering out successful designs to be printed
     in the output results file"""
@@ -719,10 +720,10 @@ class efficient_exploration:
       stop = True
     return [stop, index, self.bb_handle.bb_eval, success, psize, xtry]
 
-  def master_updates(self, x: List[Point], peval, save_all_best: bool = False, save_all:bool = False):
+  def master_updates(self, x: List[CandidatePoint], peval, save_all_best: bool = False, save_all:bool = False):
     if peval >= self.eval_budget:
       self.terminate = True
-    x_post: List[Point] = []
+    x_post: List[CandidatePoint] = []
     c = 0
     for xtry in x:
       c += 1
@@ -740,7 +741,7 @@ class efficient_exploration:
         self.nb_success += 1
         """ Update the post instant """
         del self._xmin
-        self._xmin = Point()
+        self._xmin = CandidatePoint()
         self._xmin = copy.deepcopy(xtry)
         if self.display:
           if self._dtype.dtype == np.float64:

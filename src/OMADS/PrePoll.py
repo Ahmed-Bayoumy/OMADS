@@ -1,4 +1,26 @@
-from .Point import Point
+# ------------------------------------------------------------------------------------#
+#  Mesh Adaptive Direct Search - ORTHO-MADS (MADS)                                    #
+#                                                                                     #
+#  Author: Ahmed H. Bayoumy                                                           #
+#  email: ahmed.bayoumy@mail.mcgill.ca                                                #
+#                                                                                     #
+#  This program is free software: you can redistribute it and/or modify it under the  #
+#  terms of the GNU Lesser General Public License as published by the Free Software   #
+#  Foundation, either version 3 of the License, or (at your option) any later         #
+#  version.                                                                           #
+#                                                                                     #
+#  This program is distributed in the hope that it will be useful, but WITHOUT ANY    #
+#  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A    #
+#  PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more details.   #
+#                                                                                     #
+#  You should have received a copy of the GNU Lesser General Public License along     #
+#  with this program. If not, see <http://www.gnu.org/licenses/>.                     #
+#                                                                                     #
+#  You can find information on OMADS at                                               #
+#  https://github.com/Ahmed-Bayoumy/OMADS                                             #
+#  Copyright (C) 2022  Ahmed H. Bayoumy                                               #
+# ------------------------------------------------------------------------------------#
+from .Points import CandidatePoint
 from .Barriers import *
 from ._common import *
 from .Directions import *
@@ -9,7 +31,7 @@ class PrePoll:
   data: Dict[Any, Any]
   log: logger = None
 
-  def initialize_from_dict(self, log: logger = None, xs: Point=None):
+  def initialize_from_dict(self, log: logger = None, xs: CandidatePoint=None):
     """ MADS initialization """
     """ 1- Construct the following classes by unpacking
      their respective dictionaries from the input JSON file """
@@ -45,8 +67,8 @@ class PrePoll:
     """ 2- Initialize iteration number and construct a point instant for the starting point """
     extend = options.extend is not None and isinstance(options.extend, Dirs2n)
     is_xs = False
-    if xs is None or not isinstance(xs, Point) or not xs.evaluated:
-      x_start = Point()
+    if xs is None or not isinstance(xs, CandidatePoint) or not xs.evaluated:
+      x_start = CandidatePoint()
     else:
       x_start = xs
       is_xs = True
@@ -174,7 +196,7 @@ class PrePoll:
      found and check if the starting minimizer performs better
     than the worst (f = inf) """
     poll.nb_success = 0
-    if not extend and poll.xmin < Point():
+    if not extend and poll.xmin < CandidatePoint():
       poll.mesh.psize_success = poll.mesh.psize
       poll.mesh.psize_max = maximum(poll.mesh.psize,
                       poll.mesh.psize_max,

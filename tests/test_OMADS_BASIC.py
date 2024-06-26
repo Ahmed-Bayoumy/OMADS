@@ -201,7 +201,7 @@ def test_omads_toy_quick():
   assert POLL.Options
   assert POLL.Parameters
   assert POLL.Evaluator
-  assert POLL.Point
+  assert POLL.CandidatePoint
   assert POLL.OrthoMesh
   assert POLL.Cache
   assert POLL.Dirs2n

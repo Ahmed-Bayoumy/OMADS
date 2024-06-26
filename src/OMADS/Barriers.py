@@ -1,7 +1,7 @@
 import copy
 from dataclasses import dataclass, field
 from typing import List
-from .Point import Point
+from .Points import CandidatePoint
 from ._globals import *
 import numpy as np
 from ._common import Parameters
@@ -11,17 +11,17 @@ class Barrier:
   _params: Parameters = None
   _eval_type: int = 1
   _h_max: float = 0
-  _best_feasible: Point = None
-  _ref: Point = None
-  _filter: List[Point] = None
+  _best_feasible: CandidatePoint = None
+  _ref: CandidatePoint = None
+  _filter: List[CandidatePoint] = None
   _prefilter: int = 0
   _rho_leaps: float = 0.1
-  _prim_poll_center: Point = None
-  _sec_poll_center: Point = None
+  _prim_poll_center: CandidatePoint = None
+  _sec_poll_center: CandidatePoint = None
   _peb_changes: int = 0
   _peb_filter_reset: int = 0
-  _peb_lop: List[Point] = None
-  _all_inserted: List[Point] = None
+  _peb_lop: List[CandidatePoint] = None
+  _all_inserted: List[CandidatePoint] = None
   _one_eval_succ: SUCCESS_TYPES = None
   _success: SUCCESS_TYPES = None
 
@@ -31,7 +31,7 @@ class Barrier:
     self._eval_type = eval_type
 
 
-  def insert_feasible(self, x: Point) -> SUCCESS_TYPES:
+  def insert_feasible(self, x: CandidatePoint) -> SUCCESS_TYPES:
     fx: float
     fx_bf: float
     if self._best_feasible is not None:
@@ -50,7 +50,7 @@ class Barrier:
     
     return SUCCESS_TYPES.US
   
-  def filter_insertion(self, x:Point) -> bool:
+  def filter_insertion(self, x:CandidatePoint) -> bool:
     if not x._is_EB_passed:
       return
     if self._filter is None:
@@ -80,7 +80,7 @@ class Barrier:
     return insert
 
 
-  def insert_infeasible(self, x: Point):
+  def insert_infeasible(self, x: CandidatePoint):
     insert: bool = self.filter_insertion(x=x)
     if not self._ref:
       return SUCCESS_TYPES.PS
@@ -108,7 +108,7 @@ class Barrier:
     return self._filter[0]
   
   def select_poll_center(self):
-    best_infeasible: Point = self.get_best_infeasible()
+    best_infeasible: CandidatePoint = self.get_best_infeasible()
     self._sec_poll_center = None
     if not self._best_feasible and not best_infeasible:
       self._prim_poll_center = None
@@ -121,7 +121,7 @@ class Barrier:
       self._prim_poll_center = best_infeasible
       return
     
-    last_poll_center: Point = Point()
+    last_poll_center: CandidatePoint = CandidatePoint()
     if self._params.get_barrier_type() == BARRIER_TYPES.PB:
       last_poll_center = self._prim_poll_center
       if best_infeasible.fobj < (self._best_feasible.fobj-self._rho_leaps):
@@ -148,7 +148,7 @@ class Barrier:
           continue
         it += 1
 
-  def insert(self, x: Point):
+  def insert(self, x: CandidatePoint):
     """/*---------------------------------------------------------*/
       /*         insertion of an Eval_Point in the barrier       */
       /*---------------------------------------------------------*/

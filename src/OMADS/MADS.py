@@ -36,7 +36,7 @@ import time
 from ._common import *
 from .Barriers import Barrier
 
-def search_step(iteration: int, search: SS.efficient_exploration = None, B: SS.Barrier = None, LAMBDA_k: float=None, RHO_k: float=None, search_VN: SS.VNS = None, post: PS.PostMADS=None, out: PS.Output=None, options: PS.Options=None, xmin: SS.Point=None, peval: int=0, HT: Any=None, log:logger = None):
+def search_step(iteration: int, search: SS.efficient_exploration = None, B: SS.Barrier = None, LAMBDA_k: float=None, RHO_k: float=None, search_VN: SS.VNS = None, post: PS.PostMADS=None, out: PS.Output=None, options: PS.Options=None, xmin: SS.CandidatePoint=None, peval: int=0, HT: Any=None, log:logger = None):
   """ Reset success boolean """
   search.success = False
   tic = time.perf_counter()
@@ -121,11 +121,11 @@ def search_step(iteration: int, search: SS.efficient_exploration = None, B: SS.B
           post.psize.append(f.result()[4])
         xt.append(f.result()[-1])
 
-  xpost: List[SS.Point] = search.master_updates(xt, peval, save_all_best=options.save_all_best, save_all=options.save_results)
+  xpost: List[SS.CandidatePoint] = search.master_updates(xt, peval, save_all_best=options.save_all_best, save_all=options.save_results)
   if options.save_results:
     for i in range(len(xpost)):
       post.poll_dirs.append(xpost[i])
-  xv: SS.Point = None
+  xv: SS.CandidatePoint = None
   for xv in xt:
     if xv.evaluated:
       B.insert(xv)
@@ -170,7 +170,7 @@ def search_step(iteration: int, search: SS.efficient_exploration = None, B: SS.B
   # iteration += 1
   return search, B, post, out, search.LAMBDA, search.RHO, search.xmin, peval
 
-def poll_step(iteration: int, poll: PS.Dirs2n = None, B: SS.Barrier = None, LAMBDA_k: float=None, RHO_k: float=None, param: PS.Parameters=None, post: PS.PostMADS=None, xmin: PS.Point=None, out: PS.Output=None, options: PS.Options=None, peval: int = 0, HT: Any = None, log:logger = None):
+def poll_step(iteration: int, poll: PS.Dirs2n = None, B: SS.Barrier = None, LAMBDA_k: float=None, RHO_k: float=None, param: PS.Parameters=None, post: PS.PostMADS=None, xmin: PS.CandidatePoint=None, out: PS.Output=None, options: PS.Options=None, peval: int = 0, HT: Any = None, log:logger = None):
   tic = time.perf_counter()
   poll.xmin = xmin
   poll.mesh.update()
@@ -247,7 +247,7 @@ def poll_step(iteration: int, poll: PS.Dirs2n = None, B: SS.Barrier = None, LAMB
           post.psize.append(f.result()[4])
         xt.append(f.result()[-1])
 
-  xpost: List[PS.Point] = poll.master_updates(xt, peval, save_all_best=options.save_all_best, save_all=options.save_results)
+  xpost: List[PS.CandidatePoint] = poll.master_updates(xt, peval, save_all_best=options.save_all_best, save_all=options.save_results)
   if options.save_results:
     for i in range(len(xpost)):
       post.poll_dirs.append(xpost[i])
@@ -336,7 +336,7 @@ def main(*args) -> Dict[str, Any]:
    the optimization problem and for the initialization
   of optimization process """
   iteration: int
-  xmin: Point
+  xmin: CandidatePoint
   options: Options
   param: Parameters 
   post: PostMADS 

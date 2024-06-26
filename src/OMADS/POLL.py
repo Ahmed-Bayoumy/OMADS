@@ -34,7 +34,7 @@ import concurrent.futures
 import time
 from typing import List, Dict, Any
 from BMDFO import toy
-from .Point import Point
+from .Points import CandidatePoint
 from .Barriers import *
 from ._common import *
 from .Directions import *
@@ -58,8 +58,6 @@ def main(*args) -> Dict[str, Any]:
   of optimization process """
   iteration, xmin, poll, options, param, post, out, B = PrePoll(data).initialize_from_dict(log=log)
   out.stepName = "Poll"
-  
-
 
   """ Set the random seed for results reproducibility """
   if len(args) < 4:
@@ -150,7 +148,7 @@ def main(*args) -> Dict[str, Any]:
             post.psize.append(f.result()[4])
           xt.append(f.result()[-1])
 
-    xpost: List[Point] = poll.master_updates(xt, peval, save_all_best=options.save_all_best, save_all=options.save_results)
+    xpost: List[CandidatePoint] = poll.master_updates(xt, peval, save_all_best=options.save_all_best, save_all=options.save_results)
     xmin = copy.deepcopy(poll.xmin)
     if options.save_results:
       for i in range(len(xpost)):

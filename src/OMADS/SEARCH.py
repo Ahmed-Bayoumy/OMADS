@@ -32,7 +32,7 @@ from typing import List, Dict, Any
 import concurrent.futures
 from matplotlib import pyplot as plt
 from BMDFO import toy
-from .Point import Point
+from .Points import CandidatePoint
 from ._common import *
 from .Directions import *
 from .Exploration import *
@@ -204,7 +204,7 @@ def main(*args) -> Dict[str, Any]:
             post.psize.append(f.result()[4])
           xt.append(f.result()[-1])
   
-    xpost: List[Point] = search.master_updates(xt, peval, save_all_best=options.save_all_best, save_all=options.save_results)
+    xpost: List[CandidatePoint] = search.master_updates(xt, peval, save_all_best=options.save_all_best, save_all=options.save_results)
     if options.save_results:
       for i in range(len(xpost)):
         post.poll_dirs.append(xpost[i])
@@ -340,7 +340,7 @@ def main(*args) -> Dict[str, Any]:
     cc_old = search.check_cache
     search.check_cache = False
     search.store_cache = False
-    temp = Point()
+    temp = CandidatePoint()
     temp.coordinates = output["xmin"]
     for ii in range(len(ax)):
       for jj in range(len(xmin.coordinates)):
@@ -354,7 +354,7 @@ def main(*args) -> Dict[str, Any]:
 
 
 
-def visualize(points: List[Point], hc_index, vc_index, msize, vlim, fig, axes, pmin, ps = None, title="unknown", blk=False, vnames=None, bbeval=None, lb = None, ub=None, spindex=0, bestKnown=None):
+def visualize(points: List[CandidatePoint], hc_index, vc_index, msize, vlim, fig, axes, pmin, ps = None, title="unknown", blk=False, vnames=None, bbeval=None, lb = None, ub=None, spindex=0, bestKnown=None):
 
   x: np.ndarray = np.zeros(len(points))
   y: np.ndarray = np.zeros(len(points))

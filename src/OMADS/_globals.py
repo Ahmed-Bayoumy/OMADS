@@ -178,3 +178,9 @@ class STOP_TYPE(Enum):
   MAX_SGTE_EVAL_REACHED: int = auto()
   F_TARGET_REACHED: int = auto()
   MAX_CACHE_MEMORY_REACHED: int = auto()
+  GL_LIMITS_REACHED: int = auto()
+
+HARD_MIN_MESH_INDEX: int = -300
+# gmesh index constants
+GL_LIMITS: int    = -50;         #< Limits for the gmesh index values
+UNDEFINED_GL: int = GL_LIMITS-1;  #< Undefined value for the gmesh index
