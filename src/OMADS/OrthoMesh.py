@@ -51,6 +51,38 @@ class OrthoMesh:
   psize_success: float = 0.0
   # numpy double data type precision
   _dtype: DType = None
+
+  def __init__(self, anisotropic_mesh: bool,
+                    anisotropy_factor: float,
+                    Delta_0: Point,
+                    Delta_min: Point,
+                    delta_min: Point,
+                    fixed_variables: Point,
+                    granularity: Point,
+                    update_basis: float,  
+                    coarsening_step: int,
+                    refining_step: int,
+                    limit_mesh_index: int):
+    """ initialize """
+    self._anisotropic_mesh = anisotropic_mesh
+    self._Delta0 = Delta_0
+    self._delta0 = Delta_0
+    self._Delta_min = Delta_min
+    self._delta_min = delta_min
+    self._anisotropy_factor = anisotropy_factor
+    self._fixed_variables = fixed_variables
+    self._granularity = granularity
+    self._update_basis = update_basis
+    self._coarsening_step = coarsening_step
+    self._refining_step = refining_step
+    self._limit_mesh_index = limit_mesh_index
+
+    self._n = Delta_0.size
+    self._n_free_variables = self._n - self._fixed_variables.size
+
+    
+
+
   
 
   def __post_init__(self):

@@ -30,7 +30,6 @@ from .OrthoMesh import *
 @dataclass
 class Gmesh(OrthoMesh):
   """ GMesh: Granular mesh """
-  _n: int = None
   _r: Point = None
   _r_min: Point = None
   _r_max: Point = None
@@ -42,13 +41,34 @@ class Gmesh(OrthoMesh):
   _pos_mant_0: Point = None
   _HARD_MIN_MESH_INDEX: int = -300
 
-  def __init__(self, n: int=None):
+  def __init__(self, anisotropic_mesh: bool = False,
+                    anisotropy_factor: float = 0.1,
+                    initial_poll_size: Point = None,
+                    min_poll_size: Point = None,
+                    min_mesh_size: Point = None,
+                    fixed_variables: Point = None,
+                    granularity: Point = None,
+                    poll_update_basis: float = 0,  
+                    poll_coarsening_step: int = 0,
+                    poll_refining_step: int = 0,
+                    limit_min_mesh_index: int = GL_LIMITS):
     """ Constructor """
+    super(Gmesh, self).__init__(anisotropic_mesh = anisotropic_mesh,
+                    anisotropy_factor = anisotropy_factor,
+                    Delta_0 = initial_poll_size,
+                    Delta_min = min_poll_size,
+                    delta_min = min_mesh_size,
+                    fixed_variables = fixed_variables,
+                    granularity = granularity,
+                    update_basis = poll_update_basis,  
+                    coarsening_step = poll_coarsening_step,
+                    refining_step = poll_refining_step,
+                    limit_mesh_index = limit_min_mesh_index)
+    
     if (self._limit_mesh_index>0):
       raise IOError("Limit mesh index must be <=0 ")
     
-    if n:
-      self._n = n
+
     # Set the mesh indices
     self._r.coordinates = [None]*self._n
     self._r_max.coordinates = [None]*self._n
@@ -120,6 +140,23 @@ class Gmesh(OrthoMesh):
   
   def init(self):
     """Initialization of granular poll size mantissa and exponent"""
+    # Set the mesh indices
+    self._r = [0] * self._n
+    self._r_max = [0] * self._n
+    self._r_min = [0] * self._n
+
+    # Set the mesh mantissas and exponents
+    self.init_poll_size_granular(self._Delta_0)
+
+    # Update mesh and poll after granular sizing
+    self._Delta_0_exp = self._Delta_exp
+    self._Delta_0_mant = self._Delta_mant
+    # Update mesh and poll after granular sizing
+    self._Delta_0 = self.get_Delta_object()
+    self._delta_0 = self.get_delta_object()
+
+
+
   
   def init_poll_size_granular (self, cont_init_poll_size: Point ):
     """
