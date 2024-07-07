@@ -5,18 +5,18 @@ if __name__ == "__main__":
     name="OMADS",
     author="Ahmed H. Bayoumy",
     author_email="ahmed.bayoumy@mail.mcgill.ca",
-    version='2404.1',
+    version='2407.0',
     packages=find_packages(include=['OMADS', 'OMADS.*']),
     description="Mesh Adaptive Direct Search (MADS)",
     install_requires=[
-      'samplersLib>=24.1.3',
+      'samplersLib>=24.2.0',
       'cocopp==2.6.3',
-      'NOBM==2404.1',
-      'numpy==1.23.2',
-      'pandas>=2.2.2',
+      'NOBM',
+      'numpy',
+      'pandas',
       'setuptools>=58.1.0',
-      'pyDOE2==1.3.0',
-      'scipy==1.13.0'
+      'pyDOE2',
+      'scipy'
       
     ],
     extras_require={
@@ -27,6 +27,7 @@ if __name__ == "__main__":
         'Programming Language :: Python :: 3 :: Only',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.11',
         'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)',
         'Intended Audience :: Developers',
         "Operating System :: OS Independent",

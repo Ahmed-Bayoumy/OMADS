@@ -32,13 +32,16 @@ from typing import List, Dict, Any
 import numpy as np
 from BMDFO import toy
 import time
-
-from ._common import *
+from .Point import Point
+from .CandidatePoint import CandidatePoint
+from ._common import logger, MSG_TYPE, PostMADS, Output
+from ._globals import SUCCESS_TYPES
 from .Barriers import Barrier
-
+from .Parameters import Parameters
+from .Options import Options
 def search_step(iteration: int, search: SS.efficient_exploration = None, B: SS.Barrier = None, LAMBDA_k: float=None, RHO_k: float=None, search_VN: SS.VNS = None, post: PS.PostMADS=None, out: PS.Output=None, options: PS.Options=None, xmin: SS.CandidatePoint=None, peval: int=0, HT: Any=None, log:logger = None):
   """ Reset success boolean """
-  search.success = False
+  search.success = SUCCESS_TYPES.US
   tic = time.perf_counter()
   search.log = log
   search.xmin = xmin
@@ -101,7 +104,7 @@ def search_step(iteration: int, search: SS.efficient_exploration = None, B: SS.B
         post.bb_eval.append(peval)
         post.step_name.append(f'Search: {search.type}')
         post.iter.append(iteration)
-        post.psize.append(search.mesh.psize)
+        post.psize.append(search.mesh.getdeltaMeshSize().coordinates)
       else:
         continue
 
@@ -137,12 +140,16 @@ def search_step(iteration: int, search: SS.efficient_exploration = None, B: SS.B
     search.vicinity_ratio = np.ones((len(search.xmin.coordinates),1))
 
   """ Updates """
-  if search.success:
-    search.mesh.psize = search.mesh.msize = np.multiply(search.mesh.msize, 2, dtype=search.dtype.dtype)
+  if search.success == SUCCESS_TYPES.FS:
+    # search.mesh.psize = search.mesh.msize = np.multiply(search.mesh.msize, 2, dtype=search.dtype.dtype)
+    dir: Point = Point(search.mesh._n)
+    dir.coordinates = search.xmin.direction.coordinates
+    search.mesh.enlargeDeltaFrameSize(direction=dir)
     if search.sampling_t != "ACTIVE":
       search.update_local_region(region="expand")
-  else:
-    search.mesh.psize = search.mesh.msize = np.divide(search.mesh.msize, 2, dtype=search.dtype.dtype)
+  elif search.success == SUCCESS_TYPES.US:
+    # search.mesh.psize = search.mesh.msize = np.divide(search.mesh.msize, 2, dtype=search.dtype.dtype)
+    search.mesh.refineDeltaFrameSize()
     if search.sampling_t != "ACTIVE":
       search.update_local_region(region="contract")
   
@@ -204,16 +211,16 @@ def poll_step(iteration: int, poll: PS.Dirs2n = None, B: SS.Barrier = None, LAMB
   """ Save current poll directions and incumbent solution
     so they can be saved later in the post dir """
   if options.save_coordinates:
-    post.coords.append(poll.poll_dirs)
+    post.coords.append(poll.poll_set)
     post.x_incumbent.append(poll.xmin)
   """ Reset success boolean """
-  poll.success = False
+  poll.success = SUCCESS_TYPES.US
   """ Reset the BB output """
   poll.bb_output = []
   xt = []
   """ Serial evaluation for points in the poll set """
   if not options.parallel_mode:
-    for it in range(len(poll.poll_dirs)):
+    for it in range(len(poll.poll_set)):
       if poll.terminate:
         break
       f = poll.eval_poll_point(it)
@@ -223,7 +230,7 @@ def poll_step(iteration: int, poll: PS.Dirs2n = None, B: SS.Barrier = None, LAMB
         post.bb_eval.append(peval)
         post.step_name.append(f'Poll-2n')
         post.iter.append(iteration)
-        post.psize.append(poll.mesh.psize)
+        post.psize.append(poll.mesh.getDeltaFrameSize().coordinates)
       else:
         continue
 
@@ -232,7 +239,7 @@ def poll_step(iteration: int, poll: PS.Dirs2n = None, B: SS.Barrier = None, LAMB
     """ Parallel evaluation for points in the poll set """
     with PS.concurrent.futures.ProcessPoolExecutor(options.np) as executor:
       results = [executor.submit(poll.eval_poll_point,
-                      it) for it in range(len(poll.poll_dirs))]
+                      it) for it in range(len(poll.poll_set))]
       for f in PS.concurrent.futures.as_completed(results):
         # if f.result()[0]:
         #     executor.shutdown(wait=False)
@@ -260,16 +267,20 @@ def poll_step(iteration: int, poll: PS.Dirs2n = None, B: SS.Barrier = None, LAMB
 
   """ Updates """
   pev = 0.
-  for p in poll.poll_dirs:
+  for p in poll.poll_set:
     if p.evaluated:
       pev += 1
   # if pev != poll.poll_dirs and not poll.success:
   #   poll.seed += 1
   goToSearch: bool = (pev == 0 and poll.Failure_stop is not None and poll.Failure_stop)
-  if poll.success and not goToSearch:
-    poll.mesh.psize = np.multiply(poll.mesh.psize, 2, dtype=poll.dtype.dtype)
-  else:
-    poll.mesh.psize = np.divide(poll.mesh.psize, 2, dtype=poll.dtype.dtype)
+  if poll.success == SUCCESS_TYPES.FS and not goToSearch:
+    # poll.mesh.psize = np.multiply(poll.mesh.psize, 2, dtype=poll.dtype.dtype)
+    dir: Point = Point(poll.mesh._n)
+    dir.coordinates = poll.xmin.direction
+    poll.mesh.enlargeDeltaFrameSize(direction=dir)
+  elif poll.success == SUCCESS_TYPES.US:
+    # poll.mesh.psize = np.divide(poll.mesh.psize, 2, dtype=poll.dtype.dtype)
+    poll.mesh.refineDeltaFrameSize()
   
   
   if options.display:
@@ -386,7 +397,7 @@ def main(*args) -> Dict[str, Any]:
     # else:
     canSearch = True
 
-    if canSearch and (not poll.success or iteration == 1):
+    if canSearch and (poll.success == SUCCESS_TYPES.US or iteration == 1):
       log.log_msg(f"------- Iteration # {iteration}: Run the search step -------", MSG_TYPE.INFO)
       search.iter = iteration
       search, B, post, out, LAMBDA_k, RHO_k, xmin, peval = search_step(search=search, B=B, LAMBDA_k=LAMBDA_k, RHO_k=RHO_k, iteration=iteration , search_VN=search_VN, post=post, out=out, options=options, xmin=xmin, peval=peval, HT=HT, log=log)
@@ -399,8 +410,8 @@ def main(*args) -> Dict[str, Any]:
     search.mesh = copy.deepcopy(poll.mesh)
     search.psize = copy.deepcopy(poll.psize)
     """ Check stopping criteria"""
-    pt = (abs(poll.mesh.psize) < options.tol)
-    st = (abs(search.mesh.psize) < options.tol)
+    pt = (all(abs(poll.mesh.getDeltaFrameSize().coordinates[pp]) < options.tol for pp in range(poll._n)))
+    st = (all(abs(search.mesh.getdeltaMeshSize().coordinates[pp]) < options.tol  for pp in range(search.mesh._n)))
     if (pt or st or search.bb_eval + poll.bb_eval >= options.budget):
       log.log_msg(f"\n--------------- Termination of MADS  ---------------", MSG_TYPE.INFO)
       if pt:
@@ -476,7 +487,7 @@ def main(*args) -> Dict[str, Any]:
     log.log_msg(msg=f" Poll step # BB evals =  {poll.bb_eval} ", msg_type=MSG_TYPE.INFO)
     log.log_msg(msg=f" Total # BB evals =  {poll.bb_eval + search.bb_eval} ", msg_type=MSG_TYPE.INFO)
     log.log_msg(msg=f" #iterations =  {iteration} ", msg_type=MSG_TYPE.INFO)
-    log.log_msg(msg=f" psize = {poll.mesh.psize} ", msg_type=MSG_TYPE.INFO)
+    log.log_msg(msg=f" psize = {poll.mesh.getDeltaFrameSize().coordinates} ", msg_type=MSG_TYPE.INFO)
     log.log_msg(msg=f" psize_success = {poll.mesh.psize_success} ", msg_type=MSG_TYPE.INFO)
     log.log_msg(msg=f" psize_max = {poll.mesh.psize_max} ", msg_type=MSG_TYPE.INFO)
   if options.display:
@@ -489,7 +500,7 @@ def main(*args) -> Dict[str, Any]:
     print(" #bb_eval = " + str(out_step.bb_eval))
     print(" #iteration = " + str(iteration))
     print(" nb_success = " + str(poll.nb_success + search.nb_success))
-    print(" psize = " + str(poll.mesh.psize))
+    print(" psize = " + str(poll.mesh.getDeltaFrameSize().coordinates))
     print(" psize_success = " + str(poll.mesh.psize_success))
     print(" psize_max = " + str(poll.mesh.psize_max))
     
@@ -510,10 +521,10 @@ def main(*args) -> Dict[str, Any]:
                 "nbb_evals" : out_step.bb_eval,
                 "niterations" : iteration,
                 "nb_success": poll.nb_success + search.nb_success,
-                "psize": poll.mesh.psize,
+                "psize": poll.mesh.getDeltaFrameSize().coordinates,
                 "psuccess": poll.mesh.psize_success,
                 "pmax": poll.mesh.psize_max,
-                "msize": out_step.mesh.msize}
+                "msize": out_step.mesh.getdeltaMeshSize().coordinates}
 
   return output, out_step
 

@@ -27,6 +27,8 @@ from typing import List, Dict, Any, Optional
 from numpy import sum, subtract, add, maximum, power, inf
 import numpy as np
 from ._globals import *
+from .Gmesh import Gmesh
+from .Point import Point
 
 @dataclass
 class CandidatePoint:
@@ -94,9 +96,29 @@ class CandidatePoint:
 
   _hzero: float = None
 
+  _mesh: Gmesh = None
+
+  _direction: Point = None
+
   def __post_init__(self):
     self._dtype = DType()
 
+  @property
+  def mesh(self):
+    return self._mesh
+  
+  @mesh.setter
+  def mesh(self, value: Any) -> Any:
+    self._mesh = value
+  
+  @property
+  def direction(self):
+    return self._direction
+  
+  @direction.setter
+  def direction(self, value: Any) -> Any:
+    self._direction = value
+  
   @property
   def hzero(self):
     if self._hzero is None:
@@ -482,182 +504,3 @@ class CandidatePoint:
 
   def __dh__(self, other):
     return subtract(self.h, other.h, dtype=self._dtype.dtype)
-
-@dataclass
-class Point:
-  """ A class for the poll point
-    
-    :param _n: # Dimension of the point
-    :param _coords: Coordinates of the point
-    :param _defined: Coordinates definition boolean
-    :param _signature: hash signature; facilitate looking for duplicates and storing coordinates, hash signature, in the cache memory
-    :param _dtype:  numpy double data type precision
-  """
-  # Dimension of the point
-  _n: int = 0
-  # Coordinates of the point
-  _coords: List[float] = None
-  # Coordinates definition boolean
-  _defined: List[bool] = None
-  # Evaluation boolean
-  _evaluated: bool = False
-  # hash signature, in the cache memory
-  _signature: int = 0
-  # numpy double data type precision
-  _dtype: DType = None
-  # Variables type
-  _var_type: List[int] = None
-  # Discrete set
-  _sets: Dict = None
-
-  source: str = "Current run"
-
-  Model: str = "Simulation"
-
-  def __post_init__(self):
-    self._dtype = DType()
-  
-  @property
-  def var_type(self) -> List[int]:
-    return self._var_type
-  
-  @var_type.setter
-  def var_type(self, value: List[int]):
-    self._var_type = value
-  
-
-  @property
-  def sets(self):
-    return self._sets
-  
-  @sets.setter
-  def sets(self, value: Any) -> Any:
-    self._sets = value
-
-  @property
-  def dtype(self):
-    return self._dtype
-
-  @dtype.setter
-  def dtype(self, other: DType):
-    self._dtype = other
-
-  @property
-  def signature(self):
-    return self._signature
-
-  @property
-  def size(self):
-    return self._n
-
-  @size.setter
-  def size(self, n: int):
-    if n < 0:
-      del self.size
-      if len(self.coordinates) > 0:
-        del self.coordinates
-      if self.defined:
-        del self.defined
-    else:
-      self._n = n
-
-  @size.deleter
-  def size(self):
-    self._n = 0
-
-  @property
-  def coordinates(self):
-    """Get the coordinates of the point."""
-    return self._coords
-
-  @coordinates.setter
-  def coordinates(self, coords: List[float]):
-    """ Get the coordinates of the point. """
-    self._n = len(coords)
-    self._coords = list(coords)
-    self._signature = hash(tuple(self._coords))
-    self._defined = [True] * self._n
-
-  @coordinates.deleter
-  def coordinates(self):
-    del self._coords
-  
-  def fill(self, val: Any):
-    if isinstance(val, list):
-      self.coordinates = val
-    else:
-      self.coordinates = [val]*self._n
-  
-  def push_back(self, val: Any):
-    if isinstance(val, list):
-      self.coordinates = self._coords + val
-    else:
-      self.coordinates = self._coords + [val]*self._n
-
-  @property
-  def defined(self) -> List[bool]:
-    return self._defined
-
-  @defined.setter
-  def defined(self, value: List[bool]):
-    self._defined = copy.deepcopy(value)
-
-  @defined.deleter
-  def defined(self):
-    del self._defined
-
-  def is_any_defined(self) -> bool:
-    """Check if at least one coordinate is defined."""
-    if self.size > 0:
-      return any(self.defined)
-    else:
-      return False
-  
-  def is_all_defined(self) -> bool:
-    """Check if at least one coordinate is defined."""
-    if self.size > 0:
-      return all(self.defined)
-    else:
-      return False
-  
-  def is_complete(self) -> bool:
-    if self.is_all_defined() and self.size > 0:
-      return True
-    return False
-
-  def reset(self, n: int = 0, d: Optional[float] = None):
-    """ Sets all coordinates to d. """
-    if n <= 0:
-      self._n = 0
-      del self.coordinates
-    else:
-      if self._n != n:
-        del self.coordinates
-        self.size = n
-      self.coordinates = [d] * n if d is not None else []
-
-  def __eq__(self, other) -> bool:
-    return self.size is other.n_dimensions and other.coordinates is self.coordinates \
-         and self.is_any_defined() is other.is_any_defined()
-
-  def __str__(self) -> str:
-    return f'{self.coordinates}'
-
-  def __sub__(self, other) -> List[float]:
-    dcoord: List[float] = []
-    for k in range(self.size):
-      dcoord.append(subtract(self.coordinates[k],
-                   other.coordinates[k], dtype=self._dtype.dtype))
-    return dcoord
-
-  def __add__(self, other) -> List[float]:
-    dcoord: List[float] = []
-    for k in range(self.size):
-      dcoord.append(add(self.coordinates[k], other.coordinates[k], dtype=self._dtype.dtype))
-    return dcoord
-
-  def __truediv__(self, s: float):
-    return np.divide(self.coordinates, s, dtype=self._dtype.dtype)
-
-  def __is_duplicate__(self, other) -> bool:
-    return other.signature is self._signature

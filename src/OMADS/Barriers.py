@@ -1,10 +1,10 @@
 import copy
 from dataclasses import dataclass, field
 from typing import List
-from .Points import CandidatePoint
+from .CandidatePoint import CandidatePoint
 from ._globals import *
 import numpy as np
-from ._common import Parameters
+from .Parameters import Parameters
 
 @dataclass
 class Barrier:
@@ -150,11 +150,11 @@ class Barrier:
 
   def insert(self, x: CandidatePoint):
     """/*---------------------------------------------------------*/
-      /*         insertion of an Eval_Point in the barrier       */
-      /*---------------------------------------------------------*/
+      /*         insertion of a candidate point in the barrier    */
+      /*----------------------------------------------------------*/
     """
     if not x.evaluated:
-      raise RuntimeError("This points hasn't been evaluated yet and cannot be inserted to the barrier object!")
+      raise RuntimeError("This point hasn't been evaluated yet and cannot be inserted into the barrier object!")
     
     if (x.status == DESIGN_STATUS.ERROR):
       self._one_eval_succ = SUCCESS_TYPES.US

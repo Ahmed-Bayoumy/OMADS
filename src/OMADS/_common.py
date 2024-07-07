@@ -8,7 +8,8 @@ import os
 from typing import List, Dict, Any, Optional
 from numpy import sum, subtract, add, maximum, minimum, power, inf
 import numpy as np
-from .Points import CandidatePoint
+from .Point import Point
+from .CandidatePoint import CandidatePoint
 import csv
 import json
 from ._globals import *
@@ -115,95 +116,6 @@ class logger:
 
       #Now we are going to Set the threshold of logger to DEBUG 
       self.log.setLevel(logging.DEBUG) 
-
-@dataclass
-class Options:
-  """ The running study and algorithmic options of OMADS
-  
-    :param seed: Random generator seed
-    :param budget: The evaluation budget
-    :param tol: The threshold of the minimum poll size at which the run will be terminated
-    :param psize_init: Initial poll size
-    :param dispaly: Print the study progress during the run
-    :param opportunistic: Loop on the points populated in the poll set until a better minimum found, then stop the evaluation loop
-    :param check_cache: Check the hash table before points evaluation to avoid duplicates
-    :param store_cache: Enable storing evaluated points into the hash table
-    :param collect_y: Collect dependent design variables (required for DMDO)
-    :param rich_direction: Go with the rich direction (Impact the mesh size update)
-    :param precision: Define the precision level
-    :param save_results: A boolean flag that indicates saving results in a csv file
-    :param save_coordinates: A boolean flag that indicates saving coordinates of the poll set in a JSON file (required to generate animations of the spinner)
-    :param save_all_best: A boolean used to check whether saving best points only in the MADS.out file
-    :param parallel_mode: A boolean to check whether evaluating the poll set in parallel multiprocessing
-    :param np: The number of CPUs
-  """
-  seed: int = 0
-  budget: int = 1000
-  tol: float = 1e-9
-  psize_init: float = 1.0
-  display: bool = False
-  opportunistic: bool = False
-  check_cache: bool = False
-  store_cache: bool = False
-  collect_y: bool = False
-  rich_direction: bool = False
-  precision: str = "high"
-  save_results: bool = False
-  save_coordinates: bool = False
-  save_all_best: bool = False
-  parallel_mode: bool = False
-  np: int = 1
-  extend: Any = None
-  isVerbose: bool = False
-
-@dataclass
-class Parameters:
-  """ Variables and algorithmic parameters 
-  
-    :param baseline: Baseline design point (initial point ``x0``)
-    :param lb: The variables lower bound
-    :param ub: The variables upper bound
-    :param var_names: The variables name
-    :param scaling: Scaling factor (can be defined as a list (assigning a factor for each variable) or a scalar value that will be applied on all variables)
-    :param post_dir: The location and name of the post directory where the output results file will live in (if any)
-  """
-  baseline: List[float] = field(default_factory=lambda: [0.0, 0.0])
-  lb: List[float] = field(default_factory=lambda: [-5.0, -5.0])
-  ub: List[float] = field(default_factory=lambda: [10.0, 10.0])
-  var_names: List[str] = field(default_factory=lambda: ["x1", "x2"])
-  scaling: float = 10.0
-  post_dir: str = os.path.abspath(".\\")
-  var_type: List[str] = None
-  var_sets: Dict = None
-  constants: List = None
-  constants_name: List = None
-  Failure_stop: bool = None
-  problem_name: str = "unknown"
-  best_known: List[float] = None
-  constraints_type: List[BARRIER_TYPES] = None
-  h_max: float = 0
-  RHO: float = 0.00005
-  LAMBDA: List[float] = None
-  name: str = "undefined"
-  # TODO: give better control on variabls' resolution (mesh granularity)
-  # var_type: List[str] = field(default_factory=["cont", "cont"])
-  # resolution: List[int] = field(default_factory=["cont", "cont"])
-
-  def get_barrier_type(self):
-    if self.constraints_type is not None:
-      if isinstance(self.constraints_type, list):
-        for i in range(len(self.constraints_type)):
-          if self.constraints_type[i] == BARRIER_TYPES.PB:
-            return BARRIER_TYPES.PB
-      else:
-        if self.constraints_type == BARRIER_TYPES.PB:
-            return BARRIER_TYPES.PB
-
-    
-    return BARRIER_TYPES.EB
-  
-  def get_h_max_0 (self):
-    return self.h_max
 
 @dataclass
 class Output:

@@ -21,11 +21,14 @@
 #  Copyright (C) 2022  Ahmed H. Bayoumy                                               #
 # ------------------------------------------------------------------------------------#
 
-from .Points import CandidatePoint
+from .Point import Point
+from .CandidatePoint import CandidatePoint
+from .Point import Point
 from .Barriers import *
 from ._common import *
 from dataclasses import dataclass, field
 from typing import List, Dict, Any
+from .Gmesh import Gmesh
 
 @dataclass
 class Dirs2n:
@@ -36,7 +39,8 @@ class Dirs2n:
     :param _n: Number of directions
     :param _defined: A boolean that indicate if the poll points are defined
   """
-  _poll_dirs: List[CandidatePoint] = field(default_factory=list)
+  _poll_set: List[CandidatePoint] = field(default_factory=list)
+  _poll_dirs: List[Point] = field(default_factory=list)
   _point_index: List[int] = field(default_factory=list)
   _n: int = 0
   _defined: List[bool] = field(default_factory=lambda: [False])
@@ -52,7 +56,7 @@ class Dirs2n:
   _display: bool = True
   _store_cache: bool = True
   _save_results = True
-  mesh: OrthoMesh = field(default_factory=OrthoMesh)
+  mesh: Gmesh = None
   _opportunistic: bool = False
   _eval_budget: int = 100
   _dtype: DType = None
@@ -205,13 +209,26 @@ class Dirs2n:
     self._iter = other
 
   @property
+  def poll_set(self):
+    return self._poll_set
+
+  @poll_set.setter
+  def poll_set(self, p: CandidatePoint):
+    self._poll_set.append(p)
+
+  @poll_set.deleter
+  def poll_set(self):
+    del self._poll_set
+    self._poll_set = []
+  
+  @property
   def poll_dirs(self):
     return self._poll_dirs
-
+  
   @poll_dirs.setter
-  def poll_dirs(self, p: CandidatePoint):
-    self._poll_dirs.append(p)
-
+  def poll_dirs(self, dir: Point):
+    self._poll_dirs.append(dir)
+  
   @poll_dirs.deleter
   def poll_dirs(self):
     del self._poll_dirs
@@ -242,7 +259,7 @@ class Dirs2n:
     del self._defined
 
   @property
-  def xmin(self):
+  def xmin(self)->CandidatePoint:
     return self._xmin
 
   @xmin.setter
@@ -272,7 +289,7 @@ class Dirs2n:
     :rtype: np.ndarray
     """
     if domain is None:
-      domain = [VAR_TYPE.CONTINUOUS] * self._n
+      domain = [VAR_TYPE.REAL] * self._n
     elif len(domain) != self._n:
       raise IOError("Number of dimensions doesn't match the size of the variables type list invoked to Dirs2n::create_householder.")
     elif not isinstance(domain, list):
@@ -294,19 +311,19 @@ class Dirs2n:
       hhm = np.eye(self.dim, dtype=self._dtype.dtype)
     hhm = np.dot(hhm, np.diag((np.abs(hhm, dtype=self._dtype.dtype)).max(1) ** (-1)))
     # Rounding( and transpose)
-    tmp = np.multiply(self.mesh.rho, hhm, dtype=self._dtype.dtype)
-    hhm = np.transpose(np.multiply(self.mesh.msize, np.ceil(tmp), dtype=self._dtype.dtype))
+    tmp = np.multiply(self.mesh.getRho(), hhm, dtype=self._dtype.dtype)
+    hhm = np.transpose(np.multiply(self.mesh.getdeltaMeshSize().coordinates, np.ceil(tmp), dtype=self._dtype.dtype))
     hhm = np.dot(hhm, self.scaling)
 
     for i in range(len(domain)):
       if domain[i] == VAR_TYPE.DISCRETE or domain[i] == VAR_TYPE.BINARY or domain[i] == VAR_TYPE.INTEGER:
-        hhm[i][i] = int(np.floor((-1 if i%2 else 1) - 2**self.mesh.msize))
+        hhm[i][i] = int(np.floor((-1 if i%2 else 1) - 2**self.mesh.getdeltaMeshSize().coordinates[i]))
       elif domain[i] == VAR_TYPE.CATEGORICAL:
         hhm[i][i] = np.ceil(np.random.random(1).astype(dtype=self._dtype.dtype))
       else:
         for j in range(len(domain)):
-          if domain[j] != VAR_TYPE.CONTINUOUS:
-            hhm[i][j] = int(np.floor(-1 + 2**self.mesh.msize))
+          if domain[j] != VAR_TYPE.REAL:
+            hhm[i][j] = int(np.floor(-1 + 2**self.mesh.getdeltaMeshSize().coordinates[i]))
     
     if is_oneDir:
       return hhm
@@ -329,7 +346,7 @@ class Dirs2n:
     :type it: int
     """
     if is_prim:
-      del self.poll_dirs
+      del self.poll_set
       temp = np.add(hhm, np.array(self.xmin.coordinates), dtype=self._dtype.dtype)
     else:
       temp = np.add(hhm, np.array(self.x_sc.coordinates), dtype=self._dtype.dtype)
@@ -351,7 +368,14 @@ class Dirs2n:
       tmp.var_link = copy.deepcopy(var_link)
       tmp.coordinates = temp[k]
       tmp.dtype.precision = self.dtype.precision
-      self.poll_dirs = tmp
+      tmp.mesh = copy.deepcopy(self.mesh)
+      self.poll_set = tmp
+      if is_prim:
+        tmp.direction = tmp - self.xmin
+        self.poll_dirs = tmp - self.xmin
+      else:
+        tmp.direction = tmp - self.x_sc
+        self.poll_dirs = tmp - self.x_sc
       del tmp
     del temp
 
@@ -378,7 +402,8 @@ class Dirs2n:
     lb = self.lb
     ub = self.ub
     # np.random.seed(self.seed)
-    scaling = [self.mesh.msize, 2*self.mesh.msize]
+    # scaling = [self.mesh.msize, 2*self.mesh.msize]
+    scaling = self.mesh.getdeltaMeshSize().coordinates
     p_trials: List[CandidatePoint] = [0]*len(scaling)
     for k in range(len(scaling)):
       p_trials[k] = copy.deepcopy(p)
@@ -399,8 +424,8 @@ class Dirs2n:
     pts: List[CandidatePoint] = [0] * npts
     mp = 1.
     for k in range(p.n_dimensions):
-      if p.var_type[k] == VAR_TYPE.CONTINUOUS:
-        cs[:, k] = np.random.normal(loc=p.coordinates[k], scale=self.mesh.msize, size=(npts,))
+      if p.var_type[k] == VAR_TYPE.REAL:
+        cs[:, k] = np.random.normal(loc=p.coordinates[k], scale=self.mesh.getdeltaMeshSize().coordinates[k], size=(npts,))
       elif p.var_type[k] == VAR_TYPE.INTEGER or p.var_type[k] == VAR_TYPE.CATEGORICAL or p.var_type[k] == VAR_TYPE.DISCRETE:
         cs[:, k] = np.random.randint(low=lb[k], high=ub[k], size=(npts,))
         for i in range(npts):
@@ -428,11 +453,11 @@ class Dirs2n:
     """ Initialize stopping and success conditions"""
     stop: bool = False
     """ Copy the point i to a trial one """
-    xtry: CandidatePoint = self.poll_dirs[index]
+    xtry: CandidatePoint = self.poll_set[index]
     """ This is a success bool parameter used for
      filtering out successful designs to be printed
     in the output results file"""
-    success = False
+    success = SUCCESS_TYPES.US
 
     """ Check the cache memory; check if the trial point
      is a duplicate (it has already been evaluated) """
@@ -464,7 +489,7 @@ class Dirs2n:
         print("Cache hit ... Failed to find a non-duplicate alternative.")
       stop = True
       bb_eval = copy.deepcopy(self.bb_eval)
-      psize = copy.deepcopy(self.mesh.psize)
+      psize = copy.deepcopy(self.mesh.getDeltaFrameSize().coordinates)
       return [stop, index, self.bb_handle.bb_eval, success, psize, xtry]
 
     """ Evaluation of the blackbox; get output responses """
@@ -525,12 +550,12 @@ class Dirs2n:
 
     # if self.save_results or self.display:
     self.bb_eval = self.bb_handle.bb_eval
-    self.psize = copy.deepcopy(self.mesh.psize)
-    psize = copy.deepcopy(self.mesh.psize)
+    self.psize = copy.deepcopy(self.mesh.getDeltaFrameSize().coordinates)
+    psize = copy.deepcopy(self.mesh.getDeltaFrameSize().coordinates)
 
 
 
-    if self.success and self.opportunistic and self.iter > 1:
+    if success == SUCCESS_TYPES.FS and self.opportunistic and self.iter > 1:
       stop = True
 
     """ Check stopping criteria """
@@ -552,11 +577,11 @@ class Dirs2n:
       is_infea_improving: bool = (self.xmin.status == DESIGN_STATUS.FEASIBLE and xtry.status == DESIGN_STATUS.INFEASIBLE and (xtry.fobj < self.xmin.fobj and xtry.h <= self.xmin.hmax))
       is_feas_improving: bool = (self.xmin.status == DESIGN_STATUS.INFEASIBLE and xtry.status == DESIGN_STATUS.FEASIBLE and xtry.fobj < self.xmin.fobj)
       
-      success = False
+      success = SUCCESS_TYPES.US
       if ((is_infeas_dom or is_feas_dom)):
-        self.success = True
+        self.success = SUCCESS_TYPES.FS
         self.n_successes += 1
-        success = True  # <- This redundant variable is important
+        success = SUCCESS_TYPES.FS  # <- This redundant variable is important
         # for managing concurrent parallel execution
         self.nb_success += 1
         """ Update the post instant """
@@ -572,11 +597,9 @@ class Dirs2n:
           else:
             print(f"Success: fmin = {self.xmin.f:.18f} (hmin = {self.xmin.h:.18})")
 
-        self.mesh.psize_success = copy.deepcopy(self.mesh.psize)
-        self.mesh.psize_max = copy.deepcopy(np.maximum(self.mesh.psize,
-                              self.mesh.psize_max,
-                              dtype=self._dtype.dtype))
-      if (save_all_best and success) or (save_all):
+        self.mesh.psize_success = copy.deepcopy(self.mesh.getDeltaFrameSize().coordinates)
+        self.mesh.psize_max = copy.deepcopy(max(self.mesh.getDeltaFrameSize().coordinates))
+      if (save_all_best and success == SUCCESS_TYPES.FS) or (save_all):
         x_post.append(xtry)
 
     return x_post

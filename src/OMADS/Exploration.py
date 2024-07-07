@@ -1,12 +1,14 @@
 
-from .Points import CandidatePoint
+from .CandidatePoint import CandidatePoint
+from .Point import Point
 from .Barriers import Barrier
-from ._common import *
+# from ._common import *
 from .Directions import *
 import samplersLib as explore
 import random
 from matplotlib import pyplot as plt
 from ._globals import *
+from .Parameters import Parameters
 
 
 @dataclass
@@ -56,7 +58,7 @@ class VNS(VNS_data):
     # pts: List[Point] = [Point()] * self._ns_dist[0]
     for i in range(mean.n_dimensions):
       if mean.var_type is not None:
-        if mean.var_type[i] == VAR_TYPE.CONTINUOUS:
+        if mean.var_type[i] == VAR_TYPE.REAL:
           cs[:, i] = np.random.normal(loc=mean.coordinates[i], scale=self._rho, size=(self._ns_dist[0],))
         elif mean.var_type[i] == VAR_TYPE.INTEGER or mean.var_type[i] == VAR_TYPE.DISCRETE:
           cs[:, i] = np.random.randint(low=int(mean.coordinates[i]-self._rho), high=int(np.ceil(mean.coordinates[i]+(self._rho if self._rho>0 else 0.001))), size=(self._ns_dist[0],))
@@ -83,7 +85,7 @@ class VNS(VNS_data):
       if val[i]<=0. or 0 < val[i] <= 0.5:
         delta = 5- val[i]
       if mean.var_type is not None:
-        if mean.var_type[i] == VAR_TYPE.CONTINUOUS:
+        if mean.var_type[i] == VAR_TYPE.REAL:
           cs[:, i] = np.random.gamma(shape=(mean.coordinates[i]+delta)/self._rho, scale=self._rho, size=(self._ns_dist[1],))-delta
         elif mean.var_type[i] == VAR_TYPE.INTEGER or mean.var_type[i] == VAR_TYPE.CATEGORICAL or mean.var_type[i] == VAR_TYPE.DISCRETE:
           cs[:, i] = np.random.randint(low=int(mean.coordinates[i]-self._rho), high=int(np.ceil(mean.coordinates[i]+(self._rho if self._rho>0 else 0.001))), size=(self._ns_dist[1],))
@@ -102,7 +104,7 @@ class VNS(VNS_data):
     # pts: List[Point] = [Point()] * self._ns_dist[2]
     for i in range(mean.n_dimensions):
       if mean.var_type is not None:
-        if mean.var_type[i] == VAR_TYPE.CONTINUOUS:
+        if mean.var_type[i] == VAR_TYPE.REAL:
           cs[:, i] = (np.random.exponential(scale=self._rho, size=self._ns_dist[2]))+mean.coordinates[i]
         elif mean.var_type[i] == VAR_TYPE.INTEGER or mean.var_type[i] == VAR_TYPE.CATEGORICAL or mean.var_type[i] == VAR_TYPE.DISCRETE:
           cs[:, i] = np.random.randint(low=int(mean.coordinates[i]-self._rho), high=int(np.ceil(mean.coordinates[i]+(self._rho if self._rho>0 else 0.001))), size=(self._ns_dist[2],))
@@ -129,7 +131,7 @@ class VNS(VNS_data):
       if val[i]<=0. or 0 < val[i] <= 0.5:
         delta = 5- val[i]
       if mean.var_type is not None:
-        if mean.var_type[i] == VAR_TYPE.CONTINUOUS:
+        if mean.var_type[i] == VAR_TYPE.REAL:
           cs[:, i] = (np.random.poisson(lam=(mean.coordinates[i]+delta), size=(self._ns_dist[3],))-delta)*self._rho
         elif mean.var_type[i] == VAR_TYPE.INTEGER or mean.var_type[i] == VAR_TYPE.CATEGORICAL or mean.var_type[i] == VAR_TYPE.DISCRETE:
           cs[:, i] = np.random.randint(low=int(mean.coordinates[i]-self._rho), high=int(np.ceil(mean.coordinates[i]+(self._rho if self._rho>0 else 0.001))), size=(self._ns_dist[3],))
@@ -152,7 +154,7 @@ class VNS(VNS_data):
       if val[i]<=0. or 0 < val[i] <= 0.5:
         delta = 5- val[i]
       if mean.var_type is not None:
-        if mean.var_type[i] == VAR_TYPE.CONTINUOUS:
+        if mean.var_type[i] == VAR_TYPE.REAL:
           cs[:, i] = (np.random.binomial(n=(mean.coordinates[i]+delta)/((1/self._rho) if self._rho > 1. else self._rho), p=(1/self._rho) if self._rho > 1. else self._rho, size=(self._ns_dist[4],))-delta)
         elif mean.var_type[i] == VAR_TYPE.INTEGER or mean.var_type[i] == VAR_TYPE.CATEGORICAL or mean.var_type[i] == VAR_TYPE.DISCRETE:
           cs[:, i] = np.random.randint(low=int(mean.coordinates[i]-self._rho), high=int(np.ceil(mean.coordinates[i]+(self._rho if self._rho>0 else 0.001))), size=(self._ns_dist[4],))
@@ -242,11 +244,9 @@ class VNS(VNS_data):
     return samples
       
 
-
-
 @dataclass
 class efficient_exploration:
-  mesh: OrthoMesh  = field(default_factory=OrthoMesh)
+  mesh: Gmesh  = None
   _success: bool = False
   _xmin: CandidatePoint = None
   prob_params: Parameters = None
@@ -288,7 +288,6 @@ class efficient_exploration:
     self._xmin = CandidatePoint()
     self.bb_handle = Evaluator()
     self._dtype = DType()
-    self.prob_params = Parameters()
 
   @property
   def type(self):
@@ -363,9 +362,9 @@ class efficient_exploration:
     return coords_array
 
 
-  def generate_2ngrid(self, vlim: np.ndarray = None, x_incumbent: CandidatePoint = None, p_in: float = 0.01) -> np.ndarray:
+  def generate_2ngrid(self, vlim: np.ndarray = None, x_incumbent: CandidatePoint = None, p_in: List[float] = [0.01]) -> np.ndarray:
     grid = Dirs2n()
-    grid.mesh = OrthoMesh()
+    grid.mesh = copy.deepcopy(self.mesh)
     """ 5- Assign optional algorithmic parameters to the constructed poll instant  """
     grid.seed = int(self.seed + self.iter)
     grid.mesh.dtype.precision = "medium"
@@ -384,7 +383,7 @@ class efficient_exploration:
               ub=grid.ub,
               lb=grid.lb, it=self.iter, var_type=self.xmin.var_type, var_sets=self.xmin.sets, var_link = self.xmin.var_link, c_types=None, is_prim=True)
     
-    return self.get_list_of_coords_from_list_of_points(grid.poll_dirs)
+    return self.get_list_of_coords_from_list_of_points(grid.poll_set)
 
 
   def HD_grid(self, n: int =3, vlim: np.ndarray = None) -> np.ndarray:
@@ -399,7 +398,7 @@ class efficient_exploration:
       for i in range(int(n/(2*self.dim))+1):
         x_inc = CandidatePoint()
         x_inc.coordinates = self.hashtable.get_best_cache_points(nsamples=n)[i]
-        temp = self.generate_2ngrid(vlim=vlim, x_incumbent=x_inc, p_in=1/(self.iter+i)) #add different incumbents from ordered cache matrix
+        temp = self.generate_2ngrid(vlim=vlim, x_incumbent=x_inc, p_in=self.mesh.getDeltaFrameSize())#p_in=1/(self.iter+i)) #add different incumbents from ordered cache matrix
         if i == 0:
           grid_points = temp
         else:
@@ -455,14 +454,14 @@ class efficient_exploration:
       sampling = explore.samplers.LHS(ns=nsamples, vlim=v)
       sampling.options["randomness"] = self.seed
       sampling.options["criterion"] = self.sampling_criter
-      sampling.options["msize"] = self.mesh.msize
+      sampling.options["msize"] = self.mesh.getdeltaMeshSize().coordinates
       is_lhs = True
     else:
       if self.iter == 1 or len(self.hashtable._cache_dict) < nsamples:# or self.n_successes / (self.iter) <= 0.25:
         sampling = explore.samplers.halton(ns=nsamples, vlim=v)
         sampling.options["randomness"] = self.seed + self.iter
         sampling.options["criterion"] = self.sampling_criter
-        sampling.options["msize"] = self.mesh.msize
+        sampling.options["msize"] = self.mesh.getdeltaMeshSize().coordinates
         sampling.options["varLimits"] = v
       else:
         # if len(self.hashtable._best_hash_ID) > self.best_samples:
@@ -530,28 +529,33 @@ class efficient_exploration:
     return v, Ps
   
   def project_coords_to_mesh(self, x:List[float], ref: List[float] = None):
-    if ref == None:
-      ref = [0.]*len(x)
-    if self.xmin.var_type is None:
-      self.xmin.var_type = [VAR_TYPE.CONTINUOUS] * len(self.xmin.coordinates)
-    for i in range(len(x)):
-      if self.xmin.var_type[i] != VAR_TYPE.CATEGORICAL:
-        if self.xmin.var_type[i] == VAR_TYPE.CONTINUOUS:
-          x[i] = ref[i] + (np.round((x[i]-ref[i])/self.mesh.msize) * self.mesh.msize)
-        else:
-           x[i] = int(ref[i] + int(int((x[i]-ref[i])/self.mesh.msize) * self.mesh.msize))
-      else:
-        x[i] = int(x[i])
-      if x[i] < self.prob_params.lb[i]:
-        x[i] = self.prob_params.lb[i] + (self.prob_params.lb[i] - x[i])
-        if x[i] > self.prob_params.ub[i]:
-          x[i] = self.prob_params.ub[i]
-      if x[i] > self.prob_params.ub[i]:
-        x[i] = self.prob_params.ub[i] - (x[i] - self.prob_params.ub[i])
-        if x[i] < self.prob_params.lb[i]:
-          x[i] = self.prob_params.lb[i]
+    pref = Point(self.mesh._n)
+    pref.coordinates = ref
+    px = Point(self.mesh._n)
+    px.coordinates = x
+    xProjected: Point = self.mesh.projectOnMesh(px, pref)
+    # if ref == None:
+    #   ref = [0.]*len(x)
+    # if self.xmin.var_type is None:
+    #   self.xmin.var_type = [VAR_TYPE.REAL] * len(self.xmin.coordinates)
+    # for i in range(len(x)):
+    #   if self.xmin.var_type[i] != VAR_TYPE.CATEGORICAL:
+    #     if self.xmin.var_type[i] == VAR_TYPE.REAL:
+    #       x[i] = ref[i] + (np.round((x[i]-ref[i])/self.mesh.msize) * self.mesh.msize)
+    #     else:
+    #       x[i] = int(ref[i] + int(int((x[i]-ref[i])/self.mesh.msize) * self.mesh.msize))
+    #   else:
+    #     x[i] = int(x[i])
+    #   if x[i] < self.prob_params.lb[i]:
+    #     x[i] = self.prob_params.lb[i] + (self.prob_params.lb[i] - x[i])
+    #     if x[i] > self.prob_params.ub[i]:
+    #       x[i] = self.prob_params.ub[i]
+    #   if x[i] > self.prob_params.ub[i]:
+    #     x[i] = self.prob_params.ub[i] - (x[i] - self.prob_params.ub[i])
+    #     if x[i] < self.prob_params.lb[i]:
+    #       x[i] = self.prob_params.lb[i]
 
-    return x
+    return xProjected.coordinates
 
   def map_samples_from_coords_to_points(self, samples: np.ndarray):
     
@@ -569,6 +573,8 @@ class efficient_exploration:
       self.samples[i].var_link = self.xmin.var_link
       self.samples[i].n_dimensions = len(samples[i, :])
       self.samples[i].coordinates = copy.deepcopy(samples[i, :])
+      self.samples[i].direction = Point(self.mesh._n)
+      self.samples[i].direction.coordinates = np.subtract(self.xmin.coordinates, self.samples[i].coordinates)
   
   def map_samples_from_points_to_coords(self):
     return np.array([x.coordinates for x in self.samples])
@@ -582,8 +588,8 @@ class efficient_exploration:
     pts: List[CandidatePoint] = [0] * npts
     mp = 1.
     for k in range(p.n_dimensions):
-      if p.var_type[k] == VAR_TYPE.CONTINUOUS:
-        cs[:, k] = np.random.normal(loc=p.coordinates[k], scale=self.mesh.msize, size=(npts,))
+      if p.var_type[k] == VAR_TYPE.REAL:
+        cs[:, k] = np.random.normal(loc=p.coordinates[k], scale=self.mesh.getdeltaMeshSize().coordinates[k], size=(npts,))
       elif p.var_type[k] == VAR_TYPE.INTEGER or p.var_type[k] == VAR_TYPE.DISCRETE or p.var_type[k] == VAR_TYPE.CATEGORICAL:
         cs[:, k] = np.random.randint(low=lb[k], high=ub[k], size=(npts,))
       else:
@@ -614,7 +620,7 @@ class efficient_exploration:
     """ This is a success bool parameter used for
      filtering out successful designs to be printed
     in the output results file"""
-    success = False
+    success = SUCCESS_TYPES.US
 
     """ Check the cache memory; check if the trial point
      is a duplicate (it has already been evaluated) """
@@ -647,7 +653,7 @@ class efficient_exploration:
         print("Cache hit ... Failed to find a non-duplicate alternative.")
       stop = True
       bb_eval = copy.deepcopy(self.bb_eval)
-      psize = copy.deepcopy(self.mesh.psize)
+      psize = copy.deepcopy(self.mesh.getDeltaFrameSize().coordinates)
       return [stop, index, self.bb_handle.bb_eval, success, psize, xtry]
 
 
@@ -706,12 +712,13 @@ class efficient_exploration:
 
     # if self.save_results or self.display:
     self.bb_eval = self.bb_handle.bb_eval
-    self.psize = copy.deepcopy(self.mesh.psize)
-    psize = copy.deepcopy(self.mesh.psize)
+    self.psize = copy.deepcopy(self.mesh.getDeltaFrameSize().coordinates)
+    psize = copy.deepcopy(self.mesh.getDeltaFrameSize().coordinates)
 
+    if xtry < self.xmin:
+      success = SUCCESS_TYPES.FS
 
-
-    if self.success and self.opportunistic and self.iter > 1:
+    if success == SUCCESS_TYPES.FS and self.opportunistic and self.iter > 1:
       stop = True
 
     """ Check stopping criteria """
@@ -733,10 +740,10 @@ class efficient_exploration:
       is_infea_improving: bool = (self.xmin.status == DESIGN_STATUS.FEASIBLE and xtry.status == DESIGN_STATUS.INFEASIBLE and (xtry.fobj < self.xmin.fobj and xtry.h <= self.xmin.hmax))
       is_feas_improving: bool = (self.xmin.status == DESIGN_STATUS.INFEASIBLE and xtry.status == DESIGN_STATUS.FEASIBLE and xtry.fobj < self.xmin.fobj)
 
-      success = False
+      success = SUCCESS_TYPES.US
       if ((is_infeas_dom or is_feas_dom)):
-        self.success = True
-        success = True  # <- This redundant variable is important
+        self.success = SUCCESS_TYPES.FS
+        success = SUCCESS_TYPES.US  # <- This redundant variable is important
         # for managing concurrent parallel execution
         self.nb_success += 1
         """ Update the post instant """
@@ -751,15 +758,13 @@ class efficient_exploration:
           else:
             print(f"Success: fmin = {self.xmin.f:.18f} (hmin = {self.xmin.h:.18})")
 
-        self.mesh.psize_success = copy.deepcopy(self.mesh.psize)
-        self.mesh.psize_max = copy.deepcopy(np.maximum(self.mesh.psize,
-                              self.mesh.psize_max,
-                              dtype=self._dtype.dtype))
+        self.mesh.psize_success = copy.deepcopy(self.mesh.getDeltaFrameSize().coordinates)
+        self.mesh.psize_max = copy.deepcopy(max(self.mesh.getDeltaFrameSize().coordinates))
 
-      if (save_all_best and success) or (save_all):
+      if (save_all_best and success == SUCCESS_TYPES.FS) or (save_all):
         x_post.append(xtry)
     
-    if self.success:
+    if self.success == SUCCESS_TYPES.FS:
       self.n_successes += 1
     return x_post
         

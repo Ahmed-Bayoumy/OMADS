@@ -34,11 +34,12 @@ import concurrent.futures
 import time
 from typing import List, Dict, Any
 from BMDFO import toy
-from .Points import CandidatePoint
+from .Point import Point
 from .Barriers import *
 from ._common import *
 from .Directions import *
 from .PrePoll import *
+from .CandidatePoint import CandidatePoint
 
 def main(*args) -> Dict[str, Any]:
   """ MADS: Poll step main algorithm """
@@ -71,8 +72,8 @@ def main(*args) -> Dict[str, Any]:
   LAMBDA_k = xmin.LAMBDA
   RHO_k = xmin.RHO
   while True:
-    del poll.poll_dirs
-    poll.poll_dirs = []
+    del poll.poll_set
+    poll.poll_set = []
     poll.mesh.update()
     poll.LAMBDA = copy.deepcopy(xmin.LAMBDA)
     """ Create the set of poll directions """
@@ -91,7 +92,7 @@ def main(*args) -> Dict[str, Any]:
                lb=param.lb, it=iteration, var_type=xmin.var_type, var_sets=xmin.sets, var_link = xmin.var_link, c_types=param.constraints_type, is_prim=True)
     
     if B._sec_poll_center is not None and B._sec_poll_center.evaluated:
-      del poll.poll_dirs
+      del poll.poll_set
       # poll.poll_dirs = []
       poll.x_sc = B._sec_poll_center
       poll.create_poll_set(hhm=hhm,
@@ -104,10 +105,10 @@ def main(*args) -> Dict[str, Any]:
     """ Save current poll directions and incumbent solution
      so they can be saved later in the post dir """
     if options.save_coordinates:
-      post.coords.append(poll.poll_dirs)
+      post.coords.append(poll.poll_set)
       post.x_incumbent.append(poll.xmin)
     """ Reset success boolean """
-    poll.success = False
+    poll.success = SUCCESS_TYPES.US
     """ Reset the BB output """
     poll.bb_output = []
     xt = []
@@ -116,7 +117,7 @@ def main(*args) -> Dict[str, Any]:
       log.log_msg(f"----------- Evaluate poll set # {iteration}-----------", msg_type=MSG_TYPE.INFO)
     poll.log = log
     if not options.parallel_mode:
-      for it in range(len(poll.poll_dirs)):
+      for it in range(len(poll.poll_set)):
         peval += 1
         if poll.terminate:
           break
@@ -125,7 +126,7 @@ def main(*args) -> Dict[str, Any]:
         if not f[0]:
           post.bb_eval.append(poll.bb_handle.bb_eval)
           post.iter.append(iteration)
-          post.psize.append(poll.mesh.psize)
+          post.psize.append(poll.mesh.getDeltaFrameSize().coordinates)
         else:
           continue
 
@@ -134,7 +135,7 @@ def main(*args) -> Dict[str, Any]:
       """ Parallel evaluation for points in the poll set """
       with concurrent.futures.ProcessPoolExecutor(options.np) as executor:
         results = [executor.submit(poll.eval_poll_point,
-                       it) for it in range(len(poll.poll_dirs))]
+                       it) for it in range(len(poll.poll_set))]
         for f in concurrent.futures.as_completed(results):
           # if f.result()[0]:
           #     executor.shutdown(wait=False)
@@ -162,17 +163,21 @@ def main(*args) -> Dict[str, Any]:
 
     """ Updates """
     pev = 0.
-    for p in poll.poll_dirs:
+    for p in poll.poll_set:
       if p.evaluated:
         pev += 1
     # if pev != poll.poll_dirs and not poll.success:
     #   poll.seed += 1
     goToSearch: bool = (pev == 0 and poll.Failure_stop is not None and poll.Failure_stop)
-    if poll.success and not goToSearch:
-      poll.mesh.psize = np.multiply(poll.mesh.psize, 2, dtype=poll.dtype.dtype)
-    else:
-      poll.mesh.psize = np.divide(poll.mesh.psize, 2, dtype=poll.dtype.dtype)
-
+    
+    dir: Point = Point(poll._n)
+    dir.coordinates = poll.xmin.direction if poll.xmin.direction is not None else [0]*poll._n
+    if poll.success == SUCCESS_TYPES.FS and not goToSearch:
+      poll.mesh.enlargeDeltaFrameSize(direction=dir) # poll.mesh.psize =  np.multiply(poll.mesh.psize, 2, dtype=poll.dtype.dtype
+    elif poll.success == SUCCESS_TYPES.US:
+      poll.mesh.refineDeltaFrameSize()
+      # poll.mesh.psize = np.divide(poll.mesh.psize, 2, dtype=poll.dtype.dtype)
+    poll.mesh.updatedeltaMeshSize()
     if log is not None:
         log.log_msg(msg=post.__str__(), msg_type=MSG_TYPE.INFO)
     if options.display:
@@ -181,11 +186,11 @@ def main(*args) -> Dict[str, Any]:
     LAMBDA_k = poll.LAMBDA
     RHO_k = poll.RHO
     
-    Failure_check = iteration > 0 and poll.Failure_stop is not None and poll.Failure_stop and (not poll.success or goToSearch)
+    Failure_check = iteration > 0 and poll.Failure_stop is not None and poll.Failure_stop and (poll.success == SUCCESS_TYPES.US or goToSearch)
     
-    if (Failure_check or poll.bb_eval >= options.budget) or (abs(poll.mesh.psize) < options.tol or poll.bb_eval >= options.budget or poll.terminate):
+    if (Failure_check or poll.bb_eval >= options.budget) or (all(abs(poll.mesh.getDeltaFrameSize().coordinates[pp]) < options.tol for pp in range(poll._n)) or poll.bb_eval >= options.budget or poll.terminate):
       log.log_msg(f"\n--------------- Termination of the poll step  ---------------", MSG_TYPE.INFO)
-      if (abs(poll.mesh.psize) < options.tol):
+      if all(abs(poll.mesh.getDeltaFrameSize().coordinates[pp]) < options.tol for pp in range(poll._n)):
         log.log_msg("Termination criterion hit: the mesh size is below the minimum threshold defined.", MSG_TYPE.INFO)
       if (poll.bb_eval >= options.budget or poll.terminate):
         log.log_msg("Termination criterion hit: evaluation budget is exhausted.", MSG_TYPE.INFO)
@@ -248,7 +253,7 @@ def main(*args) -> Dict[str, Any]:
     log.log_msg(msg=f" #bb_eval =  {poll.bb_eval}", msg_type=MSG_TYPE.INFO)
     log.log_msg(msg=f" #iteration =  {iteration}", msg_type=MSG_TYPE.INFO)
     log.log_msg(msg=f"  nb_success = {poll.nb_success}", msg_type=MSG_TYPE.INFO)
-    log.log_msg(msg=f" psize = {poll.mesh.psize}", msg_type=MSG_TYPE.INFO)
+    log.log_msg(msg=f" psize = {poll.mesh.getDeltaFrameSize().coordinates}", msg_type=MSG_TYPE.INFO)
     log.log_msg(msg=f" psize_success = {poll.mesh.psize_success}", msg_type=MSG_TYPE.INFO)
     log.log_msg(msg=f" psize_max = {poll.mesh.psize_max}", msg_type=MSG_TYPE.INFO)
   
@@ -262,7 +267,7 @@ def main(*args) -> Dict[str, Any]:
     print(" #bb_eval = " + str(poll.bb_eval))
     print(" #iteration = " + str(iteration))
     print(" nb_success = " + str(poll.nb_success))
-    print(" psize = " + str(poll.mesh.psize))
+    print(" psize = " + str(poll.mesh.getDeltaFrameSize().coordinates))
     print(" psize_success = " + str(poll.mesh.psize_success))
     print(" psize_max = " + poll.mesh.psize_max)
     
@@ -283,10 +288,10 @@ def main(*args) -> Dict[str, Any]:
                 "nbb_evals" : poll.bb_eval,
                 "niterations" : iteration,
                 "nb_success": poll.nb_success,
-                "psize": poll.mesh.psize,
+                "psize": poll.mesh.getDeltaFrameSize().coordinates,
                 "psuccess": poll.mesh.psize_success,
                 "pmax": poll.mesh.psize_max,
-                "msize": poll.mesh.msize}
+                "msize": poll.mesh.getdeltaMeshSize()}
 
   return output, poll
 

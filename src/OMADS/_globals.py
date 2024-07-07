@@ -105,7 +105,7 @@ class DType:
     self._itype = other
 
 class VAR_TYPE(Enum):
-  CONTINUOUS = auto()
+  REAL = auto()
   INTEGER = auto()
   DISCRETE = auto()
   BINARY = auto()
@@ -180,7 +180,16 @@ class STOP_TYPE(Enum):
   MAX_CACHE_MEMORY_REACHED: int = auto()
   GL_LIMITS_REACHED: int = auto()
 
+class MESH_TYPE(Enum):
+  ORTHO = auto()
+  GMESH = auto()
+  XMESH = auto()
+  SMESH = auto()
+
 HARD_MIN_MESH_INDEX: int = -300
 # gmesh index constants
 GL_LIMITS: int    = -50;         #< Limits for the gmesh index values
 UNDEFINED_GL: int = GL_LIMITS-1;  #< Undefined value for the gmesh index
+
+M_INF_INT = -2147483647 - 1
+P_INF_INT = 2147483647
