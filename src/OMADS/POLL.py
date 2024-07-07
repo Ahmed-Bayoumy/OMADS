@@ -235,10 +235,13 @@ def main(*args) -> Dict[str, Any]:
   if options.display:
     print(" end of orthogonal MADS ")
     if log is not None:
-      log.log_msg(msg=" end of orthogonal MADS " + args[1] + " in the internal BM suite.", msg_type=MSG_TYPE.INFO)
+      log.log_msg(msg=" end of orthogonal MADS ")
     print(" Final objective value: " + str(poll.xmin.f) + ", hmin= " + str(poll.xmin.h))
     if log is not None:
-      log.log_msg(msg=" Final objective value: " + args[1] + " in the internal BM suite.", msg_type=MSG_TYPE.INFO)
+      log.log_msg(msg=" Final objective value: " + str(poll.xmin.f) + ", hmin= " + str(poll.xmin.h), msg_type=MSG_TYPE.INFO)
+    if log is not None and isinstance(args[1], str):
+      log.log_msg(msg=" end of orthogonal MADS running" + args[1] + " in the internal BM suite.", msg_type=MSG_TYPE.INFO)
+    
 
   if options.save_coordinates:
     post.output_coordinates(out)

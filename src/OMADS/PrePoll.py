@@ -20,6 +20,7 @@
 #  https://github.com/Ahmed-Bayoumy/OMADS                                             #
 #  Copyright (C) 2022  Ahmed H. Bayoumy                                               #
 # ------------------------------------------------------------------------------------#
+
 from .CandidatePoint import CandidatePoint
 from .Barriers import *
 # from ._common import *

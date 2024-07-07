@@ -21,7 +21,7 @@
 #  Copyright (C) 2022  Ahmed H. Bayoumy                                               #
 # ------------------------------------------------------------------------------------#
 
-from .Point import Point
+
 from .CandidatePoint import CandidatePoint
 from .Point import Point
 from .Barriers import *
