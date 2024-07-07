@@ -12,7 +12,7 @@ if __name__ == "__main__":
       'samplersLib>=24.2.0',
       'cocopp==2.6.3',
       'NOBM',
-      'numpy',
+      'numpy<1.26.0',
       'pandas',
       'setuptools>=58.1.0',
       'pyDOE2',
