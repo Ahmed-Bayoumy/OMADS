@@ -32,7 +32,7 @@ from typing import List, Dict, Any
 import concurrent.futures
 from matplotlib import pyplot as plt
 from BMDFO import toy
-from .Point import Point
+from .CandidatePoint import CandidatePoint
 from ._common import *
 from .Directions import *
 from .Exploration import *
@@ -150,7 +150,7 @@ def main(*args) -> Dict[str, Any]:
                 xinput = [search.xmin]
               else:
                 xinput = search.samples
-              ps = visualize(xinput, jjj, kkk, search.mesh.msize, vv, fig, ax, search.xmin, ps, bbeval=search.bb_handle, lb=search.prob_params.lb, ub=search.prob_params.ub, spindex=iii, bestKnown=search.prob_params.best_known, blk=False)
+              ps = visualize(xinput, jjj, kkk, search.mesh.getdeltaMeshSize().coordinates, vv, fig, ax, search.xmin, ps, bbeval=search.bb_handle, lb=search.prob_params.lb, ub=search.prob_params.ub, spindex=iii, bestKnown=search.prob_params.best_known, blk=False)
       search.store_cache = sc_old
       search.check_cache = cc_old
 
@@ -161,7 +161,7 @@ def main(*args) -> Dict[str, Any]:
       post.coords.append(search.samples)
       post.x_incumbent.append(search.xmin)
     """ Reset success boolean """
-    search.success = False
+    search.success = SUCCESS_TYPES.US
     """ Reset the BB output """
     search.bb_output = []
     xt = []
@@ -180,7 +180,7 @@ def main(*args) -> Dict[str, Any]:
           peval += 1
           post.step_name.append(f'Search: {search.type}')
           post.iter.append(iteration)
-          post.psize.append(search.mesh.psize)
+          post.psize.append(search.mesh.getdeltaMeshSize().coordinates)
         else:
           continue
 
@@ -204,7 +204,7 @@ def main(*args) -> Dict[str, Any]:
             post.psize.append(f.result()[4])
           xt.append(f.result()[-1])
   
-    xpost: List[Point] = search.master_updates(xt, peval, save_all_best=options.save_all_best, save_all=options.save_results)
+    xpost: List[CandidatePoint] = search.master_updates(xt, peval, save_all_best=options.save_all_best, save_all=options.save_results)
     if options.save_results:
       for i in range(len(xpost)):
         post.poll_dirs.append(xpost[i])
@@ -219,24 +219,30 @@ def main(*args) -> Dict[str, Any]:
       search.vicinity_ratio = np.ones((len(search.xmin.coordinates),1))
 
     """ Updates """
-    if search.success:
-      search.mesh.psize = np.multiply(search.mesh.psize, 2, dtype=search.dtype.dtype)
+    
+    if search.success == SUCCESS_TYPES.FS:
+      dir: Point = Point(search.mesh._n)
+      dir.coordinates = search.xmin.direction.coordinates
+      # search.mesh.psize = np.multiply(search.mesh.get, 2, dtype=search.dtype.dtype)
+      search.mesh.enlargeDeltaFrameSize(direction=dir)
       if search.sampling_t != SAMPLING_METHOD.ACTIVE.name:
         search.update_local_region(region="expand")
-    else:
-      search.mesh.psize = np.divide(search.mesh.psize, 2, dtype=search.dtype.dtype)
+    elif search.success == SUCCESS_TYPES.US:
+      # search.mesh.psize = np.divide(search.mesh.psize, 2, dtype=search.dtype.dtype)
+      search.mesh.refineDeltaFrameSize()
       if search.sampling_t != SAMPLING_METHOD.ACTIVE.name:
         search.update_local_region(region="contract")
+      
     
     if log is not None:
       log.log_msg(msg=post.__str__(), msg_type=MSG_TYPE.INFO)
     if options.display:
       print(post)
 
-    Failure_check = iteration > 0 and search.Failure_stop is not None and search.Failure_stop and not search.success
-    if (Failure_check) or (abs(search.psize) < options.tol or search.bb_handle.bb_eval >= options.budget or search.terminate):
+    Failure_check = iteration > 0 and search.Failure_stop is not None and search.Failure_stop and not (search.success != SUCCESS_TYPES.FS or SUCCESS_TYPES.PS)
+    if (Failure_check or search.bb_handle.bb_eval >= options.budget) or (all(abs(search.mesh.getdeltaMeshSize().coordinates[pp]) < options.tol  for pp in range(search.mesh._n)) or search.bb_handle.bb_eval >= options.budget or search.terminate):
       log.log_msg(f"\n--------------- Termination of the search step  ---------------", MSG_TYPE.INFO)
-      if (abs(search.psize) < options.tol):
+      if (all(abs(search.mesh.getdeltaMeshSize().coordinates[pp]) < options.tol  for pp in range(search.mesh._n))):
         log.log_msg("Termination criterion hit: the mesh size is below the minimum threshold defined.", MSG_TYPE.INFO)
       if (search.bb_handle.bb_eval >= options.budget or search.terminate):
         log.log_msg("Termination criterion hit: evaluation budget is exhausted.", MSG_TYPE.INFO)
@@ -312,7 +318,7 @@ def main(*args) -> Dict[str, Any]:
     print(" #bb_eval = " + str(search.bb_eval))
     print(" #iteration = " + str(iteration))
     print(" nb_success = " + str(search.nb_success))
-    print(" mesh_size = " + str(search.mesh.psize))
+    print(" mesh_size = " + str(search.mesh.getDeltaFrameSize().coordinates))
   xmin = search.xmin
   """ Evaluation of the blackbox; get output responses """
   if xmin.sets is not None and isinstance(xmin.sets,dict):
@@ -330,23 +336,23 @@ def main(*args) -> Dict[str, Any]:
                 "nbb_evals" : search.bb_eval,
                 "niterations" : iteration,
                 "nb_success": search.nb_success,
-                "psize": search.mesh.psize,
+                "psize": search.mesh.getDeltaFrameSize().coordinates,
                 "psuccess": search.mesh.psize_success,
                 "pmax": search.mesh.psize_max,
-                "msize": search.mesh.msize}
+                "msize": search.mesh.getdeltaMeshSize().coordinates}
   
   if search.visualize:
     sc_old = search.store_cache
     cc_old = search.check_cache
     search.check_cache = False
     search.store_cache = False
-    temp = Point()
+    temp = CandidatePoint()
     temp.coordinates = output["xmin"]
     for ii in range(len(ax)):
       for jj in range(len(xmin.coordinates)):
           for kk in range(jj+1, len(xmin.coordinates)):
             if kk != jj:
-              ps = visualize(xinput, jj, kk, search.mesh.msize, vv, fig, ax, temp, ps, bbeval=search.bb_handle, lb=search.prob_params.lb, ub=search.prob_params.ub, title=search.prob_params.problem_name, blk=True,vnames=search.prob_params.var_names, spindex=ii, bestKnown=search.prob_params.best_known)
+              ps = visualize(xinput, jj, kk, search.mesh.getdeltaMeshSize().coordinates, vv, fig, ax, temp, ps, bbeval=search.bb_handle, lb=search.prob_params.lb, ub=search.prob_params.ub, title=search.prob_params.problem_name, blk=True,vnames=search.prob_params.var_names, spindex=ii, bestKnown=search.prob_params.best_known)
     search.check_cache = sc_old
     search.store_cache = cc_old
 
@@ -354,7 +360,7 @@ def main(*args) -> Dict[str, Any]:
 
 
 
-def visualize(points: List[Point], hc_index, vc_index, msize, vlim, fig, axes, pmin, ps = None, title="unknown", blk=False, vnames=None, bbeval=None, lb = None, ub=None, spindex=0, bestKnown=None):
+def visualize(points: List[CandidatePoint], hc_index, vc_index, msize, vlim, fig, axes, pmin, ps = None, title="unknown", blk=False, vnames=None, bbeval=None, lb = None, ub=None, spindex=0, bestKnown=None):
 
   x: np.ndarray = np.zeros(len(points))
   y: np.ndarray = np.zeros(len(points))

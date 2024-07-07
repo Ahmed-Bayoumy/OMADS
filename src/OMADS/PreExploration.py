@@ -22,14 +22,15 @@
 # ------------------------------------------------------------------------------------#
 from .Exploration import *
 from typing import Callable
-
-
+from .Parameters import Parameters
+from .Options import Options
+from .Omesh import Omesh
 @dataclass
 class PreExploration:
   """ Preprocessor for setting up optimization settings and parameters"""
   data: Dict[Any, Any]
   log: logger = None
-  def initialize_from_dict(self, log: logger = None, xs: Point=None):
+  def initialize_from_dict(self, log: logger = None, xs: CandidatePoint=None):
     """ MADS initialization """
     """ 1- Construct the following classes by unpacking
      their respective dictionaries from the input JSON file """
@@ -49,26 +50,27 @@ class PreExploration:
     if param.constants != None:
       ev.constants = copy.deepcopy(param.constants)
 
-    if param.constraints_type is not None and isinstance(param.constraints_type, list):
-      for i in range(len(param.constraints_type)):
-        if param.constraints_type[i] == BARRIER_TYPES.PB.name:
-          param.constraints_type[i] = BARRIER_TYPES.PB
-        elif param.constraints_type[i] == BARRIER_TYPES.RB.name:
-          param.constraints_type[i] = BARRIER_TYPES.RB
-        elif param.constraints_type[i] == BARRIER_TYPES.PEB.name:
-          param.constraints_type[i] = BARRIER_TYPES.PEB
-        else:
-          param.constraints_type[i] = BARRIER_TYPES.EB
-    elif param.constraints_type is not None:
-      param.constraints_type = BARRIER_TYPES(param.constraints_type)
+    # if param.constraints_type is not None and isinstance(param.constraints_type, list):
+    #   for i in range(len(param.constraints_type)):
+    #     if param.constraints_type[i] == BARRIER_TYPES.PB.name:
+    #       param.constraints_type[i] = BARRIER_TYPES.PB
+    #     elif param.constraints_type[i] == BARRIER_TYPES.RB.name:
+    #       param.constraints_type[i] = BARRIER_TYPES.RB
+    #     elif param.constraints_type[i] == BARRIER_TYPES.PEB.name:
+    #       param.constraints_type[i] = BARRIER_TYPES.PEB
+    #     else:
+    #       param.constraints_type[i] = BARRIER_TYPES.EB
+    # elif param.constraints_type is not None:
+    #   param.constraints_type = BARRIER_TYPES(param.constraints_type)
     
     """ 2- Initialize iteration number and construct a point instant for the starting point """
     iteration: int =  0
-    x_start = Point()
+    x_start = CandidatePoint()
     """ 3- Construct an instant for the poll 2n orthogonal directions class object """
     extend = options.extend is not None and isinstance(options.extend, efficient_exploration)
     if not extend:
       search = efficient_exploration()
+      search.prob_params = copy.deepcopy(param)
       if param.Failure_stop != None and isinstance(param.Failure_stop, bool):
         search.Failure_stop = param.Failure_stop
       search.samples = []
@@ -76,7 +78,7 @@ class PreExploration:
       search.save_results = options.save_results
       """ 4- Construct an instant for the mesh subclass object by inheriting
       initial parameters from mesh_params() """
-      search.mesh = OrthoMesh()
+      search.mesh = Gmesh(pbParam=param, runOptions=options) if (param._meshType).lower() == "gmesh" else Omesh(pbParam=param, runOptions=options)
       search.sampling_t = search_step.s_method
       search.type = search_step.type
       search.ns = search_step.ns
@@ -86,14 +88,14 @@ class PreExploration:
       """ 5- Assign optional algorithmic parameters to the constructed poll instant  """
       search.opportunistic = options.opportunistic
       search.seed = options.seed
-      search.mesh.dtype.precision = options.precision
-      search.mesh.psize = options.psize_init
+      # search.mesh.dtype.precision = options.precision
+      # search.mesh.psize = options.psize_init
       search.eval_budget = options.budget
       search.store_cache = options.store_cache
       search.check_cache = options.check_cache
       search.display = options.display
       search.bb_eval = 0
-      search.prob_params = Parameters(**self.data["param"])
+      search.prob_params = copy.deepcopy(param)
     else:
       search = options.extend
       search.samples = []
@@ -101,7 +103,7 @@ class PreExploration:
     if options.parallel_mode and options.np > n_available_cores:
       options.np == n_available_cores
     """ 6- Initialize blackbox handling subclass by copying
-     the evaluator 'ev' instance to the poll object"""
+     the evaluator 'ev' instance to the poll object """
     search.bb_handle = ev
     search.bb_handle.bb_eval = ev.bb_eval
     """ 7- Evaluate the starting point """
@@ -119,7 +121,7 @@ class PreExploration:
       for k in param.var_type:
         c+= 1
         if k.lower()[0] == "r":
-          x_start.var_type.append(VAR_TYPE.CONTINUOUS)
+          x_start.var_type.append(VAR_TYPE.REAL)
           x_start.var_link.append(None)
         elif k.lower()[0] == "i":
           x_start.var_type.append(VAR_TYPE.INTEGER)
@@ -149,7 +151,7 @@ class PreExploration:
         elif k.lower()[0] == "b":
           x_start.var_type.append(VAR_TYPE.BINARY)
         else:
-          x_start.var_type.append(VAR_TYPE.CONTINUOUS)
+          x_start.var_type.append(VAR_TYPE.REAL)
           x_start.var_link.append(None)
 
     
@@ -191,17 +193,15 @@ class PreExploration:
      found and check if the starting minimizer performs better
     than the worst (f = inf) """
     search.nb_success = 0
-    if search.xmin < Point():
-      search.mesh.psize_success = search.mesh.psize
-      search.mesh.psize_max = np.maximum(search.mesh.psize,
-                      search.mesh.psize_max,
-                      dtype=search.dtype.dtype)
+    if search.xmin < CandidatePoint():
+      search.mesh.psize_success = search.mesh.getDeltaFrameSize().coordinates
+      search.mesh.psize_max =copy.deepcopy(max(search.mesh.getDeltaFrameSize().coordinates))
       search.samples = [search.xmin]
     """ 11- Construct the results postprocessor class object 'post' """
     post = PostMADS(x_incumbent=[search.xmin], xmin=search.xmin, poll_dirs=[search.xmin])
     post.step_name = []
     post.step_name.append(f'Search: {search.type}')
-    post.psize.append(search.mesh.psize)
+    post.psize.append(search.mesh.getDeltaFrameSize().coordinates)
     post.bb_eval.append(search.bb_handle.bb_eval)
     post.iter.append(iteration)
 

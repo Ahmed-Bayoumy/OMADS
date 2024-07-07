@@ -32,6 +32,7 @@ from typing import List, Dict, Any, Optional
 from numpy import sum, subtract, add, maximum, minimum, power, inf
 import numpy as np
 from .Point import Point
+from .CandidatePoint import CandidatePoint
 import csv
 import json
 from ._globals import *
@@ -140,95 +141,6 @@ class logger:
       self.log.setLevel(logging.DEBUG) 
 
 @dataclass
-class Options:
-  """ The running study and algorithmic options of OMADS
-  
-    :param seed: Random generator seed
-    :param budget: The evaluation budget
-    :param tol: The threshold of the minimum poll size at which the run will be terminated
-    :param psize_init: Initial poll size
-    :param dispaly: Print the study progress during the run
-    :param opportunistic: Loop on the points populated in the poll set until a better minimum found, then stop the evaluation loop
-    :param check_cache: Check the hash table before points evaluation to avoid duplicates
-    :param store_cache: Enable storing evaluated points into the hash table
-    :param collect_y: Collect dependent design variables (required for DMDO)
-    :param rich_direction: Go with the rich direction (Impact the mesh size update)
-    :param precision: Define the precision level
-    :param save_results: A boolean flag that indicates saving results in a csv file
-    :param save_coordinates: A boolean flag that indicates saving coordinates of the poll set in a JSON file (required to generate animations of the spinner)
-    :param save_all_best: A boolean used to check whether saving best points only in the MADS.out file
-    :param parallel_mode: A boolean to check whether evaluating the poll set in parallel multiprocessing
-    :param np: The number of CPUs
-  """
-  seed: int = 0
-  budget: int = 1000
-  tol: float = 1e-9
-  psize_init: float = 1.0
-  display: bool = False
-  opportunistic: bool = False
-  check_cache: bool = False
-  store_cache: bool = False
-  collect_y: bool = False
-  rich_direction: bool = False
-  precision: str = "high"
-  save_results: bool = False
-  save_coordinates: bool = False
-  save_all_best: bool = False
-  parallel_mode: bool = False
-  np: int = 1
-  extend: Any = None
-  isVerbose: bool = False
-
-@dataclass
-class Parameters:
-  """ Variables and algorithmic parameters 
-  
-    :param baseline: Baseline design point (initial point ``x0``)
-    :param lb: The variables lower bound
-    :param ub: The variables upper bound
-    :param var_names: The variables name
-    :param scaling: Scaling factor (can be defined as a list (assigning a factor for each variable) or a scalar value that will be applied on all variables)
-    :param post_dir: The location and name of the post directory where the output results file will live in (if any)
-  """
-  baseline: List[float] = field(default_factory=lambda: [0.0, 0.0])
-  lb: List[float] = field(default_factory=lambda: [-5.0, -5.0])
-  ub: List[float] = field(default_factory=lambda: [10.0, 10.0])
-  var_names: List[str] = field(default_factory=lambda: ["x1", "x2"])
-  scaling: float = 10.0
-  post_dir: str = os.path.abspath(".\\")
-  var_type: List[str] = None
-  var_sets: Dict = None
-  constants: List = None
-  constants_name: List = None
-  Failure_stop: bool = None
-  problem_name: str = "unknown"
-  best_known: List[float] = None
-  constraints_type: List[BARRIER_TYPES] = None
-  h_max: float = 0
-  RHO: float = 0.00005
-  LAMBDA: List[float] = None
-  name: str = "undefined"
-  # TODO: give better control on variabls' resolution (mesh granularity)
-  # var_type: List[str] = field(default_factory=["cont", "cont"])
-  # resolution: List[int] = field(default_factory=["cont", "cont"])
-
-  def get_barrier_type(self):
-    if self.constraints_type is not None:
-      if isinstance(self.constraints_type, list):
-        for i in range(len(self.constraints_type)):
-          if self.constraints_type[i] == BARRIER_TYPES.PB:
-            return BARRIER_TYPES.PB
-      else:
-        if self.constraints_type == BARRIER_TYPES.PB:
-            return BARRIER_TYPES.PB
-
-    
-    return BARRIER_TYPES.EB
-  
-  def get_h_max_0 (self):
-    return self.h_max
-
-@dataclass
 class Output:
   """ Results output file decorator
   """
@@ -280,10 +192,10 @@ class Output:
 class PostMADS:
   """ Results postprocessor
   """
-  x_incumbent: List[Point]
-  xmin: Point
-  coords: List[List[Point]] = field(default_factory=list)
-  poll_dirs: List[Point] = field(default_factory=list)
+  x_incumbent: List[CandidatePoint]
+  xmin: CandidatePoint
+  coords: List[List[CandidatePoint]] = field(default_factory=list)
+  poll_dirs: List[CandidatePoint] = field(default_factory=list)
   iter: List[int] = field(default_factory=list)
   bb_eval: List[int] = field(default_factory=list)
   psize: List[float] = field(default_factory=list)
@@ -328,7 +240,7 @@ class PostMADS:
          f'{self.bb_eval[-1]}, {"psize= "} {self.psize[-1]}, ' \
          f'{"hmin = "} 'f'{self.xmin.h}, {"status: "} {self.xmin.status.name} {", fmin = "} {self.xmin.f}'
 
-  def __add_to_cache__(self, x: Point):
+  def __add_to_cache__(self, x: CandidatePoint):
     self.x_incumbent.append(x)
 
 @dataclass
@@ -609,7 +521,7 @@ class Cache:
     return self._hash_ID
 
   @hash_id.setter
-  def hash_id(self, other: Point):
+  def hash_id(self, other: CandidatePoint):
     if hash(tuple(other.coordinates)) not in self._hash_ID:
       self._hash_ID.append(hash(tuple(other.coordinates)))
   
@@ -633,7 +545,7 @@ class Cache:
     """
     return len(self.hash_id)
 
-  def is_duplicate(self, x: Point) -> bool:
+  def is_duplicate(self, x: CandidatePoint) -> bool:
     """Check if the point is in the cache memory
 
     :param x: Design point
@@ -647,7 +559,7 @@ class Cache:
 
     return is_dup
 
-  def get_index(self, x: Point)->int:
+  def get_index(self, x: CandidatePoint)->int:
     """Get the index of hash value, associated with the point x, if that point was saved in the cach memory
 
     :param x: Input point
@@ -660,7 +572,7 @@ class Cache:
       return self.hash_id.index(hash_value)
     return -1
 
-  def add_to_cache(self, x: Point):
+  def add_to_cache(self, x: CandidatePoint):
     """Save the point x to the cache memory
 
     :param x: Evaluated point to be saved in the cache memory
@@ -677,7 +589,7 @@ class Cache:
         self._hash_ID.append(hash(tuple(x[i].coordinates)))
     
   
-  def add_to_best_cache(self, x: Point):
+  def add_to_best_cache(self, x: CandidatePoint):
     if not isinstance(x, list):
       if len(self._cache_dict) > 1:
         is_infeas_dom: bool = (x.status == DESIGN_STATUS.INFEASIBLE and (x.h < self._cache_dict[self._best_hash_ID[0]].h) )

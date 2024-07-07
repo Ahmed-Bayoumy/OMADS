@@ -20,10 +20,14 @@
 #  https://github.com/Ahmed-Bayoumy/OMADS                                             #
 #  Copyright (C) 2022  Ahmed H. Bayoumy                                               #
 # ------------------------------------------------------------------------------------#
-from .Point import Point
+
+from .CandidatePoint import CandidatePoint
 from .Barriers import *
-from ._common import *
+# from ._common import *
+from .Omesh import Omesh
 from .Directions import *
+from .Parameters import Parameters
+from .Options import Options
 
 @dataclass
 class PrePoll:
@@ -31,7 +35,7 @@ class PrePoll:
   data: Dict[Any, Any]
   log: logger = None
 
-  def initialize_from_dict(self, log: logger = None, xs: Point=None):
+  def initialize_from_dict(self, log: logger = None, xs: CandidatePoint=None):
     """ MADS initialization """
     """ 1- Construct the following classes by unpacking
      their respective dictionaries from the input JSON file """
@@ -50,25 +54,14 @@ class PrePoll:
     if param.constants != None:
       ev.constants = copy.deepcopy(param.constants)
     
-    if param.constraints_type is not None and isinstance(param.constraints_type, list):
-      for i in range(len(param.constraints_type)):
-        if param.constraints_type[i] == BARRIER_TYPES.PB.name or param.constraints_type[i] == BARRIER_TYPES.PB:
-          param.constraints_type[i] = BARRIER_TYPES.PB
-        elif param.constraints_type[i] == BARRIER_TYPES.RB.name or param.constraints_type[i] == BARRIER_TYPES.RB:
-          param.constraints_type[i] = BARRIER_TYPES.RB
-        elif param.constraints_type[i] == BARRIER_TYPES.PEB.name or param.constraints_type[i] == BARRIER_TYPES.PEB:
-          param.constraints_type[i] = BARRIER_TYPES.PEB
-        else:
-          param.constraints_type[i] = BARRIER_TYPES.EB
-    elif param.constraints_type is not None:
-      param.constraints_type = BARRIER_TYPES(param.constraints_type)
+    
   
     iteration: int =  0
     """ 2- Initialize iteration number and construct a point instant for the starting point """
     extend = options.extend is not None and isinstance(options.extend, Dirs2n)
     is_xs = False
-    if xs is None or not isinstance(xs, Point) or not xs.evaluated:
-      x_start = Point()
+    if xs is None or not isinstance(xs, CandidatePoint) or not xs.evaluated:
+      x_start = CandidatePoint()
     else:
       x_start = xs
       is_xs = True
@@ -81,12 +74,13 @@ class PrePoll:
       poll.dtype.precision = options.precision
       """ 4- Construct an instant for the mesh subclass object by inheriting
       initial parameters from mesh_params() """
-      poll.mesh = OrthoMesh()
+      # COMPLETED: Add the Gmesh constructor req inputs
+      poll.mesh = Gmesh(pbParam=param, runOptions=options) if (param._meshType).lower() == "gmesh" else Omesh(pbParam=param, runOptions=options)
       """ 5- Assign optional algorithmic parameters to the constructed poll instant  """
       poll.opportunistic = options.opportunistic
       poll.seed = options.seed
-      poll.mesh.dtype.precision = options.precision
-      poll.mesh.psize = options.psize_init
+      # poll.mesh.dtype.precision = options.precision
+      # poll.mesh.psize = options.psize_init
       poll.eval_budget = options.budget
       poll.store_cache = options.store_cache
       poll.check_cache = options.check_cache
@@ -123,7 +117,7 @@ class PrePoll:
       for k in param.var_type:
         c+= 1
         if k.lower()[0] == "r":
-          x_start.var_type.append(VAR_TYPE.CONTINUOUS)
+          x_start.var_type.append(VAR_TYPE.REAL)
           x_start.var_link.append(None)
         elif k.lower()[0] == "i":
           x_start.var_type.append(VAR_TYPE.INTEGER)
@@ -133,10 +127,6 @@ class PrePoll:
           if x_start.sets is not None and isinstance(x_start.sets, dict):
             if x_start.sets[k.split('_')[1]] is not None:
               x_start.var_link.append(k.split('_')[1])
-              if param.ub[c-1] > len(x_start.sets[k.split('_')[1]])-1:
-                param.ub[c-1] = len(x_start.sets[k.split('_')[1]])-1
-              if param.lb[c-1] < 0:
-                param.lb[c-1] = 0
             else:
               x_start.var_link.append(None)
         elif k.lower()[0] == "c":
@@ -153,7 +143,7 @@ class PrePoll:
         elif k.lower()[0] == "b":
           x_start.var_type.append(VAR_TYPE.BINARY)
         else:
-          x_start.var_type.append(VAR_TYPE.CONTINUOUS)
+          x_start.var_type.append(VAR_TYPE.REAL)
           x_start.var_link.append(None)
 
     
@@ -172,10 +162,7 @@ class PrePoll:
         poll.bb_output = poll.bb_handle.eval(x_start.coordinates)
     x_start.hmax = B._h_max
     x_start.RHO = param.RHO
-    if param.LAMBDA is None:
-      param.LAMBDA = [0]
-    if not isinstance(param.LAMBDA, list):
-      param.LAMBDA = [param.LAMBDA]
+    
     x_start.LAMBDA = param.LAMBDA
     
     x_start.LAMBDA = param.LAMBDA
@@ -186,8 +173,8 @@ class PrePoll:
     if not extend:
       poll.xmin = copy.deepcopy(x_start)
     """ 10- Hold the starting point in the poll
-     directions subclass and define problem parameters"""
-    poll.poll_dirs.append(x_start)
+     directions subclass and define problem parameters """
+    poll.poll_set.append(x_start)
     poll.scale(ub=param.ub, lb=param.lb, factor=param.scaling)
     poll.dim = x_start.n_dimensions
     if not extend:
@@ -196,22 +183,18 @@ class PrePoll:
      found and check if the starting minimizer performs better
     than the worst (f = inf) """
     poll.nb_success = 0
-    if not extend and poll.xmin < Point():
-      poll.mesh.psize_success = poll.mesh.psize
-      poll.mesh.psize_max = maximum(poll.mesh.psize,
-                      poll.mesh.psize_max,
-                      dtype=poll.dtype.dtype)
-      poll.poll_dirs = [poll.xmin]
+    if not extend and poll.xmin < CandidatePoint():
+      poll.poll_set = [poll.xmin]
     elif extend and x_start < poll.xmin:
       poll.xmin = copy.deepcopy(x_start)
-      poll.mesh.psize = np.multiply(poll.mesh.psize, 2, dtype=poll.dtype.dtype)
+      poll.mesh.enlargeDeltaFrameSize()
     elif extend and x_start >= poll.xmin:
-      poll.mesh.psize = np.divide(poll.mesh.psize, 2, dtype=poll.dtype.dtype)
+      poll.mesh.refineDeltaFrameSize()
 
 
     """ 11- Construct the results postprocessor class object 'post' """
     post = PostMADS(x_incumbent=[poll.xmin], xmin=poll.xmin, poll_dirs=[poll.xmin])
-    post.psize.append(poll.mesh.psize)
+    post.psize.append(poll.mesh.getDeltaFrameSize().coordinates)
     post.bb_eval.append(poll.bb_handle.bb_eval)
     post.iter.append(iteration)
 

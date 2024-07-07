@@ -164,17 +164,19 @@ def test_MADS_callable_quick_20d():
 
   data = {"evaluator": eval, "param": param, "options": options, "sampling": sampling, "search": search}
   outS: Dict = SEARCH.main(data)
-
-  if (outS[0]["fmin"] > 0.0006 and platform.platform().split('-')[0] == 'Windows'):
-    raise ValueError(f"Search: fmin > {0.0006}")
+  SR = outS[0]["fmin"]
+  if (SR > 0.0006 and platform.platform().split('-')[0] == 'Windows'):
+    raise ValueError(f"Search: fmin {SR} > {0.0006}")
   
   outP: Dict = POLL.main(data)
-  if (outP[0]["fmin"] > 2.7 and platform.platform().split('-')[0] == 'Windows'):
-    raise ValueError(f"POLL: fmin > {2.7}")
+  PR = outP[0]["fmin"]
+  if (PR > 2.7 and platform.platform().split('-')[0] == 'Windows'):
+    raise ValueError(f"POLL: fmin {PR} > {2.7}")
   
   outM: Dict = MADS.main(data)
-  if (outM[0]["fmin"] > 0.0006 and platform.platform().split('-')[0] == 'Windows'):
-    raise ValueError(f"MADS: fmin > {0.0006}")
+  MR = outM[0]["fmin"]
+  if (MR > 0.0006 and platform.platform().split('-')[0] == 'Windows'):
+    raise ValueError(f"MADS: fmin {MR} > {0.0006}")
 
 def test_omads_callable_quick_parallel():
   eval = {"blackbox": rosen}
@@ -201,7 +203,7 @@ def test_omads_toy_quick():
   assert POLL.Options
   assert POLL.Parameters
   assert POLL.Evaluator
-  assert POLL.Point
+  assert POLL.CandidatePoint
   assert POLL.OrthoMesh
   assert POLL.Cache
   assert POLL.Dirs2n
