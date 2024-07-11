@@ -146,6 +146,7 @@ class Output:
   """
   file_path: str
   vnames: List[str]
+  fnames: List[str]
   file_writer: Any = field(init=False)
   field_names: List[str] = field(default_factory=list)
   pname: str = "MADS0"
@@ -156,7 +157,10 @@ class Output:
   def __post_init__(self):
     if not os.path.exists(self.file_path):
       os.mkdir(self.file_path)
-    self.field_names = [f'{"Runtime (Sec)".rjust(25)}', f'{"Iteration".rjust(25)}', f'{"Evaluation #".rjust(25)}', f'{"Step".rjust(25)}', f'{"Source".rjust(25)}', f'{"Model_name".rjust(25)}', f'{"Delta".rjust(25)}', f'{"Status".rjust(25)}', f'{"phi".rjust(25)}', f'{"fobj".rjust(25)}', f'{"max(c_in)".rjust(25)}', f'{"Penalty_parameter".rjust(25)}', f'{"Multipliers".rjust(25)}', f'{"hmax".rjust(25)}']
+    self.field_names = [f'{"Runtime (Sec)".rjust(25)}', f'{"Iteration".rjust(25)}', f'{"Evaluation #".rjust(25)}', f'{"Step".rjust(25)}', f'{"Source".rjust(25)}', f'{"Model_name".rjust(25)}', f'{"Delta".rjust(25)}', f'{"Status".rjust(25)}', f'{"phi".rjust(25)}'] 
+    for k in self.fnames:
+      self.field_names.append(f'{f"{k}".rjust(25)}')
+    self.field_names += [f'{"max(c_in)".rjust(25)}', f'{"Penalty_parameter".rjust(25)}', f'{"Multipliers".rjust(25)}', f'{"hmax".rjust(25)}']
     for k in self.vnames:
       self.field_names.append(f'{f"{k}".rjust(25)}')
     sp = os.path.join(self.file_path, self.runfolder)
@@ -176,11 +180,14 @@ class Output:
         fobj: float,
         h: float, f: float, rho: float, L: List[float], hmax: float,
         x: List[float], stepName: str):
-    row = {f'{"Runtime (Sec)".rjust(25)}': f'{f"{eval_time}".rjust(25)}', f'{"Iteration".rjust(25)}': f'{f"{iterno}".rjust(25)}', f'{"Evaluation #".rjust(25)}': f'{f"{evalno}".rjust(25)}', f'{"Step".rjust(25)}': f'{f"{stepName}".rjust(25)}', f'{"Source".rjust(25)}': f'{f"{source}".rjust(25)}', f'{"Model_name".rjust(25)}': f'{f"{Mname}".rjust(25)}', f'{"Delta".rjust(25)}': f'{f"{poll_size}".rjust(25)}', f'{"Status".rjust(25)}': f'{f"{status}".rjust(25)}', f'{"phi".rjust(25)}': f'{f"{f}".rjust(25)}', f'{"fobj".rjust(25)}': f'{f"{fobj}".rjust(25)}', f'{"max(c_in)".rjust(25)}': f'{f"{h}".rjust(25)}', f'{"Penalty_parameter".rjust(25)}': f'{f"{rho}".rjust(25)}', f'{"Multipliers".rjust(25)}': f'{f"{max(L) if len(L)>0 else None}".rjust(25)}', f'{"hmax".rjust(25)}': f'{f"{hmax}".rjust(25)}'}
+    row = {f'{"Runtime (Sec)".rjust(25)}': f'{f"{eval_time}".rjust(25)}', f'{"Iteration".rjust(25)}': f'{f"{iterno}".rjust(25)}', f'{"Evaluation #".rjust(25)}': f'{f"{evalno}".rjust(25)}', f'{"Step".rjust(25)}': f'{f"{stepName}".rjust(25)}', f'{"Source".rjust(25)}': f'{f"{source}".rjust(25)}', f'{"Model_name".rjust(25)}': f'{f"{Mname}".rjust(25)}', f'{"Delta".rjust(25)}': f'{f"{poll_size}".rjust(25)}', f'{"Status".rjust(25)}': f'{f"{status}".rjust(25)}', f'{"phi".rjust(25)}': f'{f"{f}".rjust(25)}'} 
+    for i in range(9, len(fobj)):
+      row.update({f'{f"{self.fnames[i]}".rjust(25)}': f'{f"{fobj[i]}".rjust(25)}'})
+    row.update({f'{"max(c_in)".rjust(25)}': f'{f"{h}".rjust(25)}', f'{"Penalty_parameter".rjust(25)}': f'{f"{rho}".rjust(25)}', f'{"Multipliers".rjust(25)}': f'{f"{max(L) if len(L)>0 else None}".rjust(25)}', f'{"hmax".rjust(25)}': f'{f"{hmax}".rjust(25)}'})
     # row = {'Iter no.': iterno, 'Eval no.': evalno,
     #      'poll_size': poll_size, 'hmin': h, 'fmin': f}
     ss = 0
-    for k in range(14, len(self.field_names)):
+    for k in range(13+len(self.fnames), len(self.field_names)):
       row[self.field_names[k]] = f'{f"{x[ss]}".rjust(25)}'
       ss += 1
     with open(os.path.abspath(os.path.join(os.path.join(self.file_path, self.runfolder), f'{self.pname}.csv')),

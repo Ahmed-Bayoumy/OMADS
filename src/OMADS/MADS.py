@@ -446,7 +446,7 @@ def main(*args) -> Dict[str, Any]:
             feval=poll.bb_handle.bb_eval,
             hmin=poll.xmin.h,
             fmin=poll.xmin.f)
-    print(f"{poll.bb_handle.blackbox}: fmin = {poll.xmin.f:.2f} , hmin= {poll.xmin.h:.2f}")
+    print(f"{poll.bb_handle.blackbox}: fmin = {poll.xmin.f} , hmin= {poll.xmin.h:.2f}")
 
   elif len(args) > 1 and not isinstance(args[1], toy.Run):
     raise IOError("Could not find " + args[1] + " in the internal BM suite.")

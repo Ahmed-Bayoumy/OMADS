@@ -774,11 +774,11 @@ class efficient_exploration:
         self._xmin = copy.deepcopy(xtry)
         if self.display:
           if self._dtype.dtype == np.float64:
-            print(f"Success: fmin = {self.xmin.f:.15f} (hmin = {self.xmin.h:.15})")
+            print(f"Success: fmin = {self.xmin.f} (hmin = {self.xmin.h:.15})")
           elif self._dtype.dtype == np.float32:
-            print(f"Success: fmin = {self.xmin.f:.6f} (hmin = {self.xmin.h:.6})")
+            print(f"Success: fmin = {self.xmin.f} (hmin = {self.xmin.h:.6})")
           else:
-            print(f"Success: fmin = {self.xmin.f:.18f} (hmin = {self.xmin.h:.18})")
+            print(f"Success: fmin = {self.xmin.f} (hmin = {self.xmin.h:.18})")
 
         self.mesh.psize_success = copy.deepcopy(self.mesh.getDeltaFrameSize().coordinates)
         self.mesh.psize_max = copy.deepcopy(max(self.mesh.getDeltaFrameSize().coordinates))

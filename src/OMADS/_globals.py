@@ -209,6 +209,20 @@ class MESH_TYPE(Enum):
   XMESH = auto()
   SMESH = auto()
 
+class EVAL_TYPE(Enum):
+  BB = auto()
+  CALLABLE = auto()
+
+class COMPARE_TYPE:
+  EQUAL = auto() #///< Both points are feasible or infeasible, and their
+                  # ///< objective values and h (where h is the squared sum
+                  # ///< of violations of all constraints) are equal to
+                  # ///< approximation tolerance rounding.
+  INDIFFERENT = auto() # ///< Both point are non dominated relatively to each other.
+  DOMINATED = auto() # ///< The first point is dominated by the other.
+  DOMINATING = auto() # ///< The first point dominates the other.
+  UNDEFINED = auto() # ///< May be used when comparing feasible and infeasible solutions for example.
+
 HARD_MIN_MESH_INDEX: int = -300
 # gmesh index constants
 GL_LIMITS: int    = -50;         #< Limits for the gmesh index values

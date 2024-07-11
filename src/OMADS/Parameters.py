@@ -23,6 +23,7 @@ class Parameters:
   lb: List[float] = None
   ub: List[float] = None
   var_names: List[str] = None
+  fun_names: List[str] = None
   scaling: List[float] = None
   post_dir: str = os.path.abspath("./")
   var_type: List[str] = None
@@ -33,6 +34,7 @@ class Parameters:
   problem_name: str = "unknown"
   best_known: List[float] = None
   constraints_type: List[BARRIER_TYPES] = None
+  function_weights: List[float] = None 
   h_max: float = 0
   RHO: float = 0.00005
   LAMBDA: List[float] = None
@@ -49,6 +51,7 @@ class Parameters:
   warningInitialFrameSizeReset: bool = True
   x0: Point = None
   _initialized_and_checked: bool = False
+  isPareto: bool = False
 
   def __init__(
       self,
@@ -56,6 +59,8 @@ class Parameters:
       lb: List[float] = None,
       ub: List[float] = None,
       var_names: List[str] = None,
+      fun_names: List[str] = None,
+      function_weights: List[float] = None,
       scaling: float = 10.0,
       post_dir: str = os.path.abspath("./"),
       var_type: List[str] = None,
@@ -76,14 +81,17 @@ class Parameters:
       minMeshSize: List[float] = None,
       minFrameSize: List[float] = None,
       initialMeshSize: List[float] = None,
-      initialFrameSize: List[float] = None):
+      initialFrameSize: List[float] = None,
+      isPareto: bool = False):
     self.baseline = baseline
     self._n = len(baseline)
     self.x0 = Point(self._n)
     self.x0.coordinates = self.baseline
     self.lb = lb
     self.ub = ub
-    self.var_names = var_names
+    self.var_names = var_names if var_names else [f'x_{i}' for i in range(self._n)]
+    self.fun_names = fun_names if fun_names else ["fobj"]
+    self.function_weights = (np.divide(function_weights, np.sum(function_weights))).tolist() if function_weights else [1/(len(self.fun_names))] * len(self.fun_names)
     self.scaling = scaling
     self.post_dir = post_dir
     self.var_type = var_type
@@ -98,6 +106,7 @@ class Parameters:
     self.LAMBDA = LAMBDA
     self.name = name
     self.var_sets = var_sets
+    self.isPareto = isPareto
     # Mesh options
     self._meshType = meshType
     point_init = Point()

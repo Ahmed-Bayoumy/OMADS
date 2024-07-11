@@ -207,7 +207,7 @@ class PrePoll:
     if options.store_cache:
       poll.hashtable.hash_id = x_start
     """ 13- Initialize the output results file object  """
-    out = Output(file_path=param.post_dir, vnames=param.var_names, pname=param.name, runfolder=f'{param.name}_run')
+    out = Output(file_path=param.post_dir, vnames=param.var_names, fnames=param.fun_names, pname=param.name, runfolder=f'{param.name}_run')
     if options.display:
       print("End of the evaluation of the starting points")
       if self.log is not None:

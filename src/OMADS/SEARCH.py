@@ -273,7 +273,7 @@ def main(*args) -> Dict[str, Any]:
             feval=search.bb_handle.bb_eval,
             hmin=search.xmin.h,
             fmin=search.xmin.f)
-    print(f"{search.bb_handle.blackbox}: fmin = {search.xmin.f:.2f} , hmin= {search.xmin.h:.2f}")
+    print(f"{search.bb_handle.blackbox}: fmin = {search.xmin.f} , hmin= {search.xmin.h:.2f}")
 
   elif len(args) > 1 and not isinstance(args[1], toy.Run):
     if log is not None:
