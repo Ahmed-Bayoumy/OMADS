@@ -78,7 +78,7 @@ class PreExploration:
       search.save_results = options.save_results
       """ 4- Construct an instant for the mesh subclass object by inheriting
       initial parameters from mesh_params() """
-      search.mesh = Gmesh(pbParam=param, runOptions=options) if (param._meshType).lower() == "gmesh" else Omesh(pbParam=param, runOptions=options)
+      search.mesh = Gmesh(pbParam=param, runOptions=options) if (param.meshType).lower() == "gmesh" else Omesh(pbParam=param, runOptions=options)
       search.sampling_t = search_step.s_method
       search.type = search_step.type
       search.ns = search_step.ns

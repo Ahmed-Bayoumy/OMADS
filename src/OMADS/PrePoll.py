@@ -22,7 +22,7 @@
 # ------------------------------------------------------------------------------------#
 
 from .CandidatePoint import CandidatePoint
-from .Barriers import *
+from .Barriers import Barrier, BarrierMO
 # from ._common import *
 from .Omesh import Omesh
 from .Directions import *
@@ -46,7 +46,7 @@ class PrePoll:
     options = Options(**self.data["options"])
     param = Parameters(**self.data["param"])
     log.isVerbose = options.isVerbose
-    B = Barrier(param)
+    B = BarrierMO(param=param, options=options) if param.isPareto else Barrier(param)
     ev = Evaluator(**self.data["evaluator"])
     if self.log is not None:
       self.log.log_msg(msg="- Set the POLL configurations", msg_type=MSG_TYPE.INFO)
@@ -75,7 +75,7 @@ class PrePoll:
       """ 4- Construct an instant for the mesh subclass object by inheriting
       initial parameters from mesh_params() """
       # COMPLETED: Add the Gmesh constructor req inputs
-      poll.mesh = Gmesh(pbParam=param, runOptions=options) if (param._meshType).lower() == "gmesh" else Omesh(pbParam=param, runOptions=options)
+      poll.mesh = Gmesh(pbParam=param, runOptions=options) if (param.meshType).lower() == "gmesh" else Omesh(pbParam=param, runOptions=options)
       """ 5- Assign optional algorithmic parameters to the constructed poll instant  """
       poll.opportunistic = options.opportunistic
       poll.seed = options.seed
@@ -160,7 +160,7 @@ class PrePoll:
     else:
        if not is_xs:
         poll.bb_output = poll.bb_handle.eval(x_start.coordinates)
-    x_start.hmax = B._h_max
+    x_start.hmax = B._h_max if isinstance(B, Barrier) else B._hMax
     x_start.RHO = param.RHO
     
     x_start.LAMBDA = param.LAMBDA
@@ -168,7 +168,10 @@ class PrePoll:
     x_start.LAMBDA = param.LAMBDA
     if not is_xs:
       x_start.__eval__(poll.bb_output)
-      B._h_max = x_start.hmax
+      if isinstance(B, Barrier):
+        B._h_max = x_start.hmax
+      elif isinstance(B, BarrierMO):
+        B._hMax = x_start.hmax
     """ 9- Copy the starting point object to the poll's  minimizer subclass """
     if not extend:
       poll.xmin = copy.deepcopy(x_start)
@@ -190,6 +193,8 @@ class PrePoll:
       poll.mesh.enlargeDeltaFrameSize()
     elif extend and x_start >= poll.xmin:
       poll.mesh.refineDeltaFrameSize()
+    
+    poll.xmin.mesh = copy.deepcopy(poll.mesh)
 
 
     """ 11- Construct the results postprocessor class object 'post' """
@@ -208,6 +213,10 @@ class PrePoll:
       poll.hashtable.hash_id = x_start
     """ 13- Initialize the output results file object  """
     out = Output(file_path=param.post_dir, vnames=param.var_names, fnames=param.fun_names, pname=param.name, runfolder=f'{param.name}_run')
+    if param.isPareto:
+      outP = Output(file_path=param.post_dir, vnames=param.var_names, fnames=param.fun_names, pname=param.name, runfolder=f'{param.name}_ND')
+    else:
+      outP = None
     if options.display:
       print("End of the evaluation of the starting points")
       if self.log is not None:
@@ -215,4 +224,4 @@ class PrePoll:
 
     iteration += 1
 
-    return iteration, x_start, poll, options, param, post, out, B
+    return iteration, x_start, poll, options, param, post, out, B, outP

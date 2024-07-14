@@ -120,6 +120,10 @@ class BarrierBase(BarrierData):
     self._hMax = hMax
     self._n = 0
     self._dtype = DType()
+    self._xInf = []
+    self._xFeas = []
+    self._xIncFeas = []
+    self._xIncInf = []
   
   def setN(self):
     isSet: bool = False
@@ -152,22 +156,25 @@ class BarrierBase(BarrierData):
   
   def getAllPoints(self) -> List[CandidatePoint]:
     allPoints: List[CandidatePoint] = []
+    if self._xFeas is None:
+      self._xFeas = []
     for cp in self._xFeas:
       allPoints.append(cp)
-    
+    if self._xInf is None:
+      self._xInf = []
     for cp in self._xInf:
       allPoints.append(cp)
     
     return allPoints
   
   def getFirstPoint(self) -> CandidatePoint:
-    if len(self._xIncFeas) > 0:
+    if self._xIncFeas and len(self._xIncFeas) > 0:
       return self._xIncFeas[0]
-    elif len(self._xFeas) > 0:
+    elif self._xFeas and len(self._xFeas) > 0:
       return self._xFeas[0]
-    elif len(self._xIncInf) > 0:
+    elif self._xIncInf and len(self._xIncInf) > 0:
       return self._xIncInf[0]
-    elif len(self._xInf) > 0:
+    elif self._xInf and len(self._xInf) > 0:
       return self._xInf[0]
     else:
       return None

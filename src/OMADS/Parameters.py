@@ -39,9 +39,10 @@ class Parameters:
   RHO: float = 0.00005
   LAMBDA: List[float] = None
   name: str = "undefined"
+  nobj: int = 1
 
   # Mesh options
-  _meshType: str = MESH_TYPE.ORTHO.name
+  meshType: str = MESH_TYPE.ORTHO.name
   fixed_variables: Point = None
   granularity: Point = None
   minMeshSize: Point = None
@@ -52,6 +53,8 @@ class Parameters:
   x0: Point = None
   _initialized_and_checked: bool = False
   isPareto: bool = False
+  incumbentincumbentSelectionParam: int = 1
+  barrierInitializedFromCache: bool = True
 
   def __init__(
       self,
@@ -82,7 +85,13 @@ class Parameters:
       minFrameSize: List[float] = None,
       initialMeshSize: List[float] = None,
       initialFrameSize: List[float] = None,
-      isPareto: bool = False):
+      isPareto: bool = False,
+      nobj: int=1,
+      incumbentincumbentSelectionParam: int=1,
+      barrierInitializedFromCache:bool =True):
+    self.incumbentincumbentSelectionParam = incumbentincumbentSelectionParam
+    self.barrierInitializedFromCache = barrierInitializedFromCache
+    self.nobj = nobj
     self.baseline = baseline
     self._n = len(baseline)
     self.x0 = Point(self._n)
@@ -91,7 +100,7 @@ class Parameters:
     self.ub = ub
     self.var_names = var_names if var_names else [f'x_{i}' for i in range(self._n)]
     self.fun_names = fun_names if fun_names else ["fobj"]
-    self.function_weights = (np.divide(function_weights, np.sum(function_weights))).tolist() if function_weights else [1/(len(self.fun_names))] * len(self.fun_names)
+    self.function_weights = (np.divide(function_weights, np.sum(function_weights))).tolist() if function_weights else [1/(self.nobj)] * self.nobj
     self.scaling = scaling
     self.post_dir = post_dir
     self.var_type = var_type
@@ -108,7 +117,7 @@ class Parameters:
     self.var_sets = var_sets
     self.isPareto = isPareto
     # Mesh options
-    self._meshType = meshType
+    self.meshType = meshType
     point_init = Point()
     point_init.reset(self._n, d=0)
     if fixed_variables:

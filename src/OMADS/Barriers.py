@@ -30,6 +30,7 @@ from ._globals import *
 import numpy as np
 from .Parameters import Parameters
 from .Barrier import BarrierBase
+from .Options import Options
 
 @dataclass
 class Barrier:
@@ -275,18 +276,23 @@ class BarrierMO(BarrierBase):
   _bbInputsType: List[VAR_TYPE] = None
   _incumbentSelectionParam: int = 0
 
-  def __init__(self, nobj: int =0, hMax: float = np.inf, incumbentincumbentSelectionParam: int = 1, fixedVariables: Point = None, evalType: Any = None, evalPointList: List[CandidatePoint]= None,
-              barrierInitializedFromCache:bool = True, bbInputsType: List[VAR_TYPE] = None):
-    super(BarrierBase, self).__init__(hMax=hMax)
+  def __init__(self, param: Parameters, options: Options, evalPointList: List[CandidatePoint]= None):
+    super(BarrierBase, self).__init__(hMax=param.h_max)
 
-    self._nobj = nobj
-    self._fixedVariables = fixedVariables
-    self._bbInputsType = bbInputsType
-    self._incumbentSelectionParam = incumbentincumbentSelectionParam
+    self._nobj = param.nobj
+    self._fixedVariables = param.fixed_variables
+    self._bbInputsType = param.var_type
+    self._incumbentSelectionParam = param.incumbentincumbentSelectionParam
+    self.barrierInitializedFromCache = param.barrierInitializedFromCache
+    self._dtype = DType(options.precision)
+    self._xFeas = []
+    self._xInf = []
+    self._xFilterInf = []
+    
 
     self.checkHMax()
-
-    self.init()
+    if evalPointList:
+      self.init(fixedVariables=self._fixedVariables, evalType=None,evalPointList=evalPointList)
 
 
   def init(self, fixedVariables: Point = None, evalType: EVAL_TYPE = None, evalPointList: List[Point] = None):
@@ -880,31 +886,22 @@ class BarrierMO(BarrierBase):
         xInf = self._xInf[currentBestInd]
 
     return xInf
-
-
-
-
-        
-
-
-
-      
-
-
-
-
-
-
   
   def updateInfWithPoint(self, evalPoint: CandidatePoint = None, evalType: EVAL_TYPE = None, keepAllPoints: bool = None, feasHasBeenUpdated: bool = False):
     updated = False
 
-    if evalPoint.status != DESIGN_STATUS.FEASIBLE:
+    if evalPoint.evaluated and evalPoint.status != DESIGN_STATUS.FEASIBLE:
       s: str
       h = evalPoint.h
 
       if h == np.inf or (self._hMax < np.inf and h > self._hMax):
         return False
+      
+      if self._xInf is None:
+        self._xInf = []
+      
+      if self._xFilterInf is None:
+        self._xFilterInf = []
       
       if len(self._xInf) <= 0:
         self._xInf.append(evalPoint)
@@ -920,7 +917,7 @@ class BarrierMO(BarrierBase):
           if compFlag == COMPARE_TYPE.DOMINATED:
             insert = False
             break
-          elif compFlag == compFlag.DOMINATING:
+          elif compFlag == COMPARE_TYPE.DOMINATING:
             updated = True
             isInXinfFilter[currentInd] = False
           elif compFlag == COMPARE_TYPE.EQUAL:
@@ -1001,9 +998,12 @@ class BarrierMO(BarrierBase):
   def updateFeasWithPoint(self, evalPoint: CandidatePoint = None, evalType: EVAL_TYPE = None, keepAllPoints: bool = None):
     updated = False
 
-    if evalPoint.status == DESIGN_STATUS.FEASIBLE:
+    if evalPoint.evaluated and evalPoint.status == DESIGN_STATUS.FEASIBLE:
       if evalPoint.fs.size != self._nobj:
         raise IOError(f"Barrier update: number of objectives is equal to {self._nobj}. Trying to add this point with number of objectives {evalPoint.fs.size}")
+      
+      if self._xFeas is None:
+        self._xFeas = []
       
       if len(self._xFeas) == 0:
         self._xFeas.append(evalPoint)
@@ -1047,7 +1047,7 @@ class BarrierMO(BarrierBase):
 
           # Sort according to lexicographic order.
           self._xFeas = self.non_dominated_sort(self._xFeas)
-    
+
     return updated
 
 

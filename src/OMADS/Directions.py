@@ -345,6 +345,8 @@ class Dirs2n:
     :param it: iteration
     :type it: int
     """
+    del self.poll_set
+    del self.poll_dirs
     if is_prim:
       del self.poll_set
       temp = np.add(hhm, np.array(self.xmin.coordinates), dtype=self._dtype.dtype)
@@ -489,6 +491,7 @@ class Dirs2n:
         print("Cache hit ... Failed to find a non-duplicate alternative.")
       stop = True
       bb_eval = copy.deepcopy(self.bb_eval)
+      xtry.fobj = [np.inf] * self.mesh._pbParams.nobj
       psize = copy.deepcopy(self.mesh.getDeltaFrameSize().coordinates)
       return [stop, index, self.bb_handle.bb_eval, success, psize, xtry]
 

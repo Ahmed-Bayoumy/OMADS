@@ -308,11 +308,11 @@ class CandidatePoint:
       self._f = val
     else:
       self._f = [val]
-    if self.fs is None or self.fs.size <= 0:
-      self.fs = Point(len(self.f))
-      self.fs.coordinates = self._f
-    else:
-      self.fs.coordinates = self.f
+    # if self.fs is None or self.fs.size <= 0:
+    #   self.fs = Point(len(self.f))
+    #   self.fs.coordinates = self._f
+    # else:
+    #   self.fs.coordinates = self.f
 
   @f.deleter
   def f(self):
@@ -329,7 +329,7 @@ class CandidatePoint:
     else:
       self._freal = [other]
     
-    if self.fs is None or len(self._fs.coordinates) < 0 or not isinstance(self.fobj, list):
+    if self.fs is None or len(self._fs.coordinates) < 0 or not isinstance(self._freal, list):
       self.fs = Point(len(self._freal))
       self.fs.coordinates = self._freal
     else:
@@ -394,7 +394,7 @@ class CandidatePoint:
   def __lt__(self, other):
     return (other.h > (self.hmax if self._is_EB_passed else self._dtype.zero) > self.__dh__(other=other)) or \
          (((self.hmax if self._is_EB_passed else self._dtype.zero) >= self.h >= 0.0) and
-        self.__df__(other=other) < 0)
+        max(self.__df__(other=other)) < 0)
 
   def __le__(self, other):
     return self.__eq_f__(other) or self.f == other.f
@@ -514,7 +514,7 @@ class CandidatePoint:
     if 0 < len(self.cPB) < len(self.LAMBDA):
       del self.LAMBDA[len(self.cPB):]
     if extreme:
-      self.f = [inf]*len(self.f)
+      # self.f = [inf]*len(self.f)
       self.hmin = inf
     else:
       self.hmin = np.dot(self.LAMBDA, self.cPB) + ((1/(2*self.RHO)) * self.h if self.RHO > 0. else np.inf)
