@@ -183,10 +183,10 @@ class BarrierBase(BarrierData):
     ind = 0
     for p in cps:
       if p.signature == cp.signature:
-        return ind, p
+        return True, p
       ind+=1
     
-    return ind, p
+    return False, p
   
   def findPoint(self, Point: Point, foundEvalPoint: CandidatePoint) -> bool:
     found: bool = False

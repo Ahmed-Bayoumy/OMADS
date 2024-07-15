@@ -278,4 +278,4 @@ def test_omads_toy_quick():
   MADS.main(data)
 
 if __name__ == "__main__":
-  test_MADS_callable_quick_2d()
+  freeze_support()

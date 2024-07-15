@@ -174,7 +174,10 @@ class PrePoll:
         B._hMax = x_start.hmax
     """ 9- Copy the starting point object to the poll's  minimizer subclass """
     if not extend:
-      poll.xmin = copy.deepcopy(x_start)
+      if x_start.status == DESIGN_STATUS.INFEASIBLE and isinstance(B, BarrierMO):
+        poll.x_sc = copy.deepcopy(x_start)
+      else:
+        poll.xmin = copy.deepcopy(x_start)
     """ 10- Hold the starting point in the poll
      directions subclass and define problem parameters """
     poll.poll_set.append(x_start)
@@ -186,22 +189,33 @@ class PrePoll:
      found and check if the starting minimizer performs better
     than the worst (f = inf) """
     poll.nb_success = 0
-    if not extend and poll.xmin < CandidatePoint():
+    if not extend and poll.xmin.evaluated and poll.xmin < CandidatePoint():
       poll.poll_set = [poll.xmin]
-    elif extend and x_start < poll.xmin:
+    elif extend and x_start.status == DESIGN_STATUS.FEASIBLE and x_start < poll.xmin:
       poll.xmin = copy.deepcopy(x_start)
       poll.mesh.enlargeDeltaFrameSize()
-    elif extend and x_start >= poll.xmin:
+    elif extend and x_start.status == DESIGN_STATUS.INFEASIBLE and x_start < poll.x_sc:
+      poll.x_sc = copy.deepcopy(x_start)
+    elif extend and x_start.status == DESIGN_STATUS.FEASIBLE and x_start >= poll.xmin:
+      poll.mesh.refineDeltaFrameSize()
+    elif extend and x_start.status == DESIGN_STATUS.INFEASIBLE and x_start >= poll.x_sc:
       poll.mesh.refineDeltaFrameSize()
     
     poll.xmin.mesh = copy.deepcopy(poll.mesh)
+    poll.x_sc.mesh = copy.deepcopy(poll.mesh)
 
 
     """ 11- Construct the results postprocessor class object 'post' """
-    post = PostMADS(x_incumbent=[poll.xmin], xmin=poll.xmin, poll_dirs=[poll.xmin])
-    post.psize.append(poll.mesh.getDeltaFrameSize().coordinates)
-    post.bb_eval.append(poll.bb_handle.bb_eval)
-    post.iter.append(iteration)
+    if poll.xmin.evaluated:
+      post = PostMADS(x_incumbent=[poll.xmin], xmin=poll.xmin, poll_dirs=[poll.xmin])
+      post.psize.append(poll.mesh.getDeltaFrameSize().coordinates)
+      post.bb_eval.append(poll.bb_handle.bb_eval)
+      post.iter.append(iteration)
+    elif poll.x_sc.evaluated:
+      post = PostMADS(x_incumbent=[poll.x_sc], xmin=poll.x_sc, poll_dirs=[poll.x_sc])
+      post.psize.append(poll.mesh.getDeltaFrameSize().coordinates)
+      post.bb_eval.append(poll.bb_handle.bb_eval)
+      post.iter.append(iteration)
 
     """ Note: printing the post will print a results row
      within the results table shown in Python console if the

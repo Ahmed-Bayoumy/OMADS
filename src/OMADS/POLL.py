@@ -106,21 +106,24 @@ def main(*args) -> Dict[str, Any]:
                 lb=param.lb, it=iteration, var_type=B._sec_poll_center.var_type, var_sets=B._sec_poll_center.sets, var_link = B._sec_poll_center.var_link, c_types=param.constraints_type, is_prim=False)
     elif isinstance(B, BarrierMO):
       poll.hmax = B._hMax
+      del poll.poll_set
+      del poll.poll_dirs
       if B._currentIncumbentFeas and B._currentIncumbentFeas.evaluated:
         poll.create_poll_set(hhm=hhm,
                 ub=param.ub,
                 lb=param.lb, it=iteration, var_type=B._currentIncumbentFeas.var_type, var_sets=B._currentIncumbentFeas.sets, var_link = B._currentIncumbentFeas.var_link, c_types=param.constraints_type, is_prim=True)
-      elif B._currentIncumbentInf and B._currentIncumbentInf.evaluated:
+      elif poll.xmin.status == DESIGN_STATUS.FEASIBLE:
+        poll.create_poll_set(hhm=hhm,
+                ub=param.ub,
+                lb=param.lb, it=iteration, var_type=poll.xmin.var_type, var_sets=poll.xmin.sets, var_link = poll.xmin.var_link, c_types=param.constraints_type, is_prim=True)
+      
+      if B._currentIncumbentInf and B._currentIncumbentInf.evaluated:
         # del poll.poll_set
         poll.x_sc = B._currentIncumbentInf
         poll.create_poll_set(hhm=hhm,
                 ub=param.ub,
                 lb=param.lb, it=iteration, var_type=B._currentIncumbentInf.var_type, var_sets=B._currentIncumbentInf.sets, var_link = B._currentIncumbentInf.var_link, c_types=param.constraints_type, is_prim=False)
-      elif poll.xmin.status == DESIGN_STATUS.FEASIBLE:
-        poll.create_poll_set(hhm=hhm,
-                ub=param.ub,
-                lb=param.lb, it=iteration, var_type=poll.xmin.var_type, var_sets=poll.xmin.sets, var_link = poll.xmin.var_link, c_types=param.constraints_type, is_prim=True)
-      else:
+      elif poll.xmin.status == DESIGN_STATUS.INFEASIBLE:
         poll.create_poll_set(hhm=hhm,
                 ub=param.ub,
                 lb=param.lb, it=iteration, var_type=poll.xmin.var_type, var_sets=poll.xmin.sets, var_link = poll.xmin.var_link, c_types=param.constraints_type, is_prim=False)
@@ -149,7 +152,8 @@ def main(*args) -> Dict[str, Any]:
         if poll.terminate:
           break
         f = poll.eval_poll_point(it)
-        xt.append(f[-1])
+        if f[-1].status != DESIGN_STATUS.UNEVALUATED:
+          xt.append(f[-1])
         if not f[0]:
           post.bb_eval.append(poll.bb_handle.bb_eval)
           post.iter.append(iteration)

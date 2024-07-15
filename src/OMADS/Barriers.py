@@ -333,7 +333,7 @@ class BarrierMO(BarrierBase):
     for cp in evalPointList:
       self.checkMeshParameters(cp)
 
-      if not cp.evaluated and cp.status == DESIGN_STATUS.ERROR:
+      if not cp.evaluated or cp.status == DESIGN_STATUS.ERROR:
         continue
 
       if cp.fs.size != self._nobj:
@@ -346,9 +346,9 @@ class BarrierMO(BarrierBase):
     # // Use the flag oneFeasEvalFullSuccess.
     # // If the flag is true hmax will not change. A point improving the best infeasible should not replace it.
     for cp in evalPointList:
-      if cp.status == DESIGN_STATUS.ERROR:
+      if not cp.evaluated or cp.status == DESIGN_STATUS.ERROR:
         continue
-      updatedInf = self.updateInfWithPoint(evalPoint=cp, evalType=evalType, keepAllPoints=keepAllPoints, feasHasBeenUpdated=updatedFeas)
+      updatedInf = self.updateInfWithPoint(evalPoint=cp, evalType=evalType, keepAllPoints=keepAllPoints, feasHasBeenUpdated=updatedFeas) or updatedInf
     
     updated = updated or updatedFeas or updatedInf
 
@@ -924,7 +924,7 @@ class BarrierMO(BarrierBase):
             if (not keepAllPoints):
               insert = False
               break
-            if self.findEvalPoint(self._xFilterInf, evalPoint):
+            if self.findEvalPoint(self._xFilterInf, evalPoint)[0]:
               insert = False
             else:
               updated = True
@@ -934,8 +934,10 @@ class BarrierMO(BarrierBase):
         if insert:
           indices_to_remove = []
           for i in range(len(self._xFilterInf)):
-            if isInXinfFilter[i]:
+            if not isInXinfFilter[i]:
               indices_to_remove.append(i)
+          
+          self._xFilterInf.append(evalPoint)
           
           for index in sorted(indices_to_remove, reverse=True):
             del self._xFilterInf[index]
@@ -959,8 +961,10 @@ class BarrierMO(BarrierBase):
           if insert:
             indices_to_remove = []
             for i in range(len(self._xInf)):
-              if isInXinf[i]:
+              if not isInXinf[i]:
                 indices_to_remove.append(i)
+            updated = True
+            self._xInf.append(evalPoint)
             
             for index in sorted(indices_to_remove, reverse=True):
               del self._xInf[index]
@@ -1026,7 +1030,7 @@ class BarrierMO(BarrierBase):
               insert = False
               break
 
-            if self.findEvalPoint(self._xFeas, evalPoint):
+            if self.findEvalPoint(self._xFeas, evalPoint)[0]:
               insert = False
             else:
               updated = True

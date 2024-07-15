@@ -348,7 +348,7 @@ class Dirs2n:
     del self.poll_set
     del self.poll_dirs
     if is_prim:
-      del self.poll_set
+      # del self.poll_set
       temp = np.add(hhm, np.array(self.xmin.coordinates), dtype=self._dtype.dtype)
     else:
       temp = np.add(hhm, np.array(self.x_sc.coordinates), dtype=self._dtype.dtype)

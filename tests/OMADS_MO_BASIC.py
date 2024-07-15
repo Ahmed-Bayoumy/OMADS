@@ -194,28 +194,28 @@ def test_MO_Kursawe():
   data = common_dict()
   data["evaluator"]["blackbox"] = MO_Kursawe
   data["param"]["name"] = "Kursawe"
-  data["param"]["baseline"] = [0, 0, 0]
+  # data["param"]["baseline"] = [-2.0, 0.5, -4.5]
+  data["param"]["baseline"] = [-2.0, -0.5, -5]
   data["param"]["var_names"] = ['x1', 'x2', 'x3']
   data["param"]["lb"] = [-5, -5, -5]
   data["param"]["ub"] = [5, 5, 5]
-  data["param"]["LAMBDA"]= None
-  data["param"]["RHO"] = 1
-  data["param"]["h_max"] = 0
+  # data["param"]["LAMBDA"]= None
+  # data["param"]["RHO"] = 1
+  # data["param"]["h_max"] = 0
   data["meshType"] = "GMESH"
-  # data["param"]["constraints_type"] = ["PB", "PB"]
+  # data["param"]["constraints_type"] = ["PB"]
   data["param"]["scaling"] = [10, 10, 10]
   data["param"]["post_dir"] = "./tests/bm/MOO/unconstrained/Kursawe/post"
-  data["options"]["budget"] = 1000
+  data["options"]["budget"] = 10000
 
   POLL.main(data)
 
 def test_MO_Osyczka_Kundu():
-  # TODO: Investigate why starting from infeasible point does not work in MOO
+  # COMPLETED: Investigate why starting from infeasible point does not work in MOO
   data = common_dict()
   data["evaluator"]["blackbox"] = MO_Osyczka_Kundu
   data["param"]["name"] = "Osyczka_Kundu"
-  # data["param"]["baseline"] = [3, 2, 4, 0, 5, 10]
-  data["param"]["baseline"] = [3, 2, 4, 0, 5, 10]
+  data["param"]["baseline"] = [3, 2, 2, 0, 5, 10]
   data["param"]["var_names"] = ['x1', 'x2', 'x3', 'x4', 'x5', 'x6']
   data["param"]["lb"] = [0,   0, 1, 0, 1,  0]
   data["param"]["ub"] = [10, 10, 5, 6, 5, 10]
@@ -258,4 +258,4 @@ def test_MO_Ex():
   POLL.main(data)
 
 if __name__ == "__main__":
-  test_MO_Ex()
+  test_MO_Fonseca_Fleming()
