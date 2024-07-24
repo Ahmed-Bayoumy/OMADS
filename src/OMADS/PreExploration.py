@@ -41,7 +41,7 @@ class PreExploration:
     options = Options(**self.data["options"])
     param = Parameters(**self.data["param"])
     log.isVerbose = options.isVerbose
-    B = Barrier(param)
+    B = BarrierMO(param=param, options=options) if param.isPareto else Barrier(param)
     ev = Evaluator(**self.data["evaluator"])
     if self.log is not None:
       self.log.log_msg(msg="- Set the SEARCH configurations", msg_type=MSG_TYPE.INFO)
@@ -68,6 +68,12 @@ class PreExploration:
     x_start = CandidatePoint()
     """ 3- Construct an instant for the poll 2n orthogonal directions class object """
     extend = options.extend is not None and isinstance(options.extend, efficient_exploration)
+    is_xs = False
+    if xs is None or not isinstance(xs, CandidatePoint) or not xs.evaluated:
+      x_start = CandidatePoint()
+    else:
+      x_start = xs
+      is_xs = True
     if not extend:
       search = efficient_exploration()
       search.prob_params = copy.deepcopy(param)
@@ -79,6 +85,7 @@ class PreExploration:
       """ 4- Construct an instant for the mesh subclass object by inheriting
       initial parameters from mesh_params() """
       search.mesh = Gmesh(pbParam=param, runOptions=options) if (param.meshType).lower() == "gmesh" else Omesh(pbParam=param, runOptions=options)
+      
       search.sampling_t = search_step.s_method
       search.type = search_step.type
       search.ns = search_step.ns
@@ -113,6 +120,10 @@ class PreExploration:
         self.log.log_msg(msg="- Evaluation of the starting points...", msg_type=MSG_TYPE.INFO)
     x_start.coordinates = param.baseline
     x_start.sets = param.var_sets
+    if param.constraints_type is not None and isinstance(param.constraints_type, list):
+        x_start.constraints_type = [xb for xb in param.constraints_type]
+    elif param.constraints_type is not None:
+      x_start.constraints_type = [param.constraints_type]
     """ 8- Set the variables type """
     if param.var_type is not None:
       c= 0
@@ -165,9 +176,10 @@ class PreExploration:
           p.append(x_start.coordinates[i])
       search.bb_output = search.bb_handle.eval(p)
     else:
-      search.bb_output = search.bb_handle.eval(x_start.coordinates)
-    x_start.hmax = B._h_max
-    search.hmax = B._h_max
+      if not is_xs:
+        search.bb_output = search.bb_handle.eval(x_start.coordinates)
+    x_start.hmax = B._h_max if isinstance(B, Barrier) else B._hMax
+    search.hmax = B._h_max if isinstance(B, Barrier) else B._hMax
     x_start.RHO = param.RHO
     if param.LAMBDA is None:
       param.LAMBDA = [0] * len(x_start.c_ineq)
@@ -179,8 +191,14 @@ class PreExploration:
       del param.LAMBDA[len(x_start.c_ineq):]
     x_start.LAMBDA = param.LAMBDA
     x_start.constraints_type = param.constraints_type
-    x_start.__eval__(search.bb_output)
+    if not is_xs:
+      x_start.__eval__(search.bb_output)
+      if isinstance(B, Barrier):
+        B._h_max = x_start.hmax
+      elif isinstance(B, BarrierMO):
+        B._hMax = x_start.hmax
     """ 9- Copy the starting point object to the poll's minimizer subclass """
+    x_start.mesh = copy.deepcopy(search.mesh)
     search.xmin = copy.deepcopy(x_start)
     """ 10- Hold the starting point in the poll
      directions subclass and define problem parameters"""
@@ -189,6 +207,10 @@ class PreExploration:
     search.dim = x_start.n_dimensions
     if not extend:
       search.hashtable = Cache()
+      search.hashtable._n_dim = len(param.baseline)
+      search.hashtable._isPareto = param.isPareto
+      if param.isPareto:
+        search.hashtable.ND_points = []
     """ 10- Initialize the number of successful points
      found and check if the starting minimizer performs better
     than the worst (f = inf) """
@@ -215,10 +237,14 @@ class PreExploration:
       search.hashtable.hash_id = x_start
     """ 13- Initialize the output results file object  """
     out = Output(file_path=param.post_dir, vnames=param.var_names, fnames=param.fun_names, pname=param.name, runfolder=f'{param.name}_run', replace=True)
+    if param.isPareto:
+      outP = Output(file_path=param.post_dir, vnames=param.var_names, fnames=param.fun_names, pname=param.name, runfolder=f'{param.name}_ND', suffix="Pareto")
+    else:
+      outP = None
     if options.display:
       print("End of the evaluation of the starting points")
       if self.log is not None:
         self.log.log_msg(msg="- End of the evaluation of the starting points.", msg_type=MSG_TYPE.INFO)
     iteration += 1
 
-    return iteration, x_start, search, options, param, post, out, B
+    return iteration, x_start, search, options, param, post, out, B, outP

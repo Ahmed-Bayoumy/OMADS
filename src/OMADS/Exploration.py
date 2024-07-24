@@ -46,7 +46,7 @@ class VNS_data:
   params: Parameters = None
   # true_barrier: Barrier = None
   # sgte_barrier: Barrier = None
-  active_barrier: Barrier = None
+  active_barrier: auto = None
 
 
 @dataclass
@@ -62,7 +62,7 @@ class VNS(VNS_data):
   _seed: int = 0
   _rho0: float = 0.1
 
-  def __init__(self, active_barrier: Barrier, stop: bool=False, true_barrier: Barrier=None, sgte_barrier: Barrier=None, params=None):
+  def __init__(self, active_barrier: auto, stop: bool=False, true_barrier: Barrier=None, sgte_barrier: Barrier=None, params=None):
     self.stop = stop
     self.count_search = not self.stop
     # self.params._opt_only_sgte = False
@@ -190,10 +190,16 @@ class VNS(VNS_data):
 
     return cs
 
-  def generate_samples(self, x_inc: CandidatePoint, dist: DIST_TYPE)->List[float]:
+  def generate_samples(self, x_inc: CandidatePoint=None, dist: DIST_TYPE = None)->List[float]:
     """_summary_
     """
-    if not x_inc.evaluated:
+    if isinstance(self.active_barrier, BarrierMO):
+      if x_inc is None:
+        x_inc = self.active_barrier.getAllPoints()[0]
+    elif isinstance(self.active_barrier, Barrier):
+      if x_inc is None:
+        x_inc = self.active_barrier.select_poll_center()
+    if x_inc or not x_inc.evaluated:
       return None
     else:
       if dist == DIST_TYPE.GAUSS:
@@ -221,12 +227,23 @@ class VNS(VNS_data):
     # opt_only_sgte = self.params._opt_only_sgte
 
     # point x
-    x: CandidatePoint = self.active_barrier._best_feasible
-    if (x is None or not x.evaluated) and self.active_barrier._filter is not None:
-      x = self.active_barrier.get_best_infeasible()
-    
-    if (x is None or not x.evaluated) and self.active_barrier._all_inserted is not None:
-      x = self.active_barrier._all_inserted[0]
+    if isinstance(self.active_barrier, Barrier):
+      x: CandidatePoint = self.active_barrier._best_feasible
+      if (x is None or not x.evaluated) and self.active_barrier._filter is not None:
+        x = self.active_barrier.get_best_infeasible()
+      
+      if (x is None or not x.evaluated) and self.active_barrier._all_inserted is not None:
+        x = self.active_barrier._all_inserted[0]
+    elif isinstance(self.active_barrier, BarrierMO):
+      if self._old_x:
+        x: CandidatePoint = self.active_barrier._currentIncumbentFeas if self._old_x.status == DESIGN_STATUS.FEASIBLE else self.active_barrier._currentIncumbentInf
+      else:
+        x: CandidatePoint = self.active_barrier._currentIncumbentFeas if self.active_barrier._currentIncumbentFeas else self.active_barrier._currentIncumbentInf if self.active_barrier._currentIncumbentInf else CandidatePoint(n=len(self.params.baseline),_coords=self.params.baseline)
+      if (x is None or not x.evaluated) and self.active_barrier._xFilterInf is not None:
+        x = self.active_barrier._currentIncumbentInf
+
+      if (x is None or not x.evaluated):
+        x = self._old_x
     # // update _k and _old_x:
     
     if self._old_x is not None and x != self._old_x:
@@ -238,13 +255,15 @@ class VNS(VNS_data):
     
     self._old_x = x
 
-    samples = np.zeros((sum(self._ns_dist), len(x.coordinates)))
+    samples = np.zeros((sum(self._ns_dist), len(self.params.baseline)))
     c = 0
     self._seed += np.random.randint(0, 10000)
     np.random.seed(self._seed)
     if x.status is DESIGN_STATUS.FEASIBLE:
       for i in range(len(self._dist)):
         temp = self.generate_samples(x_inc=x, dist= self._dist[i])
+        if temp is None:
+          continue
         temp = np.unique(temp, axis=0)
         for p in temp:
           if p not in samples:
@@ -254,13 +273,22 @@ class VNS(VNS_data):
     ns_dist_old = self._ns_dist
     self._ns_dist = [int(0.1*xds) for xds in self._ns_dist]
 
-    if self.active_barrier._sec_poll_center is not None and self.active_barrier.get_best_infeasible().evaluated:
-      for i in range(len(self._dist)):
-        temp = self.generate_samples(x_inc= self.active_barrier.get_best_infeasible(), dist= self._dist[i])
-        temp = np.unique(temp, axis=0)
-        for p in temp:
-          samples = np.vstack((samples, p))
-          c += 1
+    if isinstance(self.active_barrier, Barrier):
+      if self.active_barrier._sec_poll_center is not None and self.active_barrier.get_best_infeasible().evaluated:
+        for i in range(len(self._dist)):
+          temp = self.generate_samples(x_inc= self.active_barrier.get_best_infeasible(), dist= self._dist[i])
+          temp = np.unique(temp, axis=0)
+          for p in temp:
+            samples = np.vstack((samples, p))
+            c += 1
+    elif isinstance(self.active_barrier, BarrierMO):
+      if self.active_barrier._currentIncumbentFeas is not None and self.active_barrier._currentIncumbentFeas.evaluated:
+        for i in range(len(self._dist)):
+          temp = self.generate_samples(x_inc= self.active_barrier._currentIncumbentInf, dist= self._dist[i])
+          temp = np.unique(temp, axis=0)
+          for p in temp:
+            samples = np.vstack((samples, p))
+            c += 1
     self._ns_dist = ns_dist_old
     samples = np.unique(samples, axis=0)
     return samples
@@ -305,6 +333,7 @@ class efficient_exploration:
   estGrid: explore.samplers.sampling = None
   n_successes: int = 0 
   bb_eval: Any = None
+  activeBarrier: BarrierMO = None
 
   def __post_init__(self):
     self._xmin = CandidatePoint()
@@ -479,8 +508,8 @@ class efficient_exploration:
       sampling.options["msize"] = self.mesh.getdeltaMeshSize().coordinates
       is_lhs = True
     else:
-      if self.iter == 1 or len(self.hashtable._cache_dict) < nsamples:# or self.n_successes / (self.iter) <= 0.25:
-        sampling = explore.samplers.halton(ns=nsamples, vlim=v)
+      if self.iter == 1 or (len(self.hashtable._cache_dict) if isinstance(self.activeBarrier, Barrier) or self.activeBarrier is None else len(self.hashtable._best_hash_ID)) < nsamples:# or self.n_successes / (self.iter) <= 0.25:
+        sampling = explore.samplers.halton(ns=nsamples, vlim=v) if isinstance(self.activeBarrier, Barrier) or self.activeBarrier is None else explore.samplers.LHS(ns=nsamples, vlim=v)
         sampling.options["randomness"] = self.seed + self.iter
         sampling.options["criterion"] = self.sampling_criter
         sampling.options["msize"] = self.mesh.getdeltaMeshSize().coordinates
@@ -704,7 +733,8 @@ class efficient_exploration:
     xtry.hmax = copy.deepcopy(self.hmax)
     xtry.constraints_type = copy.deepcopy(self.prob_params.constraints_type)
     xtry.__eval__(self.bb_output)
-    self.hashtable.add_to_best_cache(xtry)
+    if not self.hashtable._isPareto:
+      self.hashtable.add_to_best_cache(xtry)
     toc = time.perf_counter()
     xtry.Eval_time = (toc - tic)
 

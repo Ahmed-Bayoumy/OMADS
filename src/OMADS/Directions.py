@@ -373,10 +373,12 @@ class Dirs2n:
       tmp.mesh = copy.deepcopy(self.mesh)
       self.poll_set = tmp
       if is_prim:
-        tmp.direction = tmp - self.xmin
+        tmp.direction = Point(self.mesh._n)
+        tmp.direction.coordinates = tmp - self.xmin
         self.poll_dirs = tmp - self.xmin
       else:
-        tmp.direction = tmp - self.x_sc
+        tmp.direction = Point(self.mesh._n)
+        tmp.direction.coordinates = tmp - self.x_sc
         self.poll_dirs = tmp - self.x_sc
       del tmp
     del temp
@@ -519,7 +521,8 @@ class Dirs2n:
     xtry.RHO = copy.deepcopy(self.RHO)
     xtry.hmax = copy.deepcopy(self.hmax)
     xtry.__eval__(self.bb_output)
-    self.hashtable.add_to_best_cache(xtry)
+    if not self.hashtable._isPareto:
+      self.hashtable.add_to_best_cache(xtry)
     self.hmax = copy.deepcopy(xtry.hmax)
     toc = time.perf_counter()
     xtry.Eval_time = (toc - tic)

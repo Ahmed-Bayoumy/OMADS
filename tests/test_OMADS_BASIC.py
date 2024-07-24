@@ -21,7 +21,7 @@ def thin_con(x):
   f = np.sqrt((x[0]-20)**2 + (x[1]-1)**2)
   c1 = np.sin(x[0])-0.1-x[1]
   c2 = x[1] - np.sin(x[0])
-  y = [f, [c1, c2]]
+  y = [[f], [c1, c2]]
   return y
 
 
@@ -52,14 +52,17 @@ def test_MADS_callable_quick_2d():
   outM: Dict = MADS.main(data)
   outP: Dict = POLL.main(data)
   outS: Dict = SEARCH.main(data)
+  OM = outM[0]["fmin"][0]
+  OP = outP[0]["fmin"][0]
+  OS = outS[0]["fmin"][0]
   if (outM[0]["fmin"][0] > 0.0006):
-    raise ValueError(f"MADS: fmin > {0.0006}")
+    raise ValueError(f"\nMADS: fmin: {OM} > {0.0006} \nPoll: fmin = {OP}\nSearch: fmin = {OS}")
   
   if (outP[0]["fmin"][0] > 0.0006):
-    raise ValueError(f"POLL: fmin > {0.0006}")
+    raise ValueError(f"\nPOLL: fmin: {OP} > {0.0006} \nMADS: fmin = {OM}\nSearch: fmin = {OS}")
   
   if (outS[0]["fmin"][0] > 0.0006):
-    raise ValueError(f"Search: fmin > {0.0006}")
+    raise ValueError(f"\nSearch: fmin {OS} > {0.0006} \nMADS: fmin = {OM}\nPoll: fmin = {OP}")
 
 def test_MADS_callable_quick_const_2d():
   d = 2
@@ -87,12 +90,10 @@ def test_MADS_callable_quick_const_2d():
   data = {"evaluator": eval, "param": param, "options": options, "sampling": sampling, "search": search}
 
   outM: Dict = MADS.main(data)
+  OM = outM[0]["fmin"][0] 
 
   if (outM[0]["fmin"][0] > 0.098):
-    raise ValueError(f"MADS: fmin > {0.098}")
-
-  
-
+    raise ValueError(f"MADS: fmin: {OM} > {0.098}")
 
 def test_MADS_callable_quick_10d():
   d = 10

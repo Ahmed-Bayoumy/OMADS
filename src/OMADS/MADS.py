@@ -35,11 +35,15 @@ import time
 from .Point import Point
 from .CandidatePoint import CandidatePoint
 from ._common import logger, MSG_TYPE, PostMADS, Output
-from ._globals import SUCCESS_TYPES
-from .Barriers import Barrier
+from ._globals import DESIGN_STATUS, SAMPLING_METHOD, SUCCESS_TYPES
+from .Barriers import Barrier, BarrierMO
 from .Parameters import Parameters
 from .Options import Options
-def search_step(iteration: int, search: SS.efficient_exploration = None, B: SS.Barrier = None, LAMBDA_k: float=None, RHO_k: float=None, search_VN: SS.VNS = None, post: PS.PostMADS=None, out: PS.Output=None, options: PS.Options=None, xmin: SS.CandidatePoint=None, peval: int=0, HT: Any=None, log:logger = None):
+
+from .Metrics import Metrics
+
+
+def search_step(iteration: int, search: SS.efficient_exploration = None, B: SS.auto = None, LAMBDA_k: float=None, RHO_k: float=None, search_VN: SS.VNS = None, post: PS.PostMADS=None, out: PS.Output=None, options: PS.Options=None, xmin: SS.CandidatePoint=None, peval: int=0, HT: Any=None, log:logger = None, outP: PS.Output=None):
   """ Reset success boolean """
   search.success = SUCCESS_TYPES.US
   tic = time.perf_counter()
@@ -51,32 +55,56 @@ def search_step(iteration: int, search: SS.efficient_exploration = None, B: SS.B
   if HT is not None:
     search.hashtable = HT
   if B is not None:
-    B.insert(search.xmin)
-    if B._filter is not None:
-      B.select_poll_center()
-      B.update_and_reset_success()
+    if isinstance(B, Barrier):
+      B.insert(search.xmin)
+      if B._filter is not None:
+        B.select_poll_center()
+        B.update_and_reset_success()
+    elif isinstance(B, BarrierMO) and iteration == 1:
+        B.init(evalPointList=[xmin])
       
   
-  search.hmax = B._h_max
+  # search.hmax = B._h_max
   
+  if isinstance(B, Barrier):
+    search.hmax = B._h_max
+    # TODO: Check whether the commented code below is needed
+    # if xmin.status == DESIGN_STATUS.FEASIBLE:
+    #   B.insert_feasible(search.xmin)
+    # elif xmin.status == DESIGN_STATUS.INFEASIBLE:
+    #   B.insert_infeasible(search.xmin)
+    # else:
+    #   B.insert(search.xmin)
+  elif isinstance(B, BarrierMO):
+    search.hmax = B._hMax
   """ Create the set of poll directions """
   if search.type == SS.SEARCH_TYPE.VNS.name and search_VN is not None:
     search_VN.active_barrier = B
     search.samples = search_VN.run()
     if search_VN.stop:
       print("Reached maximum number of VNS iterations!")
-      return search, B, post, out, search.LAMBDA, search.RHO, search.xmin, peval
+      return search, B, post, out, search.LAMBDA, search.RHO, search.xmin, peval, outP
     search.map_samples_from_coords_to_points(samples=search.samples)
   else:
-    if B._best_feasible is not None and B._best_feasible.evaluated:
+    vvp = vvs = []
+    bestFeasible: CandidatePoint = B._currentIncumbentFeas if isinstance(B, BarrierMO) else B._best_feasible
+    bestInf: CandidatePoint = B._currentIncumbentInf if isinstance(B, BarrierMO) else B.get_best_infeasible()
+    if bestFeasible is not None and bestFeasible.evaluated:
+      search.xmin = bestFeasible
       vvp, _ = search.generate_sample_points(int(((search.dim+1)/2)*((search.dim+2)/2)) if search.ns is None else search.ns)
-    if B._filter is not None and B.get_best_infeasible().evaluated:
+    if bestInf is not None and bestInf.evaluated:
+    # if B._filter is not None and B.get_best_infeasible().evaluated:
       xmin_bup = search.xmin
       Prim_samples = search.samples
-      search.xmin = B.get_best_infeasible()
-      search.generate_sample_points(int(((search.dim+1)/2)*((search.dim+2)/2)) if search.ns is None else search.ns)
+      search.xmin = bestInf#B.get_best_infeasible()
+      vvs, _ = search.generate_sample_points(int(((search.dim+1)/2)*((search.dim+2)/2)) if search.ns is None else search.ns)
       search.samples += Prim_samples
       search.xmin = xmin_bup
+    
+    if isinstance(vvs, list) and len(vvs) > 0:
+      vv = vvp + vvs
+    else:
+      vv = vvp
 
 
   """ Save current poll directions and incumbent solution
@@ -84,7 +112,8 @@ def search_step(iteration: int, search: SS.efficient_exploration = None, B: SS.B
   if options.save_coordinates:
     post.coords.append(search.samples)
     post.x_incumbent.append(search.xmin)
-
+  """ Reset success boolean """
+  search.success = SUCCESS_TYPES.US
   """ Reset the BB output """
   search.bb_output = []
   xt = []
@@ -98,10 +127,12 @@ def search_step(iteration: int, search: SS.efficient_exploration = None, B: SS.B
       if search.terminate:
         break
       f = search.evaluate_sample_point(it)
-      xt.append(f[-1])
+      if f[-1].status != DESIGN_STATUS.UNEVALUATED:
+        xt.append(f[-1])
+        xt[-1].mesh = copy.deepcopy(search.mesh)
       if not f[0]:
-        peval = peval +1
-        post.bb_eval.append(peval)
+        post.bb_eval.append(search.bb_handle.bb_eval)
+        peval += 1
         post.step_name.append(f'Search: {search.type}')
         post.iter.append(iteration)
         post.psize.append(search.mesh.getdeltaMeshSize().coordinates)
@@ -117,41 +148,90 @@ def search_step(iteration: int, search: SS.efficient_exploration = None, B: SS.B
       for f in SS.concurrent.futures.as_completed(results):
         if options.save_results or options.display:
           peval = peval +1
-          search.bb_eval = peval
-          post.bb_eval.append(peval)
-          post.step_name.append(f'Search: {search.type}')
-          post.iter.append(iteration)
-          post.psize.append(f.result()[4])
-        xt.append(f.result()[-1])
+          if not f.result()[0]:
+            search.bb_eval = peval
+            post.bb_eval.append(peval)
+            post.step_name.append(f'Search: {search.type}')
+            post.iter.append(iteration)
+          # post.poll_dirs.append(poll.poll_dirs[f.result()[1]])
+            post.psize.append(f.result()[4])
+        if f.result()[-1].status != DESIGN_STATUS.UNEVALUATED:
+          xt.append(f.result()[-1])
+          xt[-1].mesh = copy.deepcopy(search.mesh)
 
-  xpost: List[SS.CandidatePoint] = search.master_updates(xt, peval, save_all_best=options.save_all_best, save_all=options.save_results)
-  if options.save_results:
+  
+    
+  if isinstance(B, Barrier):
+    xpost: List[CandidatePoint] = search.master_updates(xt, peval, save_all_best=options.save_all_best, save_all=options.save_results)
+    if options.save_results:
+      for i in range(len(xpost)):
+        post.poll_dirs.append(xpost[i])
+    for xv in xt:
+      if xv.evaluated:
+        B.insert(xv)
+
+    """ Update the xmin in post"""
+    post.xmin = copy.deepcopy(search.xmin)
+
+
+    if iteration == 1:
+      search.vicinity_ratio = np.ones((len(search.xmin.coordinates),1))
+    
+    """ Updates """
+    
+    if search.success == SUCCESS_TYPES.FS:
+      dir: Point = Point(search.mesh._n)
+      dir.coordinates = search.xmin.direction.coordinates
+      # search.mesh.psize = np.multiply(search.mesh.get, 2, dtype=search.dtype.dtype)
+      search.mesh.enlargeDeltaFrameSize(direction=dir)
+      if search.sampling_t != SAMPLING_METHOD.ACTIVE.name:
+        search.update_local_region(region="expand")
+    elif search.success == SUCCESS_TYPES.US:
+      # search.mesh.psize = np.divide(search.mesh.psize, 2, dtype=search.dtype.dtype)
+      search.mesh.refineDeltaFrameSize()
+      if search.sampling_t != SAMPLING_METHOD.ACTIVE.name:
+        search.update_local_region(region="contract")
+  elif isinstance(B, BarrierMO):
+    xpost: List[CandidatePoint] = []
+    for i in range(len(xt)):
+      xpost.append(xt[i])
+    updated, updatedF, updatedInf = B.updateWithPoints(evalPointList=xpost, evalType=None, keepAllPoints=False, updateInfeasibleIncumbentAndHmax=True)
+    if not updated:
+      newMesh = None
+      if B._currentIncumbentInf:
+        B._currentIncumbentInf.mesh.refineDeltaFrameSize()
+        newMesh = copy.deepcopy(B._currentIncumbentFeas.mesh) if B._currentIncumbentFeas else copy.deepcopy(B._currentIncumbentInf.mesh) if B._currentIncumbentInf else None
+        B.updateCurrentIncumbents()
+        if search.sampling_t != SAMPLING_METHOD.ACTIVE.name:
+          search.update_local_region(region="contract")
+      if B._currentIncumbentFeas:
+        B._currentIncumbentFeas.mesh.refineDeltaFrameSize()
+        newMesh = copy.deepcopy(B._currentIncumbentFeas.mesh) if B._currentIncumbentFeas else copy.deepcopy(B._currentIncumbentInf.mesh) if B._currentIncumbentInf else None
+        B.updateCurrentIncumbents()
+        if search.sampling_t != SAMPLING_METHOD.ACTIVE.name:
+          search.update_local_region(region="contract")
+      
+      if iteration == 1:
+        search.vicinity_ratio = np.ones((len(search.xmin.coordinates),1))
+      if newMesh:
+        search.mesh = newMesh
+      else:
+        search.mesh.refineDeltaFrameSize()
+        if search.sampling_t != SAMPLING_METHOD.ACTIVE.name:
+          search.update_local_region(region="contract")
+    else:
+      search.mesh = copy.deepcopy(B._currentIncumbentFeas.mesh) if updatedF else copy.deepcopy(B._currentIncumbentInf.mesh) if updatedInf else search.mesh
+      search.xmin = copy.deepcopy(B._currentIncumbentFeas) if updatedF else copy.deepcopy(B._currentIncumbentInf) if updatedInf else search.xmin
+      if search.sampling_t != SAMPLING_METHOD.ACTIVE.name:
+        search.update_local_region(region="expand")
+    
     for i in range(len(xpost)):
       post.poll_dirs.append(xpost[i])
-  xv: SS.CandidatePoint = None
-  for xv in xt:
-    if xv.evaluated:
-      B.insert(xv)
-
-  """ Update the xmin in post"""
-  post.xmin = copy.deepcopy(search.xmin)
-
-  if iteration == 1:
-    search.vicinity_ratio = np.ones((len(search.xmin.coordinates),1))
-
-  """ Updates """
-  if search.success == SUCCESS_TYPES.FS:
-    # search.mesh.psize = search.mesh.msize = np.multiply(search.mesh.msize, 2, dtype=search.dtype.dtype)
-    dir: Point = Point(search.mesh._n)
-    dir.coordinates = search.xmin.direction.coordinates
-    search.mesh.enlargeDeltaFrameSize(direction=dir)
-    if search.sampling_t != "ACTIVE":
-      search.update_local_region(region="expand")
-  elif search.success == SUCCESS_TYPES.US:
-    # search.mesh.psize = search.mesh.msize = np.divide(search.mesh.msize, 2, dtype=search.dtype.dtype)
-    search.mesh.refineDeltaFrameSize()
-    if search.sampling_t != "ACTIVE":
-      search.update_local_region(region="contract")
+    search.hashtable.best_hash_ID = []
+    search.hashtable.add_to_best_cache(B.getAllPoints())
+    post.xmin = B._currentIncumbentFeas if updatedF  else B._currentIncumbentInf if  updatedInf else search.xmin
+    
+  search.mesh.update()
   
   
   if options.display:
@@ -175,9 +255,9 @@ def search_step(iteration: int, search: SS.efficient_exploration = None, B: SS.B
   # if (Failure_check) or (abs(search.mesh.msize) < options.tol or search.bb_eval >= options.budget or search.terminate):
   #   break
   # iteration += 1
-  return search, B, post, out, search.LAMBDA, search.RHO, search.xmin, peval
+  return search, B, post, out, search.LAMBDA, search.RHO, search.xmin, peval, outP
 
-def poll_step(iteration: int, poll: PS.Dirs2n = None, B: SS.Barrier = None, LAMBDA_k: float=None, RHO_k: float=None, param: PS.Parameters=None, post: PS.PostMADS=None, xmin: PS.CandidatePoint=None, out: PS.Output=None, options: PS.Options=None, peval: int = 0, HT: Any = None, log:logger = None):
+def poll_step(iteration: int, poll: PS.Dirs2n = None, B: SS.auto = None, LAMBDA_k: float=None, RHO_k: float=None, param: PS.Parameters=None, post: PS.PostMADS=None, xmin: PS.CandidatePoint=None, out: PS.Output=None, options: PS.Options=None, peval: int = 0, HT: Any = None, log:logger = None, outP: PS.Output=None):
   tic = time.perf_counter()
   poll.xmin = xmin
   poll.mesh.update()
@@ -186,24 +266,55 @@ def poll_step(iteration: int, poll: PS.Dirs2n = None, B: SS.Barrier = None, LAMB
   poll.lb = param.lb
   poll.ub = param.ub
   poll.xmin = copy.deepcopy(xmin)
+  xmin.mesh = copy.deepcopy(poll.mesh)
   if HT is not None:
     poll.hashtable = HT
-  B.insert(xmin)
   if B is not None:
-    if B._filter is not None:
-      B.select_poll_center()
-      B.update_and_reset_success()
+    if isinstance(B, Barrier):
+      B.insert(xmin)
+      if B._filter is not None:
+        B.select_poll_center()
+        B.update_and_reset_success()
+        
+    elif isinstance(B, BarrierMO) and iteration == 1:
+      B.init(evalPointList=[xmin])
       
-  poll.hmax = B._h_max
-  poll.create_poll_set(hhm=hhm,
+  if isinstance(B, Barrier):
+      poll.hmax = xmin.hmax
+      poll.create_poll_set(hhm=hhm,
+                ub=param.ub,
+                lb=param.lb, it=iteration, var_type=xmin.var_type, var_sets=xmin.sets, var_link = xmin.var_link, c_types=param.constraints_type, is_prim=True)
+      if B._sec_poll_center is not None and B._sec_poll_center.evaluated:
+        del poll.poll_set
+        # poll.poll_dirs = []
+        poll.x_sc = B._sec_poll_center
+        poll.create_poll_set(hhm=hhm,
+                ub=param.ub,
+                lb=param.lb, it=iteration, var_type=B._sec_poll_center.var_type, var_sets=B._sec_poll_center.sets, var_link = B._sec_poll_center.var_link, c_types=param.constraints_type, is_prim=False)
+  elif isinstance(B, BarrierMO):
+    poll.hmax = B._hMax
+    del poll.poll_set
+    del poll.poll_dirs
+    if B._currentIncumbentFeas and B._currentIncumbentFeas.evaluated:
+      poll.create_poll_set(hhm=hhm,
               ub=param.ub,
-              lb=param.lb, it=iteration, var_type=xmin.var_type, var_sets=xmin.sets, var_link = xmin.var_link, c_types=param.constraints_type, is_prim=True)
-  
-  if B._sec_poll_center is not None and B._sec_poll_center.evaluated:
-    poll.x_sc = B._sec_poll_center
-    poll.create_poll_set(hhm=hhm,
+              lb=param.lb, it=iteration, var_type=B._currentIncumbentFeas.var_type, var_sets=B._currentIncumbentFeas.sets, var_link = B._currentIncumbentFeas.var_link, c_types=param.constraints_type, is_prim=True)
+    elif poll.xmin.status == DESIGN_STATUS.FEASIBLE:
+      poll.create_poll_set(hhm=hhm,
               ub=param.ub,
-              lb=param.lb, it=iteration, var_type=B._sec_poll_center.var_type, var_sets=B._sec_poll_center.sets, var_link = B._sec_poll_center.var_link, c_types=param.constraints_type, is_prim=False)
+              lb=param.lb, it=iteration, var_type=poll.xmin.var_type, var_sets=poll.xmin.sets, var_link = poll.xmin.var_link, c_types=param.constraints_type, is_prim=True)
+    
+    if B._currentIncumbentInf and B._currentIncumbentInf.evaluated:
+      # del poll.poll_set
+      poll.x_sc = B._currentIncumbentInf
+      poll.create_poll_set(hhm=hhm,
+              ub=param.ub,
+              lb=param.lb, it=iteration, var_type=B._currentIncumbentInf.var_type, var_sets=B._currentIncumbentInf.sets, var_link = B._currentIncumbentInf.var_link, c_types=param.constraints_type, is_prim=False)
+    elif poll.xmin.status == DESIGN_STATUS.INFEASIBLE:
+      poll.create_poll_set(hhm=hhm,
+              ub=param.ub,
+              lb=param.lb, it=iteration, var_type=poll.xmin.var_type, var_sets=poll.xmin.sets, var_link = poll.xmin.var_link, c_types=param.constraints_type, is_prim=False)
+    
   
   poll.LAMBDA = LAMBDA_k
   poll.RHO = RHO_k
@@ -221,14 +332,15 @@ def poll_step(iteration: int, poll: PS.Dirs2n = None, B: SS.Barrier = None, LAMB
   """ Serial evaluation for points in the poll set """
   if not options.parallel_mode:
     for it in range(len(poll.poll_set)):
+      peval += 1
       if poll.terminate:
         break
       f = poll.eval_poll_point(it)
-      xt.append(f[-1])
+      if f[-1].status != DESIGN_STATUS.UNEVALUATED:
+        xt.append(f[-1])
       if not f[0]:
-        peval += 1
-        post.bb_eval.append(peval)
-        post.step_name.append(f'Poll-2n')
+        post.step_name.append(f'Poll Step')
+        post.bb_eval.append(poll.bb_handle.bb_eval)
         post.iter.append(iteration)
         post.psize.append(poll.mesh.getDeltaFrameSize().coordinates)
       else:
@@ -246,46 +358,79 @@ def poll_step(iteration: int, poll: PS.Dirs2n = None, B: SS.Barrier = None, LAMB
         # else:
         if options.save_results or options.display:
           peval = peval +1
-          poll.bb_eval = peval
-          post.bb_eval.append(peval)
-          post.step_name.append(f'Poll-2n')
-          post.iter.append(iteration)
-          # post.poll_dirs.append(poll.poll_dirs[f.result()[1]])
-          post.psize.append(f.result()[4])
-        xt.append(f.result()[-1])
+          if not f.result()[0]:
+            poll.bb_eval = peval
+            post.bb_eval.append(peval)
+            post.iter.append(iteration)
+            post.step_name.append(f'Poll Step')
+            # post.poll_dirs.append(poll.poll_dirs[f.result()[1]])
+            post.psize.append(f.result()[4])
+        if f.result()[-1].status != DESIGN_STATUS.UNEVALUATED:
+          xt.append(f.result()[-1])
 
-  xpost: List[PS.CandidatePoint] = poll.master_updates(xt, peval, save_all_best=options.save_all_best, save_all=options.save_results)
-  if options.save_results:
+  if isinstance(B, Barrier):
+      xpost: List[CandidatePoint] = poll.master_updates(xt, peval, save_all_best=options.save_all_best, save_all=options.save_results)
+      xmin = copy.deepcopy(poll.xmin)
+      if options.save_results:
+        for i in range(len(xpost)):
+          post.poll_dirs.append(xpost[i])
+      for xv in xt:
+        if xv.evaluated:
+          B.insert(xv)
+
+      """ Update the xmin in post"""
+      post.xmin = copy.deepcopy(poll.xmin)
+
+      """ Updates """
+      pev = 0.
+      for p in poll.poll_set:
+        if p.evaluated:
+          pev += 1
+      # if pev != poll.poll_dirs and not poll.success:
+      #   poll.seed += 1
+      goToSearch: bool = (pev == 0 and poll.Failure_stop is not None and poll.Failure_stop)
+      
+      dir: Point = Point(poll._n)
+      dir.coordinates = poll.xmin.direction.coordinates if poll.xmin.direction is not None else [0]*poll._n
+      if poll.success == SUCCESS_TYPES.FS and not goToSearch:
+        poll.mesh.enlargeDeltaFrameSize(direction=dir) # poll.mesh.psize =  np.multiply(poll.mesh.psize, 2, dtype=poll.dtype.dtype
+      elif poll.success == SUCCESS_TYPES.US:
+        poll.mesh.refineDeltaFrameSize()
+        # poll.mesh.psize = np.divide(poll.mesh.psize, 2, dtype=poll.dtype.dtype)
+      
+  elif isinstance(B, BarrierMO):
+    xpost: List[CandidatePoint] = []
+    for i in range(len(xt)):
+      xpost.append(xt[i])
+    updated, _, _ = B.updateWithPoints(evalPointList=xpost, evalType=None, keepAllPoints=False, updateInfeasibleIncumbentAndHmax=True)
+    if not updated:
+      newMesh = None
+      if B._currentIncumbentInf:
+        B._currentIncumbentInf.mesh.refineDeltaFrameSize()
+        newMesh = copy.deepcopy(B._currentIncumbentFeas.mesh) if B._currentIncumbentFeas else copy.deepcopy(B._currentIncumbentInf.mesh) if B._currentIncumbentInf else None
+        B.updateCurrentIncumbents()
+      if B._currentIncumbentFeas:
+        B._currentIncumbentFeas.mesh.refineDeltaFrameSize()
+        newMesh = copy.deepcopy(B._currentIncumbentFeas.mesh) if B._currentIncumbentFeas else copy.deepcopy(B._currentIncumbentInf.mesh) if B._currentIncumbentInf else None
+        B.updateCurrentIncumbents()
+
+      
+      if newMesh:
+        poll.mesh = newMesh
+      else:
+        poll.mesh.refineDeltaFrameSize()
+        
+    else:
+      poll.mesh = copy.deepcopy(B._currentIncumbentFeas.mesh) if B._currentIncumbentFeas else copy.deepcopy(B._currentIncumbentInf.mesh) if B._currentIncumbentInf else poll.mesh
+      poll.xmin = copy.deepcopy(B._currentIncumbentFeas) if B._currentIncumbentFeas else copy.deepcopy(B._currentIncumbentInf) if B._currentIncumbentInf else poll.xmin
     for i in range(len(xpost)):
       post.poll_dirs.append(xpost[i])
-  for xv in xt:
-    if xv.evaluated:
-      B.insert(xv)
-
-  """ Update the xmin in post"""
-  post.xmin = copy.deepcopy(poll.xmin)
-
-  """ Updates """
-  pev = 0.
-  for p in poll.poll_set:
-    if p.evaluated:
-      pev += 1
-  # if pev != poll.poll_dirs and not poll.success:
-  #   poll.seed += 1
-  goToSearch: bool = (pev == 0 and poll.Failure_stop is not None and poll.Failure_stop)
-  if poll.success == SUCCESS_TYPES.FS and not goToSearch:
-    # poll.mesh.psize = np.multiply(poll.mesh.psize, 2, dtype=poll.dtype.dtype)
-    dir: Point = Point(poll.mesh._n)
-    dir.coordinates = poll.xmin.direction
-    poll.mesh.enlargeDeltaFrameSize(direction=dir)
-  elif poll.success == SUCCESS_TYPES.US:
-    # poll.mesh.psize = np.divide(poll.mesh.psize, 2, dtype=poll.dtype.dtype)
-    poll.mesh.refineDeltaFrameSize()
-  
-  
-  if options.display:
-    if log is not None:
+    
+    post.xmin = B._currentIncumbentFeas if B._currentIncumbentFeas  else B._currentIncumbentInf if  B._currentIncumbentInf else poll.xmin
+  poll.mesh.update()
+  if log is not None:
       log.log_msg(msg=post.__str__(), msg_type=MSG_TYPE.INFO)
+  if options.display:
     print(post)
   
   LAMBDA_k = poll.LAMBDA
@@ -309,7 +454,7 @@ def poll_step(iteration: int, poll: PS.Dirs2n = None, B: SS.Barrier = None, LAMB
     # log.log_msg(msg=f" psize_success = {poll.mesh.psize_success} ", msg_type=MSG_TYPE.INFO)
     # log.log_msg(msg=f" psize_max = {poll.mesh.psize_max} ", msg_type=MSG_TYPE.INFO)
   
-  return poll, B, post, out, poll.xmin.LAMBDA, poll.xmin.RHO, poll.xmin, peval
+  return poll, B, post, out, poll.xmin.LAMBDA, poll.xmin.RHO, poll.xmin, peval, outP
 
 def main(*args) -> Dict[str, Any]:
   """ Otho-MADS main algorithm """
@@ -356,7 +501,7 @@ def main(*args) -> Dict[str, Any]:
   poll: PS.Dirs2n
   search: SS.efficient_exploration
   log.log_msg(msg="Preprocess the search step...", msg_type=PS.MSG_TYPE.INFO)
-  _, _, search, _, _, _, _, _ = SS.PreExploration(data).initialize_from_dict(log=log)
+  _, _, search, _, _, _, _, _, _ = SS.PreExploration(data).initialize_from_dict(log=log)
   log.log_msg(msg="Preprocess the MADS algorithim...", msg_type=PS.MSG_TYPE.INFO)
   iteration, xmin, poll, options, param, post, out, B, outP = PS.PrePoll(data).initialize_from_dict(log=log, xs=search.xmin)
   out.stepName = "Poll"
@@ -400,11 +545,11 @@ def main(*args) -> Dict[str, Any]:
     if canSearch and (poll.success == SUCCESS_TYPES.US or iteration == 1):
       log.log_msg(f"------- Iteration # {iteration}: Run the search step -------", MSG_TYPE.INFO)
       search.iter = iteration
-      search, B, post, out, LAMBDA_k, RHO_k, xmin, peval = search_step(search=search, B=B, LAMBDA_k=LAMBDA_k, RHO_k=RHO_k, iteration=iteration , search_VN=search_VN, post=post, out=out, options=options, xmin=xmin, peval=peval, HT=HT, log=log)
+      search, B, post, out, LAMBDA_k, RHO_k, xmin, peval, outP = search_step(search=search, B=B, LAMBDA_k=LAMBDA_k, RHO_k=RHO_k, iteration=iteration , search_VN=search_VN, post=post, out=out, options=options, xmin=xmin, peval=peval, HT=HT, log=log, outP=outP)
       HT = search.hashtable
     """ Run the poll step (Mandatory step) """
     log.log_msg(f"------- Iteration # {iteration}: Run the poll step -------", MSG_TYPE.INFO)
-    poll, B, post, out, LAMBDA_k, RHO_k, xmin, peval = poll_step(iteration=iteration, poll=poll, B=B, LAMBDA_k=LAMBDA_k, RHO_k=RHO_k, param=param, post=post, xmin=xmin, out=out, options=options, peval=peval, HT=HT, log=log)
+    poll, B, post, out, LAMBDA_k, RHO_k, xmin, peval, outP = poll_step(iteration=iteration, poll=poll, B=B, LAMBDA_k=LAMBDA_k, RHO_k=RHO_k, param=param, post=post, xmin=xmin, out=out, options=options, peval=peval, HT=HT, log=log, outP=outP)
     HT = poll.hashtable
     xmin = poll.xmin
     search.mesh = copy.deepcopy(poll.mesh)
@@ -412,6 +557,13 @@ def main(*args) -> Dict[str, Any]:
     """ Check stopping criteria"""
     pt = (all(abs(poll.mesh.getDeltaFrameSize().coordinates[pp]) < options.tol for pp in range(poll._n)))
     st = (all(abs(search.mesh.getdeltaMeshSize().coordinates[pp]) < options.tol  for pp in range(search.mesh._n)))
+    if options.save_results:
+      post.output_results(out)
+      if param.isPareto:
+        post.nd_points = []
+        for i in range(len(B.getAllPoints())):
+          post.nd_points.append(B.getAllPoints()[i])
+        post.output_nd_results(outP)
     if (pt or st or search.bb_eval + poll.bb_eval >= options.budget):
       log.log_msg(f"\n--------------- Termination of MADS  ---------------", MSG_TYPE.INFO)
       if pt:
@@ -426,6 +578,9 @@ def main(*args) -> Dict[str, Any]:
     
 
   toc = PS.time.perf_counter()
+  if isinstance(B, BarrierMO):
+    perfM = Metrics(ND_solutions=B.getAllPoints(), nobj=B._nobj)
+    HV = perfM.hypervolume()
 
   """ If benchmarking, then populate the results in the benchmarking output report """
   if len(args) > 1 and isinstance(args[1], PS.toy.Run):
@@ -451,8 +606,8 @@ def main(*args) -> Dict[str, Any]:
   elif len(args) > 1 and not isinstance(args[1], toy.Run):
     raise IOError("Could not find " + args[1] + " in the internal BM suite.")
 
-  if options.save_results:
-    post.output_results(out)
+  # if options.save_results:
+  #   post.output_results(out)
   
   out_step: Any = None
   if poll.xmin < search.xmin:
@@ -488,8 +643,10 @@ def main(*args) -> Dict[str, Any]:
     log.log_msg(msg=f" Total # BB evals =  {poll.bb_eval + search.bb_eval} ", msg_type=MSG_TYPE.INFO)
     log.log_msg(msg=f" #iterations =  {iteration} ", msg_type=MSG_TYPE.INFO)
     log.log_msg(msg=f" psize = {poll.mesh.getDeltaFrameSize().coordinates} ", msg_type=MSG_TYPE.INFO)
-    log.log_msg(msg=f" psize_success = {poll.mesh.psize_success} ", msg_type=MSG_TYPE.INFO)
-    log.log_msg(msg=f" psize_max = {poll.mesh.psize_max} ", msg_type=MSG_TYPE.INFO)
+    log.log_msg(msg=f" psize_success = {poll.xmin.mesh.getDeltaFrameSize().coordinates}", msg_type=MSG_TYPE.INFO)
+    if isinstance(B, BarrierMO):
+      log.log_msg(msg=f" Hypervolume metric = {HV}", msg_type=MSG_TYPE.INFO)
+    # log.log_msg(msg=f" psize_max = {poll.mesh.psize_max} ", msg_type=MSG_TYPE.INFO)
   if options.display:
     print("\n ---MADS Run Summary---")
     print(f" Run completed in {toc - tic:.4f} seconds")
@@ -501,8 +658,8 @@ def main(*args) -> Dict[str, Any]:
     print(" #iteration = " + str(iteration))
     print(" nb_success = " + str(poll.nb_success + search.nb_success))
     print(" psize = " + str(poll.mesh.getDeltaFrameSize().coordinates))
-    print(" psize_success = " + str(poll.mesh.psize_success))
-    print(" psize_max = " + str(poll.mesh.psize_max))
+    print(" psize_success = " + str(poll.xmin.mesh.getDeltaFrameSize().coordinates))
+    # print(" psize_max = " + str(poll.mesh.psize_max))
     
   xmin = out_step.xmin
   """ Evaluation of the blackbox; get output responses """
@@ -522,8 +679,8 @@ def main(*args) -> Dict[str, Any]:
                 "niterations" : iteration,
                 "nb_success": poll.nb_success + search.nb_success,
                 "psize": poll.mesh.getDeltaFrameSize().coordinates,
-                "psuccess": poll.mesh.psize_success,
-                "pmax": poll.mesh.psize_max,
+                "psuccess": poll.xmin.mesh.getDeltaFrameSize().coordinates,
+                # "pmax": poll.mesh.psize_max,
                 "msize": out_step.mesh.getdeltaMeshSize().coordinates}
 
   return output, out_step

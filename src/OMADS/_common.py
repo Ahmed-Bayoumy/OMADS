@@ -22,6 +22,7 @@
 #  Copyright (C) 2022  Ahmed H. Bayoumy                                               #
 # ------------------------------------------------------------------------------------#
 
+import copy
 from dataclasses import dataclass, field
 import logging
 import operator
@@ -153,6 +154,7 @@ class Output:
   runfolder: str = "undefined"
   replace: bool = True
   stepName: str = "Poll"
+  suffix: str = "all"
 
   def __post_init__(self):
     if not os.path.exists(self.file_path):
@@ -167,9 +169,31 @@ class Output:
     if not os.path.exists(sp):
       os.makedirs(sp)
     if self.replace:
-      with open(os.path.abspath( sp + f'/{self.pname}.csv'), 'w', newline='') as f:
+      with open(os.path.abspath( sp + f'/{self.pname}_{self.suffix}.out'), 'w', newline='') as f:
         self.file_writer = csv.DictWriter(f, fieldnames=self.field_names)
         self.file_writer.writeheader()
+
+  def clear_csv_content(self):
+    header_line = None
+    rows = []
+
+    # Read the header and rows
+    sp = os.path.join(self.file_path, self.runfolder)
+    if not os.path.exists(sp):
+      os.makedirs(sp)
+    with open(os.path.abspath( sp + f'/{self.pname}_{self.suffix}.out'), 'r', newline='') as csvfile:
+      reader = csv.reader(csvfile)
+      header_line = next(reader)  # Read the header line
+      for row in reader:
+        rows.append(row)
+
+    # Truncate the file to remove existing content
+    with open(os.path.abspath( sp + f'/{self.pname}_{self.suffix}.out'), 'w', newline='') as csvfile:
+      writer = csv.writer(csvfile)
+      writer.writerow(header_line)  # Write back the header line
+    
+    csvfile.close()
+    
 
   def add_row(self, eval_time: int, iterno: int,
         evalno: int,
@@ -192,7 +216,7 @@ class Output:
     for k in range(13+len(fnames), len(self.field_names)):
       row[self.field_names[k]] = f'{f"{x[ss]}".rjust(25)}'
       ss += 1
-    with open(os.path.abspath(os.path.join(os.path.join(self.file_path, self.runfolder), f'{self.pname}.csv')),
+    with open(os.path.abspath(os.path.join(os.path.join(self.file_path, self.runfolder), f'{self.pname}_{self.suffix}.out')),
           'a', newline='') as File:
       self.file_writer = csv.DictWriter(File, fieldnames=self.field_names)
       self.file_writer.writerow(row)
@@ -210,14 +234,16 @@ class PostMADS:
   psize: List[float] = field(default_factory=list)
   step_name: List[str] = None
   nd_points: List[CandidatePoint] = field(default_factory=list)
-  def output_results(self, out: Output):
+  counter: int = 0
+  def output_results(self, out: Output, allRes: bool = True):
     """ Create a results file from the saved cache"""
-    counter = 0
-    for p in self.poll_dirs:
-      if p.evaluated and counter < len(self.iter):
+    if allRes:
+      self.counter = 0
+    for p in self.poll_dirs[self.counter:]:
+      if p.evaluated and self.counter < len(self.iter):
         out.add_row(eval_time= p.Eval_time,
-              iterno=self.iter[counter],
-              evalno=self.bb_eval[counter], poll_size=self.psize[counter],
+              iterno=self.iter[self.counter],
+              evalno=self.bb_eval[self.counter], poll_size=self.psize[self.counter],
               source=p.source,
               Mname=p.Model,
               f=p.f,
@@ -227,12 +253,13 @@ class PostMADS:
               rho=p.RHO,
               L=p.LAMBDA,
               x=p.coordinates,
-              hmax=p.hmax, stepName="Poll-2n" if self.step_name is None else self.step_name[counter], fnames=out.fnames)
-        counter += 1
+              hmax=p.hmax, stepName="Poll-2n" if self.step_name is None else self.step_name[self.counter], fnames=out.fnames)
+        self.counter += 1
   
   def output_nd_results(self, out: Output):
     """ Create a results file from the saved cache"""
     counter = 0
+    out.clear_csv_content()
     for p in self.nd_points:
       if p.evaluated and counter < len(self.iter):
         out.add_row(eval_time= p.Eval_time,
@@ -533,6 +560,8 @@ class Cache:
   _best_hash_ID: List[int] = field(default_factory=list)
   _cache_dict: Dict[Any, Any] = field(default_factory=lambda: {})
   _n_dim: int = 0
+  _isPareto: bool = False
+  ND_points: List[CandidatePoint] = None
 
   @property
   def cache_dict(self)->Dict:
@@ -620,40 +649,56 @@ class Cache:
     
   
   def add_to_best_cache(self, x: CandidatePoint):
-    if not isinstance(x, list):
-      if len(self._cache_dict) > 1:
-        is_infeas_dom: bool = (x.status == DESIGN_STATUS.INFEASIBLE and (x.h < self._cache_dict[self._best_hash_ID[0]].h) )
-        is_feas_dom: bool = (x.status == DESIGN_STATUS.FEASIBLE and x.fobj < self._cache_dict[self._best_hash_ID[0]].fobj)
-      else:
-        is_infeas_dom: bool = False
-        is_feas_dom: bool = False
-      if len(self._cache_dict) == 1 or is_infeas_dom or is_feas_dom:
-        self._n_dim = len(x.coordinates)
-        self._best_hash_ID.append(self._hash_ID[-1])
-    else:
-      for i in range(len(x)):
-        is_infeas_dom: bool = (x[i].status == DESIGN_STATUS.INFEASIBLE and (x[i].h < self._cache_dict[self._best_hash_ID[0]].h) )
-        is_feas_dom: bool = (x[i].status == DESIGN_STATUS.FEASIBLE and x[i].fobj < self._cache_dict[self._best_hash_ID[0]].fobj)
+    if not self._isPareto:
+      if not isinstance(x, list):
+        if len(self._cache_dict) > 1:
+          is_infeas_dom: bool = (x.status == DESIGN_STATUS.INFEASIBLE and (x.h < self._cache_dict[self._best_hash_ID[0]].h) )
+          is_feas_dom: bool = (x.status == DESIGN_STATUS.FEASIBLE and x.fobj < self._cache_dict[self._best_hash_ID[0]].fobj)
+        else:
+          is_infeas_dom: bool = False
+          is_feas_dom: bool = False
         if len(self._cache_dict) == 1 or is_infeas_dom or is_feas_dom:
-          self._n_dim = len(x[i].coordinates)
+          self._n_dim = len(x.coordinates)
           self._best_hash_ID.append(self._hash_ID[-1])
+      else:
+        for i in range(len(x)):
+          is_infeas_dom: bool = (x[i].status == DESIGN_STATUS.INFEASIBLE and (x[i].h < self._cache_dict[self._best_hash_ID[0]].h) )
+          is_feas_dom: bool = (x[i].status == DESIGN_STATUS.FEASIBLE and x[i].fobj < self._cache_dict[self._best_hash_ID[0]].fobj)
+          if len(self._cache_dict) == 1 or is_infeas_dom or is_feas_dom:
+            self._n_dim = len(x[i].coordinates)
+            self._best_hash_ID.append(self._hash_ID[-1])
+    else:
+      self.ND_points = copy.deepcopy(x)
+      self._best_hash_ID = []
+      for i in range(len(self.ND_points)):
+        self._best_hash_ID.append(self.ND_points[i].signature)
   
   def get_best_cache_points(self, nsamples):
     """ Get best points """
     temp = np.zeros((nsamples, self._n_dim))
     index = 0
-    # for i in range(len(self._best_hash_ID)-1, len(self._best_hash_ID) - nsamples, -1):
-    #   temp[index, :] = self._cache_dict[self._best_hash_ID[i]].coordinates
-    #   index += 1
+    if not self._isPareto:
+     
+      # for i in range(len(self._best_hash_ID)-1, len(self._best_hash_ID) - nsamples, -1):
+      #   temp[index, :] = self._cache_dict[self._best_hash_ID[i]].coordinates
+      #   index += 1
 
-    cache_temp = dict(sorted(self._cache_dict.items(), key=operator.itemgetter(1)))
+      cache_temp = dict(sorted(self._cache_dict.items(), key=operator.itemgetter(1)))
 
-    for k in cache_temp:
-      if index < len(temp):
-        temp[index, :] = cache_temp[k].coordinates
-        index += 1
-      else:
-        break
+      for k in cache_temp:
+        if index < len(temp):
+          temp[index, :] = cache_temp[k].coordinates
+          index += 1
+        else:
+          break
+    else:
+      for k in self.ND_points:
+        if index < len(temp):
+          temp[index, :] = k.coordinates
+          index += 1
+        else:
+          break
+    
     return temp
   
   def get_cache_points(self):

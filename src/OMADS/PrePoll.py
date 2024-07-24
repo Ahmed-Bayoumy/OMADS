@@ -163,9 +163,16 @@ class PrePoll:
     x_start.hmax = B._h_max if isinstance(B, Barrier) else B._hMax
     x_start.RHO = param.RHO
     
+    if param.LAMBDA is None:
+      param.LAMBDA = [0] * len(x_start.c_ineq)
+    if not isinstance(param.LAMBDA, list):
+      param.LAMBDA = [param.LAMBDA]
+    if len(x_start.c_ineq) > len(param.LAMBDA):
+      param.LAMBDA += [param.LAMBDA[-1]] * abs(len(param.LAMBDA)-len(x_start.c_ineq))
+    if len(x_start.c_ineq) < len(param.LAMBDA):
+      del param.LAMBDA[len(x_start.c_ineq):]
     x_start.LAMBDA = param.LAMBDA
     
-    x_start.LAMBDA = param.LAMBDA
     if not is_xs:
       x_start.__eval__(poll.bb_output)
       if isinstance(B, Barrier):
@@ -185,6 +192,10 @@ class PrePoll:
     poll.dim = x_start.n_dimensions
     if not extend:
       poll.hashtable = Cache()
+      poll.hashtable._n_dim = len(param.baseline)
+      poll.hashtable._isPareto = param.isPareto
+      if param.isPareto:
+        poll.hashtable.ND_points = []
     """ 10- Initialize the number of successful points
      found and check if the starting minimizer performs better
     than the worst (f = inf) """
@@ -226,9 +237,9 @@ class PrePoll:
     if options.store_cache:
       poll.hashtable.hash_id = x_start
     """ 13- Initialize the output results file object  """
-    out = Output(file_path=param.post_dir, vnames=param.var_names, fnames=param.fun_names, pname=param.name, runfolder=f'{param.name}_run')
+    out = Output(file_path=param.post_dir, vnames=param.var_names, fnames=param.fun_names, pname=param.name, runfolder=f'{param.name}_run', suffix="all")
     if param.isPareto:
-      outP = Output(file_path=param.post_dir, vnames=param.var_names, fnames=param.fun_names, pname=param.name, runfolder=f'{param.name}_ND')
+      outP = Output(file_path=param.post_dir, vnames=param.var_names, fnames=param.fun_names, pname=param.name, runfolder=f'{param.name}_ND', suffix="Pareto")
     else:
       outP = None
     if options.display:

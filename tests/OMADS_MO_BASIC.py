@@ -53,11 +53,11 @@ def common_dict():
       },
 
     "search": {
-      "type": "VNS",
-      "s_method": "LH",
+      "type": "sampling",
+      "s_method": "ACTIVE",
       "ns": 10,
       "visualize": False
-    }
+    },
   }
   return outDict
 
@@ -68,7 +68,6 @@ def MO_Binh_and_Korn(x):
   g2 = 7.7 - (x[0]-8)**2 - (x[1]+3)**2 
   
   return [[f1, f2], [g1, g2]]
-
 
 def MO_Chankong_and_Haimes(x):
   f1 = 2 + (x[0]-2)**2 + (x[1]-1)**2
@@ -130,6 +129,37 @@ def MO_Ex(x):
 
   return [[f1,f2],[g1,g2]]
 
+def MO_ZDT1(x):
+  f1 = x[0]  # objective 1
+  g = 1 + 9 * np.sum(np.divide(x[1:len(x)], (len(x) - 1)))
+  h = 1 - np.sqrt(f1 / g)
+  f2 = g * h  # objective 2
+
+  return [[f1, f2], [0]]
+
+def MO_ZDT3(x):
+  f1 = x[0]  # objective 1
+  g = 1 + (9/(len(x) - 1)) * np.sum(x[1:len(x)])
+  h = 1 - np.sqrt(f1 / g) - (f1/g)*np.sin(10*np.pi*f1)
+  f2 = g * h  # objective 2
+
+  return [[f1, f2], [0]]
+
+def MO_ZDT4(x):
+  f1 = x[0]  # objective 1
+  g = 1 + 10*(len(x)-1) + np.sum([x[i]**2 - 10*np.cos(4*np.pi*x[i]) for i in range(1, len(x))])
+  h = 1 - np.sqrt(f1 / g)
+  f2 = g * h  # objective 2
+
+  return [[f1, f2], [0]]
+
+def MO_ZDT6(x):
+  f1 = 1 - np.exp(-4*x[0]) * np.sin(6*np.pi*x[0])**6
+  g = 1+9*(sum(x[1:len(x)])/9)**.25
+  h = 1 - (f1/g)**2
+  f2 = g * h  # objective 2
+
+  return [[f1, f2], [0]]
 
 def test_MO_Binh_and_Korn():
   data = common_dict()
@@ -142,8 +172,9 @@ def test_MO_Binh_and_Korn():
   data["param"]["scaling"] = [5, 3]
   data["param"]["post_dir"] = "./tests/bm/MOO/constrained/Binh_and_Korn/post"
   
-  POLL.main(data)
-
+  # POLL.main(data)
+  # SEARCH.main(data)
+  MADS.main(data)
 
 def test_MO_Chankong_and_Haimes():
   data = common_dict()
@@ -156,7 +187,9 @@ def test_MO_Chankong_and_Haimes():
   data["param"]["scaling"] = [40, 40]
   data["param"]["post_dir"] = "./tests/bm/MOO/constrained/Chankong_and_Haimes/post"
   
-  POLL.main(data)
+  # POLL.main(data)
+  # SEARCH.main(data)
+  MADS.main(data)
 
 def test_MO_Fonseca_Fleming():
   data = common_dict()
@@ -171,23 +204,30 @@ def test_MO_Fonseca_Fleming():
   data["param"]["post_dir"] = "./tests/bm/MOO/unconstrained/Fonseca_Fleming/post"
   data["options"]["budget"] = 1000
   
-  POLL.main(data)
+  # POLL.main(data)
+  # SEARCH.main(data)
+  MADS.main(data)
 
 def test_MO_Test_function_4():
   data = common_dict()
   data["evaluator"]["blackbox"] = MO_Test_function_4
   data["param"]["name"] = "Test_function_4"
-  data["param"]["baseline"] = [0, 0]
+  data["param"]["baseline"] = [0, 0]#[3, 3]
   data["param"]["lb"] = [-7, -7]
   data["param"]["ub"] = [4, 4]
   data["meshType"] = "GMESH"
   data["param"]["constraints_type"] = ["PB", "PB"]
-  data["param"]["scaling"] = [8, 8]
+  data["param"]["scaling"] = [10, 10]
   data["param"]["post_dir"] = "./tests/bm/MOO/constrained/Test_function_4/post"
   data["options"]["budget"] = 1000
+  
+  # data["search"]["type"] = "VNS"
+  # data["search"]["s_method"] = "RANDOM"
+  # data["search"]["ns"] = 10
 
-  POLL.main(data)
-
+  # POLL.main(data)
+  # SEARCH.main(data)
+  MADS.main(data)
 
 def test_MO_Kursawe():
   # TODO: uncon logic needs review
@@ -208,7 +248,9 @@ def test_MO_Kursawe():
   data["param"]["post_dir"] = "./tests/bm/MOO/unconstrained/Kursawe/post"
   data["options"]["budget"] = 10000
 
-  POLL.main(data)
+  # POLL.main(data)
+  # SEARCH.main(data)
+  MADS.main(data)
 
 def test_MO_Osyczka_Kundu():
   # COMPLETED: Investigate why starting from infeasible point does not work in MOO
@@ -216,6 +258,7 @@ def test_MO_Osyczka_Kundu():
   data["evaluator"]["blackbox"] = MO_Osyczka_Kundu
   data["param"]["name"] = "Osyczka_Kundu"
   data["param"]["baseline"] = [3, 2, 2, 0, 5, 10]
+  # data["param"]["baseline"] = [5, 1, 5, 0, 5, 8]
   data["param"]["var_names"] = ['x1', 'x2', 'x3', 'x4', 'x5', 'x6']
   data["param"]["lb"] = [0,   0, 1, 0, 1,  0]
   data["param"]["ub"] = [10, 10, 5, 6, 5, 10]
@@ -225,7 +268,10 @@ def test_MO_Osyczka_Kundu():
   data["param"]["post_dir"] = "./tests/bm/MOO/constrained/Osyczka_Kundu/post"
   data["options"]["budget"] = 10000
 
-  POLL.main(data)
+  # POLL.main(data)
+  data["search"]["ns"] = 50
+  # SEARCH.main(data)
+  MADS.main(data)
 
 def test_MO_CTP1():
   data = common_dict()
@@ -240,7 +286,9 @@ def test_MO_CTP1():
   data["param"]["scaling"] = [1, 1]
   data["param"]["post_dir"] = "./tests/bm/MOO/constrained/MO_CTP1/post"
   data["options"]["budget"] = 1000
-  POLL.main(data)
+  # POLL.main(data)
+  # SEARCH.main(data)
+  MADS.main(data)
 
 def test_MO_Ex():
   data = common_dict()
@@ -255,7 +303,88 @@ def test_MO_Ex():
   data["param"]["scaling"] = [0.9, 5]
   data["param"]["post_dir"] = "./tests/bm/MOO/constrained/Ex/post"
   data["options"]["budget"] = 1500
-  POLL.main(data)
+  # POLL.main(data)
+  # SEARCH.main(data)
+  MADS.main(data)
+
+def test_MO_ZDT1():
+  d = 30
+  data = common_dict()
+  data["evaluator"]["blackbox"] = MO_ZDT1
+  data["param"]["name"] = "MO_ZDT1"
+  np.random.seed(seed= 12345)
+  data["param"]["baseline"] = np.random.rand(d)
+  data["param"]["var_names"] = [f'x{i}' for i in range(d)]
+  data["param"]["lb"] = [0]*d
+  data["param"]["ub"] = [1]*d
+  data["param"]["meshType"] = "GMESH"
+  data["param"]["constraints_type"] = ["PB"]
+  data["param"]["scaling"] = [1]*d
+  data["param"]["post_dir"] = "./tests/bm/MOO/unconstrained/MO_ZDT1/post"
+  data["options"]["budget"] = 10000
+  # POLL.main(data)
+  # SEARCH.main(data)
+  MADS.main(data)
+
+def test_MO_ZDT3():
+  d = 30
+  data = common_dict()
+  data["evaluator"]["blackbox"] = MO_ZDT3
+  data["param"]["name"] = "MO_ZDT3"
+  np.random.seed(seed= 12345)
+  data["param"]["baseline"] = np.random.rand(d)
+  data["param"]["var_names"] = [f'x{i}' for i in range(d)]
+  data["param"]["lb"] = [0]*d
+  data["param"]["ub"] = [1]*d
+  data["param"]["meshType"] = "GMESH"
+  data["param"]["constraints_type"] = ["PB"]
+  data["param"]["scaling"] = [1]*d
+  data["param"]["post_dir"] = "./tests/bm/MOO/unconstrained/MO_ZDT3/post"
+  data["options"]["budget"] = 10000
+  data["search"]["ns"] = 250
+  # POLL.main(data)
+  # SEARCH.main(data)
+  MADS.main(data)
+
+def test_MO_ZDT4():
+  d = 10
+  data = common_dict()
+  data["evaluator"]["blackbox"] = MO_ZDT4
+  data["param"]["name"] = "MO_ZDT4"
+  np.random.seed(seed= 12345)
+  data["param"]["baseline"] = np.random.rand(1).tolist() + np.random.uniform(low=-10, high=10, size=(d-1,)).tolist()
+  data["param"]["var_names"] = [f'x{i}' for i in range(d)]
+  data["param"]["lb"] = [0] + [-10]*(d-1)
+  data["param"]["ub"] = [1] + [10]*(d-1)
+  data["param"]["meshType"] = "GMESH"
+  data["param"]["constraints_type"] = ["PB"]
+  data["param"]["scaling"] = [1] + [20]*(d-1)
+  data["param"]["post_dir"] = "./tests/bm/MOO/unconstrained/MO_ZDT4/post"
+  data["options"]["budget"] = 5000 #40000
+  data["search"]["ns"] = 25
+  # POLL.main(data)
+  # SEARCH.main(data)
+  MADS.main(data)
+
+def test_MO_ZDT6():
+  d = 10
+  data = common_dict()
+  data["evaluator"]["blackbox"] = MO_ZDT6
+  data["param"]["name"] = "MO_ZDT6"
+  np.random.seed(seed= 12345)
+  data["param"]["baseline"] = np.random.rand(d)
+  data["param"]["var_names"] = [f'x{i}' for i in range(d)]
+  data["param"]["lb"] = [0]*d
+  data["param"]["ub"] = [1]*d
+  data["param"]["meshType"] = "OMESH"
+  data["param"]["constraints_type"] = ["PB"]
+  data["param"]["scaling"] = [1]*d
+  data["param"]["post_dir"] = "./tests/bm/MOO/unconstrained/MO_ZDT6/post"
+  data["options"]["budget"] = 5000
+  data["search"]["ns"] = 25
+  # POLL.main(data)
+  # SEARCH.main(data)
+  MADS.main(data)
 
 if __name__ == "__main__":
-  test_MO_Fonseca_Fleming()
+  freeze_support()

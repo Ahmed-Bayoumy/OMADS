@@ -128,7 +128,10 @@ class Barrier:
     return SUCCESS_TYPES.FS
 
   def get_best_infeasible(self):
-    return self._filter[-1]
+    if self._filter:
+      return self._filter[-1]
+    else:
+      return None
   
   def get_best_infeasible_min_viol(self):
     return self._filter[0]
@@ -150,7 +153,7 @@ class Barrier:
     last_poll_center: CandidatePoint = CandidatePoint()
     if self._params.get_barrier_type() == BARRIER_TYPES.PB:
       last_poll_center = self._prim_poll_center
-      if best_infeasible.fobj < (self._best_feasible.fobj-self._rho_leaps):
+      if best_infeasible.fobj[0] < (self._best_feasible.fobj[0]-self._rho_leaps):
         self._prim_poll_center = best_infeasible
         self._sec_poll_center = self._best_feasible
       else:
@@ -296,7 +299,8 @@ class BarrierMO(BarrierBase):
 
 
   def init(self, fixedVariables: Point = None, evalType: EVAL_TYPE = None, evalPointList: List[Point] = None):
-    updated: bool = self.updateWithPoints(evalPointList)
+    updated: bool
+    updated, _, _ = self.updateWithPoints(evalPointList)
 
   def checkMeshParameters(self, x: CandidatePoint = None):
     mesh = copy.deepcopy(x.mesh)
@@ -358,7 +362,7 @@ class BarrierMO(BarrierBase):
     
 
     
-    return updated
+    return updated, updatedFeas, updatedInf
   
   def updateCurrentIncumbents(self):
     self.updateCurrentIncumbentFeas()
@@ -366,8 +370,9 @@ class BarrierMO(BarrierBase):
 
   def setHMax(self, hMax):
     oldHMax = self._hMax
+    self._hMax = hMax
     self.checkHMax()
-    if self._hMax < oldHMax:
+    if hMax < oldHMax:
       self.updateXInfAndFilterInfAfterHMaxSet()
     self.updateCurrentIncumbentInf()
 
@@ -896,6 +901,8 @@ class BarrierMO(BarrierBase):
 
       if h == np.inf or (self._hMax < np.inf and h > self._hMax):
         return False
+      else:
+        self.setHMax(h)
       
       if self._xInf is None:
         self._xInf = []

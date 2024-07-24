@@ -173,12 +173,14 @@ def main(*args) -> Dict[str, Any]:
           # else:
           if options.save_results or options.display:
             peval = peval +1
-            poll.bb_eval = peval
-            post.bb_eval.append(peval)
-            post.iter.append(iteration)
-            # post.poll_dirs.append(poll.poll_dirs[f.result()[1]])
-            post.psize.append(f.result()[4])
-          xt.append(f.result()[-1])
+            if not f.result()[0]:
+              poll.bb_eval = peval
+              post.bb_eval.append(peval)
+              post.iter.append(iteration)
+              # post.poll_dirs.append(poll.poll_dirs[f.result()[1]])
+              post.psize.append(f.result()[4])
+          if f.result()[-1].status != DESIGN_STATUS.UNEVALUATED:
+            xt.append(f.result()[-1])
     if isinstance(B, Barrier):
       xpost: List[CandidatePoint] = poll.master_updates(xt, peval, save_all_best=options.save_all_best, save_all=options.save_results)
       xmin = copy.deepcopy(poll.xmin)
@@ -202,7 +204,7 @@ def main(*args) -> Dict[str, Any]:
       goToSearch: bool = (pev == 0 and poll.Failure_stop is not None and poll.Failure_stop)
       
       dir: Point = Point(poll._n)
-      dir.coordinates = poll.xmin.direction if poll.xmin.direction is not None else [0]*poll._n
+      dir.coordinates = poll.xmin.direction.coordinates if poll.xmin.direction is not None else [0]*poll._n
       if poll.success == SUCCESS_TYPES.FS and not goToSearch:
         poll.mesh.enlargeDeltaFrameSize(direction=dir) # poll.mesh.psize =  np.multiply(poll.mesh.psize, 2, dtype=poll.dtype.dtype
       elif poll.success == SUCCESS_TYPES.US:
@@ -213,7 +215,7 @@ def main(*args) -> Dict[str, Any]:
       xpost: List[CandidatePoint] = []
       for i in range(len(xt)):
         xpost.append(xt[i])
-      updated = B.updateWithPoints(evalPointList=xpost, evalType=None, keepAllPoints=False, updateInfeasibleIncumbentAndHmax=True)
+      updated, _, _ = B.updateWithPoints(evalPointList=xpost, evalType=None, keepAllPoints=False, updateInfeasibleIncumbentAndHmax=True)
       if not updated:
         newMesh = None
         if B._currentIncumbentInf:
@@ -247,6 +249,14 @@ def main(*args) -> Dict[str, Any]:
     LAMBDA_k = poll.LAMBDA
     RHO_k = poll.RHO
     
+    if options.save_results:
+      post.nd_points = []
+      for i in range(len(B.getAllPoints())):
+        post.nd_points.append(B.getAllPoints()[i])
+      post.output_results(out)
+      if param.isPareto:
+        post.output_nd_results(outP)
+
     Failure_check = iteration > 0 and poll.Failure_stop is not None and poll.Failure_stop and (poll.success == SUCCESS_TYPES.US or goToSearch)
     
     if (Failure_check or poll.bb_eval >= options.budget) or (all(abs(poll.mesh.getDeltaFrameSize().coordinates[pp]) < options.tol for pp in range(poll._n)) or poll.bb_eval >= options.budget or poll.terminate):
@@ -290,12 +300,7 @@ def main(*args) -> Dict[str, Any]:
       log.log_msg(msg="Could not find " + args[1] + " in the internal BM suite.", msg_type=MSG_TYPE.ERROR)
     raise IOError("Could not find " + args[1] + " in the internal BM suite.")
 
-  if options.save_results:
-    for i in range(len(B.getAllPoints())):
-      post.nd_points.append(B.getAllPoints()[i])
-    post.output_results(out)
-    if param.isPareto:
-      post.output_nd_results(outP)
+  
 
   if options.display:
     print(" end of orthogonal MADS ")
@@ -359,7 +364,7 @@ def main(*args) -> Dict[str, Any]:
                 "psize": poll.mesh.getDeltaFrameSize().coordinates,
                 "psuccess": poll.xmin.mesh.getDeltaFrameSize().coordinates,
                 # "pmax": poll.mesh.psize_max,
-                "msize": poll.mesh.getdeltaMeshSize()}
+                "msize": poll.mesh.getdeltaMeshSize().coordinates}
 
   return output, poll
 
