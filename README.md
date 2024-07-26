@@ -131,7 +131,7 @@ Input parameters are serialized in a `JSON` template using predefined attributes
 
 ## Multiobjective MADS
 
-The poll, search, and MADS algorithms are capable of solving both unconstrained and constrained multiobjective problems by conducting a Pareto study. The approximated Pareto front (non-dominated solutions) will be saved in a separate CSV file named with the suffix "Pareto {problem_name}_Pareto.out". The figures below display the results of test functions chosen from the literature.
+The poll, search, and MADS algorithms are capable of solving both unconstrained and constrained multiobjective problems by conducting a Pareto study. The approximated Pareto front (non-dominated solutions) are saved in a separate CSV file named with the suffix "Pareto {problem_name}_Pareto.out". The figures below display the results of test functions chosen from the literature.
 
 ### Constrained test functions
 
