@@ -264,7 +264,7 @@ class PostMADS:
       if p.evaluated and counter < len(self.iter):
         out.add_row(eval_time= p.Eval_time,
               iterno=self.iter[counter],
-              evalno=self.bb_eval[counter], poll_size=self.psize[counter],
+              evalno=  p.evalNo, poll_size=self.psize[counter],
               source=p.source,
               Mname=p.Model,
               f=p.f,

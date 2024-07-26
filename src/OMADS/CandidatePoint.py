@@ -102,6 +102,8 @@ class CandidatePoint:
 
   _fs: Point = None
 
+  evalNo: int = 0
+
   def __post_init__(self):
     self._dtype = DType()
 

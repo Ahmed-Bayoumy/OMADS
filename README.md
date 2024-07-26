@@ -6,7 +6,7 @@
 <img width="870" alt="OMADS_logo" src="https://github.com/Ahmed-Bayoumy/OMADS/assets/22842095/dedff4b1-4ec5-4b1f-a155-8b64155d1558">
 
 # OMADS
-MADS: A python implementation for the mesh adaptive direct search (MADS) method; ORTHO-MADS algorithm.
+MADS: A python implementation for the mesh adaptive direct search (MADS) method; ORTHO-MADS algorithm. OMADS can solve both single- and multi-objective optimization problems.
 
 For technical and code documentation, please visit [OMADS Webpage](https://ahmed-bayoumy.github.io/OMADS/).
 
@@ -31,7 +31,7 @@ If you use this code, please cite it as below.
    title        = {OMADS},
    year         = 2022,
    publisher    = {Github},
-   version      = {2.1.0},
+   version      = {2407},
    url          = {https://github.com/Ahmed-Bayoumy/OMADS}
    }
 ```
@@ -86,6 +86,12 @@ Input parameters are serialized in a `JSON` template using predefined attributes
   * `LAMBDA`: list of the initial Lagrangian multipliers assigned to the constraints
   * `RHO`: list of the initial penalty parameter
   * `hmax`: the maximum feasibility threshold
+  * `nobj`: number of objectives
+  * `isPareto`: boolean for running a Pareto study
+  * `meshType`: specify whether to use granular or orthogonal mesh
+    * `GMESH`: granular mesh
+    * `OMESH`: orthogonal mesh
+  * `name`: problem name (that name will be used for naming the output files)
 ---
 * `options`: algorithmic options
   * `seed`: the random generator seed that ensures results reproducibility. This should be an integer value
@@ -122,7 +128,22 @@ Input parameters are serialized in a `JSON` template using predefined attributes
       * `HALTON`: Halton sampling
    * `ns`: number of samples
 ---
-  
+
+## Multiobjective MADS
+
+The poll, search and MADS algorithms can solve unconstrained and constrained multiobjective problems running a Pareto study. Approximated Pareto front (non-dominated solution) are written out in a separate `csv` file named with the suffix Pareto `{problem_name}_Pareto.out`. The following figures show results of selected test functions from the literature.
+
+### Constrained test functions
+
+https://github.com/Ahmed-Bayoumy/OMADS/blob/95abc961b133685f2ed24453b715a556fcbc4853/docs/_static/ConstrainedMO.png
+
+
+### Unonstrained test functions
+
+https://github.com/Ahmed-Bayoumy/OMADS/blob/95abc961b133685f2ed24453b715a556fcbc4853/docs/_static/UnconstrainedMO.png
+
+---
+
 ## Benchmarking
 
 To benchmark `OMADS`, per se, you need to install the non-linear optimization benchmarking project `NOBM` (will be installed automatically when you install `OMADS`) from 

@@ -132,6 +132,7 @@ def search_step(iteration: int, search: SS.efficient_exploration = None, B: SS.a
         xt[-1].mesh = copy.deepcopy(search.mesh)
       if not f[0]:
         post.bb_eval.append(search.bb_handle.bb_eval)
+        xt[-1].evalNo = search.bb_handle.bb_eval
         peval += 1
         post.step_name.append(f'Search: {search.type}')
         post.iter.append(iteration)
@@ -157,6 +158,7 @@ def search_step(iteration: int, search: SS.efficient_exploration = None, B: SS.a
             post.psize.append(f.result()[4])
         if f.result()[-1].status != DESIGN_STATUS.UNEVALUATED:
           xt.append(f.result()[-1])
+          xt[-1].evalNo = search.bb_handle.bb_eval
           xt[-1].mesh = copy.deepcopy(search.mesh)
 
   
@@ -341,6 +343,7 @@ def poll_step(iteration: int, poll: PS.Dirs2n = None, B: SS.auto = None, LAMBDA_
       if not f[0]:
         post.step_name.append(f'Poll Step')
         post.bb_eval.append(poll.bb_handle.bb_eval)
+        xt[-1].evalNo = poll.bb_handle.bb_eval
         post.iter.append(iteration)
         post.psize.append(poll.mesh.getDeltaFrameSize().coordinates)
       else:
@@ -367,6 +370,7 @@ def poll_step(iteration: int, poll: PS.Dirs2n = None, B: SS.auto = None, LAMBDA_
             post.psize.append(f.result()[4])
         if f.result()[-1].status != DESIGN_STATUS.UNEVALUATED:
           xt.append(f.result()[-1])
+          xt[-1].evalNo = poll.bb_handle.bb_eval
 
   if isinstance(B, Barrier):
       xpost: List[CandidatePoint] = poll.master_updates(xt, peval, save_all_best=options.save_all_best, save_all=options.save_results)
@@ -558,7 +562,7 @@ def main(*args) -> Dict[str, Any]:
     pt = (all(abs(poll.mesh.getDeltaFrameSize().coordinates[pp]) < options.tol for pp in range(poll._n)))
     st = (all(abs(search.mesh.getdeltaMeshSize().coordinates[pp]) < options.tol  for pp in range(search.mesh._n)))
     if options.save_results:
-      post.output_results(out)
+      post.output_results(out, False)
       if param.isPareto:
         post.nd_points = []
         for i in range(len(B.getAllPoints())):

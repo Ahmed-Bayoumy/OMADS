@@ -220,11 +220,14 @@ class PreExploration:
       search.mesh.psize_max =copy.deepcopy(max(search.mesh.getDeltaFrameSize().coordinates))
       search.samples = [search.xmin]
     """ 11- Construct the results postprocessor class object 'post' """
+    x_start.evalNo = search.bb_handle.bb_eval
+    search.xmin.evalNo = search.bb_handle.bb_eval
     post = PostMADS(x_incumbent=[search.xmin], xmin=search.xmin, poll_dirs=[search.xmin])
     post.step_name = []
     post.step_name.append(f'Search: {search.type}')
     post.psize.append(search.mesh.getDeltaFrameSize().coordinates)
     post.bb_eval.append(search.bb_handle.bb_eval)
+
     post.iter.append(iteration)
 
     """ Note: printing the post will print a results row

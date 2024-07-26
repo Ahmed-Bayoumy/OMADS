@@ -269,7 +269,7 @@ def test_MO_Osyczka_Kundu():
   data["options"]["budget"] = 10000
 
   # POLL.main(data)
-  data["search"]["ns"] = 50
+  data["search"]["ns"] = 25
   # SEARCH.main(data)
   MADS.main(data)
 
@@ -286,6 +286,7 @@ def test_MO_CTP1():
   data["param"]["scaling"] = [1, 1]
   data["param"]["post_dir"] = "./tests/bm/MOO/constrained/MO_CTP1/post"
   data["options"]["budget"] = 1000
+  data["search"]["ns"] = 50
   # POLL.main(data)
   # SEARCH.main(data)
   MADS.main(data)
@@ -302,7 +303,8 @@ def test_MO_Ex():
   data["param"]["constraints_type"] = ["PB"]*2
   data["param"]["scaling"] = [0.9, 5]
   data["param"]["post_dir"] = "./tests/bm/MOO/constrained/Ex/post"
-  data["options"]["budget"] = 1500
+  data["options"]["budget"] = 2000
+  data["search"]["ns"] = 15
   # POLL.main(data)
   # SEARCH.main(data)
   MADS.main(data)
@@ -341,7 +343,7 @@ def test_MO_ZDT3():
   data["param"]["scaling"] = [1]*d
   data["param"]["post_dir"] = "./tests/bm/MOO/unconstrained/MO_ZDT3/post"
   data["options"]["budget"] = 10000
-  data["search"]["ns"] = 250
+  data["search"]["ns"] = 50
   # POLL.main(data)
   # SEARCH.main(data)
   MADS.main(data)
@@ -361,7 +363,7 @@ def test_MO_ZDT4():
   data["param"]["scaling"] = [1] + [20]*(d-1)
   data["param"]["post_dir"] = "./tests/bm/MOO/unconstrained/MO_ZDT4/post"
   data["options"]["budget"] = 5000 #40000
-  data["search"]["ns"] = 25
+  data["search"]["ns"] = 50
   # POLL.main(data)
   # SEARCH.main(data)
   MADS.main(data)
@@ -381,10 +383,11 @@ def test_MO_ZDT6():
   data["param"]["scaling"] = [1]*d
   data["param"]["post_dir"] = "./tests/bm/MOO/unconstrained/MO_ZDT6/post"
   data["options"]["budget"] = 5000
-  data["search"]["ns"] = 25
+  data["search"]["ns"] = 100
   # POLL.main(data)
   # SEARCH.main(data)
   MADS.main(data)
 
 if __name__ == "__main__":
-  freeze_support()
+  test_MO_Test_function_4()
+  # print(MO_Ex([0.3986251815132268,       2.9698601277271774]))

@@ -193,6 +193,7 @@ def main(*args) -> Dict[str, Any]:
           xt[-1].mesh = copy.deepcopy(search.mesh)
         if not f[0]:
           post.bb_eval.append(search.bb_handle.bb_eval)
+          xt[-1].evalNo = search.bb_handle.bb_eval
           peval += 1
           post.step_name.append(f'Search: {search.type}')
           post.iter.append(iteration)
@@ -221,6 +222,7 @@ def main(*args) -> Dict[str, Any]:
               post.psize.append(f.result()[4])
           if f.result()[-1].status != DESIGN_STATUS.UNEVALUATED:
             xt.append(f.result()[-1])
+            xt[-1].evalNo = search.bb_handle.bb_eval
             xt[-1].mesh = copy.deepcopy(search.mesh)
     
     

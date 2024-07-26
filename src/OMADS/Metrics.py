@@ -20,7 +20,7 @@ class Metrics:
         f: List[float] = []
         for p in self.ND_solutions:
           f.append(p.f[i])
-        ftemp.append(max(f))
+        ftemp.append(max(f)+1)
       self._ref_point.f = copy.deepcopy(ftemp)
 
   def hypervolume(self):

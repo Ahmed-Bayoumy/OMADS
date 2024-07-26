@@ -156,6 +156,7 @@ def main(*args) -> Dict[str, Any]:
           xt.append(f[-1])
         if not f[0]:
           post.bb_eval.append(poll.bb_handle.bb_eval)
+          xt[-1].evalNo = poll.bb_handle.bb_eval
           post.iter.append(iteration)
           post.psize.append(poll.mesh.getDeltaFrameSize().coordinates)
         else:
@@ -181,6 +182,7 @@ def main(*args) -> Dict[str, Any]:
               post.psize.append(f.result()[4])
           if f.result()[-1].status != DESIGN_STATUS.UNEVALUATED:
             xt.append(f.result()[-1])
+            xt[-1].evalNo = poll.bb_handle.bb_eval
     if isinstance(B, Barrier):
       xpost: List[CandidatePoint] = poll.master_updates(xt, peval, save_all_best=options.save_all_best, save_all=options.save_results)
       xmin = copy.deepcopy(poll.xmin)

@@ -218,14 +218,20 @@ class PrePoll:
 
     """ 11- Construct the results postprocessor class object 'post' """
     if poll.xmin.evaluated:
+      x_start.evalNo = poll.bb_handle.bb_eval
+      poll.xmin.evalNo = poll.bb_handle.bb_eval
       post = PostMADS(x_incumbent=[poll.xmin], xmin=poll.xmin, poll_dirs=[poll.xmin])
       post.psize.append(poll.mesh.getDeltaFrameSize().coordinates)
       post.bb_eval.append(poll.bb_handle.bb_eval)
+      
       post.iter.append(iteration)
     elif poll.x_sc.evaluated:
+      x_start.evalNo = poll.bb_handle.bb_eval
+      poll.x_sc.evalNo = poll.bb_handle.bb_eval
       post = PostMADS(x_incumbent=[poll.x_sc], xmin=poll.x_sc, poll_dirs=[poll.x_sc])
       post.psize.append(poll.mesh.getDeltaFrameSize().coordinates)
       post.bb_eval.append(poll.bb_handle.bb_eval)
+      
       post.iter.append(iteration)
 
     """ Note: printing the post will print a results row

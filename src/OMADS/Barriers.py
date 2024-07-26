@@ -419,7 +419,7 @@ class BarrierMO(BarrierBase):
     isInXinf = [False] * len(self._xFilterInf)
 
     for evalPoint in self._xFilterInf:
-      if self.findEvalPoint(self._xFilterInf, evalPoint)[1] == self._xInf[-1]:
+      if len(self._xInf) > 0 and self.findEvalPoint(self._xFilterInf, evalPoint)[1] == self._xInf[-1]:
         currentIndTmp = 0
         insert = True
         for evalPointInf in self._xFilterInf:
@@ -747,7 +747,7 @@ class BarrierMO(BarrierBase):
               currentInd = j
       self._currentIncumbentInf = self._xInf[currentInd]
     else:
-      self._currentIncumbentInf = self.getFirstXIncInfNoXFeas()
+      self._currentIncumbentInf = self.getFirstXIncInfNoXFeas() if len(self._xInf) > 0 else None
             
 
   def getXInfMinH(self):
@@ -1008,7 +1008,7 @@ class BarrierMO(BarrierBase):
 
   def updateFeasWithPoint(self, evalPoint: CandidatePoint = None, evalType: EVAL_TYPE = None, keepAllPoints: bool = None):
     updated = False
-
+    
     if evalPoint.evaluated and evalPoint.status == DESIGN_STATUS.FEASIBLE:
       if evalPoint.fs.size != self._nobj:
         raise IOError(f"Barrier update: number of objectives is equal to {self._nobj}. Trying to add this point with number of objectives {evalPoint.fs.size}")
