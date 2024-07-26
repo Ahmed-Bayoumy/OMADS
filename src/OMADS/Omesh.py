@@ -50,6 +50,12 @@ class Omesh(Mesh):
     self.rho = [0] * self._n
     self.frameSize.coordinates = runOptions.psize_init if isinstance(runOptions.psize_init, list) else [runOptions.psize_init] * self._n
     self.meshSize.reset(n=self._n, d=0)
+    self._r = Point(self._n)
+    self._r.coordinates = [1]*self._n
+    self._rMax = Point(self._n)
+    self._rMax.coordinates = [1]*self._n
+    self._rMin = Point(self._n)
+    self._rMin.coordinates = [1]*self._n
     self.init()
   
   def init(self):

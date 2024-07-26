@@ -54,7 +54,10 @@ def main(*args) -> Dict[str, Any]:
   """ Run preprocessor for the setup of
    the optimization problem and for the initialization
   of optimization process """
-  iteration, xmin, search, options, param, post, out, B = PreExploration(data).initialize_from_dict(log=log)
+  iteration, xmin, search, options, param, post, out, B, outP = PreExploration(data).initialize_from_dict(log=log)
+
+  if outP:
+    outP.stepName = "Search_ND"
 
   """ Set the random seed for results reproducibility """
   if len(args) < 4:
@@ -93,24 +96,32 @@ def main(*args) -> Dict[str, Any]:
   RHO_k = xmin.RHO
 
   log.log_msg(msg=f"---------------- Run the SEARCH step ({search.sampling_t}) ----------------", msg_type=MSG_TYPE.INFO)
-
+  num_strat: int = 0
   while True:
+    bbevalold =  search.bb_handle.bb_eval
     search.mesh.update()
     search.iter = iteration
     if B is not None:
-      if B._filter is not None:
-        B.select_poll_center()
-        B.update_and_reset_success()
+      if isinstance(B, Barrier):
+        if B._filter is not None:
+          B.select_poll_center()
+          B.update_and_reset_success()
+        else:
+          B.insert(search.xmin)
+      elif isinstance(B, BarrierMO) and iteration == 1:
+          B.init(evalPointList=[xmin])
+    
+    if isinstance(B, Barrier):
+      search.hmax = B._h_max
+      if xmin.status == DESIGN_STATUS.FEASIBLE:
+        B.insert_feasible(search.xmin)
+      elif xmin.status == DESIGN_STATUS.INFEASIBLE:
+        B.insert_infeasible(search.xmin)
       else:
         B.insert(search.xmin)
+
+
     
-    search.hmax = B._h_max
-    if xmin.status == DESIGN_STATUS.FEASIBLE:
-      B.insert_feasible(search.xmin)
-    elif xmin.status == DESIGN_STATUS.INFEASIBLE:
-      B.insert_infeasible(search.xmin)
-    else:
-      B.insert(search.xmin)
     """ Create the set of poll directions """
     if search.type == SEARCH_TYPE.VNS.name:
       search_VN.active_barrier = B
@@ -121,13 +132,16 @@ def main(*args) -> Dict[str, Any]:
       vv = search.map_samples_from_coords_to_points(samples=search.samples)
     else:
       vvp = vvs = []
-      if B._best_feasible is not None and B._best_feasible.evaluated:
-        search.xmin = B._best_feasible
+      bestFeasible: CandidatePoint = B._currentIncumbentFeas if isinstance(B, BarrierMO) else B._best_feasible
+      bestInf: CandidatePoint = B._currentIncumbentInf if isinstance(B, BarrierMO) else B.get_best_infeasible()
+      if bestFeasible is not None and bestFeasible.evaluated:
+        search.xmin = bestFeasible
         vvp, _ = search.generate_sample_points(int(((search.dim+1)/2)*((search.dim+2)/2)) if search.ns is None else search.ns)
-      if B._filter is not None and B.get_best_infeasible().evaluated:
+      if bestInf is not None and bestInf.evaluated:
+      # if B._filter is not None and B.get_best_infeasible().evaluated:
         xmin_bup = search.xmin
         Prim_samples = search.samples
-        search.xmin = B.get_best_infeasible()
+        search.xmin = bestInf
         vvs, _ = search.generate_sample_points(int(((search.dim+1)/2)*((search.dim+2)/2)) if search.ns is None else search.ns)
         search.samples += Prim_samples
         search.xmin = xmin_bup
@@ -174,9 +188,12 @@ def main(*args) -> Dict[str, Any]:
         if search.terminate:
           break
         f = search.evaluate_sample_point(it)
-        xt.append(f[-1])
+        if f[-1].status != DESIGN_STATUS.UNEVALUATED:
+          xt.append(f[-1])
+          xt[-1].mesh = copy.deepcopy(search.mesh)
         if not f[0]:
           post.bb_eval.append(search.bb_handle.bb_eval)
+          xt[-1].evalNo = search.bb_handle.bb_eval
           peval += 1
           post.step_name.append(f'Search: {search.type}')
           post.iter.append(iteration)
@@ -196,50 +213,110 @@ def main(*args) -> Dict[str, Any]:
           # else:
           if options.save_results or options.display:
             peval = peval +1
-            search.bb_eval = peval
-            post.bb_eval.append(peval)
-            post.step_name.append(f'Search: {search.type}')
-            post.iter.append(iteration)
+            if not f.result()[0]:
+              search.bb_eval = peval
+              post.bb_eval.append(peval)
+              post.step_name.append(f'Search: {search.type}')
+              post.iter.append(iteration)
             # post.poll_dirs.append(poll.poll_dirs[f.result()[1]])
-            post.psize.append(f.result()[4])
-          xt.append(f.result()[-1])
-  
-    xpost: List[CandidatePoint] = search.master_updates(xt, peval, save_all_best=options.save_all_best, save_all=options.save_results)
-    if options.save_results:
+              post.psize.append(f.result()[4])
+          if f.result()[-1].status != DESIGN_STATUS.UNEVALUATED:
+            xt.append(f.result()[-1])
+            xt[-1].evalNo = search.bb_handle.bb_eval
+            xt[-1].mesh = copy.deepcopy(search.mesh)
+    
+    
+    
+    if isinstance(B, Barrier):
+      xpost: List[CandidatePoint] = search.master_updates(xt, peval, save_all_best=options.save_all_best, save_all=options.save_results)
+      if options.save_results:
+        for i in range(len(xpost)):
+          post.poll_dirs.append(xpost[i])
+      for xv in xt:
+        if xv.evaluated:
+          B.insert(xv)
+
+      """ Update the xmin in post"""
+      post.xmin = copy.deepcopy(search.xmin)
+
+      if iteration == 1:
+        search.vicinity_ratio = np.ones((len(search.xmin.coordinates),1))
+
+      """ Updates """
+      
+      if search.success == SUCCESS_TYPES.FS:
+        dir: Point = Point(search.mesh._n)
+        dir.coordinates = search.xmin.direction.coordinates
+        # search.mesh.psize = np.multiply(search.mesh.get, 2, dtype=search.dtype.dtype)
+        search.mesh.enlargeDeltaFrameSize(direction=dir)
+        if search.sampling_t != SAMPLING_METHOD.ACTIVE.name:
+          search.update_local_region(region="expand")
+      elif search.success == SUCCESS_TYPES.US:
+        # search.mesh.psize = np.divide(search.mesh.psize, 2, dtype=search.dtype.dtype)
+        search.mesh.refineDeltaFrameSize()
+        if search.sampling_t != SAMPLING_METHOD.ACTIVE.name:
+          search.update_local_region(region="contract")
+    elif isinstance(B, BarrierMO):
+      xpost: List[CandidatePoint] = []
+      for i in range(len(xt)):
+        xpost.append(xt[i])
+      updated, updatedF, updatedInf = B.updateWithPoints(evalPointList=xpost, evalType=None, keepAllPoints=False, updateInfeasibleIncumbentAndHmax=True)
+      if not updated:
+        newMesh = None
+        if B._currentIncumbentInf:
+          B._currentIncumbentInf.mesh.refineDeltaFrameSize()
+          newMesh = copy.deepcopy(B._currentIncumbentFeas.mesh) if B._currentIncumbentFeas else copy.deepcopy(B._currentIncumbentInf.mesh) if B._currentIncumbentInf else None
+          B.updateCurrentIncumbents()
+          if search.sampling_t != SAMPLING_METHOD.ACTIVE.name:
+            search.update_local_region(region="contract")
+        if B._currentIncumbentFeas:
+          B._currentIncumbentFeas.mesh.refineDeltaFrameSize()
+          newMesh = copy.deepcopy(B._currentIncumbentFeas.mesh) if B._currentIncumbentFeas else copy.deepcopy(B._currentIncumbentInf.mesh) if B._currentIncumbentInf else None
+          B.updateCurrentIncumbents()
+          if search.sampling_t != SAMPLING_METHOD.ACTIVE.name:
+            search.update_local_region(region="contract")
+        
+        
+        if newMesh:
+          search.mesh = newMesh
+        else:
+          search.mesh.refineDeltaFrameSize()
+          if search.sampling_t != SAMPLING_METHOD.ACTIVE.name:
+            search.update_local_region(region="contract")
+      else:
+        search.mesh = copy.deepcopy(B._currentIncumbentFeas.mesh) if updatedF else copy.deepcopy(B._currentIncumbentInf.mesh) if updatedInf else search.mesh
+        search.xmin = copy.deepcopy(B._currentIncumbentFeas) if updatedF else copy.deepcopy(B._currentIncumbentInf) if updatedInf else search.xmin
+        if search.sampling_t != SAMPLING_METHOD.ACTIVE.name:
+          search.update_local_region(region="expand")
+      
       for i in range(len(xpost)):
         post.poll_dirs.append(xpost[i])
-    for xv in xt:
-      if xv.evaluated:
-        B.insert(xv)
-
-    """ Update the xmin in post"""
-    post.xmin = copy.deepcopy(search.xmin)
-
-    if iteration == 1:
-      search.vicinity_ratio = np.ones((len(search.xmin.coordinates),1))
-
-    """ Updates """
-    
-    if search.success == SUCCESS_TYPES.FS:
-      dir: Point = Point(search.mesh._n)
-      dir.coordinates = search.xmin.direction.coordinates
-      # search.mesh.psize = np.multiply(search.mesh.get, 2, dtype=search.dtype.dtype)
-      search.mesh.enlargeDeltaFrameSize(direction=dir)
-      if search.sampling_t != SAMPLING_METHOD.ACTIVE.name:
-        search.update_local_region(region="expand")
-    elif search.success == SUCCESS_TYPES.US:
-      # search.mesh.psize = np.divide(search.mesh.psize, 2, dtype=search.dtype.dtype)
-      search.mesh.refineDeltaFrameSize()
-      if search.sampling_t != SAMPLING_METHOD.ACTIVE.name:
-        search.update_local_region(region="contract")
+      search.hashtable.best_hash_ID = []
+      search.hashtable.add_to_best_cache(B.getAllPoints())
+      post.xmin = B._currentIncumbentFeas if updatedF  else B._currentIncumbentInf if  updatedInf else search.xmin
       
-    
+    search.mesh.update()
+    if iteration == 1:
+        search.vicinity_ratio = np.ones((len(search.xmin.coordinates),1))
+
+    if options.save_results:
+      post.nd_points = []
+      for i in range(len(B.getAllPoints())):
+        post.nd_points.append(B.getAllPoints()[i])
+      post.output_results(out=out, allRes=False)
+      if param.isPareto:
+        post.output_nd_results(outP)
+      
     if log is not None:
       log.log_msg(msg=post.__str__(), msg_type=MSG_TYPE.INFO)
     if options.display:
       print(post)
 
     Failure_check = iteration > 0 and search.Failure_stop is not None and search.Failure_stop and not (search.success != SUCCESS_TYPES.FS or SUCCESS_TYPES.PS)
+    if search.bb_handle.bb_eval - bbevalold <= 0:
+      num_strat += 1
+      if num_strat > 5:
+        search.terminate = True
     if (Failure_check or search.bb_handle.bb_eval >= options.budget) or (all(abs(search.mesh.getdeltaMeshSize().coordinates[pp]) < options.tol  for pp in range(search.mesh._n)) or search.bb_handle.bb_eval >= options.budget or search.terminate):
       log.log_msg(f"\n--------------- Termination of the search step  ---------------", MSG_TYPE.INFO)
       if (all(abs(search.mesh.getdeltaMeshSize().coordinates[pp]) < options.tol  for pp in range(search.mesh._n))):
@@ -273,15 +350,14 @@ def main(*args) -> Dict[str, Any]:
             feval=search.bb_handle.bb_eval,
             hmin=search.xmin.h,
             fmin=search.xmin.f)
-    print(f"{search.bb_handle.blackbox}: fmin = {search.xmin.f:.2f} , hmin= {search.xmin.h:.2f}")
+    print(f"{search.bb_handle.blackbox}: fmin = {search.xmin.f} , hmin= {search.xmin.h:.2f}")
 
   elif len(args) > 1 and not isinstance(args[1], toy.Run):
     if log is not None:
       log.log_msg(msg="Could not find " + args[1] + " in the internal BM suite.", msg_type=MSG_TYPE.ERROR)
     raise IOError("Could not find " + args[1] + " in the internal BM suite.")
 
-  if options.save_results:
-    post.output_results(out)
+  
 
   if options.display:
     if log is not None:
@@ -337,8 +413,8 @@ def main(*args) -> Dict[str, Any]:
                 "niterations" : iteration,
                 "nb_success": search.nb_success,
                 "psize": search.mesh.getDeltaFrameSize().coordinates,
-                "psuccess": search.mesh.psize_success,
-                "pmax": search.mesh.psize_max,
+                "psuccess": search.xmin.mesh.getDeltaFrameSize().coordinates,
+                # "pmax": search.mesh.psize_max,
                 "msize": search.mesh.getdeltaMeshSize().coordinates}
   
   if search.visualize:

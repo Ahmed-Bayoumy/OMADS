@@ -55,8 +55,8 @@ class CandidatePoint:
   # Evaluation boolean
   _evaluated: bool = False
   # Objective function
-  _f: float = inf
-  _freal: float = inf
+  _f: List[float] = field(default_factory=lambda: [inf])
+  _freal: List[float] = field(default_factory=lambda: [inf])
   # Inequality constraints
   _c_ineq: List[float] = field(default_factory=list)
   # Equality constraints
@@ -100,8 +100,23 @@ class CandidatePoint:
 
   _direction: Point = None
 
+  _fs: Point = None
+
+  evalNo: int = 0
+
   def __post_init__(self):
     self._dtype = DType()
+
+  @property
+  def fs(self):
+    if self._fs is None:
+      self._fs = Point(len(self.f))
+      self._fs.coordinates = self.f
+    return self._fs
+  
+  @fs.setter
+  def fs(self, value: Point) -> Any:
+    self._fs = value
 
   @property
   def mesh(self):
@@ -290,8 +305,16 @@ class CandidatePoint:
     return self._f
 
   @f.setter
-  def f(self, val: float):
-    self._f = val
+  def f(self, val: auto):
+    if isinstance(val, list):
+      self._f = val
+    else:
+      self._f = [val]
+    # if self.fs is None or self.fs.size <= 0:
+    #   self.fs = Point(len(self.f))
+    #   self.fs.coordinates = self._f
+    # else:
+    #   self.fs.coordinates = self.f
 
   @f.deleter
   def f(self):
@@ -302,8 +325,17 @@ class CandidatePoint:
     return self._freal
 
   @fobj.setter
-  def fobj(self, other: float):
-    self._freal = other
+  def fobj(self, other: auto):
+    if isinstance(other, list):
+      self._freal = other
+    else:
+      self._freal = [other]
+    
+    if self.fs is None or len(self._fs.coordinates) < 0 or not isinstance(self._freal, list):
+      self.fs = Point(len(self._freal))
+      self.fs.coordinates = self._freal
+    else:
+      self.fs.coordinates = self._freal
 
   @property
   def hmin(self):
@@ -364,7 +396,7 @@ class CandidatePoint:
   def __lt__(self, other):
     return (other.h > (self.hmax if self._is_EB_passed else self._dtype.zero) > self.__dh__(other=other)) or \
          (((self.hmax if self._is_EB_passed else self._dtype.zero) >= self.h >= 0.0) and
-        self.__df__(other=other) < 0)
+        max(self.__df__(other=other)) < 0)
 
   def __le__(self, other):
     return self.__eq_f__(other) or self.f == other.f
@@ -470,7 +502,7 @@ class CandidatePoint:
       self.status = DESIGN_STATUS.ERROR
 
     """ Penalize relaxable constraints violation """
-    if np.isnan(self.f) or self.h > self.hzero:
+    if any(np.isnan(self.f)) or self.h > self.hzero:
       if self.h > np.round(self.hmax, 2):
         self.__penalize__(extreme=False)
       self.status = DESIGN_STATUS.INFEASIBLE
@@ -484,11 +516,11 @@ class CandidatePoint:
     if 0 < len(self.cPB) < len(self.LAMBDA):
       del self.LAMBDA[len(self.cPB):]
     if extreme:
-      self.f = inf
+      # self.f = [inf]*len(self.f)
       self.hmin = inf
     else:
       self.hmin = np.dot(self.LAMBDA, self.cPB) + ((1/(2*self.RHO)) * self.h if self.RHO > 0. else np.inf)
-      self.f = self.fobj + self.hmin
+      self.f = [self.fobj[i] * (1./len(self.fobj)) + self.hmin for i in range(len(self.fobj))]
 
   def __is_duplicate__(self, other) -> bool:
     return other.signature is self._signature
@@ -504,3 +536,56 @@ class CandidatePoint:
 
   def __dh__(self, other):
     return subtract(self.h, other.h, dtype=self._dtype.dtype)
+  
+  def __comMO__(self, other, onlyfvalues: bool = False):
+    compareFlag: COMPARE_TYPE = COMPARE_TYPE.UNDEFINED
+    f1 = self.fs
+    h1 = self.h
+    f2 = other.fs
+    h2 = other.h
+
+    if f1.size != f2.size:
+      return compareFlag
+    
+    # // The comparison code has been adapted from
+    # // Jaszkiewicz, A., & Lust, T. (2018).
+    # // ND-tree-based update: a fast algorithm for the dynamic nondominance problem. 
+    # // IEEE Transactions on Evolutionary Computation, 22(5), 778-791.
+
+    if self.status == DESIGN_STATUS.FEASIBLE and other.status == DESIGN_STATUS.FEASIBLE:
+      isbetter = False
+      isworse = False
+      for i in range(f1.size):
+        if f1[i] < f2[i]:
+          isbetter = True
+        if f2[i] < f1[i]:
+          isworse = True
+        if isworse and isbetter:
+          break
+      if isworse:
+        compareFlag = COMPARE_TYPE.INDIFFERENT if isbetter else COMPARE_TYPE.DOMINATED
+      else:
+        compareFlag = COMPARE_TYPE.DOMINATING if isbetter else COMPARE_TYPE.EQUAL
+    elif (self.status != DESIGN_STATUS.FEASIBLE and other.status != DESIGN_STATUS.FEASIBLE):
+      if h1 != np.inf:
+        isbetter = False
+        isworse = False
+        for i in range(f1.size):
+          if f1[i] < f2[i]:
+            isbetter = True
+          if f2[i] < f1[i]:
+            isworse = True
+          if isworse and isbetter:
+            break
+        if not(isworse and isbetter) and not onlyfvalues:
+          if h1 < h2:
+            isbetter = True
+          if h2 < h1:
+            isworse = True
+        if isworse:
+          compareFlag = COMPARE_TYPE.INDIFFERENT if isbetter else COMPARE_TYPE.DOMINATED
+        else:
+          compareFlag = COMPARE_TYPE.DOMINATING if isbetter else COMPARE_TYPE.EQUAL
+    
+    return compareFlag
+

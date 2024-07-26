@@ -345,8 +345,10 @@ class Dirs2n:
     :param it: iteration
     :type it: int
     """
+    del self.poll_set
+    del self.poll_dirs
     if is_prim:
-      del self.poll_set
+      # del self.poll_set
       temp = np.add(hhm, np.array(self.xmin.coordinates), dtype=self._dtype.dtype)
     else:
       temp = np.add(hhm, np.array(self.x_sc.coordinates), dtype=self._dtype.dtype)
@@ -371,10 +373,12 @@ class Dirs2n:
       tmp.mesh = copy.deepcopy(self.mesh)
       self.poll_set = tmp
       if is_prim:
-        tmp.direction = tmp - self.xmin
+        tmp.direction = Point(self.mesh._n)
+        tmp.direction.coordinates = tmp - self.xmin
         self.poll_dirs = tmp - self.xmin
       else:
-        tmp.direction = tmp - self.x_sc
+        tmp.direction = Point(self.mesh._n)
+        tmp.direction.coordinates = tmp - self.x_sc
         self.poll_dirs = tmp - self.x_sc
       del tmp
     del temp
@@ -489,6 +493,7 @@ class Dirs2n:
         print("Cache hit ... Failed to find a non-duplicate alternative.")
       stop = True
       bb_eval = copy.deepcopy(self.bb_eval)
+      xtry.fobj = [np.inf] * self.mesh._pbParams.nobj
       psize = copy.deepcopy(self.mesh.getDeltaFrameSize().coordinates)
       return [stop, index, self.bb_handle.bb_eval, success, psize, xtry]
 
@@ -516,7 +521,8 @@ class Dirs2n:
     xtry.RHO = copy.deepcopy(self.RHO)
     xtry.hmax = copy.deepcopy(self.hmax)
     xtry.__eval__(self.bb_output)
-    self.hashtable.add_to_best_cache(xtry)
+    if not self.hashtable._isPareto:
+      self.hashtable.add_to_best_cache(xtry)
     self.hmax = copy.deepcopy(xtry.hmax)
     toc = time.perf_counter()
     xtry.Eval_time = (toc - tic)
@@ -591,11 +597,11 @@ class Dirs2n:
         self.hmax = copy.deepcopy(xtry.hmax)
         if self.display:
           if self._dtype.dtype == np.float64:
-            print(f"Success: fmin = {self.xmin.f:.15f} (hmin = {self.xmin.h:.15})")
+            print(f"Success: fmin = {self.xmin.f} (hmin = {self.xmin.h:.15})")
           elif self._dtype.dtype == np.float32:
-            print(f"Success: fmin = {self.xmin.f:.6f} (hmin = {self.xmin.h:.6})")
+            print(f"Success: fmin = {self.xmin.f} (hmin = {self.xmin.h:.6})")
           else:
-            print(f"Success: fmin = {self.xmin.f:.18f} (hmin = {self.xmin.h:.18})")
+            print(f"Success: fmin = {self.xmin.f} (hmin = {self.xmin.h:.18})")
 
         self.mesh.psize_success = copy.deepcopy(self.mesh.getDeltaFrameSize().coordinates)
         self.mesh.psize_max = copy.deepcopy(max(self.mesh.getDeltaFrameSize().coordinates))

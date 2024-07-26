@@ -22,7 +22,7 @@
 # ------------------------------------------------------------------------------------#
 
 from .CandidatePoint import CandidatePoint
-from .Barriers import *
+from .Barriers import Barrier, BarrierMO
 # from ._common import *
 from .Omesh import Omesh
 from .Directions import *
@@ -46,7 +46,7 @@ class PrePoll:
     options = Options(**self.data["options"])
     param = Parameters(**self.data["param"])
     log.isVerbose = options.isVerbose
-    B = Barrier(param)
+    B = BarrierMO(param=param, options=options) if param.isPareto else Barrier(param)
     ev = Evaluator(**self.data["evaluator"])
     if self.log is not None:
       self.log.log_msg(msg="- Set the POLL configurations", msg_type=MSG_TYPE.INFO)
@@ -75,7 +75,7 @@ class PrePoll:
       """ 4- Construct an instant for the mesh subclass object by inheriting
       initial parameters from mesh_params() """
       # COMPLETED: Add the Gmesh constructor req inputs
-      poll.mesh = Gmesh(pbParam=param, runOptions=options) if (param._meshType).lower() == "gmesh" else Omesh(pbParam=param, runOptions=options)
+      poll.mesh = Gmesh(pbParam=param, runOptions=options) if (param.meshType).lower() == "gmesh" else Omesh(pbParam=param, runOptions=options)
       """ 5- Assign optional algorithmic parameters to the constructed poll instant  """
       poll.opportunistic = options.opportunistic
       poll.seed = options.seed
@@ -160,18 +160,31 @@ class PrePoll:
     else:
        if not is_xs:
         poll.bb_output = poll.bb_handle.eval(x_start.coordinates)
-    x_start.hmax = B._h_max
+    x_start.hmax = B._h_max if isinstance(B, Barrier) else B._hMax
     x_start.RHO = param.RHO
     
+    if param.LAMBDA is None:
+      param.LAMBDA = [0] * len(x_start.c_ineq)
+    if not isinstance(param.LAMBDA, list):
+      param.LAMBDA = [param.LAMBDA]
+    if len(x_start.c_ineq) > len(param.LAMBDA):
+      param.LAMBDA += [param.LAMBDA[-1]] * abs(len(param.LAMBDA)-len(x_start.c_ineq))
+    if len(x_start.c_ineq) < len(param.LAMBDA):
+      del param.LAMBDA[len(x_start.c_ineq):]
     x_start.LAMBDA = param.LAMBDA
     
-    x_start.LAMBDA = param.LAMBDA
     if not is_xs:
       x_start.__eval__(poll.bb_output)
-      B._h_max = x_start.hmax
+      if isinstance(B, Barrier):
+        B._h_max = x_start.hmax
+      elif isinstance(B, BarrierMO):
+        B._hMax = x_start.hmax
     """ 9- Copy the starting point object to the poll's  minimizer subclass """
     if not extend:
-      poll.xmin = copy.deepcopy(x_start)
+      if x_start.status == DESIGN_STATUS.INFEASIBLE and isinstance(B, BarrierMO):
+        poll.x_sc = copy.deepcopy(x_start)
+      else:
+        poll.xmin = copy.deepcopy(x_start)
     """ 10- Hold the starting point in the poll
      directions subclass and define problem parameters """
     poll.poll_set.append(x_start)
@@ -179,24 +192,47 @@ class PrePoll:
     poll.dim = x_start.n_dimensions
     if not extend:
       poll.hashtable = Cache()
+      poll.hashtable._n_dim = len(param.baseline)
+      poll.hashtable._isPareto = param.isPareto
+      if param.isPareto:
+        poll.hashtable.ND_points = []
     """ 10- Initialize the number of successful points
      found and check if the starting minimizer performs better
     than the worst (f = inf) """
     poll.nb_success = 0
-    if not extend and poll.xmin < CandidatePoint():
+    if not extend and poll.xmin.evaluated and poll.xmin < CandidatePoint():
       poll.poll_set = [poll.xmin]
-    elif extend and x_start < poll.xmin:
+    elif extend and x_start.status == DESIGN_STATUS.FEASIBLE and x_start < poll.xmin:
       poll.xmin = copy.deepcopy(x_start)
       poll.mesh.enlargeDeltaFrameSize()
-    elif extend and x_start >= poll.xmin:
+    elif extend and x_start.status == DESIGN_STATUS.INFEASIBLE and x_start < poll.x_sc:
+      poll.x_sc = copy.deepcopy(x_start)
+    elif extend and x_start.status == DESIGN_STATUS.FEASIBLE and x_start >= poll.xmin:
       poll.mesh.refineDeltaFrameSize()
+    elif extend and x_start.status == DESIGN_STATUS.INFEASIBLE and x_start >= poll.x_sc:
+      poll.mesh.refineDeltaFrameSize()
+    
+    poll.xmin.mesh = copy.deepcopy(poll.mesh)
+    poll.x_sc.mesh = copy.deepcopy(poll.mesh)
 
 
     """ 11- Construct the results postprocessor class object 'post' """
-    post = PostMADS(x_incumbent=[poll.xmin], xmin=poll.xmin, poll_dirs=[poll.xmin])
-    post.psize.append(poll.mesh.getDeltaFrameSize().coordinates)
-    post.bb_eval.append(poll.bb_handle.bb_eval)
-    post.iter.append(iteration)
+    if poll.xmin.evaluated:
+      x_start.evalNo = poll.bb_handle.bb_eval
+      poll.xmin.evalNo = poll.bb_handle.bb_eval
+      post = PostMADS(x_incumbent=[poll.xmin], xmin=poll.xmin, poll_dirs=[poll.xmin])
+      post.psize.append(poll.mesh.getDeltaFrameSize().coordinates)
+      post.bb_eval.append(poll.bb_handle.bb_eval)
+      
+      post.iter.append(iteration)
+    elif poll.x_sc.evaluated:
+      x_start.evalNo = poll.bb_handle.bb_eval
+      poll.x_sc.evalNo = poll.bb_handle.bb_eval
+      post = PostMADS(x_incumbent=[poll.x_sc], xmin=poll.x_sc, poll_dirs=[poll.x_sc])
+      post.psize.append(poll.mesh.getDeltaFrameSize().coordinates)
+      post.bb_eval.append(poll.bb_handle.bb_eval)
+      
+      post.iter.append(iteration)
 
     """ Note: printing the post will print a results row
      within the results table shown in Python console if the
@@ -207,7 +243,11 @@ class PrePoll:
     if options.store_cache:
       poll.hashtable.hash_id = x_start
     """ 13- Initialize the output results file object  """
-    out = Output(file_path=param.post_dir, vnames=param.var_names, pname=param.name, runfolder=f'{param.name}_run')
+    out = Output(file_path=param.post_dir, vnames=param.var_names, fnames=param.fun_names, pname=param.name, runfolder=f'{param.name}_run', suffix="all")
+    if param.isPareto:
+      outP = Output(file_path=param.post_dir, vnames=param.var_names, fnames=param.fun_names, pname=param.name, runfolder=f'{param.name}_ND', suffix="Pareto")
+    else:
+      outP = None
     if options.display:
       print("End of the evaluation of the starting points")
       if self.log is not None:
@@ -215,4 +255,4 @@ class PrePoll:
 
     iteration += 1
 
-    return iteration, x_start, poll, options, param, post, out, B
+    return iteration, x_start, poll, options, param, post, out, B, outP

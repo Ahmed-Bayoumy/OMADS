@@ -21,7 +21,7 @@ def thin_con(x):
   f = np.sqrt((x[0]-20)**2 + (x[1]-1)**2)
   c1 = np.sin(x[0])-0.1-x[1]
   c2 = x[1] - np.sin(x[0])
-  y = [f, [c1, c2]]
+  y = [[f], [c1, c2]]
   return y
 
 
@@ -52,14 +52,17 @@ def test_MADS_callable_quick_2d():
   outM: Dict = MADS.main(data)
   outP: Dict = POLL.main(data)
   outS: Dict = SEARCH.main(data)
-  if (outM[0]["fmin"] > 0.0006):
-    raise ValueError(f"MADS: fmin > {0.0006}")
+  OM = outM[0]["fmin"][0]
+  OP = outP[0]["fmin"][0]
+  OS = outS[0]["fmin"][0]
+  if (outM[0]["fmin"][0] > 0.0006):
+    raise ValueError(f"\nMADS: fmin: {OM} > {0.0006} \nPoll: fmin = {OP}\nSearch: fmin = {OS}")
   
-  if (outP[0]["fmin"] > 0.0006):
-    raise ValueError(f"POLL: fmin > {0.0006}")
+  if (outP[0]["fmin"][0] > 0.0006):
+    raise ValueError(f"\nPOLL: fmin: {OP} > {0.0006} \nMADS: fmin = {OM}\nSearch: fmin = {OS}")
   
-  if (outS[0]["fmin"] > 0.0006):
-    raise ValueError(f"Search: fmin > {0.0006}")
+  if (outS[0]["fmin"][0] > 0.0006):
+    raise ValueError(f"\nSearch: fmin {OS} > {0.0006} \nMADS: fmin = {OM}\nPoll: fmin = {OP}")
 
 def test_MADS_callable_quick_const_2d():
   d = 2
@@ -87,12 +90,10 @@ def test_MADS_callable_quick_const_2d():
   data = {"evaluator": eval, "param": param, "options": options, "sampling": sampling, "search": search}
 
   outM: Dict = MADS.main(data)
+  OM = outM[0]["fmin"][0] 
 
-  if (outM[0]["fmin"] > 0.098):
-    raise ValueError(f"MADS: fmin > {0.098}")
-
-  
-
+  if (outM[0]["fmin"][0] > 0.098):
+    raise ValueError(f"MADS: fmin: {OM} > {0.098}")
 
 def test_MADS_callable_quick_10d():
   d = 10
@@ -126,15 +127,15 @@ def test_MADS_callable_quick_10d():
   data = {"evaluator": eval, "param": param, "options": options, "sampling": sampling, "search": search}
   outS: Dict = SEARCH.main(data)
 
-  if (outS[0]["fmin"] > 0.0006):
+  if (outS[0]["fmin"][0] > 0.0006):
     raise ValueError(f"Search: fmin > {0.0006}")
   
   outP: Dict = POLL.main(data)
-  if (outP[0]["fmin"] > 0.25):
+  if (outP[0]["fmin"][0] > 0.25):
     raise ValueError(f"POLL: fmin > {0.25}")
   
   outM: Dict = MADS.main(data)
-  if (outM[0]["fmin"] > 0.0006):
+  if (outM[0]["fmin"][0] > 0.0006):
     raise ValueError(f"MADS: fmin > {0.0006}")
 
 def test_MADS_callable_quick_20d():
@@ -164,17 +165,17 @@ def test_MADS_callable_quick_20d():
 
   data = {"evaluator": eval, "param": param, "options": options, "sampling": sampling, "search": search}
   outS: Dict = SEARCH.main(data)
-  SR = outS[0]["fmin"]
+  SR = outS[0]["fmin"][0]
   if (SR > 0.0006 and platform.platform().split('-')[0] == 'Windows'):
     raise ValueError(f"Search: fmin {SR} > {0.0006}")
   
   outP: Dict = POLL.main(data)
-  PR = outP[0]["fmin"]
+  PR = outP[0]["fmin"][0]
   if (PR > 2.7 and platform.platform().split('-')[0] == 'Windows'):
     raise ValueError(f"POLL: fmin {PR} > {2.7}")
   
   outM: Dict = MADS.main(data)
-  MR = outM[0]["fmin"]
+  MR = outM[0]["fmin"][0]
   if (MR > 0.0006 and platform.platform().split('-')[0] == 'Windows'):
     raise ValueError(f"MADS: fmin {MR} > {0.0006}")
 
@@ -223,8 +224,8 @@ def test_omads_toy_quick():
 
   p_file_2 = os.path.abspath("./tests/bm/constrained/geom_prog.json")
   outP = POLL.main(p_file_2)
-  res = outP[0]["fmin"]
-  if (outP[0]["fmin"] > 23.8 and platform.platform().split('-')[0] == 'Windows'):
+  res = outP[0]["fmin"][0]
+  if (outP[0]["fmin"][0] > 23.8 and platform.platform().split('-')[0] == 'Windows'):
     raise ValueError(f"GP: Poll: fmin = {res} > {23.8}")
  
 

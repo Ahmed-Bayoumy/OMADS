@@ -22,3 +22,6 @@ post
 docs-dev
 build/
 test_OMADS_COMPERHENSIVE.py
+visualize.py
+vis.py
+deeplearning.mplstyle
