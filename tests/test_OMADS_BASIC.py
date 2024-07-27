@@ -1,14 +1,26 @@
+import importlib
 from OMADS import POLL, SEARCH, MADS
 from matplotlib import pyplot as plt
 import copy
 import os
-from BMDFO import toy
 import numpy as np
 
 from typing import Dict, List
 from multiprocessing import freeze_support
 import platform
 
+def geom_prog(x, *argv):
+  xx = x
+  x2 = np.sqrt(xx[3] ** 2 + xx[4] ** -2 + xx[5] ** -2 + xx[6] ** 2)
+  x5 = np.sqrt(xx[6] ** 2 + xx[7] ** 2 + xx[8] ** 2 + xx[9] ** 2)
+  x0 = np.sqrt(x2 ** 2 + xx[0] ** -2 + xx[1] ** 2)
+  x1 = np.sqrt(xx[1] ** 2 + x5 ** 2 + xx[2] ** 2)
+
+  f = x0 ** 2 + x1 ** 2
+  c = [x2 ** -2 + xx[0] ** 2 - xx[1] ** 2, xx[1] ** 2 + x5 ** -2 - xx[2] ** 2,
+        xx[3] ** 2 + xx[4] ** 2 - xx[6] ** 2, xx[3] ** -2 + xx[5] ** 2 - xx[6] ** 2,
+        xx[6] ** 2 + xx[7] ** -2 - xx[8] ** 2, xx[6] ** 2 + xx[7] ** 2 - xx[9] ** 2]
+  return [f, c]
 
 def rosen(x, *argv):
   x = np.asarray(x)
@@ -213,16 +225,102 @@ def test_omads_toy_quick():
   assert POLL.PostMADS
   assert POLL.main
 
-  p_file_1 = os.path.abspath("./tests/bm/unconstrained/rosenbrock.json")
-  POLL.main(p_file_1)
+  if importlib.util.find_spec('BMDFO'):
+    from BMDFO import toy
+    p_file = os.path.abspath("./tests/bm/unconstrained/rosenbrock.json")
+    p_file_2 = os.path.abspath("./tests/bm/constrained/geom_prog.json")
+  else:
+    p_file = {
+    "evaluator":
+      {
+        "blackbox": rosen,
+      },
+    "param":
+      {
+        "baseline": [-2.0,-2.0],
+        "lb": [-5, -5],
+        "ub": [10, 10],
+        "var_names": ["x1", "x2"],
+        "scaling": 10.0,
+        "post_dir": "./tests/bm/unconstrained/post"
+      },
 
-  p_file_3 = os.path.abspath("./tests/bm/unconstrained/rosenbrock.json")
-  SEARCH.main(p_file_3)
+    "options":
+      {
+        "seed": 0,
+        "budget": 100000,
+        "tol": 1e-12,
+        "psize_init": 1,
+        "display": False,
+        "opportunistic": False,
+        "check_cache": True,
+        "store_cache": True,
+        "collect_y": False,
+        "rich_direction": True,
+        "precision": "high",
+        "save_results": False,
+        "save_coordinates": False,
+        "save_all_best": False,
+        "parallel_mode": False
+      },
+      "search": {
+        "type": "VNS",
+        "s_method": "LH",
+        "ns": 100,
+        "visualize": False
+      }
+  }
+    p_file_2 = {
+  "evaluator":
+    {
+      "blackbox": geom_prog,
+    },
 
-  p_file_5 = os.path.abspath("./tests/bm/unconstrained/rosenbrock.json")
-  MADS.main(p_file_5)
+  "param":
+    {
+      "name": "GP",
+      "baseline": [1E5,1E5,1E5,1E5,1E5,1E5,1E5,1E5,1E5,1E5],
+      "lb": [1e-6,1e-6,1e-6,1e-6,1e-6,1e-6,1e-6,1e-6,1e-6,1e-6],
+      "ub": [1e6,1e6,1e6,1e6,1e6,1e6,1e6,1e6,1e6,1e6],
+      "var_names": ["x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9", "x10"],
+      "scaling": 10,
+      "constraints_type": ["PB", "PB", "PB","PB", "PB", "PB"],
+      "LAMBDA": [1E5, 1E5, 1E5, 1E5, 1E5, 1E5],
+      "RHO": 1.0,
+      "post_dir": "./tests/bm/constrained/post",
+      "h_max": 0.0
+    },
 
-  p_file_2 = os.path.abspath("./tests/bm/constrained/geom_prog.json")
+  "options":
+    {
+      "seed": 10000,
+      "budget": 100000,
+      "tol": 1e-12,
+      "psize_init": 2.0,
+      "display": False,
+      "opportunistic": False,
+      "check_cache": True,
+      "store_cache": True,
+      "collect_y": False,
+      "rich_direction": True,
+      "precision": "high",
+      "save_results": False,
+      "save_coordinates": False,
+      "save_all_best": False,
+      "parallel_mode": False
+    },
+    "search": {
+      "type": "sampling",
+      "s_method": "ACTIVE",
+      "ns": 500,
+      "visualize": False
+    }
+}
+  
+  POLL.main(p_file)
+  SEARCH.main(p_file)
+  MADS.main(p_file)
+
   outP = POLL.main(p_file_2)
   res = outP[0]["fmin"][0]
   if (outP[0]["fmin"][0] > 23.8 and platform.platform().split('-')[0] == 'Windows'):
@@ -233,11 +331,8 @@ def test_omads_toy_quick():
   data = {
     "evaluator":
       {
-        "blackbox": "rosenbrock",
-        "internal": "uncon",
-        "path": os.path.abspath(".\\bm"),
-        "input": "input.inp",
-        "output": "output.out"},
+        "blackbox": rosen
+      },
 
     "param":
       {

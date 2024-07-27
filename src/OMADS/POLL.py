@@ -25,15 +25,18 @@
   This is a python implementation of the orothognal mesh adaptive direct search method (OMADS)
 """
 import copy
+import importlib
 import json
 from multiprocessing import freeze_support
 import os
+import pkgutil
 import sys
 import numpy as np
 import concurrent.futures
 import time
 from typing import List, Dict, Any
-from BMDFO import toy
+if importlib.util.find_spec('BMDFO'):
+  from BMDFO import toy
 from .Point import Point
 from .Barriers import Barrier, BarrierMO
 from ._common import *
@@ -277,7 +280,7 @@ def main(*args) -> Dict[str, Any]:
   toc = time.perf_counter()
 
   """ If benchmarking, then populate the results in the benchmarking output report """
-  if len(args) > 1 and isinstance(args[1], toy.Run):
+  if importlib.util.find_spec('BMDFO') and len(args) > 1 and isinstance(args[1], toy.Run):
     b: toy.Run = args[1]
     if b.test_suite == "uncon":
       ncon = 0
@@ -297,7 +300,7 @@ def main(*args) -> Dict[str, Any]:
             fmin=poll.xmin.f)
     print(f"{poll.bb_handle.blackbox}: fmin = {poll.xmin.f} , hmin= {poll.xmin.h:.2f}")
 
-  elif len(args) > 1 and not isinstance(args[1], toy.Run):
+  elif importlib.util.find_spec('BMDFO') and len(args) > 1 and not isinstance(args[1], toy.Run):
     if log is not None:
       log.log_msg(msg="Could not find " + args[1] + " in the internal BM suite.", msg_type=MSG_TYPE.ERROR)
     raise IOError("Could not find " + args[1] + " in the internal BM suite.")

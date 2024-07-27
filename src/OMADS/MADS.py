@@ -22,6 +22,7 @@
 # ------------------------------------------------------------------------------------#
 
 import copy
+import importlib
 import json
 from multiprocessing import freeze_support
 import os
@@ -30,7 +31,8 @@ import OMADS.POLL as PS
 import OMADS.SEARCH as SS
 from typing import List, Dict, Any
 import numpy as np
-from BMDFO import toy
+if importlib.util.find_spec('BMDFO'):
+  from BMDFO import toy
 import time
 from .Point import Point
 from .CandidatePoint import CandidatePoint
@@ -587,7 +589,7 @@ def main(*args) -> Dict[str, Any]:
     HV = perfM.hypervolume()
 
   """ If benchmarking, then populate the results in the benchmarking output report """
-  if len(args) > 1 and isinstance(args[1], PS.toy.Run):
+  if importlib.util.find_spec('BMDFO') and len(args) > 1 and isinstance(args[1], PS.toy.Run):
     b: PS.toy.Run = args[1]
     if b.test_suite == "uncon":
       ncon = 0
@@ -607,7 +609,7 @@ def main(*args) -> Dict[str, Any]:
             fmin=poll.xmin.f)
     print(f"{poll.bb_handle.blackbox}: fmin = {poll.xmin.f} , hmin= {poll.xmin.h:.2f}")
 
-  elif len(args) > 1 and not isinstance(args[1], toy.Run):
+  elif importlib.util.find_spec('BMDFO') and len(args) > 1 and not isinstance(args[1], toy.Run):
     raise IOError("Could not find " + args[1] + " in the internal BM suite.")
 
   # if options.save_results:

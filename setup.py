@@ -10,14 +10,13 @@ if __name__ == "__main__":
     description="Mesh Adaptive Direct Search (MADS)",
     install_requires=[
       'samplersLib>=24.2.0',
-      'cocopp==2.6.3',
-      'NOBM',
       'numpy<1.24.0',
       'pandas',
       'setuptools>=58.1.0',
       'pyDOE2',
-      'scipy'
-      
+      'scipy',
+      "pytest",
+      "pytest-cov"
     ],
     extras_require={
         'interactive': ['matplotlib>=3.5.2', 'plotly>=5.14.1'],
