@@ -44,6 +44,8 @@ from inspect import signature
 import subprocess
 from multiprocessing import cpu_count
 
+np.set_printoptions(legacy='1.21')
+
 @dataclass
 class validator:
 
@@ -295,9 +297,9 @@ class PostMADS:
 
   def __str__(self):
     """ Initialize the log file """
-    return f'{"iteration= "} {self.iter[-1]}, {"bbeval= "} ' \
-         f'{self.bb_eval[-1]}, {"psize= "} {self.psize[-1]}, ' \
-         f'{"hmin = "} 'f'{self.xmin.h if self.xmin else None}, {"status: "} {self.xmin.status.name if self.xmin else None} {", fmin = "} {self.xmin.f if self.xmin else None}'
+    return f'"iteration=  {self.iter[-1]}, bbeval=  ' \
+         f'{self.bb_eval[-1]}, psize=  {self.psize[-1]}, ' \
+         f'hmin =  {self.xmin.h if self.xmin else None}, status:  {self.xmin.status.name if self.xmin else None} , fmin =  {self.xmin.f if self.xmin else None}'
 
   def __add_to_cache__(self, x: CandidatePoint):
     self.x_incumbent.append(x)

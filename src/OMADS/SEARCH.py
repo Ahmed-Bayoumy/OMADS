@@ -40,6 +40,7 @@ from ._common import *
 from .Directions import *
 from .Exploration import *
 from .PreExploration import *
+np.set_printoptions(legacy='1.21')
 
 def main(*args) -> Dict[str, Any]:
   """ MADS: Search step main algorithm """
@@ -304,10 +305,11 @@ def main(*args) -> Dict[str, Any]:
 
     if options.save_results:
       post.nd_points = []
-      for i in range(len(B.getAllPoints())):
-        post.nd_points.append(B.getAllPoints()[i])
+      
       post.output_results(out=out, allRes=False)
       if param.isPareto:
+        for i in range(len(B.getAllPoints())):
+          post.nd_points.append(B.getAllPoints()[i])
         post.output_nd_results(outP)
       
     if log is not None:

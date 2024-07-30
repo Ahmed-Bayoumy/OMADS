@@ -43,6 +43,7 @@ from ._common import *
 from .Directions import *
 from .PrePoll import *
 from .CandidatePoint import CandidatePoint
+np.set_printoptions(legacy='1.21')
 
 def main(*args) -> Dict[str, Any]:
   """ MADS: Poll step main algorithm """
@@ -256,10 +257,10 @@ def main(*args) -> Dict[str, Any]:
     
     if options.save_results:
       post.nd_points = []
-      for i in range(len(B.getAllPoints())):
-        post.nd_points.append(B.getAllPoints()[i])
       post.output_results(out)
       if param.isPareto:
+        for i in range(len(B.getAllPoints())):
+          post.nd_points.append(B.getAllPoints()[i])
         post.output_nd_results(outP)
 
     Failure_check = iteration > 0 and poll.Failure_stop is not None and poll.Failure_stop and (poll.success == SUCCESS_TYPES.US or goToSearch)

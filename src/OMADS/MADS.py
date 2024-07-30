@@ -43,6 +43,7 @@ from .Parameters import Parameters
 from .Options import Options
 
 from .Metrics import Metrics
+np.set_printoptions(legacy='1.21')
 
 
 def search_step(iteration: int, search: SS.efficient_exploration = None, B: SS.auto = None, LAMBDA_k: float=None, RHO_k: float=None, search_VN: SS.VNS = None, post: PS.PostMADS=None, out: PS.Output=None, options: PS.Options=None, xmin: SS.CandidatePoint=None, peval: int=0, HT: Any=None, log:logger = None, outP: PS.Output=None):
