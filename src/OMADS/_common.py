@@ -24,6 +24,7 @@
 
 import copy
 from dataclasses import dataclass, field
+import importlib
 import logging
 import operator
 import time
@@ -37,10 +38,13 @@ from .CandidatePoint import CandidatePoint
 import csv
 import json
 from ._globals import *
-from BMDFO import toy
+if importlib.util.find_spec('BMDFO'):
+  from BMDFO import toy
 from inspect import signature
 import subprocess
 from multiprocessing import cpu_count
+
+np.set_printoptions(legacy='1.21')
 
 @dataclass
 class validator:
@@ -293,9 +297,9 @@ class PostMADS:
 
   def __str__(self):
     """ Initialize the log file """
-    return f'{"iteration= "} {self.iter[-1]}, {"bbeval= "} ' \
-         f'{self.bb_eval[-1]}, {"psize= "} {self.psize[-1]}, ' \
-         f'{"hmin = "} 'f'{self.xmin.h if self.xmin else None}, {"status: "} {self.xmin.status.name if self.xmin else None} {", fmin = "} {self.xmin.f if self.xmin else None}'
+    return f'"iteration=  {self.iter[-1]}, bbeval=  ' \
+         f'{self.bb_eval[-1]}, psize=  {self.psize[-1]}, ' \
+         f'hmin =  {self.xmin.h if self.xmin else None}, status:  {self.xmin.status.name if self.xmin else None} , fmin =  {self.xmin.f if self.xmin else None}'
 
   def __add_to_cache__(self, x: CandidatePoint):
     self.x_incumbent.append(x)
@@ -430,9 +434,9 @@ class Evaluator:
         else:
           out = [self.read_output()[0], [self.read_output()[1:]]]
         return out
-    elif self.internal == "uncon":
+    elif importlib.util.find_spec('BMDFO') and self.internal == "uncon":
       f_eval = toy.UnconSO(values)
-    elif self.internal == "con":
+    elif importlib.util.find_spec('BMDFO') and self.internal == "con":
       f_eval = toy.ConSO(values)
     else:
       raise IOError(f"Input dict:: evaluator:: internal:: "

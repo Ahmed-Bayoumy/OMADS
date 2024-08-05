@@ -22,6 +22,7 @@
 # ------------------------------------------------------------------------------------#
 
 import copy
+import importlib
 import json
 from multiprocessing import freeze_support
 import os
@@ -30,7 +31,8 @@ import OMADS.POLL as PS
 import OMADS.SEARCH as SS
 from typing import List, Dict, Any
 import numpy as np
-from BMDFO import toy
+if importlib.util.find_spec('BMDFO'):
+  from BMDFO import toy
 import time
 from .Point import Point
 from .CandidatePoint import CandidatePoint
@@ -41,6 +43,7 @@ from .Parameters import Parameters
 from .Options import Options
 
 from .Metrics import Metrics
+np.set_printoptions(legacy='1.21')
 
 
 def search_step(iteration: int, search: SS.efficient_exploration = None, B: SS.auto = None, LAMBDA_k: float=None, RHO_k: float=None, search_VN: SS.VNS = None, post: PS.PostMADS=None, out: PS.Output=None, options: PS.Options=None, xmin: SS.CandidatePoint=None, peval: int=0, HT: Any=None, log:logger = None, outP: PS.Output=None):
@@ -489,7 +492,11 @@ def main(*args) -> Dict[str, Any]:
   """ Initialize the log file """
   log = logger()
   if not os.path.exists(data["param"]["post_dir"]):
-     os.mkdir(data["param"]["post_dir"])
+     try:
+      os.mkdir(data["param"]["post_dir"])
+     except:
+      os.makedirs(data["param"]["post_dir"], exist_ok=True)
+
   log.initialize(data["param"]["post_dir"] + "/OMADS.log")
 
   """ Run preprocessor for the setup of
@@ -587,7 +594,7 @@ def main(*args) -> Dict[str, Any]:
     HV = perfM.hypervolume()
 
   """ If benchmarking, then populate the results in the benchmarking output report """
-  if len(args) > 1 and isinstance(args[1], PS.toy.Run):
+  if importlib.util.find_spec('BMDFO') and len(args) > 1 and isinstance(args[1], PS.toy.Run):
     b: PS.toy.Run = args[1]
     if b.test_suite == "uncon":
       ncon = 0
@@ -607,7 +614,7 @@ def main(*args) -> Dict[str, Any]:
             fmin=poll.xmin.f)
     print(f"{poll.bb_handle.blackbox}: fmin = {poll.xmin.f} , hmin= {poll.xmin.h:.2f}")
 
-  elif len(args) > 1 and not isinstance(args[1], toy.Run):
+  elif importlib.util.find_spec('BMDFO') and len(args) > 1 and not isinstance(args[1], toy.Run):
     raise IOError("Could not find " + args[1] + " in the internal BM suite.")
 
   # if options.save_results:
