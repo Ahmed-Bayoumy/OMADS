@@ -1,5 +1,4 @@
 from OMADS import POLL, SEARCH, MADS
-from matplotlib import pyplot as plt
 import copy
 import os
 import numpy as np
