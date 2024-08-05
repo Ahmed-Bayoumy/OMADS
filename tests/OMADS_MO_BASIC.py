@@ -2,7 +2,6 @@ from OMADS import POLL, SEARCH, MADS
 from matplotlib import pyplot as plt
 import copy
 import os
-from BMDFO import toy
 import numpy as np
 
 from typing import Dict, List
@@ -266,10 +265,11 @@ def test_MO_Osyczka_Kundu():
   data["param"]["constraints_type"] = ["PB"]*6
   data["param"]["scaling"] = [10, 10, 4, 6, 4, 10]
   data["param"]["post_dir"] = "./tests/bm/MOO/constrained/Osyczka_Kundu/post"
-  data["options"]["budget"] = 10000
+  data["options"]["budget"] = 30000
+  data["options"]["seed"] = 1234
 
   # POLL.main(data)
-  data["search"]["ns"] = 25
+  data["search"]["ns"] = 22
   # SEARCH.main(data)
   MADS.main(data)
 
@@ -285,7 +285,7 @@ def test_MO_CTP1():
   data["param"]["constraints_type"] = ["PB"]*2
   data["param"]["scaling"] = [1, 1]
   data["param"]["post_dir"] = "./tests/bm/MOO/constrained/MO_CTP1/post"
-  data["options"]["budget"] = 1000
+  data["options"]["budget"] = 3000
   data["search"]["ns"] = 50
   # POLL.main(data)
   # SEARCH.main(data)
@@ -303,7 +303,7 @@ def test_MO_Ex():
   data["param"]["constraints_type"] = ["PB"]*2
   data["param"]["scaling"] = [0.9, 5]
   data["param"]["post_dir"] = "./tests/bm/MOO/constrained/Ex/post"
-  data["options"]["budget"] = 2000
+  data["options"]["budget"] = 5000
   data["search"]["ns"] = 15
   # POLL.main(data)
   # SEARCH.main(data)

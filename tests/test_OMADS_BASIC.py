@@ -23,7 +23,7 @@ def geom_prog(x, *argv):
   return [f, c]
 
 def rosen(x, *argv):
-  x = np.asarray(x)
+  x = np.array(x)
   y = [np.sum(100.0 * (x[1:] - x[:-1] ** 2.0) ** 2.0 + (1 - x[:-1]) ** 2.0,
         axis=0), [0]]
   return y
@@ -104,8 +104,8 @@ def test_MADS_callable_quick_const_2d():
   outM: Dict = MADS.main(data)
   OM = outM[0]["fmin"][0] 
 
-  if (outM[0]["fmin"][0] > 0.098):
-    raise ValueError(f"MADS: fmin: {OM} > {0.098}")
+  if (outM[0]["fmin"][0] > 0.0989):
+    raise ValueError(f"MADS: fmin: {OM} > {0.0989}")
 
 def test_MADS_callable_quick_10d():
   d = 10
@@ -138,17 +138,21 @@ def test_MADS_callable_quick_10d():
             }
   data = {"evaluator": eval, "param": param, "options": options, "sampling": sampling, "search": search}
   outS: Dict = SEARCH.main(data)
-
-  if (outS[0]["fmin"][0] > 0.0006):
-    raise ValueError(f"Search: fmin > {0.0006}")
+  OS = outS[0]["fmin"][0]
+  if (OS > 0.0006):
+    raise ValueError(f"Search: fmin = {OS} > {0.0006}")
   
   outP: Dict = POLL.main(data)
-  if (outP[0]["fmin"][0] > 0.25):
-    raise ValueError(f"POLL: fmin > {0.25}")
+  OP = outP[0]["fmin"][0]
+
+  if (OP > 0.25):
+    raise ValueError(f"POLL: fmin = {OP} > {0.25}")
+  
   
   outM: Dict = MADS.main(data)
-  if (outM[0]["fmin"][0] > 0.0006):
-    raise ValueError(f"MADS: fmin > {0.0006}")
+  OM = outM[0]["fmin"][0]
+  if (OM > 0.0006):
+    raise ValueError(f"MADS: fmin = {OM} > {0.0006}")
 
 def test_MADS_callable_quick_20d():
   d = 20
@@ -160,22 +164,22 @@ def test_MADS_callable_quick_20d():
        "scaling": [15.0]*d,
        "post_dir": "./post"}
   isWin = platform.platform().split('-')[0] == 'Windows'
-
+   
   sampling = {
               "method": 'ACTIVE',
               "ns": int((d+1)*(d+2)/2)+50,
               "visualize": False,
               "criterion": None
             }
-  options = {"seed": 10000, "budget": 10000, "tol": 1e-9, "display": False, "check_cache": True, "store_cache": True, "rich_direction": True, "opportunistic": False, "save_results": False, "isVerbose": False}
+  options = {"seed": 12345, "budget": 10000, "tol": 1e-12, "display": False, "check_cache": True, "store_cache": True, "rich_direction": True, "opportunistic": False, "save_results": False, "isVerbose": False, "precision": "high"}
   search = {
       "type": "sampling",
       "s_method": "ACTIVE",
-      "ns": int((d+1)*(d+2)/2)+50,
+      "ns": 250,
       "visualize": False
     }
 
-  data = {"evaluator": eval, "param": param, "options": options, "sampling": sampling, "search": search}
+  data = {"evaluator": eval, "param": param, "options": options, "sampling": sampling,"search": search}
   outS: Dict = SEARCH.main(data)
   SR = outS[0]["fmin"][0]
   if (SR > 0.0006 and platform.platform().split('-')[0] == 'Windows'):

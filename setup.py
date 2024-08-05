@@ -5,17 +5,16 @@ if __name__ == "__main__":
     name="OMADS",
     author="Ahmed H. Bayoumy",
     author_email="ahmed.bayoumy@mail.mcgill.ca",
-    version='2407.0',
+    version='2408.0',
     packages=find_packages(include=['OMADS', 'OMADS.*']),
     description="Mesh Adaptive Direct Search (MADS)",
     install_requires=[
-      'samplersLib>=24.2.0',
-      'numpy<1.24.0',
       'pandas',
       'setuptools>=58.1.0',
-      'pyDOE2',
       'scipy',
+      'pyDOE2',
       "pytest",
+      'samplersLib>=2408',
       "pytest-cov"
     ],
     extras_require={
