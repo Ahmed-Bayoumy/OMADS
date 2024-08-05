@@ -92,7 +92,7 @@ def test_MADS_callable_quick_const_2d():
                     "visualize": False,
                     "criterion": None
                   }
-  options = {"seed": 1234, "budget": 2000, "tol": 1e-9, "display": False, "check_cache": True, "store_cache": True, "rich_direction": True, "opportunistic": False, "save_results": False, "isVerbose": False}
+  options = {"seed": 0, "budget": 2000, "tol": 1e-9, "display": False, "check_cache": True, "store_cache": True, "rich_direction": True, "opportunistic": False, "save_results": False, "isVerbose": False, "precision": "high"}
   search = {
       "type": "sampling",
       "s_method": "ACTIVE",
