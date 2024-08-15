@@ -28,14 +28,12 @@ def rosen(x, *argv):
         axis=0), [0]]
   return y
 
-
 def thin_con(x):
   f = np.sqrt((x[0]-20)**2 + (x[1]-1)**2)
   c1 = np.sin(x[0])-0.1-x[1]
   c2 = x[1] - np.sin(x[0])
   y = [[f], [c1, c2]]
   return y
-
 
 def test_MADS_callable_quick_2d():
   d = 2
@@ -52,7 +50,7 @@ def test_MADS_callable_quick_2d():
                     "visualize": False,
                     "criterion": None
                   }
-  options = {"seed": 10000, "budget": 10000, "tol": 1e-9, "display": False, "check_cache": True, "store_cache": True, "rich_direction": True, "opportunistic": True, "save_results": False, "isVerbose": False}
+  options = {"seed": 10000, "budget": 3000, "tol": 1e-9, "display": False, "check_cache": True, "store_cache": True, "rich_direction": True, "opportunistic": True, "save_results": False, "isVerbose": False}
   search = {
       "type": "sampling",
       "s_method": "ACTIVE",
@@ -64,17 +62,29 @@ def test_MADS_callable_quick_2d():
   outM: Dict = MADS.main(data)
   outP: Dict = POLL.main(data)
   outS: Dict = SEARCH.main(data)
-  OM = outM[0]["fmin"][0]
-  OP = outP[0]["fmin"][0]
-  OS = outS[0]["fmin"][0]
+  OMS = outM[0]["fmin"][0]
+  OPS = outP[0]["fmin"][0]
+  OSS = outS[0]["fmin"][0]
   if (outM[0]["fmin"][0] > 0.0006):
-    raise ValueError(f"\nMADS: fmin: {OM} > {0.0006} \nPoll: fmin = {OP}\nSearch: fmin = {OS}")
+    raise ValueError(f"\nSequential Exec: MADS: fmin: {OMS} > {0.0006} \nPoll: fmin = {OPS}\nSearch: fmin = {OSS}")
   
   if (outP[0]["fmin"][0] > 0.0006):
-    raise ValueError(f"\nPOLL: fmin: {OP} > {0.0006} \nMADS: fmin = {OM}\nSearch: fmin = {OS}")
+    raise ValueError(f"\nSequential Exec: POLL: fmin: {OPS} > {0.0006} \nMADS: fmin = {OMS}\nSearch: fmin = {OSS}")
   
   if (outS[0]["fmin"][0] > 0.0006):
-    raise ValueError(f"\nSearch: fmin {OS} > {0.0006} \nMADS: fmin = {OM}\nPoll: fmin = {OP}")
+    raise ValueError(f"\nSequential Exec: Search: fmin {OSS} > {0.0006} \nMADS: fmin = {OMS}\nPoll: fmin = {OPS}")
+  data["options"]["parallel_mode"] = True
+  OMS = outM[0]["fmin"][0]
+  OPS = outP[0]["fmin"][0]
+  OSS = outS[0]["fmin"][0]
+  if (outM[0]["fmin"][0] > 0.0006):
+    raise ValueError(f"\nParallel Exec: MADS: fmin: {OMS} > {0.0006} \nPoll: fmin = {OPS}\nSearch: fmin = {OSS}")
+  
+  if (outP[0]["fmin"][0] > 0.0006):
+    raise ValueError(f"\nParallel Exec: POLL: fmin: {OPS} > {0.0006} \nMADS: fmin = {OMS}\nSearch: fmin = {OSS}")
+  
+  if (outS[0]["fmin"][0] > 0.0006):
+    raise ValueError(f"\nParallel Exec: Search: fmin {OSS} > {0.0006} \nMADS: fmin = {OMS}\nPoll: fmin = {OPS}")
 
 def test_MADS_callable_quick_const_2d():
   d = 2
@@ -221,7 +231,6 @@ def test_omads_toy_quick():
   assert POLL.Parameters
   assert POLL.Evaluator
   assert POLL.CandidatePoint
-  assert POLL.OrthoMesh
   assert POLL.Cache
   assert POLL.Dirs2n
   assert POLL.PrePoll

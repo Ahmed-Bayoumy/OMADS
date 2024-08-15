@@ -25,6 +25,8 @@ from typing import Callable
 from .Parameters import Parameters
 from .Options import Options
 from .Omesh import Omesh
+from multiprocessing import cpu_count
+from .PostProcess import PostMADS, Output
 @dataclass
 class PreExploration:
   """ Preprocessor for setting up optimization settings and parameters"""

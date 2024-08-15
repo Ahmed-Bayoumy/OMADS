@@ -43,6 +43,8 @@ from ._common import *
 from .Directions import *
 from .PrePoll import *
 from .CandidatePoint import CandidatePoint
+from .PostProcess import Output, PostMADS
+
 np.set_printoptions(legacy='1.21')
 
 def main(*args) -> Dict[str, Any]:

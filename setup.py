@@ -5,7 +5,7 @@ if __name__ == "__main__":
     name="OMADS",
     author="Ahmed H. Bayoumy",
     author_email="ahmed.bayoumy@mail.mcgill.ca",
-    version='2408.0',
+    version='2408.1',
     packages=find_packages(include=['OMADS', 'OMADS.*']),
     description="Mesh Adaptive Direct Search (MADS)",
     install_requires=[

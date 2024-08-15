@@ -22,14 +22,16 @@
 # ------------------------------------------------------------------------------------#
 
 
+import time
 from .CandidatePoint import CandidatePoint
 from .Point import Point
 from .Barriers import *
-from ._common import *
+from ._common import logger
 from dataclasses import dataclass, field
 from typing import List, Dict, Any
 from .Gmesh import Gmesh
-
+from .Cache import Cache
+from .Evaluator import Evaluator
 @dataclass
 class Dirs2n:
   """This is the orthognal 2n-directions class used for the poll step
@@ -386,7 +388,7 @@ class Dirs2n:
     self.iter = it
 
   def scale(self, ub: List[float], lb: List[float], factor: float = 10.0):
-    self.scaling = np.divide(subtract(ub, lb, dtype=self._dtype.dtype),
+    self.scaling = np.divide(np.subtract(ub, lb, dtype=self._dtype.dtype),
                  factor, dtype=self._dtype.dtype)
     if any(np.isinf(self.scaling)):
       for k, x in enumerate(np.isinf(self.scaling)):

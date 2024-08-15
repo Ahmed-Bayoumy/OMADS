@@ -36,12 +36,12 @@ if importlib.util.find_spec('BMDFO'):
 import time
 from .Point import Point
 from .CandidatePoint import CandidatePoint
-from ._common import logger, MSG_TYPE, PostMADS, Output
+from ._common import logger, MSG_TYPE
 from ._globals import DESIGN_STATUS, SAMPLING_METHOD, SUCCESS_TYPES
 from .Barriers import Barrier, BarrierMO
 from .Parameters import Parameters
 from .Options import Options
-
+from .PostProcess import Output, PostMADS
 from .Metrics import Metrics
 np.set_printoptions(legacy='1.21')
 

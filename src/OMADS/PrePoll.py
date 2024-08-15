@@ -28,6 +28,9 @@ from .Omesh import Omesh
 from .Directions import *
 from .Parameters import Parameters
 from .Options import Options
+from .Evaluator import Evaluator
+from multiprocessing import cpu_count
+from .PostProcess import PostMADS, Output
 
 @dataclass
 class PrePoll:

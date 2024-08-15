@@ -31,7 +31,7 @@ import random
 from matplotlib import pyplot as plt
 from ._globals import *
 from .Parameters import Parameters
-
+from .Evaluator import Evaluator
 
 @dataclass
 class VNS_data:

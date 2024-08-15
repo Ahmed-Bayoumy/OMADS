@@ -7,7 +7,7 @@ from ._globals import *
 import numpy as np
 from typing import Protocol
 from .Parameters import Parameters
-from ._common import Cache
+from .Cache import Cache
 
 @dataclass
 class BarrierData(Protocol):
