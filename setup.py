@@ -13,7 +13,8 @@ if __name__ == "__main__":
       'setuptools>=58.1.0',
       'scipy',
       'pyDOE2',
-      'samplersLib>=2408'
+      'samplersLib>=2408',
+      'paramiko>=3.4.0'
     ],
     extras_require={
         'interactive': ['matplotlib>=3.5.2', 'plotly>=5.14.1'],
