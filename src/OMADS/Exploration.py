@@ -657,6 +657,41 @@ class efficient_exploration:
     
     return pts
   
+  def omit_duplicates(self):
+    temp: List[CandidatePoint] = []
+    for xtry in self.samples:
+      is_dup = xtry.signature in self.hashtable.hash_id
+      is_duplicate: bool = (self.check_cache and self.hashtable.size > 0 and is_dup)
+      # TODO: The commented logic below needs more investigation to make sure that it doesn't hurt.
+      # while is_duplicate and unique_p_trials < 5:
+      #   if self.display:
+      #     print(f'Cache hit. Trial# {unique_p_trials}: Looking for a non-duplicate along the poll direction where the duplicate point is located...')
+      #   if xtry.var_type is None:
+      #     if self.xmin.var_type is not None:
+      #       xtry.var_type = self.xmin.var_type
+      #     else:
+      #       xtry.var_type = [VAR_TYPE.CONTINUOUS] * len(self.xmin.coordinates)
+      #   xtries: List[Point] = self.directional_scaling(p=xtry, npts=len(self.poll_dirs)*2)
+      #   for tr in range(len(xtries)):
+      #     is_duplicate = self.hashtable.is_duplicate(xtries[tr])
+      #     if is_duplicate:
+      #        continue 
+      #     else:
+      #       xtry = copy.deepcopy(xtries[tr])
+      #       break
+      #   unique_p_trials += 1
+      if (is_duplicate):
+        if self.log is not None and self.log.isVerbose:
+          self.log.log_msg(msg="Cache hit ... Failed to find a non-duplicate alternative.", msg_type=MSG_TYPE.INFO)
+        if self.display:
+          print("Cache hit ... Failed to find a non-duplicate alternative.")
+      else:
+        temp.append(xtry)
+    del self.samples
+    self.samples = []
+    for t in temp:
+      self.samples.append(copy.deepcopy(t))
+  
   def evaluate_sample_point(self, index: int):
     """ Evaluate the sample point i on the points set """
     """ Set the dynamic index for this point """

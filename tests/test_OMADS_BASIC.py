@@ -50,7 +50,7 @@ def test_MADS_callable_quick_2d():
                     "visualize": False,
                     "criterion": None
                   }
-  options = {"seed": 10000, "budget": 3000, "tol": 1e-9, "display": False, "check_cache": True, "store_cache": True, "rich_direction": True, "opportunistic": True, "save_results": False, "isVerbose": False}
+  options = {"seed": 10000, "budget": 3000, "tol": 1e-9, "display": False, "check_cache": True, "store_cache": True, "rich_direction": True, "opportunistic": False, "save_results": False, "isVerbose": False}
   search = {
       "type": "sampling",
       "s_method": "ACTIVE",

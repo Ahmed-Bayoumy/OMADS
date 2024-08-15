@@ -190,47 +190,14 @@ def main(*args) -> Dict[str, Any]:
     if log is not None and log.isVerbose:
       log.log_msg(f"----------- Evaluate Search iteration # {iteration}-----------", msg_type=MSG_TYPE.INFO)
     search.log = log
+    if options.check_cache:
+      search.omit_duplicates()
     if not options.parallel_mode:
-      for it in range(len(search.samples)):
-        if search.terminate:
-          break
-        f = search.evaluate_sample_point(it)
-        if f[-1].status != DESIGN_STATUS.UNEVALUATED:
-          xt.append(f[-1])
-          xt[-1].mesh = copy.deepcopy(search.mesh)
-        if not f[0]:
-          post.bb_eval.append(search.bb_handle.bb_eval)
-          xt[-1].evalNo = search.bb_handle.bb_eval
-          peval += 1
-          post.step_name.append(f'Search: {search.type}')
-          post.iter.append(iteration)
-          post.psize.append(search.mesh.getdeltaMeshSize().coordinates)
-        else:
-          continue
-
+      xt, post, peval = search.bb_handle.run_callable_serial_local(iter=iteration, peval=peval, eval_set=search.samples, callFunc=search.evaluate_sample_point, options=options, post=post, psize=search.mesh.getDeltaFrameSize().coordinates, stepName=f'Search: {search.type}', mesh=search.mesh)
     else:
+      """ Parallel evaluation for points in the samples set """
       search.point_index = -1
-      """ Parallel evaluation for points in the poll set """
-      with concurrent.futures.ProcessPoolExecutor(options.np) as executor:
-        results = [executor.submit(search.evaluate_sample_point,
-                       it) for it in range(len(search.samples))]
-        for f in concurrent.futures.as_completed(results):
-          # if f.result()[0]:
-          #     executor.shutdown(wait=False)
-          # else:
-          if options.save_results or options.display:
-            peval = peval +1
-            if not f.result()[0]:
-              search.bb_eval = peval
-              post.bb_eval.append(peval)
-              post.step_name.append(f'Search: {search.type}')
-              post.iter.append(iteration)
-            # post.poll_dirs.append(poll.poll_dirs[f.result()[1]])
-              post.psize.append(f.result()[4])
-          if f.result()[-1].status != DESIGN_STATUS.UNEVALUATED:
-            xt.append(f.result()[-1])
-            xt[-1].evalNo = search.bb_handle.bb_eval
-            xt[-1].mesh = copy.deepcopy(search.mesh)
+      search.bb_eval, xt, post, peval = search.bb_handle.run_callable_parallel_local(iter=iteration, peval=peval, njobs=options.np, eval_set=search.samples, callFunc=search.evaluate_sample_point, options=options, post=post, mesh=search.mesh, stepName=f'Search: {search.type}')
     
     
     

@@ -79,7 +79,7 @@ def main(*args) -> Dict[str, Any]:
 
   """ Start the count down for calculating the runtime indicator """
   tic = time.perf_counter()
-  peval = 0
+  peval = poll.bb_handle.bb_eval
   LAMBDA_k = xmin.LAMBDA
   RHO_k = xmin.RHO
   while True:
@@ -155,43 +155,15 @@ def main(*args) -> Dict[str, Any]:
     if log is not None and log.isVerbose:
       log.log_msg(f"----------- Evaluate poll set # {iteration}-----------", msg_type=MSG_TYPE.INFO)
     poll.log = log
+    if options.check_cache:
+      poll.omit_duplicates()
     if not options.parallel_mode:
-      for it in range(len(poll.poll_set)):
-        peval += 1
-        if poll.terminate:
-          break
-        f = poll.eval_poll_point(it)
-        if f[-1].status != DESIGN_STATUS.UNEVALUATED:
-          xt.append(f[-1])
-        if not f[0]:
-          post.bb_eval.append(poll.bb_handle.bb_eval)
-          xt[-1].evalNo = poll.bb_handle.bb_eval
-          post.iter.append(iteration)
-          post.psize.append(poll.mesh.getDeltaFrameSize().coordinates)
-        else:
-          continue
+      xt, post, peval = poll.bb_handle.run_callable_serial_local(iter=iteration, peval=peval, eval_set=poll.poll_set, callFunc=poll.eval_poll_point, options=options, post=post, psize=poll.mesh.getDeltaFrameSize().coordinates)
 
     else:
       poll.point_index = -1
       """ Parallel evaluation for points in the poll set """
-      with concurrent.futures.ProcessPoolExecutor(options.np) as executor:
-        results = [executor.submit(poll.eval_poll_point,
-                       it) for it in range(len(poll.poll_set))]
-        for f in concurrent.futures.as_completed(results):
-          # if f.result()[0]:
-          #     executor.shutdown(wait=False)
-          # else:
-          if options.save_results or options.display:
-            peval = peval +1
-            if not f.result()[0]:
-              poll.bb_eval = peval
-              post.bb_eval.append(peval)
-              post.iter.append(iteration)
-              # post.poll_dirs.append(poll.poll_dirs[f.result()[1]])
-              post.psize.append(f.result()[4])
-          if f.result()[-1].status != DESIGN_STATUS.UNEVALUATED:
-            xt.append(f.result()[-1])
-            xt[-1].evalNo = poll.bb_handle.bb_eval
+      poll.bb_eval, xt, post, peval = poll.bb_handle.run_callable_parallel_local(iter=iteration, peval=peval, njobs=options.np, eval_set=poll.poll_set, callFunc=poll.eval_poll_point, options=options, post=post)
     if isinstance(B, Barrier):
       xpost: List[CandidatePoint] = poll.master_updates(xt, peval, save_all_best=options.save_all_best, save_all=options.save_results)
       xmin = copy.deepcopy(poll.xmin)
@@ -262,7 +234,7 @@ def main(*args) -> Dict[str, Any]:
     
     if options.save_results:
       post.nd_points = []
-      post.output_results(out)
+      post.output_results(out, allRes=False)
       if param.isPareto:
         for i in range(len(B.getAllPoints())):
           post.nd_points.append(B.getAllPoints()[i])
