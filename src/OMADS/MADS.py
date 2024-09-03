@@ -43,6 +43,7 @@ from .Parameters import Parameters
 from .Options import Options
 from .PostProcess import Output, PostMADS
 from .Metrics import Metrics
+from .Optimizer import ConstraintsRelaxationParameters
 np.set_printoptions(legacy='1.21')
 
 
@@ -83,11 +84,11 @@ def search_step(iteration: int, search: SS.efficient_exploration = None, B: SS.a
   """ Create the set of poll directions """
   if search.type == SS.SEARCH_TYPE.VNS.name and search_VN is not None:
     search_VN.active_barrier = B
-    search.samples = search_VN.run()
+    search._candidate_points_set = search_VN.run()
     if search_VN.stop:
       print("Reached maximum number of VNS iterations!")
       return search, B, post, out, search.LAMBDA, search.RHO, search.xmin, peval, outP
-    search.map_samples_from_coords_to_points(samples=search.samples)
+    search.map_samples_from_coords_to_points(samples=search._candidate_points_set)
   else:
     vvp = vvs = []
     bestFeasible: CandidatePoint = B._currentIncumbentFeas if isinstance(B, BarrierMO) else B._best_feasible
@@ -98,10 +99,10 @@ def search_step(iteration: int, search: SS.efficient_exploration = None, B: SS.a
     if bestInf is not None and bestInf.evaluated:
     # if B._filter is not None and B.get_best_infeasible().evaluated:
       xmin_bup = search.xmin
-      Prim_samples = search.samples
+      Prim_samples = search._candidate_points_set
       search.xmin = bestInf#B.get_best_infeasible()
       vvs, _ = search.generate_sample_points(int(((search.dim+1)/2)*((search.dim+2)/2)) if search.ns is None else search.ns)
-      search.samples += Prim_samples
+      search._candidate_points_set += Prim_samples
       search.xmin = xmin_bup
     
     if isinstance(vvs, list) and len(vvs) > 0:
@@ -112,8 +113,9 @@ def search_step(iteration: int, search: SS.efficient_exploration = None, B: SS.a
 
   """ Save current poll directions and incumbent solution
     so they can be saved later in the post dir """
+  search.omit_duplicates()
   if options.save_coordinates:
-    post.coords.append(search.samples)
+    post.coords.append(search._candidate_points_set)
     post.x_incumbent.append(search.xmin)
   """ Reset success boolean """
   search.success = SUCCESS_TYPES.US
@@ -124,45 +126,34 @@ def search_step(iteration: int, search: SS.efficient_exploration = None, B: SS.a
   if search_VN is not None:
     search.lb = search_VN.params.lb
     search.ub = search_VN.params.ub
-  
+  search.bb_handle.xmin = xmin
+  search.constraints_RP.LAMBDA = xmin.LAMBDA
+  search.constraints_RP.RHO = xmin.RHO
+  search.constraints_RP.constraints_type = xmin.constraints_type
+  search.constraints_RP.hmax = xmin.hmax
   if not options.parallel_mode:
-    for it in range(len(search.samples)):
-      if search.terminate:
-        break
-      f = search.evaluate_sample_point(it)
-      if f[-1].status != DESIGN_STATUS.UNEVALUATED:
-        xt.append(f[-1])
-        xt[-1].mesh = copy.deepcopy(search.mesh)
-      if not f[0]:
-        post.bb_eval.append(search.bb_handle.bb_eval)
-        xt[-1].evalNo = search.bb_handle.bb_eval
-        peval += 1
-        post.step_name.append(f'Search: {search.type}')
-        post.iter.append(iteration)
-        post.psize.append(search.mesh.getdeltaMeshSize().coordinates)
-      else:
-        continue
+    xt, post, peval = search.bb_handle.run_callable_serial_local(iter=iteration, peval=peval, eval_set=search._candidate_points_set, options=options, post=post, psize=search.mesh.getDeltaFrameSize().coordinates, stepName=f'Search: {search.type}', mesh=search.mesh, constraintsRelaxation=search.constraints_RP.__dict__, budget=options.budget)
 
   else:
-    search.point_index = -1
-    """ Parallel evaluation for points in the poll set """
-    with SS.concurrent.futures.ProcessPoolExecutor(options.np) as executor:
-      results = [executor.submit(search.evaluate_sample_point,
-                      it) for it in range(len(search.samples))]
-      for f in SS.concurrent.futures.as_completed(results):
-        if options.save_results or options.display:
-          peval = peval +1
-          if not f.result()[0]:
-            search.bb_eval = peval
-            post.bb_eval.append(peval)
-            post.step_name.append(f'Search: {search.type}')
-            post.iter.append(iteration)
-          # post.poll_dirs.append(poll.poll_dirs[f.result()[1]])
-            post.psize.append(f.result()[4])
-        if f.result()[-1].status != DESIGN_STATUS.UNEVALUATED:
-          xt.append(f.result()[-1])
-          xt[-1].evalNo = search.bb_handle.bb_eval
-          xt[-1].mesh = copy.deepcopy(search.mesh)
+    search._point_index = -1
+    """ Parallel evaluation for points in the samples set """
+    search.bb_eval, xt, post, peval = search.bb_handle.run_callable_parallel_local(iter=iteration, peval=peval, njobs=options.np, eval_set=search._candidate_points_set, options=options, post=post, mesh=search.mesh, stepName=f'Search: {search.type}', psize=search.mesh.getDeltaFrameSize().coordinates, constraintsRelaxation=search.constraints_RP.__dict__, budget=options.budget)
+    
+  if search.bb_handle.constraintsRelaxation:
+    temp:ConstraintsRelaxationParameters = ConstraintsRelaxationParameters(**search.bb_handle.constraintsRelaxation)
+    for i in range(len(temp.LAMBDA)):
+      search.constraints_RP.LAMBDA[i] = temp.LAMBDA[i]
+    search.constraints_RP.RHO = temp.RHO
+    search.constraints_RP.constraints_type = temp.constraints_type
+    search.constraints_RP.hmax = temp.hmax
+    # if options.store_cache:
+    #   for xi in xt:
+    #     search.hashtable.hash_id = xi
+    #     if not search.hashtable._isPareto:
+    #       search.hashtable.add_to_best_cache(xi)
+  LAMBDA_k = search.bb_handle.constraintsRelaxation["LAMBDA"]
+  RHO_k = search.bb_handle.constraintsRelaxation["RHO"]
+  search.postprocess_evaluated_candidates(xt)
 
   
     
@@ -326,6 +317,7 @@ def poll_step(iteration: int, poll: PS.Dirs2n = None, B: SS.auto = None, LAMBDA_
 
   """ Save current poll directions and incumbent solution
     so they can be saved later in the post dir """
+  poll.omit_duplicates()
   if options.save_coordinates:
     post.coords.append(poll.poll_set)
     post.x_incumbent.append(poll.xmin)
@@ -334,46 +326,35 @@ def poll_step(iteration: int, poll: PS.Dirs2n = None, B: SS.auto = None, LAMBDA_
   """ Reset the BB output """
   poll.bb_output = []
   xt = []
+  poll.bb_handle.xmin = xmin
   """ Serial evaluation for points in the poll set """
+  poll.constraints_RP.LAMBDA = xmin.LAMBDA
+  poll.constraints_RP.RHO = xmin.RHO
+  poll.constraints_RP.constraints_type = xmin.constraints_type
+  poll.constraints_RP.hmax = xmin.hmax
   if not options.parallel_mode:
-    for it in range(len(poll.poll_set)):
-      peval += 1
-      if poll.terminate:
-        break
-      f = poll.eval_poll_point(it)
-      if f[-1].status != DESIGN_STATUS.UNEVALUATED:
-        xt.append(f[-1])
-      if not f[0]:
-        post.step_name.append(f'Poll Step')
-        post.bb_eval.append(poll.bb_handle.bb_eval)
-        xt[-1].evalNo = poll.bb_handle.bb_eval
-        post.iter.append(iteration)
-        post.psize.append(poll.mesh.getDeltaFrameSize().coordinates)
-      else:
-        continue
+    xt, post, peval = poll.bb_handle.run_callable_serial_local(iter=iteration, peval=peval, eval_set=poll._candidate_points_set, options=options, post=post, psize=poll.mesh.getDeltaFrameSize().coordinates, stepName=f'Poll Step', mesh=poll.mesh, constraintsRelaxation=poll.constraints_RP.__dict__, budget=options.budget)
 
   else:
     poll.point_index = -1
-    """ Parallel evaluation for points in the poll set """
-    with PS.concurrent.futures.ProcessPoolExecutor(options.np) as executor:
-      results = [executor.submit(poll.eval_poll_point,
-                      it) for it in range(len(poll.poll_set))]
-      for f in PS.concurrent.futures.as_completed(results):
-        # if f.result()[0]:
-        #     executor.shutdown(wait=False)
-        # else:
-        if options.save_results or options.display:
-          peval = peval +1
-          if not f.result()[0]:
-            poll.bb_eval = peval
-            post.bb_eval.append(peval)
-            post.iter.append(iteration)
-            post.step_name.append(f'Poll Step')
-            # post.poll_dirs.append(poll.poll_dirs[f.result()[1]])
-            post.psize.append(f.result()[4])
-        if f.result()[-1].status != DESIGN_STATUS.UNEVALUATED:
-          xt.append(f.result()[-1])
-          xt[-1].evalNo = poll.bb_handle.bb_eval
+    """ Parallel evaluation for points in the samples set """
+    poll.bb_eval, xt, post, peval = poll.bb_handle.run_callable_parallel_local(iter=iteration, peval=peval, njobs=options.np, eval_set=poll._candidate_points_set, options=options, post=post, mesh=poll.mesh, stepName=f'Poll Step', psize=poll.mesh.getDeltaFrameSize().coordinates, constraintsRelaxation=poll.constraints_RP.__dict__, budget=options.budget)
+    
+  if poll.bb_handle.constraintsRelaxation:
+    temp:ConstraintsRelaxationParameters = ConstraintsRelaxationParameters(**poll.bb_handle.constraintsRelaxation)
+    for i in range(len(temp.LAMBDA)):
+      poll.constraints_RP.LAMBDA[i] = temp.LAMBDA[i]
+    poll.constraints_RP.RHO = temp.RHO
+    poll.constraints_RP.constraints_type = temp.constraints_type
+    poll.constraints_RP.hmax = temp.hmax
+    # if options.store_cache:
+    #   for xi in xt:
+    #     poll.hashtable.hash_id = xi
+    #     if not poll.hashtable._isPareto:
+    #       poll.hashtable.add_to_best_cache(xi)
+  LAMBDA_k = poll.bb_handle.constraintsRelaxation["LAMBDA"]
+  RHO_k = poll.bb_handle.constraintsRelaxation["RHO"]
+  poll.postprocess_evaluated_candidates(xt)
 
   if isinstance(B, Barrier):
       xpost: List[CandidatePoint] = poll.master_updates(xt, peval, save_all_best=options.save_all_best, save_all=options.save_results)

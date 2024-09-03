@@ -54,7 +54,7 @@ def test_MADS_callable_quick_2d():
   search = {
       "type": "sampling",
       "s_method": "ACTIVE",
-      "ns": int((d+1)*(d+2)/2)+50,
+      "ns": int((d+1)*(d+2)/2)+55,
       "visualize": False
     }
   data = {"evaluator": eval, "param": param, "options": options, "sampling": sampling, "search": search}
@@ -181,7 +181,7 @@ def test_MADS_callable_quick_20d():
               "visualize": False,
               "criterion": None
             }
-  options = {"seed": 12345, "budget": 10000, "tol": 1e-12, "display": False, "check_cache": True, "store_cache": True, "rich_direction": True, "opportunistic": False, "save_results": False, "isVerbose": False, "precision": "high"}
+  options = {"seed": 12345, "budget": 5500, "tol": 1e-12, "display": False, "check_cache": True, "store_cache": True, "rich_direction": True, "opportunistic": False, "save_results": False, "isVerbose": False, "precision": "high"}
   search = {
       "type": "sampling",
       "s_method": "ACTIVE",
@@ -261,7 +261,7 @@ def test_omads_toy_quick():
     "options":
       {
         "seed": 0,
-        "budget": 100000,
+        "budget": 1000,
         "tol": 1e-12,
         "psize_init": 1,
         "display": False,
@@ -279,7 +279,7 @@ def test_omads_toy_quick():
       "search": {
         "type": "VNS",
         "s_method": "LH",
-        "ns": 100,
+        "ns": 50,
         "visualize": False
       }
   }

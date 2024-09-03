@@ -362,7 +362,7 @@ def test_MO_ZDT4():
   data["param"]["scaling"] = [1] + [20]*(d-1)
   data["param"]["post_dir"] = "./tests/bm/MOO/unconstrained/MO_ZDT4/post"
   data["options"]["budget"] = 5000 #40000
-  data["search"]["ns"] = 50
+  data["search"]["ns"] = 55
   # POLL.main(data)
   # SEARCH.main(data)
   MADS.main(data)
@@ -381,12 +381,11 @@ def test_MO_ZDT6():
   data["param"]["constraints_type"] = ["PB"]
   data["param"]["scaling"] = [1]*d
   data["param"]["post_dir"] = "./tests/bm/MOO/unconstrained/MO_ZDT6/post"
-  data["options"]["budget"] = 5000
+  data["options"]["budget"] = 10000
   data["search"]["ns"] = 100
   # POLL.main(data)
   # SEARCH.main(data)
   MADS.main(data)
 
 if __name__ == "__main__":
-  test_MO_Test_function_4()
-  # print(MO_Ex([0.3986251815132268,       2.9698601277271774]))
+  freeze_support()

@@ -85,7 +85,8 @@ def main(*args) -> Dict[str, Any]:
   while True:
     del poll.poll_set
     poll.mesh.update()
-    poll.LAMBDA = copy.deepcopy(xmin.LAMBDA)
+    poll.constraints_RP.LAMBDA = copy.deepcopy(xmin.LAMBDA)
+    poll.constraints_RP.constraints_type = copy.deepcopy(poll.xmin.constraints_type)
     """ Create the set of poll directions """
     hhm = poll.create_housholder(options.rich_direction, domain=xmin.var_type)
     poll.lb = param.lb
@@ -102,7 +103,7 @@ def main(*args) -> Dict[str, Any]:
         B.init(evalPointList=[xmin])
     
     if isinstance(B, Barrier):
-      poll.hmax = xmin.hmax
+      poll.constraints_RP.hmax = xmin.hmax
       poll.create_poll_set(hhm=hhm,
                 ub=param.ub,
                 lb=param.lb, it=iteration, var_type=xmin.var_type, var_sets=xmin.sets, var_link = xmin.var_link, c_types=param.constraints_type, is_prim=True)
@@ -114,7 +115,7 @@ def main(*args) -> Dict[str, Any]:
                 ub=param.ub,
                 lb=param.lb, it=iteration, var_type=B._sec_poll_center.var_type, var_sets=B._sec_poll_center.sets, var_link = B._sec_poll_center.var_link, c_types=param.constraints_type, is_prim=False)
     elif isinstance(B, BarrierMO):
-      poll.hmax = B._hMax
+      poll.constraints_RP.hmax = B._hMax
       del poll.poll_set
       del poll.poll_dirs
       if B._currentIncumbentFeas and B._currentIncumbentFeas.evaluated:
@@ -138,8 +139,8 @@ def main(*args) -> Dict[str, Any]:
                 lb=param.lb, it=iteration, var_type=poll.xmin.var_type, var_sets=poll.xmin.sets, var_link = poll.xmin.var_link, c_types=param.constraints_type, is_prim=False)
       
     
-    poll.LAMBDA = LAMBDA_k
-    poll.RHO = RHO_k
+    poll.constraints_RP.LAMBDA = LAMBDA_k
+    poll.constraints_RP.RHO = RHO_k
 
     """ Save current poll directions and incumbent solution
      so they can be saved later in the post dir """
@@ -157,13 +158,14 @@ def main(*args) -> Dict[str, Any]:
     poll.log = log
     if options.check_cache:
       poll.omit_duplicates()
+    poll.bb_handle.xmin = poll.xmin
     if not options.parallel_mode:
-      xt, post, peval = poll.bb_handle.run_callable_serial_local(iter=iteration, peval=peval, eval_set=poll.poll_set, callFunc=poll.eval_poll_point, options=options, post=post, psize=poll.mesh.getDeltaFrameSize().coordinates)
-
+      xt, post, peval = poll.bb_handle.run_callable_serial_local(iter=iteration, peval=peval, eval_set=poll.poll_set, options=options, post=post, psize=poll.mesh.getDeltaFrameSize().coordinates, constraintsRelaxation=poll.constraints_RP.__dict__, budget=options.budget)
     else:
       poll.point_index = -1
       """ Parallel evaluation for points in the poll set """
-      poll.bb_eval, xt, post, peval = poll.bb_handle.run_callable_parallel_local(iter=iteration, peval=peval, njobs=options.np, eval_set=poll.poll_set, callFunc=poll.eval_poll_point, options=options, post=post)
+      poll.bb_eval, xt, post, peval = poll.bb_handle.run_callable_parallel_local(iter=iteration, peval=peval, njobs=options.np, eval_set=poll.poll_set, options=options, post=post, psize=poll.mesh.getDeltaFrameSize().coordinates, constraintsRelaxation=poll.constraints_RP.__dict__, budget=options.budget)
+    poll.postprocess_evaluated_candidates(xt)
     if isinstance(B, Barrier):
       xpost: List[CandidatePoint] = poll.master_updates(xt, peval, save_all_best=options.save_all_best, save_all=options.save_results)
       xmin = copy.deepcopy(poll.xmin)
@@ -229,8 +231,8 @@ def main(*args) -> Dict[str, Any]:
     if options.display:
       print(post)
     
-    LAMBDA_k = poll.LAMBDA
-    RHO_k = poll.RHO
+    LAMBDA_k = poll.constraints_RP.LAMBDA
+    RHO_k = poll.constraints_RP.RHO
     
     if options.save_results:
       post.nd_points = []

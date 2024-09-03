@@ -159,6 +159,11 @@ class DESIGN_STATUS(Enum):
   ERROR = auto()
   UNEVALUATED = auto()
 
+class BB_EVAL_STATUS(Enum):
+  SUCCESS = auto()
+  ERROR = auto()
+  UNEVALUATED = auto()
+
 class MSG_TYPE(Enum):
   DEBUG = auto()
   WARNING = auto()

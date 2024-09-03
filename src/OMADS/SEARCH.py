@@ -132,11 +132,11 @@ def main(*args) -> Dict[str, Any]:
     """ Create the set of poll directions """
     if search.type == SEARCH_TYPE.VNS.name:
       search_VN.active_barrier = B
-      search.samples = search_VN.run()
+      search._candidate_points_set = search_VN.run()
       if search_VN.stop:
         print("Reached maximum number of VNS iterations!")
         break
-      vv = search.map_samples_from_coords_to_points(samples=search.samples)
+      vv = search.map_samples_from_coords_to_points(samples=search._candidate_points_set)
     else:
       vvp = vvs = []
       bestFeasible: CandidatePoint = B._currentIncumbentFeas if isinstance(B, BarrierMO) else B._best_feasible
@@ -147,10 +147,10 @@ def main(*args) -> Dict[str, Any]:
       if bestInf is not None and bestInf.evaluated:
       # if B._filter is not None and B.get_best_infeasible().evaluated:
         xmin_bup = search.xmin
-        Prim_samples = search.samples
+        Prim_samples = search._candidate_points_set
         search.xmin = bestInf
         vvs, _ = search.generate_sample_points(int(((search.dim+1)/2)*((search.dim+2)/2)) if search.ns is None else search.ns)
-        search.samples += Prim_samples
+        search._candidate_points_set += Prim_samples
         search.xmin = xmin_bup
       
       if isinstance(vvs, list) and len(vvs) > 0:
@@ -170,7 +170,7 @@ def main(*args) -> Dict[str, Any]:
               if all([psi is None for psi in ps]):
                 xinput = [search.xmin]
               else:
-                xinput = search.samples
+                xinput = search._candidate_points_set
               ps = visualize(xinput, jjj, kkk, search.mesh.getdeltaMeshSize().coordinates, vv, fig, ax, search.xmin, ps, bbeval=search.bb_handle, lb=search.prob_params.lb, ub=search.prob_params.ub, spindex=iii, bestKnown=search.prob_params.best_known, blk=False)
       search.store_cache = sc_old
       search.check_cache = cc_old
@@ -179,7 +179,7 @@ def main(*args) -> Dict[str, Any]:
     """ Save current poll directions and incumbent solution
      so they can be saved later in the post dir """
     if options.save_coordinates:
-      post.coords.append(search.samples)
+      post.coords.append(search._candidate_points_set)
       post.x_incumbent.append(search.xmin)
     """ Reset success boolean """
     search.success = SUCCESS_TYPES.US
@@ -192,13 +192,15 @@ def main(*args) -> Dict[str, Any]:
     search.log = log
     if options.check_cache:
       search.omit_duplicates()
+    search.bb_handle.xmin = xmin
     if not options.parallel_mode:
-      xt, post, peval = search.bb_handle.run_callable_serial_local(iter=iteration, peval=peval, eval_set=search.samples, callFunc=search.evaluate_sample_point, options=options, post=post, psize=search.mesh.getDeltaFrameSize().coordinates, stepName=f'Search: {search.type}', mesh=search.mesh)
+      xt, post, peval = search.bb_handle.run_callable_serial_local(iter=iteration, peval=peval, eval_set=search._candidate_points_set, options=options, post=post, psize=search.mesh.getDeltaFrameSize().coordinates, stepName=f'Search: {search.type}', mesh=search.mesh, constraintsRelaxation=search.constraints_RP.__dict__, budget=options.budget)
     else:
       """ Parallel evaluation for points in the samples set """
       search.point_index = -1
-      search.bb_eval, xt, post, peval = search.bb_handle.run_callable_parallel_local(iter=iteration, peval=peval, njobs=options.np, eval_set=search.samples, callFunc=search.evaluate_sample_point, options=options, post=post, mesh=search.mesh, stepName=f'Search: {search.type}')
+      search.bb_eval, xt, post, peval = search.bb_handle.run_callable_parallel_local(iter=iteration, peval=peval, njobs=options.np, eval_set=search._candidate_points_set, options=options, post=post, mesh=search.mesh, stepName=f'Search: {search.type}', psize=search.mesh.getDeltaFrameSize().coordinates, constraintsRelaxation=search.constraints_RP.__dict__, budget=options.budget)
     
+    search.postprocess_evaluated_candidates(xt)
     
     
     if isinstance(B, Barrier):

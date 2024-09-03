@@ -103,16 +103,20 @@ class Cache:
   
   def add_to_best_cache(self, x: CandidatePoint):
     if not self._isPareto:
+      if x.signature in self._best_hash_ID:
+        return
+      if len(self._best_hash_ID) <= 0 and len(self._cache_dict) >= 1:
+        self._best_hash_ID.append(list(self.cache_dict.keys())[0])
       if not isinstance(x, list):
         if len(self._cache_dict) > 1:
-          is_infeas_dom: bool = (x.status == DESIGN_STATUS.INFEASIBLE and (x.h < self._cache_dict[self._best_hash_ID[0]].h) )
-          is_feas_dom: bool = (x.status == DESIGN_STATUS.FEASIBLE and x.fobj < self._cache_dict[self._best_hash_ID[0]].fobj)
+          is_infeas_dom: bool = (x.status == DESIGN_STATUS.INFEASIBLE and (x.h < self._cache_dict[self._best_hash_ID[-1]].h) )
+          is_feas_dom: bool = (x.status == DESIGN_STATUS.FEASIBLE and x.fobj < self._cache_dict[self._best_hash_ID[-1]].fobj)
         else:
           is_infeas_dom: bool = False
           is_feas_dom: bool = False
-        if len(self._cache_dict) == 1 or is_infeas_dom or is_feas_dom:
+        if is_infeas_dom or is_feas_dom:
           self._n_dim = len(x.coordinates)
-          self._best_hash_ID.append(self._hash_ID[-1])
+          self._best_hash_ID.append(x.signature)
       else:
         for i in range(len(x)):
           is_infeas_dom: bool = (x[i].status == DESIGN_STATUS.INFEASIBLE and (x[i].h < self._cache_dict[self._best_hash_ID[0]].h) )

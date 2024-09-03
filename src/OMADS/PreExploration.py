@@ -81,7 +81,7 @@ class PreExploration:
       search.prob_params = copy.deepcopy(param)
       if param.Failure_stop != None and isinstance(param.Failure_stop, bool):
         search.Failure_stop = param.Failure_stop
-      search.samples = []
+      search._candidate_points_set = []
       search.dtype.precision = options.precision
       search.save_results = options.save_results
       """ 4- Construct an instant for the mesh subclass object by inheriting
@@ -107,7 +107,7 @@ class PreExploration:
       search.prob_params = copy.deepcopy(param)
     else:
       search = options.extend
-      search.samples = []
+      search._candidate_points_set = []
     n_available_cores = cpu_count()
     if options.parallel_mode and options.np > n_available_cores:
       options.np == n_available_cores
@@ -176,10 +176,10 @@ class PreExploration:
           p.append(x_start.sets[x_start.var_link[i]][int(x_start.coordinates[i])])
         else:
           p.append(x_start.coordinates[i])
-      search.bb_output = search.bb_handle.eval(p)
+      search.bb_output, _ = search.bb_handle.eval(p)
     else:
       if not is_xs:
-        search.bb_output = search.bb_handle.eval(x_start.coordinates)
+        search.bb_output, _ = search.bb_handle.eval(x_start.coordinates)
     x_start.hmax = B._h_max if isinstance(B, Barrier) else B._hMax
     search.hmax = B._h_max if isinstance(B, Barrier) else B._hMax
     x_start.RHO = param.RHO
@@ -204,7 +204,7 @@ class PreExploration:
     search.xmin = copy.deepcopy(x_start)
     """ 10- Hold the starting point in the poll
      directions subclass and define problem parameters"""
-    search.samples.append(x_start)
+    search._candidate_points_set.append(x_start)
     search.scale(ub=param.ub, lb=param.lb, factor=param.scaling)
     search.dim = x_start.n_dimensions
     if not extend:
@@ -220,7 +220,7 @@ class PreExploration:
     if search.xmin < CandidatePoint():
       search.mesh.psize_success = search.mesh.getDeltaFrameSize().coordinates
       search.mesh.psize_max =copy.deepcopy(max(search.mesh.getDeltaFrameSize().coordinates))
-      search.samples = [search.xmin]
+      search._candidate_points_set = [search.xmin]
     """ 11- Construct the results postprocessor class object 'post' """
     x_start.evalNo = search.bb_handle.bb_eval
     search.xmin.evalNo = search.bb_handle.bb_eval

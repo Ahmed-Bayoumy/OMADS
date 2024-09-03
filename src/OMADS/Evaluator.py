@@ -1,5 +1,6 @@
 import copy
 import importlib
+import time
 from ._globals import *
 import os
 from typing import List, Dict, Any, Optional, Callable
@@ -13,6 +14,8 @@ import logging
 from .CandidatePoint import CandidatePoint
 from .Options import Options
 from .PostProcess import PostMADS
+from .Point import Point
+
 @dataclass
 class Evaluator:
   """ Define the evaluator attributes and settings
@@ -37,68 +40,134 @@ class Evaluator:
   _dtype: DType = None
   timeout: float = 1000000.
   local_exec_jobs: List[str] = None
+  candidates: List[Point] = None
+  directions: List[Point] = None
+  mesh: List[Any] = None
+  constraintsRelaxation: dict = None
+  xmin: CandidatePoint = None
+  
 
 
 
   def __post_init__(self):
     self._dtype = DType()
+
+  def map_variables(self, eval_set: List[CandidatePoint]):
+    self.candidates = []
+    self.directions = []
+    self.mesh = []
+    for xtry in eval_set:
+      if xtry.sets is not None and isinstance(xtry.sets,dict):
+        p: List[Any] = []
+        for i in range(len(xtry.var_type)):
+          if (xtry.var_type[i] == VAR_TYPE.DISCRETE or xtry.var_type[i] == VAR_TYPE.CATEGORICAL) and xtry.var_link[i] is not None:
+            p.append(xtry.sets[xtry.var_link[i]][int(xtry.coordinates[i])])
+          else:
+            p.append(xtry.coordinates[i])
+        temp_p: Point = Point()
+        temp_p.coordinates = p
+      else:
+        temp_p: Point = Point()
+        temp_p.coordinates = copy.deepcopy(xtry.coordinates)
+      self.candidates.append(temp_p)
+      self.directions.append(xtry.direction)
+      self.mesh.append(xtry.mesh)
   
-  def run_callable_serial_local(self, iter:int, peval: int, eval_set:List[CandidatePoint], callFunc: Callable, options: Options, post: PostMADS, psize: List[float], stepName: str = None, mesh: auto = None):
-    xt: List[CandidatePoint] = []
+  def run_callable_serial_local(self, iter:int, peval: int, eval_set:List[CandidatePoint], options: Options, post: PostMADS, psize: List[float], stepName: str = None, mesh: auto = None, constraintsRelaxation: dict = None, budget:int = 1):
+    xc: List[CandidatePoint] = []
+    self.map_variables(eval_set)
+    self.constraintsRelaxation = copy.deepcopy(constraintsRelaxation)
     for it in range(len(eval_set)):
       peval += 1
-      f = callFunc(it)
-      if f[-1].status != DESIGN_STATUS.UNEVALUATED:
-        xt.append(f[-1])
+      f = self.evaluate_BB(it)
+      if f.status != BB_EVAL_STATUS.UNEVALUATED:
+        xc.append(f)
         if mesh:
-          xt[-1].mesh = copy.deepcopy(mesh)
-        if options.opportunistic and it > 0 and xt[-1] < eval_set[it-1]:
-          break
-      if not f[0]:
-        post.bb_eval.append(peval)
-        xt[-1].evalNo = peval
-        post.iter.append(iter)
-        if stepName:
-          post.step_name.append(stepName)
-        post.psize.append(psize)
-      else:
-        continue
-    return xt, post, peval
+          xc[-1].mesh = copy.deepcopy(mesh)
+        
+      post.bb_eval.append(peval)
+      xc[-1].evalNo = peval
+      post.iter.append(iter)
+      if stepName:
+        post.step_name.append(stepName)
+      post.psize.append(psize)
+      if options.opportunistic and len(xc) > 0 and xc[-1] < self.xmin:
+        break
+      if peval == budget:
+        break
+    # self.constraintsRelaxation["hmax"] = eval_set[-1].hmax
+    return xc, post, peval
   
+  def evaluate_BB(self, index: int)->List[Any]:
+    tic = time.perf_counter()
+    f, errStatus = self.eval(self.candidates[index].coordinates)
+    x_cp: CandidatePoint = CandidatePoint()
+    x_cp.coordinates = copy.deepcopy(self.candidates[index].coordinates)
+    x_cp.LAMBDA = copy.deepcopy(self.constraintsRelaxation["LAMBDA"])
+    x_cp.RHO = copy.deepcopy(self.constraintsRelaxation["RHO"])
+    x_cp.hmax = copy.deepcopy(self.constraintsRelaxation["hmax"])
+    x_cp.constraints_type = copy.deepcopy(self.constraintsRelaxation["constraints_type"])
+    x_cp.direction = copy.deepcopy(self.directions[index])
+    x_cp.mesh = copy.deepcopy(self.mesh[index])
+    x_cp.__eval__(f)
+    if errStatus:
+      x_cp.status = DESIGN_STATUS.ERROR
+    # if x_cp.status == DESIGN_STATUS.INFEASIBLE:
+      # self.constraintsRelaxation["hmax"] = x_cp.hmax
+    if self.constraintsRelaxation["LAMBDA"] == None:
+      self.constraintsRelaxation["LAMBDA"] = copy.deepcopy(self.xmin.LAMBDA)
+    if len(x_cp.cPB) > len(self.constraintsRelaxation["LAMBDA"]):
+      self.constraintsRelaxation["LAMBDA"] += [self.constraintsRelaxation["LAMBDA"][-1]] * abs(len(self.constraintsRelaxation["LAMBDA"])-len(x_cp.cPB))
+    if len(x_cp.cPB) < len(self.constraintsRelaxation["LAMBDA"]):
+      del self.constraintsRelaxation["LAMBDA"][len(x_cp.cPB):]
+    for i in range(len(x_cp.cPB)):
+      if self.constraintsRelaxation["RHO"] == 0.:
+        self.constraintsRelaxation["RHO"] = 0.001
+      self.constraintsRelaxation["LAMBDA"][i] = copy.deepcopy(max(self.dtype.zero, self.constraintsRelaxation["LAMBDA"][i] + (1/self.constraintsRelaxation["RHO"])*x_cp.cPB[i]))
+    
+    if x_cp.status == DESIGN_STATUS.FEASIBLE:
+      self.constraintsRelaxation["RHO"] *= copy.deepcopy(0.5)
 
-  def run_callable_parallel_local(self, iter:int, peval: int, njobs:int, eval_set:List[CandidatePoint], callFunc: Callable, options: Options, post: PostMADS, mesh: auto = None, stepName: str = None, eval_call: Callable = None):
+    # if self.log is not None and self.log.isVerbose:
+    #   self.log.log_msg(msg=f"Completed evaluation of point # {index} in {x_cp.Eval_time} seconds, ftry={x_cp.f}, status={x_cp.status.name} and htry={x_cp.h}. \n", msg_type=MSG_TYPE.INFO)
+    # toc = time.perf_counter()
+    # x_cp.Eval_time = (toc - tic)
+    
+    return x_cp
+
+
+  def run_callable_parallel_local(self, iter:int, peval: int, njobs:int, eval_set:List[CandidatePoint], options: Options, post: PostMADS, psize: List[float], mesh: auto = None, stepName: str = None, eval_call: Callable = None, constraintsRelaxation: dict = None, budget:int = 1):
     bb_eval = []
-    xt: List[CandidatePoint] = []
+    xc: List[CandidatePoint] = []
+    self.map_variables(eval_set)
+    self.constraintsRelaxation = copy.deepcopy(constraintsRelaxation)
     with concurrent.futures.ProcessPoolExecutor(options.np) as executor:
-      results = [executor.submit(callFunc, it) for it in range(len(eval_set))]
+      results = [executor.submit(self.evaluate_BB, it) for it in range(len(eval_set))]
       for f in concurrent.futures.as_completed(results):
         # if f.result()[0]:
         #     executor.shutdown(wait=False)
         # else:
-        if options.save_results or options.display:
-          peval = peval +1
-          if not f.result()[0]:
-            if eval_call:
-              x, psize = eval_call(f.result()[-1], f.result()[5])
-              xt.append(x)
-              if mesh:
-                xt[-1].mesh = copy.deepcopy(mesh)
-              xt[-1].evalNo = self.bb_eval
-              
-            self.bb_eval = peval
-            bb_eval = peval
-            post.bb_eval.append(peval)
-            post.iter.append(iter)
-            # post.poll_dirs.append(poll.poll_dirs[f.result()[1]])
-            if stepName:
-              post.step_name.append(stepName)
-            post.psize.append(f.result()[4] if eval_call is None else psize)
-        if f.result()[-1].status != DESIGN_STATUS.UNEVALUATED and eval_call is None:
-          xt.append(f.result()[-1])
+        peval = peval +1
+        if f.result().status != DESIGN_STATUS.UNEVALUATED:
+          xc.append(f.result())
           if mesh:
-            xt[-1].mesh = copy.deepcopy(mesh)
-          xt[-1].evalNo = self.bb_eval
-    return bb_eval, xt, post, peval
+            xc[-1].mesh = copy.deepcopy(mesh)
+          
+          xc[-1].evalNo = self.bb_eval
+          self.bb_eval = peval
+          post.bb_eval.append(peval)
+          post.iter.append(iter)
+          # post.poll_dirs.append(poll.poll_dirs[f.result()[1]])
+          if stepName:
+            post.step_name.append(stepName)
+          post.psize.append(psize)
+
+          if options.opportunistic and len(xc) > 0 and xc[-1] < self.xmin:
+            break
+          if peval == budget:
+            break
+
+    return peval, xc, post, peval
 
   # Function to execute .exe file locally
   def run_exe(self, exe_path):
@@ -163,6 +232,7 @@ class Evaluator:
     :rtype: List[float, List[float]]
     """
     self.bb_eval += 1
+    evalerr = False
     if self.internal is None or self.internal == "None" or self.internal == "none":
       if callable(self.blackbox):
         is_object = False
@@ -208,11 +278,11 @@ class Evaluator:
           except:
             evalerr = True
             logging.error(f"Callable {str(self.blackbox)} evaluation returned an error at the poll point {values}")
-            f_eval = [inf, [inf]]
+            f_eval = [[inf], [inf]]
         if isinstance(f_eval, list):
-          return f_eval
+          return f_eval, evalerr
         elif isinstance(f_eval, float) or isinstance(f_eval, int):
-          return [f_eval, [0]]
+          return [[f_eval], [0]], evalerr
       else:
         self.write_input(values)
         pwd = os.getcwd()
@@ -248,11 +318,11 @@ class Evaluator:
           out = [np.inf, [np.inf]]
         else:
           out = [self.read_output()[0], [self.read_output()[1:]]]
-        return out
+        return out, evalerr
     elif importlib.util.find_spec('BMDFO') and self.internal == "uncon":
-      f_eval = toy.UnconSO(values)
+      f_eval = toy.UnconSO(values) # type: ignore
     elif importlib.util.find_spec('BMDFO') and self.internal == "con":
-      f_eval = toy.ConSO(values)
+      f_eval = toy.ConSO(values) # type: ignore
     else:
       raise IOError(f"Input dict:: evaluator:: internal:: "
               f"Incorrect internal method :: {self.internal} :: "
@@ -261,7 +331,7 @@ class Evaluator:
     f_eval.dtype.dtype = self._dtype.dtype
     f_eval.name = self.blackbox
     f_eval.dtype.dtype = self._dtype.dtype
-    return getattr(f_eval, self.blackbox)()
+    return getattr(f_eval, self.blackbox)(), evalerr
 
   def write_input(self, values: List[float]):
     """_summary_

@@ -159,10 +159,10 @@ class PrePoll:
         else:
           p.append(x_start.coordinates[i])
       if not is_xs:
-        poll.bb_output = poll.bb_handle.eval(p)
+        poll.bb_output, _ = poll.bb_handle.eval(p)
     else:
        if not is_xs:
-        poll.bb_output = poll.bb_handle.eval(x_start.coordinates)
+        poll.bb_output, _ = poll.bb_handle.eval(x_start.coordinates)
     x_start.hmax = B._h_max if isinstance(B, Barrier) else B._hMax
     x_start.RHO = param.RHO
     

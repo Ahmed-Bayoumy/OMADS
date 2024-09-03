@@ -23,7 +23,7 @@
 
 from .CandidatePoint import CandidatePoint
 from .Point import Point
-from .Barriers import Barrier
+from .Barriers import Barrier, BarrierMO
 # from ._common import *
 from .Directions import *
 import samplersLib as explore
@@ -32,6 +32,7 @@ from matplotlib import pyplot as plt
 from ._globals import *
 from .Parameters import Parameters
 from .Evaluator import Evaluator
+from .Optimizer import GenericSamplerBase, ConstraintsRelaxationParameters
 
 @dataclass
 class VNS_data:
@@ -295,50 +296,84 @@ class VNS(VNS_data):
       
 
 @dataclass
-class efficient_exploration:
-  mesh: Gmesh  = None
-  _success: bool = False
-  _xmin: CandidatePoint = None
-  prob_params: Parameters = None
-  sampling_t: int = 3
-  _seed: int = 0
-  _dtype: DType = None
-  iter: int = 1
-  vicinity_ratio: np.ndarray = None
-  vicinity_min: float = 0.001
-  opportunistic: bool = False
-  eval_budget: int = 10
-  store_cache: bool = True
-  check_cache: bool = True
-  display: bool = False
-  bb_handle: Evaluator = None
-  bb_output: List = None
-  samples: List[CandidatePoint] = None
-  hashtable: Cache = None
-  _dim: int = 0
-  nb_success: int = 0
-  terminate: bool =False
-  _save_results: bool = False
-  visualize: bool = False
-  Failure_stop: bool = None
-  sampling_criter: str = None
-  weights: List[float] = None
-  _type: str = "sampling"
-  LAMBDA: List[float] = None
-  RHO: float = 0.0005
-  hmax: float = 0.
-  log: logger = None
-  AS: explore.samplers.activeSampling = None
-  best_samples: int = 0
-  estGrid: explore.samplers.sampling = None
-  n_successes: int = 0 
-  bb_eval: Any = None
-  activeBarrier: BarrierMO = None
+class efficient_exploration(GenericSamplerBase):
 
   def __post_init__(self):
     self._xmin = CandidatePoint()
     self.bb_handle = Evaluator()
     self._dtype = DType()
+
+  @property
+  def iter(self):
+    return self._iter
+
+  @iter.setter
+  def iter(self, other: int):
+    self._iter = other
+
+  @property
+  def opportunistic(self):
+    return self._opportunistic
+
+  @opportunistic.setter
+  def opportunistic(self, other: bool):
+    self._opportunistic = other
+  
+  @property
+  def store_cache(self):
+    return self._store_cache
+
+  @store_cache.setter
+  def store_cache(self, other: bool):
+    self._store_cache = other
+
+  @property
+  def check_cache(self):
+    return self._check_cache
+
+  @check_cache.setter
+  def check_cache(self, other: bool):
+    self._check_cache = other
+  
+  @property
+  def eval_budget(self):
+    return self._eval_budget
+
+  @eval_budget.setter
+  def eval_budget(self, other: int):
+    self._eval_budget = other
+
+  @property
+  def display(self):
+    return self._display
+
+  @display.setter
+  def display(self, other: bool):
+    self._display = other
+  
+  @property
+  def bb_output(self) -> List[float]:
+    return self._bb_output
+
+  @bb_output.setter
+  def bb_output(self, other: List[float]):
+    self._bb_output = other
+
+  @property
+  def nb_success(self):
+    return self._nb_success
+
+  @nb_success.setter
+  def nb_success(self, other: int):
+    self._nb_success = other
+  
+  @property
+  def bb_eval(self):
+    return self._bb_eval
+
+  @bb_eval.setter
+  def bb_eval(self, other: int):
+    self._bb_eval = other
 
   @property
   def type(self):
@@ -412,7 +447,6 @@ class efficient_exploration:
     
     return coords_array
 
-
   def generate_2ngrid(self, vlim: np.ndarray = None, x_incumbent: CandidatePoint = None, p_in: List[float] = [0.01]) -> np.ndarray:
     grid = Dirs2n()
     grid.mesh = copy.deepcopy(self.mesh)
@@ -436,7 +470,6 @@ class efficient_exploration:
     
     return self.get_list_of_coords_from_list_of_points(grid.poll_set)
 
-
   def HD_grid(self, n: int =3, vlim: np.ndarray = None) -> np.ndarray:
     grid_points = None
     
@@ -457,7 +490,6 @@ class efficient_exploration:
     
     return grid_points[:n, :]
 
-  
   def generate_sample_points(self, nsamples: int = None, samples_in: np.ndarray = None) -> List[CandidatePoint]:
     """ Generate the sample points """
     xlim = []
@@ -609,27 +641,26 @@ class efficient_exploration:
     return xProjected.coordinates
 
   def map_samples_from_coords_to_points(self, samples: np.ndarray):
-    
     for i in range(len(samples)):
       samples[i, :] = self.project_coords_to_mesh(samples[i, :], ref=np.subtract(self.prob_params.ub , self.prob_params.lb).tolist())
     samples = np.unique(samples, axis=0)
-    self.samples: List[CandidatePoint] = [0] *len(samples)
+    self._candidate_points_set: List[CandidatePoint] = [0] *len(samples)
     for i in range(len(samples)):
-      self.samples[i] = CandidatePoint()
+      self._candidate_points_set[i] = CandidatePoint()
       if self.xmin.var_type is not None:
-        self.samples[i].var_type = self.xmin.var_type
+        self._candidate_points_set[i].var_type = self.xmin.var_type
       else:
-        self.samples[i].var_type = None
-      self.samples[i].sets = self.xmin.sets
-      self.samples[i].var_link = self.xmin.var_link
-      self.samples[i].n_dimensions = len(samples[i, :])
-      self.samples[i].coordinates = copy.deepcopy(samples[i, :])
-      self.samples[i].direction = Point(self.mesh._n)
-      self.samples[i].direction.coordinates = np.subtract(self.xmin.coordinates, self.samples[i].coordinates)
+        self._candidate_points_set[i].var_type = None
+      self._candidate_points_set[i].sets = self.xmin.sets
+      self._candidate_points_set[i].var_link = self.xmin.var_link
+      self._candidate_points_set[i].n_dimensions = len(samples[i, :])
+      self._candidate_points_set[i].coordinates = copy.deepcopy(samples[i, :])
+      self._candidate_points_set[i].direction = Point(self.mesh._n)
+      self._candidate_points_set[i].direction.coordinates = np.subtract(self.xmin.coordinates, self._candidate_points_set[i].coordinates)
+      self._candidate_points_set[i].mesh = copy.deepcopy(self.mesh)
   
   def map_samples_from_points_to_coords(self):
-    return np.array([x.coordinates for x in self.samples])
-
+    return np.array([x.coordinates for x in self._candidate_points_set])
 
   def gauss_perturbation(self, p: CandidatePoint, npts: int = 5) -> List[CandidatePoint]:
     lb = self.lb
@@ -659,8 +690,8 @@ class efficient_exploration:
   
   def omit_duplicates(self):
     temp: List[CandidatePoint] = []
-    for xtry in self.samples:
-      is_dup = xtry.signature in self.hashtable.hash_id
+    for xtry in self._candidate_points_set:
+      is_dup =  xtry.signature in self.hashtable.hash_id if not self.hashtable._isPareto else self.hashtable.is_duplicate(xtry)
       is_duplicate: bool = (self.check_cache and self.hashtable.size > 0 and is_dup)
       # TODO: The commented logic below needs more investigation to make sure that it doesn't hurt.
       # while is_duplicate and unique_p_trials < 5:
@@ -687,31 +718,33 @@ class efficient_exploration:
           print("Cache hit ... Failed to find a non-duplicate alternative.")
       else:
         temp.append(xtry)
-    del self.samples
-    self.samples = []
+        # self.hashtable.add_to_cache(xtry)
+    del self._candidate_points_set
+    self._candidate_points_set = []
     for t in temp:
-      self.samples.append(copy.deepcopy(t))
+      self._candidate_points_set.append(copy.deepcopy(t))
   
-  def evaluate_sample_point(self, index: int):
-    """ Evaluate the sample point i on the points set """
-    """ Set the dynamic index for this point """
-    tic = time.perf_counter()
-    self.point_index = index
-    if self.log is not None and self.log.isVerbose:
-      self.log.log_msg(msg=f"Evaluate sample point # {index}...", msg_type=MSG_TYPE.INFO)
-    """ Initialize stopping and success conditions"""
-    stop: bool = False
-    """ Copy the point i to a trial one """
-    xtry: CandidatePoint = self.samples[index]
-    """ This is a success bool parameter used for
-     filtering out successful designs to be printed
-    in the output results file"""
-    success = SUCCESS_TYPES.US
+  # Deprecated routine
+  # def evaluate_candidate_point(self, index: int):
+  #   """ Evaluate the sample point i on the points set """
+  #   """ Set the dynamic index for this point """
+  #   tic = time.perf_counter()
+  #   self.point_index = index
+  #   if self.log is not None and self.log.isVerbose:
+  #     self.log.log_msg(msg=f"Evaluate sample point # {index}...", msg_type=MSG_TYPE.INFO)
+  #   """ Initialize stopping and success conditions"""
+  #   stop: bool = False
+  #   """ Copy the point i to a trial one """
+  #   xtry: CandidatePoint = self._candidate_points_set[index]
+  #   """ This is a success bool parameter used for
+  #    filtering out successful designs to be printed
+  #   in the output results file"""
+  #   success = SUCCESS_TYPES.US
 
-    """ Check the cache memory; check if the trial point
-     is a duplicate (it has already been evaluated) """
-    unique_p_trials: int = 0
-    is_duplicate: bool = (self.check_cache and self.hashtable.size > 0 and self.hashtable.is_duplicate(xtry))
+  #   """ Check the cache memory; check if the trial point
+  #    is a duplicate (it has already been evaluated) """
+  #   unique_p_trials: int = 0
+  #   is_duplicate: bool = (self.check_cache and self.hashtable.size > 0 and self.hashtable.is_duplicate(xtry))
     # while is_duplicate and unique_p_trials < 5:
     #   self.log.log_msg(f'Cache hit. Trial# {unique_p_trials}: Looking for a non-duplicate in the vicinity of the duplicate point ...', MSG_TYPE.INFO)
     #   if self.display:
@@ -732,88 +765,106 @@ class efficient_exploration:
       #     break
       # unique_p_trials += 1
 
-    if (is_duplicate):
+    # if (is_duplicate):
+    #   if self.log is not None and self.log.isVerbose:
+    #     self.log.log_msg(msg="Cache hit ... Failed to find a non-duplicate alternative.", msg_type=MSG_TYPE.INFO)
+    #   if self.display:
+    #     print("Cache hit ... Failed to find a non-duplicate alternative.")
+    #   stop = True
+    #   bb_eval = copy.deepcopy(self.bb_eval)
+    #   psize = copy.deepcopy(self.mesh.getDeltaFrameSize().coordinates)
+    #   return [stop, index, self.bb_handle.bb_eval, success, psize, xtry]
+
+
+    # """ Evaluation of the blackbox; get output responses """
+    # if xtry.sets is not None and isinstance(xtry.sets,dict):
+    #   p: List[Any] = []
+    #   for i in range(len(xtry.var_type)):
+    #     if (xtry.var_type[i] == VAR_TYPE.DISCRETE or xtry.var_type[i] == VAR_TYPE.CATEGORICAL) and xtry.var_link[i] is not None:
+    #       p.append(xtry.sets[xtry.var_link[i]][int(xtry.coordinates[i])])
+    #     else:
+    #       p.append(xtry.coordinates[i])
+    #   self.bb_output, _ = self.bb_handle.eval(p)
+    # else:
+    #   self.bb_output, _ = self.bb_handle.eval(xtry.coordinates)
+
+    # """
+    #   Evaluate the poll point:
+    #     - Set multipliers and penalty
+    #     - Evaluate objective function
+    #     - Evaluate constraint functions (can be an empty vector)
+    #     - Aggregate constraints
+    #     - Penalize the objective (extreme barrier)
+    # """
+    # xtry.constraints_type = copy.deepcopy(self.constraints_RP.constraints_type)
+    # xtry.LAMBDA = copy.deepcopy(self.constraints_RP.LAMBDA)
+    # xtry.RHO = copy.deepcopy(self.constraints_RP.RHO)
+    # xtry.hmax = copy.deepcopy(self.constraints_RP.hmax)
+    # xtry.constraints_type = copy.deepcopy(self.prob_params.constraints_type)
+    # # xtry.__eval__(self.bb_output)
+    # # if not self.hashtable._isPareto:
+    # #   self.hashtable.add_to_best_cache(xtry)
+    # # toc = time.perf_counter()
+    # # xtry.Eval_time = (toc - tic)
+
+    # """ Update multipliers and penalty """
+    # if self.constraints_RP.LAMBDA == None:
+    #   self.constraints_RP.LAMBDA = self.xmin.LAMBDA
+    # if len(xtry.c_ineq) > len(self.constraints_RP.LAMBDA):
+    #   self.constraints_RP.LAMBDA += [self.constraints_RP.LAMBDA[-1]] * abs(len(self.constraints_RP.LAMBDA)-len(xtry.c_ineq))
+    # if len(xtry.c_ineq) < len(self.constraints_RP.LAMBDA):
+    #   del self.constraints_RP.LAMBDA[len(xtry.c_ineq):]
+    # for i in range(len(xtry.c_ineq)):
+    #   if self.constraints_RP.RHO == 0.:
+    #     self.constraints_RP.RHO = 0.001
+    #   if self.constraints_RP.LAMBDA is None:
+    #     self.constraints_RP.LAMBDA = xtry.LAMBDA
+    #   self.constraints_RP.LAMBDA[i] = copy.deepcopy(max(self.dtype.zero, self.constraints_RP.LAMBDA[i] + (1/self.constraints_RP.RHO)*xtry.c_ineq[i]))
+    
+    # if xtry.status == DESIGN_STATUS.FEASIBLE:
+    #   self.constraints_RP.RHO *= copy.deepcopy(0.5)
+    
+    # if self.log is not None and self.log.isVerbose:
+    #   self.log.log_msg(msg=f"Completed evaluation of point # {index} in {xtry.Eval_time} seconds, ftry={xtry.f}, status={xtry.status.name} and htry={xtry.h}. \n", msg_type=MSG_TYPE.INFO)
+
+    # """ Add to the cache memory """
+    # if self.store_cache:
+    #   self.hashtable.hash_id = xtry
+
+    # # if self.save_results or self.display:
+    # self.bb_eval = self.bb_handle.bb_eval
+    # self.psize = copy.deepcopy(self.mesh.getDeltaFrameSize().coordinates)
+    # psize = copy.deepcopy(self.mesh.getDeltaFrameSize().coordinates)
+
+    # if xtry < self.xmin:
+    #   success = SUCCESS_TYPES.FS
+
+    # if success == SUCCESS_TYPES.FS and self.opportunistic and self.iter > 1:
+    #   stop = True
+
+    # """ Check stopping criteria """
+    # if self.bb_eval >= self.eval_budget:
+    #   self.terminate = True
+    #   stop = True
+    # return [stop, index, self.bb_handle.bb_eval, success, psize, xtry]
+
+  def postprocess_evaluated_candidates(self, x_cps: List[CandidatePoint]):
+    for xtry in x_cps:
       if self.log is not None and self.log.isVerbose:
-        self.log.log_msg(msg="Cache hit ... Failed to find a non-duplicate alternative.", msg_type=MSG_TYPE.INFO)
-      if self.display:
-        print("Cache hit ... Failed to find a non-duplicate alternative.")
-      stop = True
-      bb_eval = copy.deepcopy(self.bb_eval)
-      psize = copy.deepcopy(self.mesh.getDeltaFrameSize().coordinates)
-      return [stop, index, self.bb_handle.bb_eval, success, psize, xtry]
+        self.log.log_msg(msg=f"Completed evaluation of point # {xtry.evalNo} in {xtry.Eval_time} seconds, ftry={xtry.f}, status={xtry.status.name} and htry={xtry.h}. \n", msg_type=MSG_TYPE.INFO)
 
-
-    """ Evaluation of the blackbox; get output responses """
-    if xtry.sets is not None and isinstance(xtry.sets,dict):
-      p: List[Any] = []
-      for i in range(len(xtry.var_type)):
-        if (xtry.var_type[i] == VAR_TYPE.DISCRETE or xtry.var_type[i] == VAR_TYPE.CATEGORICAL) and xtry.var_link[i] is not None:
-          p.append(xtry.sets[xtry.var_link[i]][int(xtry.coordinates[i])])
-        else:
-          p.append(xtry.coordinates[i])
-      self.bb_output = self.bb_handle.eval(p)
-    else:
-      self.bb_output = self.bb_handle.eval(xtry.coordinates)
-
-    """
-      Evaluate the poll point:
-        - Set multipliers and penalty
-        - Evaluate objective function
-        - Evaluate constraint functions (can be an empty vector)
-        - Aggregate constraints
-        - Penalize the objective (extreme barrier)
-    """
-    xtry.LAMBDA = copy.deepcopy(self.LAMBDA)
-    xtry.RHO = copy.deepcopy(self.RHO)
-    xtry.hmax = copy.deepcopy(self.hmax)
-    xtry.constraints_type = copy.deepcopy(self.prob_params.constraints_type)
-    xtry.__eval__(self.bb_output)
-    if not self.hashtable._isPareto:
-      self.hashtable.add_to_best_cache(xtry)
-    toc = time.perf_counter()
-    xtry.Eval_time = (toc - tic)
-
-    """ Update multipliers and penalty """
-    if self.LAMBDA == None:
-      self.LAMBDA = self.xmin.LAMBDA
-    if len(xtry.c_ineq) > len(self.LAMBDA):
-      self.LAMBDA += [self.LAMBDA[-1]] * abs(len(self.LAMBDA)-len(xtry.c_ineq))
-    if len(xtry.c_ineq) < len(self.LAMBDA):
-      del self.LAMBDA[len(xtry.c_ineq):]
-    for i in range(len(xtry.c_ineq)):
-      if self.RHO == 0.:
-        self.RHO = 0.001
-      if self.LAMBDA is None:
-        self.LAMBDA = xtry.LAMBDA
-      self.LAMBDA[i] = copy.deepcopy(max(self.dtype.zero, self.LAMBDA[i] + (1/self.RHO)*xtry.c_ineq[i]))
-    
-    if xtry.status == DESIGN_STATUS.FEASIBLE:
-      self.RHO *= copy.deepcopy(0.5)
-    
-    if self.log is not None and self.log.isVerbose:
-      self.log.log_msg(msg=f"Completed evaluation of point # {index} in {xtry.Eval_time} seconds, ftry={xtry.f}, status={xtry.status.name} and htry={xtry.h}. \n", msg_type=MSG_TYPE.INFO)
-
-    """ Add to the cache memory """
-    if self.store_cache:
-      self.hashtable.hash_id = xtry
+      """ Add to the cache memory """
+      self.hashtable.add_to_cache(xtry)
+      if not self.hashtable._isPareto:
+        self.hashtable.add_to_best_cache(xtry)
+      if self.store_cache and xtry.signature not in self.hashtable.hash_id:
+        self.hashtable.hash_id = xtry
 
     # if self.save_results or self.display:
     self.bb_eval = self.bb_handle.bb_eval
     self.psize = copy.deepcopy(self.mesh.getDeltaFrameSize().coordinates)
     psize = copy.deepcopy(self.mesh.getDeltaFrameSize().coordinates)
-
-    if xtry < self.xmin:
-      success = SUCCESS_TYPES.FS
-
-    if success == SUCCESS_TYPES.FS and self.opportunistic and self.iter > 1:
-      stop = True
-
-    """ Check stopping criteria """
-    if self.bb_eval >= self.eval_budget:
-      self.terminate = True
-      stop = True
-    return [stop, index, self.bb_handle.bb_eval, success, psize, xtry]
-
+  
   def master_updates(self, x: List[CandidatePoint], peval, save_all_best: bool = False, save_all:bool = False):
     if peval >= self.eval_budget:
       self.terminate = True
@@ -866,6 +917,7 @@ class efficient_exploration:
           self.vicinity_ratio[i] /= 2
     else:
       raise IOError(f"Unrecognized {region} local region operation")
+
 @dataclass
 class search_sampling:
   s_method: str = SAMPLING_METHOD.LH.name
