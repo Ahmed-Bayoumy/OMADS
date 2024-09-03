@@ -135,11 +135,12 @@ The poll, search, and MADS algorithms are capable of solving both unconstrained 
 
 ### Constrained test functions
 
-![constrained_MOO](https://github.com/user-attachments/assets/a5ddc927-3d82-48de-83db-74a99fcbb742)
+![BM_res_ConstrainedMOO](https://github.com/user-attachments/assets/033012c6-8e4f-4f8f-b6e3-982ef4ec1f47)
+
 
 ### Unonstrained test functions
 
-![UnconstrainedMO](https://github.com/user-attachments/assets/a449f09e-8da7-4c44-aac0-05ac944b0308)
+![BM_res_UnconstrainedMOO](https://github.com/user-attachments/assets/4b856656-e294-41b0-89ab-ea79818ecf76)
 
 ---
 
