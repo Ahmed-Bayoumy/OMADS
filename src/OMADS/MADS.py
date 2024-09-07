@@ -673,7 +673,7 @@ def main(*args) -> Dict[str, Any]:
   if MADS_agent.poll.xmin < MADS_agent.search.xmin:
     out_step = MADS_agent.poll
   elif MADS_agent.search.xmin < MADS_agent.poll.xmin:
-    out_step = search
+    out_step = MADS_agent.search
   else:
     out_step = MADS_agent.poll
   
