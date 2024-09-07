@@ -24,6 +24,7 @@
 import copy
 import importlib
 import json
+from dataclasses import dataclass
 from multiprocessing import freeze_support
 import os
 import sys
@@ -44,405 +45,461 @@ from .Options import Options
 from .PostProcess import Output, PostMADS
 from .Metrics import Metrics
 from .Optimizer import ConstraintsRelaxationParameters
+from .Evaluator import Evaluator
 np.set_printoptions(legacy='1.21')
 
+@dataclass
+class MADS:
+  search: SS.efficient_exploration = None
+  search_VN: SS.VNS = None
+  poll: PS.Dirs2n = None
+  param: Parameters = None
+  evaluator: Evaluator = None
+  post: PostMADS = None
+  out: Output = None
+  outP: Output = None
+  options: Options = None
+  data: dict = None
+  xmin: CandidatePoint = None
+  iteration: int = 0
+  peval: int = 0
+  HT: Any = None
+  log: logger = None
+  B: Any = None
+  LAMBDA_k: float = 0.
+  RHO_k: float = 0.
+  tic: Any = None
+  toc: Any = None
+  active_barrier: Barrier = None
 
-def search_step(iteration: int, search: SS.efficient_exploration = None, B: SS.auto = None, LAMBDA_k: float=None, RHO_k: float=None, search_VN: SS.VNS = None, post: PS.PostMADS=None, out: PS.Output=None, options: PS.Options=None, xmin: SS.CandidatePoint=None, peval: int=0, HT: Any=None, log:logger = None, outP: PS.Output=None):
-  """ Reset success boolean """
-  search.success = SUCCESS_TYPES.US
-  tic = time.perf_counter()
-  search.log = log
-  search.xmin = xmin
-  search.mesh.update()
-  search.LAMBDA = LAMBDA_k
-  search.RHO = RHO_k
-  if HT is not None:
-    search.hashtable = HT
-  if B is not None:
-    if isinstance(B, Barrier):
-      B.insert(search.xmin)
-      if B._filter is not None:
-        B.select_poll_center()
-        B.update_and_reset_success()
-    elif isinstance(B, BarrierMO) and iteration == 1:
-        B.init(evalPointList=[xmin])
-      
-  
-  # search.hmax = B._h_max
-  
-  if isinstance(B, Barrier):
-    search.hmax = B._h_max
-    # TODO: Check whether the commented code below is needed
-    # if xmin.status == DESIGN_STATUS.FEASIBLE:
-    #   B.insert_feasible(search.xmin)
-    # elif xmin.status == DESIGN_STATUS.INFEASIBLE:
-    #   B.insert_infeasible(search.xmin)
-    # else:
-    #   B.insert(search.xmin)
-  elif isinstance(B, BarrierMO):
-    search.hmax = B._hMax
-  """ Create the set of poll directions """
-  if search.type == SS.SEARCH_TYPE.VNS.name and search_VN is not None:
-    search_VN.active_barrier = B
-    search._candidate_points_set = search_VN.run()
-    if search_VN.stop:
-      print("Reached maximum number of VNS iterations!")
-      return search, B, post, out, search.LAMBDA, search.RHO, search.xmin, peval, outP
-    search.map_samples_from_coords_to_points(samples=search._candidate_points_set)
-  else:
-    vvp = vvs = []
-    bestFeasible: CandidatePoint = B._currentIncumbentFeas if isinstance(B, BarrierMO) else B._best_feasible
-    bestInf: CandidatePoint = B._currentIncumbentInf if isinstance(B, BarrierMO) else B.get_best_infeasible()
-    if bestFeasible is not None and bestFeasible.evaluated:
-      search.xmin = bestFeasible
-      vvp, _ = search.generate_sample_points(int(((search.dim+1)/2)*((search.dim+2)/2)) if search.ns is None else search.ns)
-    if bestInf is not None and bestInf.evaluated:
-    # if B._filter is not None and B.get_best_infeasible().evaluated:
-      xmin_bup = search.xmin
-      Prim_samples = search._candidate_points_set
-      search.xmin = bestInf#B.get_best_infeasible()
-      vvs, _ = search.generate_sample_points(int(((search.dim+1)/2)*((search.dim+2)/2)) if search.ns is None else search.ns)
-      search._candidate_points_set += Prim_samples
-      search.xmin = xmin_bup
-    
-    if isinstance(vvs, list) and len(vvs) > 0:
-      vv = vvp + vvs
-    else:
-      vv = vvp
+  def __init__(self, data: dict):
+    """ Initialize the log file """
+    self.log = logger()
+    if not os.path.exists(data["param"]["post_dir"]):
+      try:
+        os.mkdir(data["param"]["post_dir"])
+      except:
+        os.makedirs(data["param"]["post_dir"], exist_ok=True)
 
+    self.log.initialize(data["param"]["post_dir"] + "/OMADS.log")
+    self.log.log_msg(msg="Preprocess the MADS algorithim...", msg_type=PS.MSG_TYPE.INFO)
+    self.log.log_msg(msg="Preprocess the search step...", msg_type=PS.MSG_TYPE.INFO)
+    _, _, self.search, _, _, _, _, _, _ = SS.PreExploration(data).initialize_from_dict(log=self.log)
+    self.log.log_msg(msg="Preprocess the POLL step...", msg_type=PS.MSG_TYPE.INFO)
+    self.iteration, self.xmin, self.poll, self.options, self.param, self.post, self.out, self.B, self.outP = PS.PrePoll(data).initialize_from_dict(log=self.log, xs=self.search.xmin)
+    self.out.stepName = "Poll"
+    self.post.step_name = [f'Search: {self.search.type}']
 
-  """ Save current poll directions and incumbent solution
-    so they can be saved later in the post dir """
-  search.omit_duplicates()
-  if options.save_coordinates:
-    post.coords.append(search._candidate_points_set)
-    post.x_incumbent.append(search.xmin)
-  """ Reset success boolean """
-  search.success = SUCCESS_TYPES.US
-  """ Reset the BB output """
-  search.bb_output = []
-  xt = []
-  """ Serial evaluation for points in the poll set """
-  if search_VN is not None:
-    search.lb = search_VN.params.lb
-    search.ub = search_VN.params.ub
-  search.bb_handle.xmin = xmin
-  search.constraints_RP.LAMBDA = xmin.LAMBDA
-  search.constraints_RP.RHO = xmin.RHO
-  search.constraints_RP.constraints_type = xmin.constraints_type
-  search.constraints_RP.hmax = xmin.hmax
-  if not options.parallel_mode:
-    xt, post, peval = search.bb_handle.run_callable_serial_local(iter=iteration, peval=peval, eval_set=search._candidate_points_set, options=options, post=post, psize=search.mesh.getDeltaFrameSize().coordinates, stepName=f'Search: {search.type}', mesh=search.mesh, constraintsRelaxation=search.constraints_RP.__dict__, budget=options.budget)
+    self.HT = copy.deepcopy(self.poll.hashtable)
 
-  else:
-    search._point_index = -1
-    """ Parallel evaluation for points in the samples set """
-    search.bb_eval, xt, post, peval = search.bb_handle.run_callable_parallel_local(iter=iteration, peval=peval, njobs=options.np, eval_set=search._candidate_points_set, options=options, post=post, mesh=search.mesh, stepName=f'Search: {search.type}', psize=search.mesh.getDeltaFrameSize().coordinates, constraintsRelaxation=search.constraints_RP.__dict__, budget=options.budget)
-    
-  if search.bb_handle.constraintsRelaxation:
-    temp:ConstraintsRelaxationParameters = ConstraintsRelaxationParameters(**search.bb_handle.constraintsRelaxation)
-    for i in range(len(temp.LAMBDA)):
-      search.constraints_RP.LAMBDA[i] = temp.LAMBDA[i]
-    search.constraints_RP.RHO = temp.RHO
-    search.constraints_RP.constraints_type = temp.constraints_type
-    search.constraints_RP.hmax = temp.hmax
-    # if options.store_cache:
-    #   for xi in xt:
-    #     search.hashtable.hash_id = xi
-    #     if not search.hashtable._isPareto:
-    #       search.hashtable.add_to_best_cache(xi)
-  LAMBDA_k = search.bb_handle.constraintsRelaxation["LAMBDA"]
-  RHO_k = search.bb_handle.constraintsRelaxation["RHO"]
-  search.postprocess_evaluated_candidates(xt)
-
-  
-    
-  if isinstance(B, Barrier):
-    xpost: List[CandidatePoint] = search.master_updates(xt, peval, save_all_best=options.save_all_best, save_all=options.save_results)
-    if options.save_results:
-      for i in range(len(xpost)):
-        post.poll_dirs.append(xpost[i])
-    for xv in xt:
-      if xv.evaluated:
-        B.insert(xv)
-
-    """ Update the xmin in post"""
-    post.xmin = copy.deepcopy(search.xmin)
-
-
-    if iteration == 1:
-      search.vicinity_ratio = np.ones((len(search.xmin.coordinates),1))
-    
-    """ Updates """
-    
-    if search.success == SUCCESS_TYPES.FS:
-      dir: Point = Point(search.mesh._n)
-      dir.coordinates = search.xmin.direction.coordinates
-      # search.mesh.psize = np.multiply(search.mesh.get, 2, dtype=search.dtype.dtype)
-      search.mesh.enlargeDeltaFrameSize(direction=dir)
-      if search.sampling_t != SAMPLING_METHOD.ACTIVE.name:
-        search.update_local_region(region="expand")
-    elif search.success == SUCCESS_TYPES.US:
-      # search.mesh.psize = np.divide(search.mesh.psize, 2, dtype=search.dtype.dtype)
-      search.mesh.refineDeltaFrameSize()
-      if search.sampling_t != SAMPLING_METHOD.ACTIVE.name:
-        search.update_local_region(region="contract")
-  elif isinstance(B, BarrierMO):
-    xpost: List[CandidatePoint] = []
-    for i in range(len(xt)):
-      xpost.append(xt[i])
-    updated, updatedF, updatedInf = B.updateWithPoints(evalPointList=xpost, evalType=None, keepAllPoints=False, updateInfeasibleIncumbentAndHmax=True)
-    if not updated:
-      newMesh = None
-      if B._currentIncumbentInf:
-        B._currentIncumbentInf.mesh.refineDeltaFrameSize()
-        newMesh = copy.deepcopy(B._currentIncumbentFeas.mesh) if B._currentIncumbentFeas else copy.deepcopy(B._currentIncumbentInf.mesh) if B._currentIncumbentInf else None
-        B.updateCurrentIncumbents()
-        if search.sampling_t != SAMPLING_METHOD.ACTIVE.name:
-          search.update_local_region(region="contract")
-      if B._currentIncumbentFeas:
-        B._currentIncumbentFeas.mesh.refineDeltaFrameSize()
-        newMesh = copy.deepcopy(B._currentIncumbentFeas.mesh) if B._currentIncumbentFeas else copy.deepcopy(B._currentIncumbentInf.mesh) if B._currentIncumbentInf else None
-        B.updateCurrentIncumbents()
-        if search.sampling_t != SAMPLING_METHOD.ACTIVE.name:
-          search.update_local_region(region="contract")
-      
-      if iteration == 1:
-        search.vicinity_ratio = np.ones((len(search.xmin.coordinates),1))
-      if newMesh:
-        search.mesh = newMesh
-      else:
-        search.mesh.refineDeltaFrameSize()
-        if search.sampling_t != SAMPLING_METHOD.ACTIVE.name:
-          search.update_local_region(region="contract")
-    else:
-      search.mesh = copy.deepcopy(B._currentIncumbentFeas.mesh) if updatedF else copy.deepcopy(B._currentIncumbentInf.mesh) if updatedInf else search.mesh
-      search.xmin = copy.deepcopy(B._currentIncumbentFeas) if updatedF else copy.deepcopy(B._currentIncumbentInf) if updatedInf else search.xmin
-      if search.sampling_t != SAMPLING_METHOD.ACTIVE.name:
-        search.update_local_region(region="expand")
-    
-    for i in range(len(xpost)):
-      post.poll_dirs.append(xpost[i])
-    search.hashtable.best_hash_ID = []
-    search.hashtable.add_to_best_cache(B.getAllPoints())
-    post.xmin = B._currentIncumbentFeas if updatedF  else B._currentIncumbentInf if  updatedInf else search.xmin
-    
-  search.mesh.update()
-  
-  
-  if options.display:
-    if log is not None:
-      log.log_msg(msg=post.__str__(), msg_type=MSG_TYPE.INFO)
-    print(post)
-
-  toc = time.perf_counter()
-  if log is not None:
-    log.log_msg(f" Run completed in {toc - tic:.4f} seconds", MSG_TYPE.INFO)
-    log.log_msg(msg=f" Success status: {search.success}", msg_type=MSG_TYPE.INFO)
-    log.log_msg(msg=post.__str__(), msg_type=MSG_TYPE.INFO)
-    # log.log_msg(f" Random numbers generator's seed {options.seed}", MSG_TYPE.INFO)
-    # log.log_msg(" xmin = " + str(search.xmin), MSG_TYPE.INFO)
-    # log.log_msg(" hmin = " + str(search.xmin.h), MSG_TYPE.INFO)
-    # log.log_msg(" fmin = " + str(search.xmin.f), MSG_TYPE.INFO)
-    # log.log_msg(" #bb_eval = " + str(search.bb_handle.bb_eval), MSG_TYPE.INFO)
-    # log.log_msg(" nb_success = " + str(search.nb_success), MSG_TYPE.INFO)
-
-  # Failure_check = iteration > 0 and search.Failure_stop is not None and search.Failure_stop and not search.success
-  # if (Failure_check) or (abs(search.mesh.msize) < options.tol or search.bb_eval >= options.budget or search.terminate):
-  #   break
-  # iteration += 1
-  return search, B, post, out, search.LAMBDA, search.RHO, search.xmin, peval, outP
-
-def poll_step(iteration: int, poll: PS.Dirs2n = None, B: SS.auto = None, LAMBDA_k: float=None, RHO_k: float=None, param: PS.Parameters=None, post: PS.PostMADS=None, xmin: PS.CandidatePoint=None, out: PS.Output=None, options: PS.Options=None, peval: int = 0, HT: Any = None, log:logger = None, outP: PS.Output=None):
-  tic = time.perf_counter()
-  poll.xmin = xmin
-  poll.mesh.update()
-  """ Create the set of poll directions """
-  hhm = poll.create_housholder(options.rich_direction, domain=xmin.var_type)
-  poll.lb = param.lb
-  poll.ub = param.ub
-  poll.xmin = copy.deepcopy(xmin)
-  xmin.mesh = copy.deepcopy(poll.mesh)
-  if HT is not None:
-    poll.hashtable = HT
-  if B is not None:
-    if isinstance(B, Barrier):
-      B.insert(xmin)
-      if B._filter is not None:
-        B.select_poll_center()
-        B.update_and_reset_success()
+  def search_step(self, xmin: SS.CandidatePoint=None):
+    """ Reset success boolean """
+    self.search.success = SUCCESS_TYPES.US
+    tic = time.perf_counter()
+    self.search.log = self.log
+    self.search.xmin = xmin
+    self.search.mesh.update()
+    self.search.LAMBDA = self.LAMBDA_k
+    self.search.RHO = self.RHO_k
+    B = self.active_barrier
+    if self.HT is not None:
+      self.search.hashtable = self.HT
+    if B is not None:
+      if isinstance(B, Barrier):
+        B.insert(self.search.xmin)
+        if B._filter is not None:
+          B.select_poll_center()
+          B.update_and_reset_success()
+      elif isinstance(B, BarrierMO) and self.iteration == 1:
+          B.init(evalPointList=[xmin])
         
-    elif isinstance(B, BarrierMO) and iteration == 1:
-      B.init(evalPointList=[xmin])
+    
+    # search.hmax = B._h_max
+    
+    if isinstance(B, Barrier):
+      self.search.hmax = B._h_max
+      # TODO: Check whether the commented code below is needed
+      # if xmin.status == DESIGN_STATUS.FEASIBLE:
+      #   B.insert_feasible(search.xmin)
+      # elif xmin.status == DESIGN_STATUS.INFEASIBLE:
+      #   B.insert_infeasible(search.xmin)
+      # else:
+      #   B.insert(search.xmin)
+    elif isinstance(B, BarrierMO):
+      self.search.hmax = B._hMax
+    """ Create the set of poll directions """
+    if self.search.type == SS.SEARCH_TYPE.VNS.name and self.search_VN is not None:
+      self.search_VN.active_barrier = B
+      self.search._candidate_points_set = self.search_VN.run()
+      if self.search_VN.stop:
+        print("Reached maximum number of VNS iterations!")
+        self.HT = self.search.hashtable
+        self.RHO_k = self.search.RHO
+        self.active_barrier = B
+        self.LAMBDA_k = self.search.LAMBDA
+        return self.search.xmin
+      self.search.map_samples_from_coords_to_points(samples=self.search._candidate_points_set)
+    else:
+      vvp = vvs = []
+      bestFeasible: CandidatePoint = B._currentIncumbentFeas if isinstance(B, BarrierMO) else B._best_feasible
+      bestInf: CandidatePoint = B._currentIncumbentInf if isinstance(B, BarrierMO) else B.get_best_infeasible()
+      if bestFeasible is not None and bestFeasible.evaluated:
+        self.search.xmin = bestFeasible
+        vvp, _ = self.search.generate_sample_points(int(((self.search.dim+1)/2)*((self.search.dim+2)/2)) if self.search.ns is None else self.search.ns)
+      if bestInf is not None and bestInf.evaluated:
+      # if B._filter is not None and B.get_best_infeasible().evaluated:
+        xmin_bup = self.search.xmin
+        Prim_samples = self.search._candidate_points_set
+        self.search.xmin = bestInf#B.get_best_infeasible()
+        vvs, _ = self.search.generate_sample_points(int(((self.search.dim+1)/2)*((self.search.dim+2)/2)) if self.search.ns is None else self.search.ns)
+        self.search._candidate_points_set += Prim_samples
+        self.search.xmin = xmin_bup
       
-  if isinstance(B, Barrier):
-      poll.hmax = xmin.hmax
-      poll.create_poll_set(hhm=hhm,
-                ub=param.ub,
-                lb=param.lb, it=iteration, var_type=xmin.var_type, var_sets=xmin.sets, var_link = xmin.var_link, c_types=param.constraints_type, is_prim=True)
-      if B._sec_poll_center is not None and B._sec_poll_center.evaluated:
-        del poll.poll_set
-        # poll.poll_dirs = []
-        poll.x_sc = B._sec_poll_center
-        poll.create_poll_set(hhm=hhm,
-                ub=param.ub,
-                lb=param.lb, it=iteration, var_type=B._sec_poll_center.var_type, var_sets=B._sec_poll_center.sets, var_link = B._sec_poll_center.var_link, c_types=param.constraints_type, is_prim=False)
-  elif isinstance(B, BarrierMO):
-    poll.hmax = B._hMax
-    del poll.poll_set
-    del poll.poll_dirs
-    if B._currentIncumbentFeas and B._currentIncumbentFeas.evaluated:
-      poll.create_poll_set(hhm=hhm,
-              ub=param.ub,
-              lb=param.lb, it=iteration, var_type=B._currentIncumbentFeas.var_type, var_sets=B._currentIncumbentFeas.sets, var_link = B._currentIncumbentFeas.var_link, c_types=param.constraints_type, is_prim=True)
-    elif poll.xmin.status == DESIGN_STATUS.FEASIBLE:
-      poll.create_poll_set(hhm=hhm,
-              ub=param.ub,
-              lb=param.lb, it=iteration, var_type=poll.xmin.var_type, var_sets=poll.xmin.sets, var_link = poll.xmin.var_link, c_types=param.constraints_type, is_prim=True)
-    
-    if B._currentIncumbentInf and B._currentIncumbentInf.evaluated:
-      # del poll.poll_set
-      poll.x_sc = B._currentIncumbentInf
-      poll.create_poll_set(hhm=hhm,
-              ub=param.ub,
-              lb=param.lb, it=iteration, var_type=B._currentIncumbentInf.var_type, var_sets=B._currentIncumbentInf.sets, var_link = B._currentIncumbentInf.var_link, c_types=param.constraints_type, is_prim=False)
-    elif poll.xmin.status == DESIGN_STATUS.INFEASIBLE:
-      poll.create_poll_set(hhm=hhm,
-              ub=param.ub,
-              lb=param.lb, it=iteration, var_type=poll.xmin.var_type, var_sets=poll.xmin.sets, var_link = poll.xmin.var_link, c_types=param.constraints_type, is_prim=False)
-    
-  
-  poll.LAMBDA = LAMBDA_k
-  poll.RHO = RHO_k
+      if isinstance(vvs, list) and len(vvs) > 0:
+        vv = vvp + vvs
+      else:
+        vv = vvp
 
-  """ Save current poll directions and incumbent solution
-    so they can be saved later in the post dir """
-  poll.omit_duplicates()
-  if options.save_coordinates:
-    post.coords.append(poll.poll_set)
-    post.x_incumbent.append(poll.xmin)
-  """ Reset success boolean """
-  poll.success = SUCCESS_TYPES.US
-  """ Reset the BB output """
-  poll.bb_output = []
-  xt = []
-  poll.bb_handle.xmin = xmin
-  """ Serial evaluation for points in the poll set """
-  poll.constraints_RP.LAMBDA = xmin.LAMBDA
-  poll.constraints_RP.RHO = xmin.RHO
-  poll.constraints_RP.constraints_type = xmin.constraints_type
-  poll.constraints_RP.hmax = xmin.hmax
-  if not options.parallel_mode:
-    xt, post, peval = poll.bb_handle.run_callable_serial_local(iter=iteration, peval=peval, eval_set=poll._candidate_points_set, options=options, post=post, psize=poll.mesh.getDeltaFrameSize().coordinates, stepName=f'Poll Step', mesh=poll.mesh, constraintsRelaxation=poll.constraints_RP.__dict__, budget=options.budget)
 
-  else:
-    poll.point_index = -1
-    """ Parallel evaluation for points in the samples set """
-    poll.bb_eval, xt, post, peval = poll.bb_handle.run_callable_parallel_local(iter=iteration, peval=peval, njobs=options.np, eval_set=poll._candidate_points_set, options=options, post=post, mesh=poll.mesh, stepName=f'Poll Step', psize=poll.mesh.getDeltaFrameSize().coordinates, constraintsRelaxation=poll.constraints_RP.__dict__, budget=options.budget)
+    """ Save current poll directions and incumbent solution
+      so they can be saved later in the post dir """
+    self.search.omit_duplicates()
+    if self.options.save_coordinates:
+      self.post.coords.append(self.search._candidate_points_set)
+      self.post.x_incumbent.append(self.search.xmin)
+    """ Reset success boolean """
+    self.search.success = SUCCESS_TYPES.US
+    """ Reset the BB output """
+    self.search.bb_output = []
+    xt = []
+    """ Serial evaluation for points in the poll set """
+    if self.search_VN is not None:
+      self.search.lb = self.search_VN.params.lb
+      self.search.ub = self.search_VN.params.ub
+    self.search.bb_handle.xmin = xmin
+    self.search.constraints_RP.LAMBDA = xmin.LAMBDA
+    self.search.constraints_RP.RHO = xmin.RHO
+    self.search.constraints_RP.constraints_type = xmin.constraints_type
+    self.search.constraints_RP.hmax = xmin.hmax
+    if not self.options.parallel_mode:
+      xt, self.post, self.peval = self.search.bb_handle.run_callable_serial_local(iter=self.iteration, peval=self.peval, eval_set=self.search._candidate_points_set, options=self.options, post=self.post, psize=self.search.mesh.getDeltaFrameSize().coordinates, stepName=f'Search: {self.search.type}', mesh=self.search.mesh, constraintsRelaxation=self.search.constraints_RP.__dict__, budget=self.options.budget)
+
+    else:
+      self.search._point_index = -1
+      """ Parallel evaluation for points in the samples set """
+      self.search.bb_eval, xt, self.post, self.peval = self.search.bb_handle.run_callable_parallel_local(iter=self.iteration, peval=self.peval, njobs=self.options.np, eval_set=self.search._candidate_points_set, options=self.options, post=self.post, mesh=self.search.mesh, stepName=f'Search: {self.search.type}', psize=self.search.mesh.getDeltaFrameSize().coordinates, constraintsRelaxation=self.search.constraints_RP.__dict__, budget=self.options.budget)
+      
+    if self.search.bb_handle.constraintsRelaxation:
+      temp:ConstraintsRelaxationParameters = ConstraintsRelaxationParameters(**self.search.bb_handle.constraintsRelaxation)
+      for i in range(len(temp.LAMBDA)):
+        self.search.constraints_RP.LAMBDA[i] = temp.LAMBDA[i]
+      self.search.constraints_RP.RHO = temp.RHO
+      self.search.constraints_RP.constraints_type = temp.constraints_type
+      self.search.constraints_RP.hmax = temp.hmax
+      # if options.store_cache:
+      #   for xi in xt:
+      #     search.hashtable.hash_id = xi
+      #     if not search.hashtable._isPareto:
+      #       search.hashtable.add_to_best_cache(xi)
+    self.LAMBDA_k = self.search.bb_handle.constraintsRelaxation["LAMBDA"]
+    self.RHO_k = self.search.bb_handle.constraintsRelaxation["RHO"]
+    self.search.postprocess_evaluated_candidates(xt)
+
     
-  if poll.bb_handle.constraintsRelaxation:
-    temp:ConstraintsRelaxationParameters = ConstraintsRelaxationParameters(**poll.bb_handle.constraintsRelaxation)
-    for i in range(len(temp.LAMBDA)):
-      poll.constraints_RP.LAMBDA[i] = temp.LAMBDA[i]
-    poll.constraints_RP.RHO = temp.RHO
-    poll.constraints_RP.constraints_type = temp.constraints_type
-    poll.constraints_RP.hmax = temp.hmax
-    # if options.store_cache:
-    #   for xi in xt:
-    #     poll.hashtable.hash_id = xi
-    #     if not poll.hashtable._isPareto:
-    #       poll.hashtable.add_to_best_cache(xi)
-  LAMBDA_k = poll.bb_handle.constraintsRelaxation["LAMBDA"]
-  RHO_k = poll.bb_handle.constraintsRelaxation["RHO"]
-  poll.postprocess_evaluated_candidates(xt)
-
-  if isinstance(B, Barrier):
-      xpost: List[CandidatePoint] = poll.master_updates(xt, peval, save_all_best=options.save_all_best, save_all=options.save_results)
-      xmin = copy.deepcopy(poll.xmin)
-      if options.save_results:
+      
+    if isinstance(B, Barrier):
+      xpost: List[CandidatePoint] = self.search.master_updates(xt, self.peval, save_all_best=self.options.save_all_best, save_all=self.options.save_results)
+      if self.options.save_results:
         for i in range(len(xpost)):
-          post.poll_dirs.append(xpost[i])
+          self.post.poll_dirs.append(xpost[i])
       for xv in xt:
         if xv.evaluated:
           B.insert(xv)
 
       """ Update the xmin in post"""
-      post.xmin = copy.deepcopy(poll.xmin)
+      self.post.xmin = copy.deepcopy(self.search.xmin)
 
+
+      if self.iteration == 1:
+        self.search.vicinity_ratio = np.ones((len(self.search.xmin.coordinates),1))
+      
       """ Updates """
-      pev = 0.
-      for p in poll.poll_set:
-        if p.evaluated:
-          pev += 1
-      # if pev != poll.poll_dirs and not poll.success:
-      #   poll.seed += 1
-      goToSearch: bool = (pev == 0 and poll.Failure_stop is not None and poll.Failure_stop)
       
-      dir: Point = Point(poll._n)
-      dir.coordinates = poll.xmin.direction.coordinates if poll.xmin.direction is not None else [0]*poll._n
-      if poll.success == SUCCESS_TYPES.FS and not goToSearch:
-        poll.mesh.enlargeDeltaFrameSize(direction=dir) # poll.mesh.psize =  np.multiply(poll.mesh.psize, 2, dtype=poll.dtype.dtype
-      elif poll.success == SUCCESS_TYPES.US:
-        poll.mesh.refineDeltaFrameSize()
-        # poll.mesh.psize = np.divide(poll.mesh.psize, 2, dtype=poll.dtype.dtype)
-      
-  elif isinstance(B, BarrierMO):
-    xpost: List[CandidatePoint] = []
-    for i in range(len(xt)):
-      xpost.append(xt[i])
-    updated, _, _ = B.updateWithPoints(evalPointList=xpost, evalType=None, keepAllPoints=False, updateInfeasibleIncumbentAndHmax=True)
-    if not updated:
-      newMesh = None
-      if B._currentIncumbentInf:
-        B._currentIncumbentInf.mesh.refineDeltaFrameSize()
-        newMesh = copy.deepcopy(B._currentIncumbentFeas.mesh) if B._currentIncumbentFeas else copy.deepcopy(B._currentIncumbentInf.mesh) if B._currentIncumbentInf else None
-        B.updateCurrentIncumbents()
-      if B._currentIncumbentFeas:
-        B._currentIncumbentFeas.mesh.refineDeltaFrameSize()
-        newMesh = copy.deepcopy(B._currentIncumbentFeas.mesh) if B._currentIncumbentFeas else copy.deepcopy(B._currentIncumbentInf.mesh) if B._currentIncumbentInf else None
-        B.updateCurrentIncumbents()
-
-      
-      if newMesh:
-        poll.mesh = newMesh
-      else:
-        poll.mesh.refineDeltaFrameSize()
+      if self.search.success == SUCCESS_TYPES.FS:
+        dir: Point = Point(self.search.mesh._n)
+        dir.coordinates = self.search.xmin.direction.coordinates
+        # search.mesh.psize = np.multiply(search.mesh.get, 2, dtype=search.dtype.dtype)
+        self.search.mesh.enlargeDeltaFrameSize(direction=dir)
+        if self.search.sampling_t != SAMPLING_METHOD.ACTIVE.name:
+          self.search.update_local_region(region="expand")
+      elif self.search.success == SUCCESS_TYPES.US:
+        # search.mesh.psize = np.divide(search.mesh.psize, 2, dtype=search.dtype.dtype)
+        self.search.mesh.refineDeltaFrameSize()
+        if self.search.sampling_t != SAMPLING_METHOD.ACTIVE.name:
+          self.search.update_local_region(region="contract")
+    elif isinstance(B, BarrierMO):
+      xpost: List[CandidatePoint] = []
+      for i in range(len(xt)):
+        xpost.append(xt[i])
+      updated, updatedF, updatedInf = B.updateWithPoints(evalPointList=xpost, evalType=None, keepAllPoints=False, updateInfeasibleIncumbentAndHmax=True)
+      if not updated:
+        newMesh = None
+        if B._currentIncumbentInf:
+          B._currentIncumbentInf.mesh.refineDeltaFrameSize()
+          newMesh = copy.deepcopy(B._currentIncumbentFeas.mesh) if B._currentIncumbentFeas else copy.deepcopy(B._currentIncumbentInf.mesh) if B._currentIncumbentInf else None
+          B.updateCurrentIncumbents()
+          if self.search.sampling_t != SAMPLING_METHOD.ACTIVE.name:
+            self.search.update_local_region(region="contract")
+        if B._currentIncumbentFeas:
+          B._currentIncumbentFeas.mesh.refineDeltaFrameSize()
+          newMesh = copy.deepcopy(B._currentIncumbentFeas.mesh) if B._currentIncumbentFeas else copy.deepcopy(B._currentIncumbentInf.mesh) if B._currentIncumbentInf else None
+          B.updateCurrentIncumbents()
+          if self.search.sampling_t != SAMPLING_METHOD.ACTIVE.name:
+            self.search.update_local_region(region="contract")
         
-    else:
-      poll.mesh = copy.deepcopy(B._currentIncumbentFeas.mesh) if B._currentIncumbentFeas else copy.deepcopy(B._currentIncumbentInf.mesh) if B._currentIncumbentInf else poll.mesh
-      poll.xmin = copy.deepcopy(B._currentIncumbentFeas) if B._currentIncumbentFeas else copy.deepcopy(B._currentIncumbentInf) if B._currentIncumbentInf else poll.xmin
-    for i in range(len(xpost)):
-      post.poll_dirs.append(xpost[i])
+        if self.iteration == 1:
+          self.search.vicinity_ratio = np.ones((len(self.search.xmin.coordinates),1))
+        if newMesh:
+          self.search.mesh = newMesh
+        else:
+          self.search.mesh.refineDeltaFrameSize()
+          if self.search.sampling_t != SAMPLING_METHOD.ACTIVE.name:
+            self.search.update_local_region(region="contract")
+      else:
+        self.search.mesh = copy.deepcopy(B._currentIncumbentFeas.mesh) if updatedF else copy.deepcopy(B._currentIncumbentInf.mesh) if updatedInf else self.search.mesh
+        self.search.xmin = copy.deepcopy(B._currentIncumbentFeas) if updatedF else copy.deepcopy(B._currentIncumbentInf) if updatedInf else self.search.xmin
+        if self.search.sampling_t != SAMPLING_METHOD.ACTIVE.name:
+          self.search.update_local_region(region="expand")
+      
+      for i in range(len(xpost)):
+        self.post.poll_dirs.append(xpost[i])
+      self.search.hashtable.best_hash_ID = []
+      self.search.hashtable.add_to_best_cache(B.getAllPoints())
+      self.post.xmin = B._currentIncumbentFeas if updatedF  else B._currentIncumbentInf if  updatedInf else self.search.xmin
+      
+    self.search.mesh.update()
     
-    post.xmin = B._currentIncumbentFeas if B._currentIncumbentFeas  else B._currentIncumbentInf if  B._currentIncumbentInf else poll.xmin
-  poll.mesh.update()
-  if log is not None:
-      log.log_msg(msg=post.__str__(), msg_type=MSG_TYPE.INFO)
-  if options.display:
-    print(post)
-  
-  LAMBDA_k = poll.LAMBDA
-  RHO_k = poll.RHO
+    
+    if self.options.display:
+      if self.log is not None:
+        self.log.log_msg(msg=self.post.__str__(), msg_type=MSG_TYPE.INFO)
+      print(self.post)
 
-  toc = time.perf_counter()
+    toc = time.perf_counter()
+    if self.log is not None:
+      self.log.log_msg(f" Run completed in {toc - tic:.4f} seconds", MSG_TYPE.INFO)
+      self.log.log_msg(msg=f" Success status: {self.search.success}", msg_type=MSG_TYPE.INFO)
+      self.log.log_msg(msg=self.post.__str__(), msg_type=MSG_TYPE.INFO)
+      # log.log_msg(f" Random numbers generator's seed {options.seed}", MSG_TYPE.INFO)
+      # log.log_msg(" xmin = " + str(search.xmin), MSG_TYPE.INFO)
+      # log.log_msg(" hmin = " + str(search.xmin.h), MSG_TYPE.INFO)
+      # log.log_msg(" fmin = " + str(search.xmin.f), MSG_TYPE.INFO)
+      # log.log_msg(" #bb_eval = " + str(search.bb_handle.bb_eval), MSG_TYPE.INFO)
+      # log.log_msg(" nb_success = " + str(search.nb_success), MSG_TYPE.INFO)
 
-  if log is not None:
-    # log.log_msg(msg=" ---Run Summary--- ", msg_type=MSG_TYPE.INFO)
-    log.log_msg(msg=f" Run completed in {toc - tic:.4f} seconds", msg_type=MSG_TYPE.INFO)
-    log.log_msg(msg=f" Success status: {poll.success}", msg_type=MSG_TYPE.INFO)
-    log.log_msg(msg=post.__str__(), msg_type=MSG_TYPE.INFO)
-    # log.log_msg(msg=f" Random numbers generator's seed {options.seed}", msg_type=MSG_TYPE.INFO)
-    # log.log_msg(msg=f" xmin = {poll.xmin.__str__()} ", msg_type=MSG_TYPE.INFO)
-    # log.log_msg(msg=f" hmin = {poll.xmin.h} ", msg_type=MSG_TYPE.INFO)
-    # log.log_msg(msg=f" fmin {poll.xmin.fobj}", msg_type=MSG_TYPE.INFO)
-    # log.log_msg(msg=f" #bb_eval =  {poll.bb_eval} ", msg_type=MSG_TYPE.INFO)
-    # log.log_msg(msg=f" #iteration =  {iteration} ", msg_type=MSG_TYPE.INFO)
-    # log.log_msg(msg=f"  nb_success = {poll.nb_success} ", msg_type=MSG_TYPE.INFO)
-    # log.log_msg(msg=f" psize = {poll.mesh.psize} ", msg_type=MSG_TYPE.INFO)
-    # log.log_msg(msg=f" psize_success = {poll.mesh.psize_success} ", msg_type=MSG_TYPE.INFO)
-    # log.log_msg(msg=f" psize_max = {poll.mesh.psize_max} ", msg_type=MSG_TYPE.INFO)
-  
-  return poll, B, post, out, poll.xmin.LAMBDA, poll.xmin.RHO, poll.xmin, peval, outP
+    # Failure_check = iteration > 0 and search.Failure_stop is not None and search.Failure_stop and not search.success
+    # if (Failure_check) or (abs(search.mesh.msize) < options.tol or search.bb_eval >= options.budget or search.terminate):
+    #   break
+    # iteration += 1
+    self.RHO_k = self.search.RHO
+    self.HT = self.search.hashtable
+    self.active_barrier = B
+    self.LAMBDA_k = self.search.LAMBDA
+    return self.search.xmin
+
+  def poll_step(self, xmin: PS.CandidatePoint=None):
+    tic = time.perf_counter()
+    self.poll.xmin = xmin
+    self.poll.mesh.update()
+    """ Create the set of poll directions """
+    hhm = self.poll.create_housholder(self.options.rich_direction, domain=xmin.var_type)
+    self.poll.lb = self.param.lb
+    self.poll.ub = self.param.ub
+    self.poll.xmin = copy.deepcopy(xmin)
+    xmin.mesh = copy.deepcopy(self.poll.mesh)
+    B = self.active_barrier
+    if self.HT is not None:
+      self.poll.hashtable = self.HT
+    if B is not None:
+      if isinstance(B, Barrier):
+        B.insert(xmin)
+        if B._filter is not None:
+          B.select_poll_center()
+          B.update_and_reset_success()
+          
+      elif isinstance(B, BarrierMO) and self.iteration == 1:
+        B.init(evalPointList=[xmin])
+        
+    if isinstance(B, Barrier):
+        self.poll.hmax = xmin.hmax
+        self.poll.create_poll_set(hhm=hhm,
+                  ub=self.param.ub,
+                  lb=self.param.lb, it=self.iteration, var_type=xmin.var_type, var_sets=xmin.sets, var_link = xmin.var_link, c_types=self.param.constraints_type, is_prim=True)
+        if B._sec_poll_center is not None and B._sec_poll_center.evaluated:
+          del self.poll.poll_set
+          # poll.poll_dirs = []
+          self.poll.x_sc = B._sec_poll_center
+          self.poll.create_poll_set(hhm=hhm,
+                  ub=self.param.ub,
+                  lb=self.param.lb, it=self.iteration, var_type=B._sec_poll_center.var_type, var_sets=B._sec_poll_center.sets, var_link = B._sec_poll_center.var_link, c_types=self.param.constraints_type, is_prim=False)
+    elif isinstance(B, BarrierMO):
+      self.poll.hmax = B._hMax
+      del self.poll.poll_set
+      del self.poll.poll_dirs
+      if B._currentIncumbentFeas and B._currentIncumbentFeas.evaluated:
+        self.poll.create_poll_set(hhm=hhm,
+                ub=self.param.ub,
+                lb=self.param.lb, it=self.iteration, var_type=B._currentIncumbentFeas.var_type, var_sets=B._currentIncumbentFeas.sets, var_link = B._currentIncumbentFeas.var_link, c_types=self.param.constraints_type, is_prim=True)
+      elif self.poll.xmin.status == DESIGN_STATUS.FEASIBLE:
+        self.poll.create_poll_set(hhm=hhm,
+                ub=self.param.ub,
+                lb=self.param.lb, it=self.iteration, var_type=self.poll.xmin.var_type, var_sets=self.poll.xmin.sets, var_link = self.poll.xmin.var_link, c_types=self.param.constraints_type, is_prim=True)
+      
+      if B._currentIncumbentInf and B._currentIncumbentInf.evaluated:
+        # del poll.poll_set
+        self.poll.x_sc = B._currentIncumbentInf
+        self.poll.create_poll_set(hhm=hhm,
+                ub=self.param.ub,
+                lb=self.param.lb, it=self.iteration, var_type=B._currentIncumbentInf.var_type, var_sets=B._currentIncumbentInf.sets, var_link = B._currentIncumbentInf.var_link, c_types=self.param.constraints_type, is_prim=False)
+      elif self.poll.xmin.status == DESIGN_STATUS.INFEASIBLE:
+        self.poll.create_poll_set(hhm=hhm,
+                ub=self.param.ub,
+                lb=self.param.lb, it=self.iteration, var_type=self.poll.xmin.var_type, var_sets=self.poll.xmin.sets, var_link = self.poll.xmin.var_link, c_types=self.param.constraints_type, is_prim=False)
+      
+    
+    self.poll.LAMBDA = self.LAMBDA_k
+    self.poll.RHO = self.RHO_k
+
+    """ Save current poll directions and incumbent solution
+      so they can be saved later in the post dir """
+    self.poll.omit_duplicates()
+    if self.options.save_coordinates:
+      self.post.coords.append(self.poll.poll_set)
+      self.post.x_incumbent.append(self.poll.xmin)
+    """ Reset success boolean """
+    self.poll.success = SUCCESS_TYPES.US
+    """ Reset the BB output """
+    self.poll.bb_output = []
+    xt = []
+    self.poll.bb_handle.xmin = xmin
+    """ Serial evaluation for points in the poll set """
+    self.poll.constraints_RP.LAMBDA = xmin.LAMBDA
+    self.poll.constraints_RP.RHO = xmin.RHO
+    self.poll.constraints_RP.constraints_type = xmin.constraints_type
+    self.poll.constraints_RP.hmax = xmin.hmax
+    if not self.options.parallel_mode:
+      xt, self.post, self.peval = self.poll.bb_handle.run_callable_serial_local(iter=self.iteration, peval=self.peval, eval_set=self.poll._candidate_points_set, options=self.options, post=self.post, psize=self.poll.mesh.getDeltaFrameSize().coordinates, stepName=f'Poll Step', mesh=self.poll.mesh, constraintsRelaxation=self.poll.constraints_RP.__dict__, budget=self.options.budget)
+
+    else:
+      self.poll.point_index = -1
+      """ Parallel evaluation for points in the samples set """
+      self.poll.bb_eval, xt, self.post, self.peval = self.poll.bb_handle.run_callable_parallel_local(iter=self.iteration, peval=self.peval, njobs=self.options.np, eval_set=self.poll._candidate_points_set, options=self.options, post=self.post, mesh=self.poll.mesh, stepName=f'Poll Step', psize=self.poll.mesh.getDeltaFrameSize().coordinates, constraintsRelaxation=self.poll.constraints_RP.__dict__, budget=self.options.budget)
+      
+    if self.poll.bb_handle.constraintsRelaxation:
+      temp:ConstraintsRelaxationParameters = ConstraintsRelaxationParameters(**self.poll.bb_handle.constraintsRelaxation)
+      for i in range(len(temp.LAMBDA)):
+        self.poll.constraints_RP.LAMBDA[i] = temp.LAMBDA[i]
+      self.poll.constraints_RP.RHO = temp.RHO
+      self.poll.constraints_RP.constraints_type = temp.constraints_type
+      self.poll.constraints_RP.hmax = temp.hmax
+      # if options.store_cache:
+      #   for xi in xt:
+      #     poll.hashtable.hash_id = xi
+      #     if not poll.hashtable._isPareto:
+      #       poll.hashtable.add_to_best_cache(xi)
+    self.LAMBDA_k = self.poll.bb_handle.constraintsRelaxation["LAMBDA"]
+    self.RHO_k = self.poll.bb_handle.constraintsRelaxation["RHO"]
+    self.poll.postprocess_evaluated_candidates(xt)
+
+    if isinstance(B, Barrier):
+        xpost: List[CandidatePoint] = self.poll.master_updates(xt, self.peval, save_all_best=self.options.save_all_best, save_all=self.options.save_results)
+        xmin = copy.deepcopy(self.poll.xmin)
+        if self.options.save_results:
+          for i in range(len(xpost)):
+            self.post.poll_dirs.append(xpost[i])
+        for xv in xt:
+          if xv.evaluated:
+            B.insert(xv)
+
+        """ Update the xmin in post"""
+        self.post.xmin = copy.deepcopy(self.poll.xmin)
+
+        """ Updates """
+        pev = 0.
+        for p in self.poll.poll_set:
+          if p.evaluated:
+            pev += 1
+        # if pev != poll.poll_dirs and not poll.success:
+        #   poll.seed += 1
+        goToSearch: bool = (pev == 0 and self.poll.Failure_stop is not None and self.poll.Failure_stop)
+        
+        dir: Point = Point(self.poll._n)
+        dir.coordinates = self.poll.xmin.direction.coordinates if self.poll.xmin.direction is not None else [0]*self.poll._n
+        if self.poll.success == SUCCESS_TYPES.FS and not goToSearch:
+          self.poll.mesh.enlargeDeltaFrameSize(direction=dir) # poll.mesh.psize =  np.multiply(poll.mesh.psize, 2, dtype=poll.dtype.dtype
+        elif self.poll.success == SUCCESS_TYPES.US:
+          self.poll.mesh.refineDeltaFrameSize()
+          # poll.mesh.psize = np.divide(poll.mesh.psize, 2, dtype=poll.dtype.dtype)
+        
+    elif isinstance(B, BarrierMO):
+      xpost: List[CandidatePoint] = []
+      for i in range(len(xt)):
+        xpost.append(xt[i])
+      updated, _, _ = B.updateWithPoints(evalPointList=xpost, evalType=None, keepAllPoints=False, updateInfeasibleIncumbentAndHmax=True)
+      if not updated:
+        newMesh = None
+        if B._currentIncumbentInf:
+          B._currentIncumbentInf.mesh.refineDeltaFrameSize()
+          newMesh = copy.deepcopy(B._currentIncumbentFeas.mesh) if B._currentIncumbentFeas else copy.deepcopy(B._currentIncumbentInf.mesh) if B._currentIncumbentInf else None
+          B.updateCurrentIncumbents()
+        if B._currentIncumbentFeas:
+          B._currentIncumbentFeas.mesh.refineDeltaFrameSize()
+          newMesh = copy.deepcopy(B._currentIncumbentFeas.mesh) if B._currentIncumbentFeas else copy.deepcopy(B._currentIncumbentInf.mesh) if B._currentIncumbentInf else None
+          B.updateCurrentIncumbents()
+
+        
+        if newMesh:
+          self.poll.mesh = newMesh
+        else:
+          self.poll.mesh.refineDeltaFrameSize()
+          
+      else:
+        self.poll.mesh = copy.deepcopy(B._currentIncumbentFeas.mesh) if B._currentIncumbentFeas else copy.deepcopy(B._currentIncumbentInf.mesh) if B._currentIncumbentInf else self.poll.mesh
+        self.poll.xmin = copy.deepcopy(B._currentIncumbentFeas) if B._currentIncumbentFeas else copy.deepcopy(B._currentIncumbentInf) if B._currentIncumbentInf else self.poll.xmin
+      for i in range(len(xpost)):
+        self.post.poll_dirs.append(xpost[i])
+      
+      self.post.xmin = B._currentIncumbentFeas if B._currentIncumbentFeas  else B._currentIncumbentInf if  B._currentIncumbentInf else self.poll.xmin
+    self.poll.mesh.update()
+    if self.log is not None:
+        self.log.log_msg(msg=self.post.__str__(), msg_type=MSG_TYPE.INFO)
+    if self.options.display:
+      print(self.post)
+    
+    self.LAMBDA_k = self.poll.LAMBDA
+    self.RHO_k = self.poll.xmin.RHO
+
+    toc = time.perf_counter()
+
+    if self.log is not None:
+      # log.log_msg(msg=" ---Run Summary--- ", msg_type=MSG_TYPE.INFO)
+      self.log.log_msg(msg=f" Run completed in {toc - tic:.4f} seconds", msg_type=MSG_TYPE.INFO)
+      self.log.log_msg(msg=f" Success status: {self.poll.success}", msg_type=MSG_TYPE.INFO)
+      self.log.log_msg(msg=self.post.__str__(), msg_type=MSG_TYPE.INFO)
+      # log.log_msg(msg=f" Random numbers generator's seed {options.seed}", msg_type=MSG_TYPE.INFO)
+      # log.log_msg(msg=f" xmin = {poll.xmin.__str__()} ", msg_type=MSG_TYPE.INFO)
+      # log.log_msg(msg=f" hmin = {poll.xmin.h} ", msg_type=MSG_TYPE.INFO)
+      # log.log_msg(msg=f" fmin {poll.xmin.fobj}", msg_type=MSG_TYPE.INFO)
+      # log.log_msg(msg=f" #bb_eval =  {poll.bb_eval} ", msg_type=MSG_TYPE.INFO)
+      # log.log_msg(msg=f" #iteration =  {iteration} ", msg_type=MSG_TYPE.INFO)
+      # log.log_msg(msg=f"  nb_success = {poll.nb_success} ", msg_type=MSG_TYPE.INFO)
+      # log.log_msg(msg=f" psize = {poll.mesh.psize} ", msg_type=MSG_TYPE.INFO)
+      # log.log_msg(msg=f" psize_success = {poll.mesh.psize_success} ", msg_type=MSG_TYPE.INFO)
+      # log.log_msg(msg=f" psize_max = {poll.mesh.psize_max} ", msg_type=MSG_TYPE.INFO)
+    self.HT = self.poll.hashtable
+    self.active_barrier = B
+    self.LAMBDA_k = self.poll.xmin.LAMBDA
+    return self.poll.xmin
 
 def main(*args) -> Dict[str, Any]:
   """ Otho-MADS main algorithm """
@@ -483,6 +540,7 @@ def main(*args) -> Dict[str, Any]:
   """ Run preprocessor for the setup of
    the optimization problem and for the initialization
   of optimization process """
+  MADS_agent: MADS = MADS(data=data)
   iteration: int
   xmin: CandidatePoint
   options: Options
@@ -490,16 +548,16 @@ def main(*args) -> Dict[str, Any]:
   post: PostMADS 
   out: Output 
   B: Barrier
-  poll: PS.Dirs2n
+  # poll: PS.Dirs2n
   search: SS.efficient_exploration
   log.log_msg(msg="Preprocess the search step...", msg_type=PS.MSG_TYPE.INFO)
-  _, _, search, _, _, _, _, _, _ = SS.PreExploration(data).initialize_from_dict(log=log)
+  _, _, MADS_agent.search, _, _, _, _, _, _ = SS.PreExploration(data).initialize_from_dict(log=log)
   log.log_msg(msg="Preprocess the MADS algorithim...", msg_type=PS.MSG_TYPE.INFO)
-  iteration, xmin, poll, options, param, post, out, B, outP = PS.PrePoll(data).initialize_from_dict(log=log, xs=search.xmin)
+  iteration, xmin, MADS_agent.poll, options, param, post, out, B, outP = PS.PrePoll(data).initialize_from_dict(log=log, xs=MADS_agent.search.xmin)
   out.stepName = "Poll"
-  post.step_name = [f'Search: {search.type}']
+  post.step_name = [f'Search: {MADS_agent.search.type}']
 
-  HT = poll.hashtable
+  HT = MADS_agent.poll.hashtable
   
   # if MADS_LINK.REPLACE is not None and not MADS_LINK.REPLACE:
   #   out.replace = False
@@ -516,15 +574,26 @@ def main(*args) -> Dict[str, Any]:
   LAMBDA_k = xmin.LAMBDA
   RHO_k = xmin.RHO
 
-  if search.type == SS.SEARCH_TYPE.VNS.name:
+  if MADS_agent.search.type == SS.SEARCH_TYPE.VNS.name:
     search_VN = SS.VNS(active_barrier=B, params=param)
-    search_VN._ns_dist = [int(((search.dim+1)/2)*((search.dim+2)/2)/(len(search_VN._dist))) if search.ns is None else search.ns] * len(search_VN._dist)
-    search.ns = sum(search_VN._ns_dist)
+    search_VN._ns_dist = [int(((MADS_agent.search.dim+1)/2)*((MADS_agent.search.dim+2)/2)/(len(search_VN._dist))) if MADS_agent.search.ns is None else MADS_agent.search.ns] * len(search_VN._dist)
+    MADS_agent.search.ns = sum(search_VN._ns_dist)
   else:
     search_VN = None
   
-  search.lb = param.lb
-  search.ub = param.ub
+  MADS_agent.search.lb = param.lb
+  MADS_agent.search.ub = param.ub
+  MADS_agent.options = options
+  MADS_agent.param = param
+  MADS_agent.log = log
+  MADS_agent.outP = outP
+  MADS_agent.out = out
+  MADS_agent.post = post
+  MADS_agent.HT = HT
+  MADS_agent.peval = peval
+  MADS_agent.RHO_k = RHO_k
+  MADS_agent.active_barrier = B
+  MADS_agent.LAMBDA_k = LAMBDA_k
 
   while True:
     """ Run search step (Optional) """
@@ -533,38 +602,37 @@ def main(*args) -> Dict[str, Any]:
     #   canSearch = False
     # else:
     canSearch = True
+    MADS_agent.iteration = iteration
 
-    if canSearch and (poll.success == SUCCESS_TYPES.US or iteration == 1):
-      log.log_msg(f"------- Iteration # {iteration}: Run the search step -------", MSG_TYPE.INFO)
-      search.iter = iteration
-      search, B, post, out, LAMBDA_k, RHO_k, xmin, peval, outP = search_step(search=search, B=B, LAMBDA_k=LAMBDA_k, RHO_k=RHO_k, iteration=iteration , search_VN=search_VN, post=post, out=out, options=options, xmin=xmin, peval=peval, HT=HT, log=log, outP=outP)
-      HT = search.hashtable
+    if canSearch and (MADS_agent.poll.success == SUCCESS_TYPES.US or iteration == 1):
+      MADS_agent.log.log_msg(f"------- Iteration # {iteration}: Run the search step -------", MSG_TYPE.INFO)
+      MADS_agent.search.iter = iteration
+      xmin = MADS_agent.search_step(xmin=xmin)
     """ Run the poll step (Mandatory step) """
-    log.log_msg(f"------- Iteration # {iteration}: Run the poll step -------", MSG_TYPE.INFO)
-    poll, B, post, out, LAMBDA_k, RHO_k, xmin, peval, outP = poll_step(iteration=iteration, poll=poll, B=B, LAMBDA_k=LAMBDA_k, RHO_k=RHO_k, param=param, post=post, xmin=xmin, out=out, options=options, peval=peval, HT=HT, log=log, outP=outP)
-    HT = poll.hashtable
-    xmin = poll.xmin
-    search.mesh = copy.deepcopy(poll.mesh)
-    search.psize = copy.deepcopy(poll.psize)
+    MADS_agent.log.log_msg(f"------- Iteration # {iteration}: Run the poll step -------", MSG_TYPE.INFO)
+    xmin = MADS_agent.poll_step(xmin=xmin)
+    xmin = MADS_agent.poll.xmin
+    MADS_agent.search.mesh = copy.deepcopy(MADS_agent.poll.mesh)
+    MADS_agent.search.psize = copy.deepcopy(MADS_agent.poll.psize)
     """ Check stopping criteria"""
-    pt = (all(abs(poll.mesh.getDeltaFrameSize().coordinates[pp]) < options.tol for pp in range(poll._n)))
-    st = (all(abs(search.mesh.getdeltaMeshSize().coordinates[pp]) < options.tol  for pp in range(search.mesh._n)))
+    pt = (all(abs(MADS_agent.poll.mesh.getDeltaFrameSize().coordinates[pp]) < options.tol for pp in range(MADS_agent.poll._n)))
+    st = (all(abs(MADS_agent.search.mesh.getdeltaMeshSize().coordinates[pp]) < options.tol  for pp in range(MADS_agent.search.mesh._n)))
     if options.save_results:
-      post.output_results(out, False)
+      MADS_agent.post.output_results(out, False)
       if param.isPareto:
-        post.nd_points = []
+        MADS_agent.post.nd_points = []
         for i in range(len(B.getAllPoints())):
-          post.nd_points.append(B.getAllPoints()[i])
-        post.output_nd_results(outP)
-    if (pt or st or search.bb_eval + poll.bb_eval >= options.budget):
-      log.log_msg(f"\n--------------- Termination of MADS  ---------------", MSG_TYPE.INFO)
+          MADS_agent.post.nd_points.append(B.getAllPoints()[i])
+        MADS_agent.post.output_nd_results(outP)
+    if (pt or st or MADS_agent.search.bb_eval + MADS_agent.poll.bb_eval >= options.budget):
+      MADS_agent.log.log_msg(f"\n--------------- Termination of MADS  ---------------", MSG_TYPE.INFO)
       if pt:
-        log.log_msg(f"Termination criterion hit: the poll size is below the minimum threshold defined.", MSG_TYPE.INFO)
+        MADS_agent.log.log_msg(f"Termination criterion hit: the poll size is below the minimum threshold defined.", MSG_TYPE.INFO)
       if st:
-        log.log_msg(f"Termination criterion hit: the mesh size is below the minimum threshold defined.", MSG_TYPE.INFO)
-      if (search.bb_eval + poll.bb_eval >= options.budget):
-        log.log_msg(f"Termination criterion hit: Evaluation budget is exhausted.", MSG_TYPE.INFO)
-      log.log_msg(f"----------------------------------------------------\n", MSG_TYPE.INFO)
+        MADS_agent.log.log_msg(f"Termination criterion hit: the mesh size is below the minimum threshold defined.", MSG_TYPE.INFO)
+      if (MADS_agent.search.bb_eval + MADS_agent.poll.bb_eval >= options.budget):
+        MADS_agent.log.log_msg(f"Termination criterion hit: Evaluation budget is exhausted.", MSG_TYPE.INFO)
+      MADS_agent.log.log_msg(f"----------------------------------------------------\n", MSG_TYPE.INFO)
       break
     iteration += 1
     
@@ -581,19 +649,19 @@ def main(*args) -> Dict[str, Any]:
       ncon = 0
     else:
       ncon = len(xmin.c_ineq)
-    if len(poll.bb_output) > 0:
-      b.add_row(name=poll.bb_handle.blackbox,
+    if len(MADS_agent.poll.bb_output) > 0:
+      b.add_row(name=MADS_agent.poll.bb_handle.blackbox,
             run_index=int(args[2]),
             nv=len(param.baseline),
             nc=ncon,
-            nb_success=poll.nb_success,
+            nb_success=MADS_agent.poll.nb_success,
             it=iteration,
-            BBEVAL=poll.bb_eval,
+            BBEVAL=MADS_agent.poll.bb_eval,
             runtime=toc - tic,
-            feval=poll.bb_handle.bb_eval,
-            hmin=poll.xmin.h,
-            fmin=poll.xmin.f)
-    print(f"{poll.bb_handle.blackbox}: fmin = {poll.xmin.f} , hmin= {poll.xmin.h:.2f}")
+            feval=MADS_agent.poll.bb_handle.bb_eval,
+            hmin=MADS_agent.poll.xmin.h,
+            fmin=MADS_agent.poll.xmin.f)
+    print(f"{MADS_agent.poll.bb_handle.blackbox}: fmin = {MADS_agent.poll.xmin.f} , hmin= {MADS_agent.poll.xmin.h:.2f}")
 
   elif importlib.util.find_spec('BMDFO') and len(args) > 1 and not isinstance(args[1], toy.Run):
     raise IOError("Could not find " + args[1] + " in the internal BM suite.")
@@ -602,15 +670,15 @@ def main(*args) -> Dict[str, Any]:
   #   post.output_results(out)
   
   out_step: Any = None
-  if poll.xmin < search.xmin:
-    out_step = poll
-  elif search.xmin < poll.xmin:
+  if MADS_agent.poll.xmin < MADS_agent.search.xmin:
+    out_step = MADS_agent.poll
+  elif MADS_agent.search.xmin < MADS_agent.poll.xmin:
     out_step = search
   else:
-    out_step = poll
+    out_step = MADS_agent.poll
   
   if out_step is None:
-    out_step = poll
+    out_step = MADS_agent.poll
   
 
   if options.display:
@@ -618,26 +686,26 @@ def main(*args) -> Dict[str, Any]:
     print(" Final objective value: " + str(out_step.xmin.f) + ", hmin= " + str(out_step.xmin.h))
 
   if options.save_coordinates:
-    post.output_coordinates(out)
+    MADS_agent.post.output_coordinates(out)
   
-  if log is not None:
-    log.log_msg(msg=" --- MADS Run Summary--- ", msg_type=MSG_TYPE.INFO)
-    log.log_msg(msg=f" Run completed in {toc - tic:.4f} seconds", msg_type=MSG_TYPE.INFO)
-    log.log_msg(msg=f" # of successful search steps = {search.n_successes}", msg_type=MSG_TYPE.INFO)
-    log.log_msg(msg=f" # of successful poll steps = {poll.n_successes}", msg_type=MSG_TYPE.INFO)
-    log.log_msg(msg=f" Run completed in {toc - tic:.4f} seconds", msg_type=MSG_TYPE.INFO)
-    log.log_msg(msg=f" Random numbers generator's seed {options.seed}", msg_type=MSG_TYPE.INFO)
-    log.log_msg(msg=f" xmin = {poll.xmin.__str__()} ", msg_type=MSG_TYPE.INFO)
-    log.log_msg(msg=f" hmin = {poll.xmin.h} ", msg_type=MSG_TYPE.INFO)
-    log.log_msg(msg=f" fmin {poll.xmin.fobj}", msg_type=MSG_TYPE.INFO)
-    log.log_msg(msg=f" Search step # BB evals =  {search.bb_eval} ", msg_type=MSG_TYPE.INFO)
-    log.log_msg(msg=f" Poll step # BB evals =  {poll.bb_eval} ", msg_type=MSG_TYPE.INFO)
-    log.log_msg(msg=f" Total # BB evals =  {poll.bb_eval + search.bb_eval} ", msg_type=MSG_TYPE.INFO)
-    log.log_msg(msg=f" #iterations =  {iteration} ", msg_type=MSG_TYPE.INFO)
-    log.log_msg(msg=f" psize = {poll.mesh.getDeltaFrameSize().coordinates} ", msg_type=MSG_TYPE.INFO)
-    log.log_msg(msg=f" psize_success = {poll.xmin.mesh.getDeltaFrameSize().coordinates}", msg_type=MSG_TYPE.INFO)
+  if MADS_agent.log is not None:
+    MADS_agent.log.log_msg(msg=" --- MADS Run Summary--- ", msg_type=MSG_TYPE.INFO)
+    MADS_agent.log.log_msg(msg=f" Run completed in {toc - tic:.4f} seconds", msg_type=MSG_TYPE.INFO)
+    MADS_agent.log.log_msg(msg=f" # of successful search steps = {MADS_agent.search.n_successes}", msg_type=MSG_TYPE.INFO)
+    MADS_agent.log.log_msg(msg=f" # of successful poll steps = {MADS_agent.poll.n_successes}", msg_type=MSG_TYPE.INFO)
+    MADS_agent.log.log_msg(msg=f" Run completed in {toc - tic:.4f} seconds", msg_type=MSG_TYPE.INFO)
+    MADS_agent.log.log_msg(msg=f" Random numbers generator's seed {options.seed}", msg_type=MSG_TYPE.INFO)
+    MADS_agent.log.log_msg(msg=f" xmin = {MADS_agent.poll.xmin.__str__()} ", msg_type=MSG_TYPE.INFO)
+    MADS_agent.log.log_msg(msg=f" hmin = {MADS_agent.poll.xmin.h} ", msg_type=MSG_TYPE.INFO)
+    MADS_agent.log.log_msg(msg=f" fmin {MADS_agent.poll.xmin.fobj}", msg_type=MSG_TYPE.INFO)
+    MADS_agent.log.log_msg(msg=f" Search step # BB evals =  {MADS_agent.search.bb_eval} ", msg_type=MSG_TYPE.INFO)
+    MADS_agent.log.log_msg(msg=f" Poll step # BB evals =  {MADS_agent.poll.bb_eval} ", msg_type=MSG_TYPE.INFO)
+    MADS_agent.log.log_msg(msg=f" Total # BB evals =  {MADS_agent.poll.bb_eval + MADS_agent.search.bb_eval} ", msg_type=MSG_TYPE.INFO)
+    MADS_agent.log.log_msg(msg=f" #iterations =  {iteration} ", msg_type=MSG_TYPE.INFO)
+    MADS_agent.log.log_msg(msg=f" psize = {MADS_agent.poll.mesh.getDeltaFrameSize().coordinates} ", msg_type=MSG_TYPE.INFO)
+    MADS_agent.log.log_msg(msg=f" psize_success = {MADS_agent.poll.xmin.mesh.getDeltaFrameSize().coordinates}", msg_type=MSG_TYPE.INFO)
     if isinstance(B, BarrierMO):
-      log.log_msg(msg=f" Hypervolume metric = {HV}", msg_type=MSG_TYPE.INFO)
+      MADS_agent.log.log_msg(msg=f" Hypervolume metric = {HV}", msg_type=MSG_TYPE.INFO)
     # log.log_msg(msg=f" psize_max = {poll.mesh.psize_max} ", msg_type=MSG_TYPE.INFO)
   if options.display:
     print("\n ---MADS Run Summary---")
@@ -648,9 +716,9 @@ def main(*args) -> Dict[str, Any]:
     print(" fmin = " + str(out_step.xmin.f))
     print(" #bb_eval = " + str(out_step.bb_eval))
     print(" #iteration = " + str(iteration))
-    print(" nb_success = " + str(poll.nb_success + search.nb_success))
-    print(" psize = " + str(poll.mesh.getDeltaFrameSize().coordinates))
-    print(" psize_success = " + str(poll.xmin.mesh.getDeltaFrameSize().coordinates))
+    print(" nb_success = " + str(MADS_agent.poll.nb_success + MADS_agent.search.nb_success))
+    print(" psize = " + str(MADS_agent.poll.mesh.getDeltaFrameSize().coordinates))
+    print(" psize_success = " + str(MADS_agent.poll.xmin.mesh.getDeltaFrameSize().coordinates))
     # print(" psize_max = " + str(poll.mesh.psize_max))
     
   xmin = out_step.xmin
@@ -669,9 +737,9 @@ def main(*args) -> Dict[str, Any]:
                 "hmin": out_step.xmin.h,
                 "nbb_evals" : out_step.bb_eval,
                 "niterations" : iteration,
-                "nb_success": poll.nb_success + search.nb_success,
-                "psize": poll.mesh.getDeltaFrameSize().coordinates,
-                "psuccess": poll.xmin.mesh.getDeltaFrameSize().coordinates,
+                "nb_success": MADS_agent.poll.nb_success + MADS_agent.search.nb_success,
+                "psize": MADS_agent.poll.mesh.getDeltaFrameSize().coordinates,
+                "psuccess": MADS_agent.poll.xmin.mesh.getDeltaFrameSize().coordinates,
                 # "pmax": poll.mesh.psize_max,
                 "msize": out_step.mesh.getdeltaMeshSize().coordinates}
 
