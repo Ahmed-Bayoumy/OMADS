@@ -27,7 +27,6 @@ from dataclasses import dataclass, field
 import warnings
 import numpy as np
 import platform
-import pandas as pd
 
 np.set_printoptions(legacy='1.21')
 
@@ -77,7 +76,6 @@ class DType:
   def precision(self, val: str):
     self._prec = val
     self._prec = val
-    isWin = platform.platform().split('-')[0] == 'Windows'
     if val == "high":
       if (not hasattr(np, 'float128')):
         'Warning: MS Windows does not support precision with the {1e-18} high resolution of the python numerical library (numpy) so high precision will be changed to medium precision which supports {1e-15} resolution check: https://numpy.org/doc/stable/user/basics.types.html '

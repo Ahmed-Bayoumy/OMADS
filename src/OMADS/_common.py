@@ -22,26 +22,23 @@
 #  Copyright (C) 2022  Ahmed H. Bayoumy                                               #
 # ------------------------------------------------------------------------------------#
 
-import copy
-from dataclasses import dataclass, field
-import importlib
+from dataclasses import dataclass
 import logging
-import operator
 import time
 import shutil
 import os
-from typing import List, Dict, Any
 import numpy as np
-from .CandidatePoint import CandidatePoint
 import json
-from ._globals import *
+from ._globals import MSG_TYPE
+import pkg_resources
+
 
 np.set_printoptions(legacy='1.21')
 
 @dataclass
 class validator:
 
-  def checkInputFile(self, args) -> dict:
+  def check_input_file(self, args) -> dict:
     if type(args[0]) is dict:
       data = args[0]
     elif isinstance(args[0], str):
@@ -67,11 +64,11 @@ class validator:
 @dataclass
 class logger:
   log: None = None
-  isVerbose: bool = False
+  is_verbose: bool = False
 
-  def initialize(self, file: str, wTime = False, isVerbose = False):
+  def initialize(self, file: str, w_time = False, is_verbose = False):
     # Create and configure logger 
-    self.isVerbose = isVerbose
+    self.is_verbose = is_verbose
     logging.basicConfig(filename=file, 
               format='%(message)s', 
               filemode='w') 
@@ -82,8 +79,8 @@ class logger:
     #Now we are going to Set the threshold of logger to DEBUG 
     self.log.setLevel(logging.DEBUG) 
     cur_time = time.strftime("%Y-%m-%d, %H:%M:%S", time.localtime())
-    self.log_msg(msg=f"###################################################### \n", msg_type=MSG_TYPE.INFO)
-    self.log_msg(msg=f"################# OMADS ver. 2401 #################### \n", msg_type=MSG_TYPE.INFO)
+    self.log_msg(msg="###################################################### \n", msg_type=MSG_TYPE.INFO)
+    self.log_msg(msg=f"################# OMADS release #{2410} #################### \n", msg_type=MSG_TYPE.INFO)
     self.log_msg(msg=f"############### {cur_time} ################# \n", msg_type=MSG_TYPE.INFO)
 
     # Remove all handlers associated with the root logger object.
@@ -91,7 +88,7 @@ class logger:
         logging.root.removeHandler(handler)
 
     # Create and configure logger 
-    if wTime:
+    if w_time:
       logging.basicConfig(filename=file, 
                 format='%(asctime)s %(message)s', 
                 filemode='a') 
@@ -119,16 +116,16 @@ class logger:
     elif msg_type == MSG_TYPE.CRITICAL:
       self.log.critical(msg) 
   
-  def relocate_logger(self, source_file: str = None, Dest_file: str = None):
-    if Dest_file is not None and source_file is not None and os.path.exists(source_file):
-      shutil.copy(source_file, Dest_file)
+  def relocate_logger(self, source_file: str = None, dest_file: str = None):
+    if dest_file is not None and source_file is not None and os.path.exists(source_file):
+      shutil.copy(source_file, dest_file)
       if os.path.exists("DSMToDMDO.yaml"):
-        shutil.copy("DSMToDMDO.yaml", Dest_file)
+        shutil.copy("DSMToDMDO.yaml", dest_file)
       # Remove all handlers associated with the root logger object.
       for handler in logging.root.handlers[:]:
           logging.root.removeHandler(handler)
       # Create and configure logger 
-      logging.basicConfig(filename=os.path.join(Dest_file, "DMDO.log"), 
+      logging.basicConfig(filename=os.path.join(dest_file, "DMDO.log"), 
                 format='%(asctime)s %(message)s', 
                 filemode='a')
       #Let us Create an object 

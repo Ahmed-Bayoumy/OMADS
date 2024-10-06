@@ -1,9 +1,5 @@
 from dataclasses import dataclass
-import logging
 from typing import Any
-import numpy as np
-from .Point import Point
-from ._globals import *
 
 @dataclass
 class Options:

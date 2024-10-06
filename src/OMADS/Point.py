@@ -22,11 +22,11 @@
 # ------------------------------------------------------------------------------------#
 
 import copy
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import List, Dict, Any, Optional
-from numpy import sum, subtract, add, maximum, power, inf
+from numpy import subtract, add
 import numpy as np
-from ._globals import *
+from ._globals import DType
 
 @dataclass
 class Point:
@@ -41,23 +41,23 @@ class Point:
   # Dimension of the point
   _n: int = 0
   # Coordinates of the point
-  _coords: List[float] = None
+  _coords: Optional[List[float]] = None
   # Coordinates definition boolean
-  _defined: List[bool] = None
+  _defined: Optional[List[bool]] = None
   # Evaluation boolean
   _evaluated: bool = False
   # hash signature, in the cache memory
   _signature: int = 0
   # numpy double data type precision
-  _dtype: DType = None
+  _dtype: Optional[DType] = None
   # Variables type
-  _var_type: List[int] = None
+  _var_type: Optional[List[int]] = None
   # Discrete set
-  _sets: Dict = None
+  _sets: Optional[Dict] = None
 
   source: str = "Current run"
 
-  Model: str = "Simulation"
+  model_type: str = "Simulation"
 
   def __post_init__(self):
     self._dtype = DType()
@@ -139,9 +139,9 @@ class Point:
     else:
       self.coordinates = self._coords + [val]*self._n
   
-  def checkForGranularity(self, g: Any, name: str) -> bool:
+  def check_for_granularity(self, g: Any, name: str) -> bool:
     for i in range(self._n):
-      if not self.isMult(self.coordinates[i], g[i]):
+      if not self.is_mult(self.coordinates[i], g[i]):
         raise IOError("Check: Invalid granularity of parameter " + name + f"at index {i} : {self.coordinates[i]} vs granularity value {g[i]} found a non-zero remainder of {self.coordinates[i] % g[i]}.")
 
     return True
@@ -193,7 +193,7 @@ class Point:
         self.defined = [False] * n
       
   
-  def nextMult(self, g: float = None, i: int = 0) -> float:
+  def next_mult(self, g: float = None, i: int = 0) -> float:
     d: float
     # Calculate the remainder when number is divided by multiple_of
     # Calculate the ratio to find next multiple_of
@@ -202,19 +202,17 @@ class Point:
     # # Calculate the next multiple_of
     # next_multiple = ratio * self.coordinates[i]
     value = self.coordinates[i]
-    if g is None or not self.defined[i] or g <= 0. or self.isMult(value, g):
+    if g is None or not self.defined[i] or g <= 0. or self.is_mult(value, g):
       d = value
     else:
       # granularity > 0, and _value is not a multiple of granularity.
       # Adjust value with granularity
-      granMult = round(abs(value)/g)
+      gran_mult = round(abs(value)/g)
       if value > 0:
-        granMult += 1
-      # if abs(value) > 0:
-      #   granMult += granMult
-      d = granMult*g
+        gran_mult += 1
+      d = gran_mult*g
 
-      if not self.isMult(d, g):
+      if not self.is_mult(d, g):
         raise IOError("nextMult(gran): cannot get a multiple of granularity")
     # trials = 0
     # while (not self.isMult(d, g)):
@@ -228,39 +226,37 @@ class Point:
     
     return d
   
-  def previousMult(self, g: float, i: int):
+  def previous_mult(self, g: float = None, i: int = -1):
     d: float
-    if g is not None or not self.is_all_defined() or g <= 0. or self.isMult(self.coordinates[i], g):
+    if g is not None or not self.is_all_defined() or g <= 0. or self.is_mult(self.coordinates[i], g):
       d = self.coordinates[i]
     else:
-      granMult: int = int(self.coordinates[i]/g)
+      gran_mult: int = int(self.coordinates[i]/g)
       if self.coordinates[i] < 0:
-        granMult-= 1
-      bigGranExp: int = 10 ** self.nDecimals(g)
-      bigGran: int = int(g*bigGranExp)
-      d = granMult * bigGran/bigGranExp
+        gran_mult-= 1
+      big_gran_exp: int = 10 ** self.n_decimals(g)
+      big_gran: int = int(g*big_gran_exp)
+      d = gran_mult * big_gran/big_gran_exp
     return d
   
-  def isMult(self, v1: float, v2: float):
-    isMult: bool = True
+  def is_mult(self, v1: float, v2: float):
+    is_mult: bool = True
     if abs(v1) <= self.dtype.zero:
-      isMult = True
+      is_mult = True
     elif (abs(v2) > 0):
       mult = round(v1/v2)
       verif_value = mult * v2
       if abs(v1-verif_value) < abs(mult)*self.dtype.zero:
-        isMult = True
+        is_mult = True
       
     elif v2 < 0:
-      isMult = False
+      is_mult = False
     else:
-      isMult = True
+      is_mult = True
 
-    return isMult
-
-    # return ((v1%v2) <= self.dtype.zero) if v2 > 0.0 else True
+    return is_mult
   
-  def nDecimals(self, n: float):
+  def n_decimals(self, n: float):
     return len(n.rsplit('.')[-1]) if '.' in n else 0
 
 
@@ -268,13 +264,13 @@ class Point:
     return self.size is other.size and other.coordinates is self.coordinates \
          and self.is_any_defined() is other.is_any_defined()
   
-  def __le__(self, other) -> bool:
+  def __le__(self, other) -> Optional[bool]:
     if self.size is other._n and self.is_all_defined() is other.is_all_defined():
       return all(self.coordinates[i] <= other.coordinates[i] for i in range(self._n))
     else:
       return None
   
-  def __lt__(self, other) -> bool:
+  def __lt__(self, other) -> Optional[bool]:
     if self.size is other._n and self.is_all_defined() is other.is_all_defined():
       return all(self.coordinates[i] < other.coordinates[i] for i in range(self._n))
     else:

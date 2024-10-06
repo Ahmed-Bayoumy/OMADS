@@ -1,6 +1,6 @@
-import copy
-from typing import Protocol, Any, List
-from ._globals import *
+from dataclasses import dataclass
+from typing import Protocol, Any, List, Optional
+from ._globals import DType, M_INF_INT, P_INF_INT
 from .Point import Point
 from .Parameters import Parameters
 
@@ -18,27 +18,24 @@ class MeshData(Protocol):
   :param _dtype: numpy double data type precision
 
   """
-  _n: int = None
-  # _anisotropy_factor: int = 0.1
-  # _meshSize: Point = None  # mesh size
-  # _frameSize: Point = None  # poll size
-  _initialMeshSize: Point = None  # mesh size
-  _initialFrameSize: Point = None  # poll size
-  _minMeshSize: Point = None  # mesh size
-  _minFrameSize: Point = None  # poll size
-  _lowerBound: Point = None
-  _upperBound: Point = None
-  _isFinest: bool = True
-  _r: Point = None
-  _rMin: Point = None
-  _rMax: Point = None
+  _n: Optional[int] = None
+  _initialMeshSize: Optional[Point] = None  # mesh size
+  _initialFrameSize: Optional[Point] = None  # poll size
+  _minMeshSize: Optional[Point] = None  # mesh size
+  _minFrameSize: Optional[Point] = None  # poll size
+  _lowerBound: Optional[Point] = None
+  _upperBound: Optional[Point] = None
+  _isFinest: Optional[bool] = True
+  _r: Optional[Point] = None
+  _rMin: Optional[Point] = None
+  _rMax: Optional[Point] = None
   _limitMinMeshIndex: int = M_INF_INT
   _limitMaxMeshIndex: int = P_INF_INT
-  _pbParams: Parameters = None
-  _rho: List[float] = None  # poll size to mesh size ratio
-  _dtype: DType = None
+  _pbParams: Optional[Parameters] = None
+  _rho: Optional[List[float] ]= None  # poll size to mesh size ratio
+  _dtype: Optional[DType] = None
 
-  # TODO: manage the poll size granularity for discrete variables
+  # COMPLETED: manage the poll size granularity for discrete variables
   # # See: Audet et. al, The mesh adaptive direct search algorithm for
   # # granular and discrete variable
   # _exp: int = 0
@@ -69,19 +66,19 @@ class MeshData(Protocol):
   def getDeltaFrameSize(self, i: int):
     ...
 
-  def getDeltaFrameSizeCoarser(self, i: int):
+  def getDeltaFrameSizeCoarser(self):
     ...
   
-  def setDeltas(self, i: int = None, deltaMeshSize: Any = None, deltaFrameSize: Any = None):
+  def setDeltas(self, i: int = None, delta_mesh_size: Any = None, delta_frame_size: Any = None):
     ...
   
-  def scaleAndProjectOnMesh(self, i: int = None, l: float = None, dir: Point = None):
+  def scaleAndProjectOnMesh(self, dir: Point = None):
     ...
 
-  def projectOnMesh(self, point: Point, frameCenter: Point):
+  def projectOnMesh(self, point: Point, frame_center: Point):
     ...
 
-  def verifyPointIsOnMesh(self, point: Point, frameCenter: Point):
+  def verifyPointIsOnMesh(self, point: Point, frame_center: Point):
     ...
 
   def verifyDimension(self, name: str, dim: int):
@@ -91,23 +88,23 @@ class MeshData(Protocol):
 @dataclass
 class Mesh(MeshData):
 
-  def __init__(self, pbParams: Parameters, limitMinMeshIndex: int, limitMaxMeshIndex: int):
-    self._n = pbParams._n
-    self._initialMeshSize = pbParams.initialMeshSize
-    self._minMeshSize = pbParams.minMeshSize
-    self._initialFrameSize = pbParams.initialFrameSize
-    self._minFrameSize = pbParams.minFrameSize
-    self._lowerBound = Point(self._n, pbParams.lb)
-    self._upperBound = Point(self._n, pbParams.ub)
+  def __init__(self, pb_params: Parameters, limit_min_mesh_index: int, limit_max_mesh_index: int):
+    self._n = pb_params._n
+    self._initialMeshSize = pb_params.initialMeshSize
+    self._minMeshSize = pb_params.minMeshSize
+    self._initialFrameSize = pb_params.initialFrameSize
+    self._minFrameSize = pb_params.minFrameSize
+    self._lowerBound = Point(self._n, pb_params.lb)
+    self._upperBound = Point(self._n, pb_params.ub)
     self._isFinest = True
     self._r = Point(self._n).reset(n=self._n, d=0.)
     self._rMin = Point(self._n).reset(n=self._n, d=0.)
     self._rMax = Point(self._n).reset(n=self._n, d=0.)
-    self._limitMinMeshIndex = limitMinMeshIndex
-    self._limitMaxMeshIndex = limitMaxMeshIndex
+    self._limitMinMeshIndex = limit_min_mesh_index
+    self._limitMaxMeshIndex = limit_max_mesh_index
     self._dtype = DType()
-    self._pbParams = pbParams
-    if (not self._pbParams.toBeChecked()):
+    self._pbParams = pb_params
+    if (not self._pbParams.to_be_checked()):
       raise IOError("Parameters::checkAndComply() needs to be called before constructing a mesh.")
 
   @property
@@ -142,9 +139,9 @@ class Mesh(MeshData):
   def isFinest(self):
     return self._isFinest
   
-  def setLimitMeshIndices(self, limitMinMeshIndex: int, limitMaxMeshIndex: int):
-    self._limitMaxMeshIndex = limitMaxMeshIndex
-    self._limitMinMeshIndex = limitMinMeshIndex
+  def setLimitMeshIndices(self, limit_min_mesh_index: int, limit_max_mesh_index: int):
+    self._limitMaxMeshIndex = limit_max_mesh_index
+    self._limitMinMeshIndex = limit_min_mesh_index
 
     
   

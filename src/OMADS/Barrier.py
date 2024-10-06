@@ -1,28 +1,27 @@
 import copy
 from dataclasses import dataclass, field
-from typing import List, Any
+from typing import List, Optional
 from .CandidatePoint import CandidatePoint
 from .Point import Point
-from ._globals import *
+from ._globals import DType, DESIGN_STATUS, EVAL_TYPE
 import numpy as np
 from typing import Protocol
-from .Parameters import Parameters
 from .Cache import Cache
 
 @dataclass
 class BarrierData(Protocol):
-  _xFeas: List[CandidatePoint] = None
-  _xInf: List[CandidatePoint] = None
+  _xFeas: Optional[List[CandidatePoint]] = None
+  _xInf: Optional[List[CandidatePoint]] = None
 
-  _xIncFeas: List[CandidatePoint] = None
-  _xIncInf: List[CandidatePoint] = None
+  _xIncFeas: Optional[List[CandidatePoint]] = None
+  _xIncInf: Optional[List[CandidatePoint]] = None
 
-  _refBestFeas: CandidatePoint = None
-  _refBestInf: CandidatePoint = None
+  _refBestFeas: Optional[CandidatePoint] = None
+  _refBestInf: Optional[CandidatePoint] = None
 
-  _dtype: DType = None
+  _dtype: Optional[DType] = None
 
-  def init(self, xFeas: CandidatePoint = None, evalType: EVAL_TYPE = None, barrierInitializedFromCache: bool = True):
+  def init(self, eval_point_list: Optional[List[Point]] = None):
     ...
 
   def getAllXFeas(self):
@@ -91,7 +90,7 @@ class BarrierData(Protocol):
   def updateWithPoints(self):
     ...
   
-  def findPoint(self, Point: Point, foundEvalPoint: CandidatePoint):
+  def findPoint(self, point: Point):
     ...
   
   def setN(self):
@@ -112,12 +111,12 @@ class BarrierData(Protocol):
 class BarrierBase(BarrierData):
   
 
-  _hMax: float = np.inf
+  _h_max: float = np.inf
 
   _n: int = 0
 
-  def __init__(self, hMax: float = np.inf):
-    self._hMax = hMax
+  def __init__(self, h_max: float = np.inf):
+    self._h_max = h_max
     self._n = 0
     self._dtype = DType()
     self._xInf = []
@@ -126,25 +125,25 @@ class BarrierBase(BarrierData):
     self._xIncInf = []
   
   def setN(self):
-    isSet: bool = False
+    is_set: bool = False
     s: str
 
     for cp in self.getAllPoints():
-      if not isSet:
+      if not is_set:
         self._n = cp._n
-        isSet = True
+        is_set = True
       elif cp._n != self._n:
         s = f"Barrier has points of size {self._n} and of size {cp._n}"
         raise IOError(s)
-    if not isSet:
+    if not is_set:
       raise IOError("Barrier could not set point size")
   
-  def checkCache(self, cache: Cache):
+  def checkCache(self, cache: Cache = None):
     if cache == None:
       raise IOError("Cache must be instantiated before initializing Barrier.")
   
   def checkHMax(self):
-    if self._hMax is None or self._hMax < self._dtype.zero:
+    if self._h_max is None or self._h_max < self._dtype.zero:
       raise IOError("Barrier: hMax must be positive.")
   
   def clearXFeas(self):
@@ -155,19 +154,19 @@ class BarrierBase(BarrierData):
     del self._xIncInf
   
   def getAllPoints(self) -> List[CandidatePoint]:
-    allPoints: List[CandidatePoint] = []
+    all_points: List[CandidatePoint] = []
     if self._xFeas is None:
       self._xFeas = []
     for cp in self._xFeas:
-      allPoints.append(cp)
+      all_points.append(cp)
     if self._xInf is None:
       self._xInf = []
     for cp in self._xInf:
-      allPoints.append(cp)
+      all_points.append(cp)
     
-    return allPoints
+    return all_points
   
-  def getFirstPoint(self) -> CandidatePoint:
+  def getFirstPoint(self) -> Optional[CandidatePoint]:
     if self._xIncFeas and len(self._xIncFeas) > 0:
       return self._xIncFeas[0]
     elif self._xFeas and len(self._xFeas) > 0:
@@ -180,43 +179,38 @@ class BarrierBase(BarrierData):
       return None
 
   def findEvalPoint(self, cps: List[CandidatePoint] = None, cp: CandidatePoint = None):
-    ind = 0
     for p in cps:
       if p.signature == cp.signature:
         return True, p
-      ind+=1
     
     return False, p
   
-  def findPoint(self, Point: Point, foundEvalPoint: CandidatePoint) -> bool:
+  def findPoint(self, point: Point) -> bool:
     found: bool = False
 
-    evalPointList: List[CandidatePoint] = self.getAllPoints()
-    for cp in evalPointList:
-      if cp._n != Point._n:
+    eval_point_list: List[CandidatePoint] = self.getAllPoints()
+    for cp in eval_point_list:
+      if cp._n != point._n:
         raise IOError("Error: Eval points have different dimensions")
-      if Point == cp.coordinates:
-        foundEvalPoint = copy.deepcopy(cp)
+      if point == cp.coordinates:
         found = True
         break
     
     return found
 
-  def checkXFeas(self, xFeas: CandidatePoint = None, evalType: EVAL_TYPE = None):
-    if xFeas.evaluated:
-      self.checkXFeasIsFeas(xFeas=xFeas, evalType=evalType)
-
+  def checkXFeas(self, x_feas: CandidatePoint = None, eval_type: EVAL_TYPE = None):
+    if x_feas.evaluated:
+      self.checkXFeasIsFeas(x_feas=x_feas, eval_type=eval_type)
 
   def getAllXFeas(self): 
     return self._xFeas
 
-  def checkXFeasIsFeas(self, xFeas: CandidatePoint=None, evalType: EVAL_TYPE = None):
-    if xFeas.evaluated and xFeas.status != DESIGN_STATUS.ERROR:
-      h = xFeas.h
-      if h is None or h!= 0.0:
+  def checkXFeasIsFeas(self, x_feas: CandidatePoint=None, eval_type: EVAL_TYPE = None):
+    if x_feas.evaluated and x_feas.status != DESIGN_STATUS.ERROR:
+      h = x_feas.h
+      if h is None or not np.isclose(h, 0.0, rtol=1e-09, atol=1e-09):
         raise IOError(f"Error: Barrier: xFeas' h value must be 0.0, got: {h}")
 
-  
-  def checkXInf(self, xInf: CandidatePoint = None, evalType: EVAL_TYPE = None):
-    if not xInf.evaluated:
+  def checkXInf(self, x_inf: CandidatePoint = None, eval_type: EVAL_TYPE = None):
+    if not x_inf.evaluated:
       raise IOError("Barrier: xInf must be evaluated before being set.")

@@ -26,7 +26,7 @@ from dataclasses import dataclass, field
 from typing import List, Dict, Any, Optional
 from numpy import sum, subtract, add, maximum, power, inf
 import numpy as np
-from ._globals import *
+from ._globals import DType, BARRIER_TYPES, MPP, DESIGN_STATUS, COMPARE_TYPE
 from .Gmesh import Gmesh
 from .Point import Point
 
@@ -67,42 +67,42 @@ class CandidatePoint:
   # hash signature, in the cache memory
   _signature: int = 0
   # numpy double data type precision
-  _dtype: DType = None
+  _dtype: Optional[DType] = None
   # Variables type
-  _var_type: List[int] = None
+  _var_type: Optional[List[int]] = None
   # Discrete set
-  _sets: Dict = None
+  _sets: Optional[Dict] = None
 
-  _var_link: List[str] = None
+  _var_link: Optional[List[str]] = None
 
   _status: DESIGN_STATUS = DESIGN_STATUS.UNEVALUATED
 
-  _constraints_type: List[BARRIER_TYPES] = None
+  _constraints_type: Optional[List[BARRIER_TYPES]] = None
 
   _is_EB_passed: bool = False
 
-  _LAMBDA: List[float] = None
+  _LAMBDA: Optional[List[float]] = None
   _RHO: float = MPP.RHO.value
 
   _hmax: float = 1.
 
   _hmin: float = inf
 
-  Eval_time: float = 0.
+  eval_time: float = 0.
 
   source: str = "Current run"
 
-  Model: str = "Simulation"
+  model: str = "Simulation"
 
-  _hzero: float = None
+  _hzero: Optional[float] = None
 
-  _mesh: Gmesh = None
+  _mesh: Optional[Gmesh] = None
 
-  _direction: Point = None
+  _direction: Optional[Point] = None
 
-  _fs: Point = None
+  _fs: Optional[Point] = None
 
-  evalNo: int = 0
+  eval_no: int = 0
 
   def __post_init__(self):
     self._dtype = DType()
@@ -147,30 +147,30 @@ class CandidatePoint:
   
 
   @property
-  def hmax(self) -> float:
-    if self._hmax == 0.:
+  def h_max(self) -> float:
+    if np.isclose(self._hmax, 0., rtol=1e-09, atol=1e-09):
       return self._dtype.zero
     return self._hmax
   
-  @hmax.setter
-  def hmax(self, value: float):
+  @h_max.setter
+  def h_max(self, value: float):
     self._hmax = value
   
 
   @property
-  def RHO(self) -> float:
+  def rho(self) -> float:
     return self._RHO
   
-  @RHO.setter
-  def RHO(self, value: float):
+  @rho.setter
+  def rho(self, value: float):
     self._RHO = value
   
   @property
-  def LAMBDA(self) -> float:
+  def lambda_multipliers(self) -> float:
     return self._LAMBDA
   
-  @LAMBDA.setter
-  def LAMBDA(self, value: float):
+  @lambda_multipliers.setter
+  def lambda_multipliers(self, value: float):
     self._LAMBDA = value
   
 
@@ -305,16 +305,11 @@ class CandidatePoint:
     return self._f
 
   @f.setter
-  def f(self, val: auto):
+  def f(self, val: Any):
     if isinstance(val, list):
       self._f = val
     else:
       self._f = [val]
-    # if self.fs is None or self.fs.size <= 0:
-    #   self.fs = Point(len(self.f))
-    #   self.fs.coordinates = self._f
-    # else:
-    #   self.fs.coordinates = self.f
 
   @f.deleter
   def f(self):
@@ -325,7 +320,7 @@ class CandidatePoint:
     return self._freal
 
   @fobj.setter
-  def fobj(self, other: auto):
+  def fobj(self, other: Any):
     if isinstance(other, list):
       self._freal = other
     else:
@@ -394,8 +389,8 @@ class CandidatePoint:
          and self.f is other.f and self.h is other.h
 
   def __lt__(self, other):
-    return (other.h > (self.hmax if self._is_EB_passed else self._dtype.zero) > self.__dh__(other=other)) or \
-         (((self.hmax if self._is_EB_passed else self._dtype.zero) >= self.h >= 0.0) and
+    return (other.h > (self.h_max if self._is_EB_passed else self._dtype.zero) > self.__dh__(other=other)) or \
+         (((self.h_max if self._is_EB_passed else self._dtype.zero) >= self.h >= 0.0) and
         max(self.__df__(other=other)) < 0)
 
   def __le__(self, other):
@@ -440,14 +435,14 @@ class CandidatePoint:
       self.c_ineq = [self.c_ineq]
     self.evaluated = True
     """ Check the multiplier matrix """
-    if self.LAMBDA is None:
-      self.LAMBDA = []
+    if self.lambda_multipliers is None:
+      self.lambda_multipliers = []
       for _ in range(len(self.c_ineq)):
-        self.LAMBDA.append(MPP.LAMBDA.value)
+        self.lambda_multipliers.append(MPP.LAMBDA.value)
     else:
-      if len(self.c_ineq) != len(self.LAMBDA):
-        for _ in range(len(self.LAMBDA), len(self.c_ineq)):
-          self.LAMBDA.append(MPP.LAMBDA.value)
+      if len(self.c_ineq) != len(self.lambda_multipliers):
+        for _ in range(len(self.lambda_multipliers), len(self.c_ineq)):
+          self.lambda_multipliers.append(MPP.LAMBDA.value)
     """ Check and adapt the barriers matrix"""
     if self.constraints_type is not None:
       if len(self.c_ineq) != len(self.constraints_type):
@@ -486,8 +481,8 @@ class CandidatePoint:
       if hPB > self.hzero:
         self.status = DESIGN_STATUS.INFEASIBLE
       self.h = copy.deepcopy(hPB)
-      if hPB < self.hmax:
-        self.hmax = copy.deepcopy(hPB)
+      if hPB < self.h_max:
+        self.h_max = copy.deepcopy(hPB)
     else:
       self.is_EB_passed = False
       self.status = DESIGN_STATUS.INFEASIBLE
@@ -495,31 +490,28 @@ class CandidatePoint:
       self.__penalize__(extreme= True)
       return
     """ Aggregate all constraints """
-    # self.h = sum(power(maximum(self.c_ineq, self._dtype.zero,
-    #                dtype=self._dtype.dtype), 2, dtype=self._dtype.dtype))
     if np.isnan(self.h) or np.any(np.isnan(self.c_ineq)):
       self.h = inf
       self.status = DESIGN_STATUS.ERROR
 
     """ Penalize relaxable constraints violation """
     if any(np.isnan(self.f)) or self.h > self.hzero:
-      if self.h > np.round(self.hmax, 2):
+      if self.h > np.round(self.h_max, 2):
         self.__penalize__(extreme=False)
       self.status = DESIGN_STATUS.INFEASIBLE
     else:
-      self.hmax = copy.deepcopy(self.h)
+      self.h_max = copy.deepcopy(self.h)
       self.status = DESIGN_STATUS.FEASIBLE
 
   def __penalize__(self, extreme: bool=True):
-    if len(self.cPB) > len(self.LAMBDA):
-      self.LAMBDA += [self.LAMBDA[-1]] * abs(len(self.LAMBDA)-len(self.cPB))
-    if 0 < len(self.cPB) < len(self.LAMBDA):
-      del self.LAMBDA[len(self.cPB):]
+    if len(self.cPB) > len(self.lambda_multipliers):
+      self.lambda_multipliers += [self.lambda_multipliers[-1]] * abs(len(self.lambda_multipliers)-len(self.cPB))
+    if 0 < len(self.cPB) < len(self.lambda_multipliers):
+      del self.lambda_multipliers[len(self.cPB):]
     if extreme:
-      # self.f = [inf]*len(self.f)
       self.hmin = inf
     else:
-      self.hmin = np.dot(self.LAMBDA, self.cPB) + ((1/(2*self.RHO)) * self.h if self.RHO > 0. else np.inf)
+      self.hmin = np.dot(self.lambda_multipliers, self.cPB) + ((1/(2*self.rho)) * self.h if self.rho > 0. else np.inf)
       self.f = [self.fobj[i] * (1./len(self.fobj)) + self.hmin for i in range(len(self.fobj))]
 
   def __is_duplicate__(self, other) -> bool:
@@ -537,15 +529,15 @@ class CandidatePoint:
   def __dh__(self, other):
     return subtract(self.h, other.h, dtype=self._dtype.dtype)
   
-  def __comMO__(self, other, onlyfvalues: bool = False):
-    compareFlag: COMPARE_TYPE = COMPARE_TYPE.UNDEFINED
+  def __comp_mo__(self, other, onlyfvalues: bool = False):
+    compare_flag: COMPARE_TYPE = COMPARE_TYPE.UNDEFINED
     f1 = self.fs
     h1 = self.h
     f2 = other.fs
     h2 = other.h
 
     if f1.size != f2.size:
-      return compareFlag
+      return compare_flag
     
     # // The comparison code has been adapted from
     # // Jaszkiewicz, A., & Lust, T. (2018).
@@ -563,9 +555,9 @@ class CandidatePoint:
         if isworse and isbetter:
           break
       if isworse:
-        compareFlag = COMPARE_TYPE.INDIFFERENT if isbetter else COMPARE_TYPE.DOMINATED
+        compare_flag = COMPARE_TYPE.INDIFFERENT if isbetter else COMPARE_TYPE.DOMINATED
       else:
-        compareFlag = COMPARE_TYPE.DOMINATING if isbetter else COMPARE_TYPE.EQUAL
+        compare_flag = COMPARE_TYPE.DOMINATING if isbetter else COMPARE_TYPE.EQUAL
     elif (self.status != DESIGN_STATUS.FEASIBLE and other.status != DESIGN_STATUS.FEASIBLE):
       if h1 != np.inf:
         isbetter = False
@@ -583,9 +575,9 @@ class CandidatePoint:
           if h2 < h1:
             isworse = True
         if isworse:
-          compareFlag = COMPARE_TYPE.INDIFFERENT if isbetter else COMPARE_TYPE.DOMINATED
+          compare_flag = COMPARE_TYPE.INDIFFERENT if isbetter else COMPARE_TYPE.DOMINATED
         else:
-          compareFlag = COMPARE_TYPE.DOMINATING if isbetter else COMPARE_TYPE.EQUAL
+          compare_flag = COMPARE_TYPE.DOMINATING if isbetter else COMPARE_TYPE.EQUAL
     
-    return compareFlag
+    return compare_flag
 

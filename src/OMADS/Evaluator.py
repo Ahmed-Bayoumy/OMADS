@@ -1,10 +1,11 @@
 import copy
 import importlib
+import platform
 import time
-from ._globals import *
+from ._globals import DType, VAR_TYPE, DESIGN_STATUS, BB_EVAL_STATUS
 import os
-from typing import List, Dict, Any, Optional, Callable
-from numpy import sum, subtract, add, maximum, minimum, power, inf
+from typing import List, Any, Optional, Callable
+from numpy import inf
 import numpy as np
 from inspect import signature
 import concurrent.futures
@@ -15,6 +16,7 @@ from .CandidatePoint import CandidatePoint
 from .Options import Options
 from .PostProcess import PostMADS
 from .Point import Point
+from dataclasses import dataclass
 
 @dataclass
 class Evaluator:
@@ -30,21 +32,21 @@ class Evaluator:
     :param timeout: The time out of the evaluation process
   """
   blackbox: Any = "rosenbrock"
-  commandOptions: Any = None
+  command_options: Any = None
   internal: Optional[str] = None
   path: str = "..\\tests\\Rosen"
   input: str = "input.inp"
   output: str = "output.out"
-  constants: List = None
+  constants: Optional[List] = None
   bb_eval: int = 0
-  _dtype: DType = None
+  _dtype: Optional[DType] = None
   timeout: float = 1000000.
-  local_exec_jobs: List[str] = None
-  candidates: List[Point] = None
-  directions: List[Point] = None
+  local_exec_jobs: Optional[List[str]] = None
+  candidates: Optional[List[Point]] = None
+  directions: Optional[List[Point]] = None
   mesh: List[Any] = None
-  constraintsRelaxation: dict = None
-  xmin: CandidatePoint = None
+  constraints_relaxation: Optional[dict] = None
+  xmin: Optional[CandidatePoint] = None
   
 
 
@@ -73,76 +75,67 @@ class Evaluator:
       self.directions.append(xtry.direction)
       self.mesh.append(xtry.mesh)
   
-  def run_callable_serial_local(self, iter:int, peval: int, eval_set:List[CandidatePoint], options: Options, post: PostMADS, psize: List[float], stepName: str = None, mesh: auto = None, constraintsRelaxation: dict = None, budget:int = 1):
+  def run_callable_serial_local(self, iter:int, peval: int, eval_set:List[CandidatePoint], options: Options, post: PostMADS, psize: List[float], step_name: str = None, mesh: Any = None, constraints_relaxation: dict = None, budget:int = 1):
     xc: List[CandidatePoint] = []
     self.map_variables(eval_set)
-    self.constraintsRelaxation = copy.deepcopy(constraintsRelaxation)
+    self.constraints_relaxation = copy.deepcopy(constraints_relaxation)
     for it in range(len(eval_set)):
       peval += 1
-      f = self.evaluate_BB(it)
+      f = self.evaluate_blackbox(it)
       if f.status != BB_EVAL_STATUS.UNEVALUATED:
         xc.append(f)
         if mesh:
           xc[-1].mesh = copy.deepcopy(mesh)
         
       post.bb_eval.append(peval)
-      xc[-1].evalNo = peval
+      xc[-1].eval_no = peval
       post.iter.append(iter)
-      if stepName:
-        post.step_name.append(stepName)
+      if step_name:
+        post.step_name.append(step_name)
       post.psize.append(psize)
       if options.opportunistic and len(xc) > 0 and xc[-1] < self.xmin:
         break
       if peval == budget:
         break
-    # self.constraintsRelaxation["hmax"] = eval_set[-1].hmax
     return xc, post, peval
   
-  def evaluate_BB(self, index: int)->List[Any]:
-    tic = time.perf_counter()
-    f, errStatus = self.eval(self.candidates[index].coordinates)
+  def evaluate_blackbox(self, index: int)->List[Any]:
+    f, err_status = self.eval(self.candidates[index].coordinates)
     x_cp: CandidatePoint = CandidatePoint()
     x_cp.coordinates = copy.deepcopy(self.candidates[index].coordinates)
-    x_cp.LAMBDA = copy.deepcopy(self.constraintsRelaxation["LAMBDA"])
-    x_cp.RHO = copy.deepcopy(self.constraintsRelaxation["RHO"])
-    x_cp.hmax = copy.deepcopy(self.constraintsRelaxation["hmax"])
-    x_cp.constraints_type = copy.deepcopy(self.constraintsRelaxation["constraints_type"])
+    x_cp.lambda_multipliers = copy.deepcopy(self.constraints_relaxation["LAMBDA"])
+    x_cp.rho = copy.deepcopy(self.constraints_relaxation["RHO"])
+    x_cp.h_max = copy.deepcopy(self.constraints_relaxation["hmax"])
+    x_cp.constraints_type = copy.deepcopy(self.constraints_relaxation["constraints_type"])
     x_cp.direction = copy.deepcopy(self.directions[index])
     x_cp.mesh = copy.deepcopy(self.mesh[index])
     x_cp.__eval__(f)
-    if errStatus:
+    if err_status:
       x_cp.status = DESIGN_STATUS.ERROR
     # if x_cp.status == DESIGN_STATUS.INFEASIBLE:
       # self.constraintsRelaxation["hmax"] = x_cp.hmax
-    if self.constraintsRelaxation["LAMBDA"] == None:
-      self.constraintsRelaxation["LAMBDA"] = copy.deepcopy(self.xmin.LAMBDA)
-    if len(x_cp.cPB) > len(self.constraintsRelaxation["LAMBDA"]):
-      self.constraintsRelaxation["LAMBDA"] += [self.constraintsRelaxation["LAMBDA"][-1]] * abs(len(self.constraintsRelaxation["LAMBDA"])-len(x_cp.cPB))
-    if len(x_cp.cPB) < len(self.constraintsRelaxation["LAMBDA"]):
-      del self.constraintsRelaxation["LAMBDA"][len(x_cp.cPB):]
+    if self.constraints_relaxation["LAMBDA"] == None:
+      self.constraints_relaxation["LAMBDA"] = copy.deepcopy(self.xmin.lambda_multipliers)
+    if len(x_cp.cPB) > len(self.constraints_relaxation["LAMBDA"]):
+      self.constraints_relaxation["LAMBDA"] += [self.constraints_relaxation["LAMBDA"][-1]] * abs(len(self.constraints_relaxation["LAMBDA"])-len(x_cp.cPB))
+    if len(x_cp.cPB) < len(self.constraints_relaxation["LAMBDA"]):
+      del self.constraints_relaxation["LAMBDA"][len(x_cp.cPB):]
     for i in range(len(x_cp.cPB)):
-      if self.constraintsRelaxation["RHO"] == 0.:
-        self.constraintsRelaxation["RHO"] = 0.001
-      self.constraintsRelaxation["LAMBDA"][i] = copy.deepcopy(max(self.dtype.zero, self.constraintsRelaxation["LAMBDA"][i] + (1/self.constraintsRelaxation["RHO"])*x_cp.cPB[i]))
+      if np.isclose(self.constraints_relaxation["RHO"], 0., rtol=1e-09, atol=1e-09):
+        self.constraints_relaxation["RHO"] = 0.001
+      self.constraints_relaxation["LAMBDA"][i] = copy.deepcopy(max(self.dtype.zero, self.constraints_relaxation["LAMBDA"][i] + (1/self.constraints_relaxation["RHO"])*x_cp.cPB[i]))
     
     if x_cp.status == DESIGN_STATUS.FEASIBLE:
-      self.constraintsRelaxation["RHO"] *= copy.deepcopy(0.5)
-
-    # if self.log is not None and self.log.isVerbose:
-    #   self.log.log_msg(msg=f"Completed evaluation of point # {index} in {x_cp.Eval_time} seconds, ftry={x_cp.f}, status={x_cp.status.name} and htry={x_cp.h}. \n", msg_type=MSG_TYPE.INFO)
-    # toc = time.perf_counter()
-    # x_cp.Eval_time = (toc - tic)
+      self.constraints_relaxation["RHO"] *= copy.deepcopy(0.5)
     
     return x_cp
 
-
-  def run_callable_parallel_local(self, iter:int, peval: int, njobs:int, eval_set:List[CandidatePoint], options: Options, post: PostMADS, psize: List[float], mesh: auto = None, stepName: str = None, eval_call: Callable = None, constraintsRelaxation: dict = None, budget:int = 1):
-    bb_eval = []
+  def run_callable_parallel_local(self, iter:int, peval: int, eval_set:List[CandidatePoint], options: Options, post: PostMADS, psize: List[float], mesh: Any = None, step_name: str = None, constraints_relaxation: dict = None, budget:int = 1):
     xc: List[CandidatePoint] = []
     self.map_variables(eval_set)
-    self.constraintsRelaxation = copy.deepcopy(constraintsRelaxation)
-    with concurrent.futures.ProcessPoolExecutor(options.np) as executor:
-      results = [executor.submit(self.evaluate_BB, it) for it in range(len(eval_set))]
+    self.constraints_relaxation = copy.deepcopy(constraints_relaxation)
+    with concurrent.futures.ProcessPoolExecutor(max_workers=options.np) as executor:
+      results = [executor.submit(self.evaluate_blackbox, it) for it in range(len(eval_set))]
       for f in concurrent.futures.as_completed(results):
         # if f.result()[0]:
         #     executor.shutdown(wait=False)
@@ -153,20 +146,22 @@ class Evaluator:
           if mesh:
             xc[-1].mesh = copy.deepcopy(mesh)
           
-          xc[-1].evalNo = self.bb_eval
+          xc[-1].eval_no = self.bb_eval
           self.bb_eval = peval
           post.bb_eval.append(peval)
           post.iter.append(iter)
           # post.poll_dirs.append(poll.poll_dirs[f.result()[1]])
-          if stepName:
-            post.step_name.append(stepName)
+          if step_name:
+            post.step_name.append(step_name)
           post.psize.append(psize)
 
           if options.opportunistic and len(xc) > 0 and xc[-1] < self.xmin:
             break
           if peval == budget:
             break
-
+        else:
+          executor.shutdown(wait=False)
+    
     return peval, xc, post, peval
 
   # Function to execute .exe file locally
@@ -184,7 +179,7 @@ class Evaluator:
       ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
       ssh.connect(host, username=username, password=password)
       
-      stdin, stdout, stderr = ssh.exec_command(exe_path)
+      _, stdout, stderr = ssh.exec_command(exe_path)
       
       output = stdout.read().decode()
       error = stderr.read().decode()
@@ -238,26 +233,19 @@ class Evaluator:
         is_object = False
         try:
           sig = signature(self.blackbox)
-        except:
+        except Warning:
           is_object = True
-          pass
         if not is_object:
           npar = len(sig.parameters) 
           # Get input arguments defined for the callable 
           inputs = str(sig).replace("(", "").replace(")", "").replace(" ","").split(',')
           # Check if user constants list is defined and if the number of input args of the callable matches what OMADS expects 
           if self.constants is None:
-            if (npar == 1 or (npar> 0 and npar <= 3 and ('*argv' in inputs))):
+            is_argv = '*argv' in inputs
+            if (npar == 1 or (npar> 0 and npar <= 3 and is_argv)) or (npar == 2 and is_argv):
               try:
                 f_eval = self.blackbox(values)
-              except:
-                evalerr = True
-                logging.error(f"Callable {str(self.blackbox)} evaluation returned an error at the poll point {values}")
-                f_eval = [inf, [inf]]
-            elif (npar == 2 and ('*argv' not in inputs)):
-              try:
-                f_eval = self.blackbox(values)
-              except:
+              except Warning:
                 evalerr = True
                 logging.error(f"Callable {str(self.blackbox)} evaluation returned an error at the poll point {values}")
                 f_eval = [inf, [inf]]
@@ -267,7 +255,7 @@ class Evaluator:
             if (npar == 2 or (npar> 0 and npar <= 3 and ('*argv' in inputs))):
               try:
                 f_eval = self.blackbox(values, self.constants)
-              except:
+              except Warning:
                 evalerr = True
                 logging.error(f"Callable {str(self.blackbox)} evaluation returned an error at the poll point {values}")
             else:
@@ -275,7 +263,7 @@ class Evaluator:
         else:
           try:
             f_eval = self.blackbox(values)
-          except:
+          except Warning:
             evalerr = True
             logging.error(f"Callable {str(self.blackbox)} evaluation returned an error at the poll point {values}")
             f_eval = [[inf], [inf]]
@@ -287,7 +275,7 @@ class Evaluator:
         self.write_input(values)
         pwd = os.getcwd()
         os.chdir(self.path)
-        isWin = platform.platform().split('-')[0] == 'Windows'
+        is_win = platform.platform().split('-')[0] == 'Windows'
         evalerr = False
         timouterr = False
         #  Check if the file is executable
@@ -295,14 +283,14 @@ class Evaluator:
         if not executable:
           raise IOError(f"The blackbox file {str(self.blackbox)} is not an executable! Please provide a valid executable file.")
         # Prepare the execution command based on the running machine's OS
-        if isWin and self.commandOptions is None:
+        if is_win and self.command_options is None:
           cmd = self.blackbox
-        elif isWin:
-          cmd = f'{self.blackbox} {self.commandOptions}'
-        elif self.commandOptions is None:
+        elif is_win:
+          cmd = f'{self.blackbox} {self.command_options}'
+        elif self.command_options is None:
           cmd = f'./{self.blackbox}'
         else:
-          cmd =  f'./{self.blackbox} {self.commandOptions}'
+          cmd =  f'./{self.blackbox} {self.command_options}'
         try:
           p = subprocess.run(cmd, shell=True, timeout=self.timeout)
           if p.returncode != 0:

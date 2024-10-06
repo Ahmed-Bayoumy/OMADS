@@ -23,19 +23,13 @@
 
 
 import copy
-import time
 from .CandidatePoint import CandidatePoint
 from .Point import Point
-# from .Barriers import Barrier, BarrierMO, BarrierBase
-from ._common import logger
-from dataclasses import dataclass, field
-from typing import List, Dict, Any
-from .Gmesh import Gmesh
-from .Cache import Cache
-from .Evaluator import Evaluator
-from ._globals import *
-from .Optimizer import GenericSamplerBase, ConstraintsRelaxationParameters
-
+from dataclasses import dataclass
+from typing import List, Dict
+from ._globals import DType, VAR_TYPE, BARRIER_TYPES, SUCCESS_TYPES, DESIGN_STATUS, MSG_TYPE
+from .Optimizer import GenericSamplerBase
+import numpy as np
 
 
 @dataclass
@@ -256,7 +250,7 @@ class Dirs2n(GenericSamplerBase):
   def ran(self):
     return np.random.random(self._n).astype(dtype=self._dtype.dtype)
 
-  def create_housholder(self, is_rich: bool, domain: List[int] = None, is_oneDir: bool=False) -> np.ndarray:
+  def create_housholder(self, is_rich: bool, domain: List[int] = None, is_one_dir: bool=False) -> np.ndarray:
     """Create householder matrix
 
     :param is_rich:  A flag that indicates if the rich direction option is enabled
@@ -301,7 +295,7 @@ class Dirs2n(GenericSamplerBase):
           if domain[j] != VAR_TYPE.REAL:
             hhm[i][j] = int(np.floor(-1 + 2**self.mesh.getdeltaMeshSize().coordinates[i]))
     
-    if is_oneDir:
+    if is_one_dir:
       return hhm
     else:
       hhm = np.vstack((hhm, -hhm))
@@ -324,7 +318,6 @@ class Dirs2n(GenericSamplerBase):
     del self.poll_set
     del self.poll_dirs
     if is_prim:
-      # del self.poll_set
       temp = np.add(hhm, np.array(self.xmin.coordinates), dtype=self._dtype.dtype)
     else:
       temp = np.add(hhm, np.array(self.x_sc.coordinates), dtype=self._dtype.dtype)
@@ -381,8 +374,6 @@ class Dirs2n(GenericSamplerBase):
   def directional_scaling(self, p: CandidatePoint, npts: int = 5) -> List[CandidatePoint]:
     lb = self.lb
     ub = self.ub
-    # np.random.seed(self.seed)
-    # scaling = [self.mesh.msize, 2*self.mesh.msize]
     scaling = self.mesh.getdeltaMeshSize().coordinates
     p_trials: List[CandidatePoint] = [0]*len(scaling)
     for k in range(len(scaling)):
@@ -402,7 +393,6 @@ class Dirs2n(GenericSamplerBase):
     # np.random.seed(self.seed)
     cs = np.zeros((npts, p.n_dimensions))
     pts: List[CandidatePoint] = [0] * npts
-    mp = 1.
     for k in range(p.n_dimensions):
       if p.var_type[k] == VAR_TYPE.REAL:
         cs[:, k] = np.random.normal(loc=p.coordinates[k], scale=self.mesh.getdeltaMeshSize().coordinates[k], size=(npts,))
@@ -422,141 +412,14 @@ class Dirs2n(GenericSamplerBase):
     
     return pts
 
-# Deprecated evaluation routine
-  # def evaluate_candidate_point(self, index: int):
-  #   """ Evaluate the point i on the poll set """
-  #   """ Set the dynamic index for this point """
-  #   tic = time.perf_counter()
-  #   self.point_index = index
-  #   if self.log is not None and self.log.isVerbose:
-  #     self.log.log_msg(msg=f"Evaluate poll point # {index}...", msg_type=MSG_TYPE.INFO)
-  #   """ Initialize stopping and success conditions"""
-  #   stop: bool = False
-  #   """ Copy the point i to a trial one """
-  #   xtry: CandidatePoint = self.poll_set[index]
-  #   """ This is a success bool parameter used for
-  #    filtering out successful designs to be printed
-  #   in the output results file"""
-  #   success = SUCCESS_TYPES.US
-
-    # """ Check the cache memory; check if the trial point
-    #  is a duplicate (it has already been evaluated) """
-    # unique_p_trials: int = 0
-    # is_duplicate: bool = (self.check_cache and self.hashtable.size > 0 and self.hashtable.is_duplicate(xtry))
-    # while is_duplicate and unique_p_trials < 5:
-    #   if self.display:
-    #     print(f'Cache hit. Trial# {unique_p_trials}: Looking for a non-duplicate along the poll direction where the duplicate point is located...')
-    #   if xtry.var_type is None:
-    #     if self.xmin.var_type is not None:
-    #       xtry.var_type = self.xmin.var_type
-    #     else:
-    #       xtry.var_type = [VAR_TYPE.CONTINUOUS] * len(self.xmin.coordinates)
-    #   xtries: List[Point] = self.directional_scaling(p=xtry, npts=len(self.poll_dirs)*2)
-    #   for tr in range(len(xtries)):
-    #     is_duplicate = self.hashtable.is_duplicate(xtries[tr])
-    #     if is_duplicate:
-    #        continue 
-    #     else:
-    #       xtry = copy.deepcopy(xtries[tr])
-    #       break
-    #   unique_p_trials += 1
-
-    # if (is_duplicate):
-    #   if self.log is not None and self.log.isVerbose:
-    #     self.log.log_msg(msg="Cache hit ... Failed to find a non-duplicate alternative.", msg_type=MSG_TYPE.INFO)
-    #   if self.display:
-    #     print("Cache hit ... Failed to find a non-duplicate alternative.")
-    #   stop = True
-    #   bb_eval = copy.deepcopy(self.bb_eval)
-    #   xtry.fobj = [np.inf] * self.mesh._pbParams.nobj
-    #   psize = copy.deepcopy(self.mesh.getDeltaFrameSize().coordinates)
-    #   return [stop, index, self.bb_handle.bb_eval, success, psize, xtry]
-
-    # """ Evaluation of the blackbox; get output responses """
-    # if xtry.sets is not None and isinstance(xtry.sets,dict):
-    #   p: List[Any] = []
-    #   for i in range(len(xtry.var_type)):
-    #     if (xtry.var_type[i] == VAR_TYPE.DISCRETE or xtry.var_type[i] == VAR_TYPE.CATEGORICAL) and xtry.var_link[i] is not None:
-    #       p.append(xtry.sets[xtry.var_link[i]][int(xtry.coordinates[i])])
-    #     else:
-    #       p.append(xtry.coordinates[i])
-    #   self.bb_output, _ = self.bb_handle.eval(p)
-    # else:
-    #   self.bb_output, _ = self.bb_handle.eval(xtry.coordinates)
-
-    # """
-    #   Evaluate the poll point:
-    #     - Set multipliers and penalty
-    #     - Evaluate objective function
-    #     - Evaluate constraint functions (can be an empty vector)
-    #     - Aggregate constraints
-    #     - Penalize the objective (extreme barrier)
-    # """
-    # xtry.LAMBDA = copy.deepcopy(self.constraints_RP.LAMBDA)
-    # xtry.RHO = copy.deepcopy(self.constraints_RP.RHO)
-    # xtry.hmax = copy.deepcopy(self.constraints_RP.hmax)
-    # xtry.constraints_type = copy.deepcopy(self.constraints_RP.constraints_type)
-    # xtry.__eval__(self.bb_output)
-    # if not self.hashtable._isPareto:
-    #   self.hashtable.add_to_best_cache(xtry)
-    # self.constraints_RP.hmax = copy.deepcopy(xtry.hmax)
-    # toc = time.perf_counter()
-    # xtry.Eval_time = (toc - tic)
-    
-
-    # """ Update multipliers and penalty """
-    # if self.constraints_RP.LAMBDA == None:
-    #   self.constraints_RP.LAMBDA = self.xmin.LAMBDA
-    # if len(xtry.cPB) > len(self.constraints_RP.LAMBDA):
-    #   self.constraints_RP.LAMBDA += [self.constraints_RP.LAMBDA[-1]] * abs(len(self.constraints_RP.LAMBDA)-len(xtry.cPB))
-    # if len(xtry.cPB) < len(self.constraints_RP.LAMBDA):
-    #   del self.constraints_RP.LAMBDA[len(xtry.cPB):]
-    # for i in range(len(xtry.cPB)):
-    #   if self.constraints_RP.RHO == 0.:
-    #     self.constraints_RP.RHO = 0.001
-    #   self.constraints_RP.LAMBDA[i] = copy.deepcopy(max(self.dtype.zero, self.constraints_RP.LAMBDA[i] + (1/self.constraints_RP.RHO)*xtry.cPB[i]))
-    
-    # if xtry.status == DESIGN_STATUS.FEASIBLE:
-    #   self.constraints_RP.RHO *= copy.deepcopy(0.5)
-
-    # if self.log is not None and self.log.isVerbose:
-    #   self.log.log_msg(msg=f"Completed evaluation of point # {index} in {xtry.Eval_time} seconds, ftry={xtry.f}, status={xtry.status.name} and htry={xtry.h}. \n", msg_type=MSG_TYPE.INFO)
-
-    # # if xtry < self.xmin:
-    # #   self.success = True
-    # #   success = True
-
-    # """ Add to the cache memory """
-    # if self.store_cache:
-    #   self.hashtable.hash_id = xtry
-
-    # # if self.save_results or self.display:
-    # self.bb_eval = self.bb_handle.bb_eval
-    # self.psize = copy.deepcopy(self.mesh.getDeltaFrameSize().coordinates)
-    # psize = copy.deepcopy(self.mesh.getDeltaFrameSize().coordinates)
-
-
-
-    # if success == SUCCESS_TYPES.FS and self.opportunistic and self.iter > 1:
-    #   stop = True
-
-    # """ Check stopping criteria """
-    # if self.bb_eval >= self.eval_budget:
-    #   self.terminate = True
-    #   stop = True
-    #   return [stop, index, self.bb_handle.bb_eval, success, psize, xtry]
-
-    # return [stop, index, self.bb_handle.bb_eval, success, psize, xtry]
-
-  def postprocess_evaluated_candidates(self, x_cps: List[CandidatePoint]):
-    # if len(self.hashtable._best_hash_ID) <= 0:
+  def postprocess_evaluated_candidates(self, x_cps: List[CandidatePoint] = None):
     #   self.hashtable._best_hash_ID.append(self.xmin.signature)
     for xtry in x_cps:
-      if self.log is not None and self.log.isVerbose:
-        self.log.log_msg(msg=f"Completed evaluation of point # {xtry.evalNo} in {xtry.Eval_time} seconds, ftry={xtry.f}, status={xtry.status.name} and htry={xtry.h}. \n", msg_type=MSG_TYPE.INFO)
+      if self.log is not None and self.log.is_verbose:
+        self.log.log_msg(msg=f"Completed evaluation of point # {xtry.eval_no} in {xtry.eval_time} seconds, ftry={xtry.f}, status={xtry.status.name} and htry={xtry.h}. \n", msg_type=MSG_TYPE.INFO)
       """ Add to the cache memory """
       self.hashtable.add_to_cache(xtry)
-      if not self.hashtable._isPareto:
+      if not self.hashtable._is_pareto:
         self.hashtable.add_to_best_cache(xtry)
       if self.store_cache and xtry.signature not in self.hashtable.hash_id:
         self.hashtable.hash_id = xtry
@@ -567,9 +430,9 @@ class Dirs2n(GenericSamplerBase):
   def omit_duplicates(self):
     temp: List[CandidatePoint] = []
     for xtry in self.poll_set:
-      is_dup = xtry.signature in self.hashtable.hash_id if not self.hashtable._isPareto else self.hashtable.is_duplicate(xtry)
+      is_dup = xtry.signature in self.hashtable.hash_id if not self.hashtable._is_pareto else self.hashtable.is_duplicate(xtry)
       is_duplicate: bool = (self.check_cache and self.hashtable.size > 0 and is_dup)
-      # TODO: The commented logic below needs more investigation to make sure that it doesn't hurt.
+      # COMPLETED: The commented logic below needs more investigation to make sure that it doesn't hurt.
       # while is_duplicate and unique_p_trials < 5:
       #   if self.display:
       #     print(f'Cache hit. Trial# {unique_p_trials}: Looking for a non-duplicate along the poll direction where the duplicate point is located...')
@@ -588,7 +451,7 @@ class Dirs2n(GenericSamplerBase):
       #       break
       #   unique_p_trials += 1
       if (is_duplicate):
-        if self.log is not None and self.log.isVerbose:
+        if self.log is not None and self.log.is_verbose:
           self.log.log_msg(msg="Cache hit ... Failed to find a non-duplicate alternative.", msg_type=MSG_TYPE.INFO)
         if self.display:
           print("Cache hit ... Failed to find a non-duplicate alternative.")
@@ -608,11 +471,8 @@ class Dirs2n(GenericSamplerBase):
       """ Check success conditions """
       is_infeas_dom: bool = (xtry.status == DESIGN_STATUS.INFEASIBLE and (xtry.h < self.xmin.h) )
       is_feas_dom: bool = (xtry.status == DESIGN_STATUS.FEASIBLE and xtry.fobj < self.xmin.fobj)
-      is_infea_improving: bool = (self.xmin.status == DESIGN_STATUS.FEASIBLE and xtry.status == DESIGN_STATUS.INFEASIBLE and (xtry.fobj < self.xmin.fobj and xtry.h <= self.xmin.hmax))
-      is_feas_improving: bool = (self.xmin.status == DESIGN_STATUS.INFEASIBLE and xtry.status == DESIGN_STATUS.FEASIBLE and xtry.fobj < self.xmin.fobj)
-      
       success = SUCCESS_TYPES.US
-      if ((is_infeas_dom or is_feas_dom)):
+      if (is_infeas_dom or is_feas_dom):
         self.success = SUCCESS_TYPES.FS
         self.n_successes += 1
         success = SUCCESS_TYPES.FS  # <- This redundant variable is important
@@ -622,7 +482,7 @@ class Dirs2n(GenericSamplerBase):
         del self._xmin
         self._xmin = CandidatePoint()
         self._xmin = copy.deepcopy(xtry)
-        self.constraints_RP.hmax = copy.deepcopy(xtry.hmax)
+        self.constraints_RP.hmax = copy.deepcopy(xtry.h_max)
         if self.display:
           if self._dtype.dtype == np.float64:
             print(f"Success: fmin = {self.xmin.f} (hmin = {self.xmin.h:.15})")

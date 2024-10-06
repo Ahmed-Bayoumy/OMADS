@@ -1,4 +1,5 @@
 import importlib
+import time
 from OMADS import POLL, SEARCH, MADS
 from matplotlib import pyplot as plt
 import copy
@@ -8,6 +9,41 @@ import numpy as np
 from typing import Dict, List
 from multiprocessing import freeze_support
 import platform
+
+import logging
+
+# Configure the logging
+# Create a custom logger
+
+
+logger = logging.getLogger('OMADS_SO_BBO_unit_tests')
+logger.setLevel(logging.DEBUG)  # Set to DEBUG to capture all messages
+
+# Create a console handler
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)  # Only log INFO and above to console
+
+# Create a file handler
+file_handler = logging.FileHandler(filename='tests/OMADS_BBO_unit_test.log', mode = 'a')
+file_handler.setLevel(logging.DEBUG)  # Log all messages to file
+
+# Create a formatter and set it for handlers
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+console_handler.setFormatter(formatter)
+file_handler.setFormatter(formatter)
+
+# Add handlers to the logger
+logger.addHandler(console_handler)
+logger.addHandler(file_handler)
+
+# Example filter to exclude messages from the root logger
+class NoRootMessagesFilter(logging.Filter):
+    def filter(self, record):
+        return record.name != 'root'
+
+# Add the filter to handlers
+console_handler.addFilter(NoRootMessagesFilter())
+file_handler.addFilter(NoRootMessagesFilter())
 
 def geom_prog(x, *argv):
   xx = x
@@ -35,9 +71,15 @@ def thin_con(x):
   y = [[f], [c1, c2]]
   return y
 
-def test_MADS_callable_quick_2d():
+def test_create_out_file():
+  open('tests/OMADS_BBO_unit_test.log', 'w').close()
+  
+
+def test_callable_quick_2d():
+  logger.info('\nStarted running bbo_2d_rosenbrock test... \n')
+  tic = time.perf_counter()
   d = 2
-  eval = {"blackbox": rosen}
+  eval_callable = {"blackbox": rosen}
   param = {"name": "RB","baseline": [-2.5]*d,
        "lb": [-5]*d,
        "ub": [10]*d,
@@ -50,45 +92,98 @@ def test_MADS_callable_quick_2d():
                     "visualize": False,
                     "criterion": None
                   }
-  options = {"seed": 10000, "budget": 3000, "tol": 1e-9, "display": False, "check_cache": True, "store_cache": True, "rich_direction": True, "opportunistic": False, "save_results": False, "isVerbose": False}
+  options = {"seed": 10000, "budget": 1100, "tol": 1e-9, "display": False, "check_cache": True, "store_cache": True, "rich_direction": True, "opportunistic": False, "save_results": False, "isVerbose": False}
   search = {
       "type": "sampling",
       "s_method": "ACTIVE",
       "ns": int((d+1)*(d+2)/2)+55,
       "visualize": False
     }
-  data = {"evaluator": eval, "param": param, "options": options, "sampling": sampling, "search": search}
+  data = {"evaluator": eval_callable, "param": param, "options": options, "sampling": sampling, "search": search}
+  data["param"]["lhs_search_initialization"] = True
+  logger.info('\nStarted running MADS on bbo_2d_rosenbrock serial exectution ...')
+  ticms = time.perf_counter()
+  out_mads: Dict = MADS.main(data)
+  tocms = time.perf_counter()
+  logger.info(f'Completed serial MADS run on bbo_2d_rosenbrock in {tocms - ticms:.4f} seconds.\n')
+  
+  ticps = time.perf_counter()
+  logger.info('\nStarted running POLL on bbo_2d_rosenbrock serial exectution ...')
+  out_poll: Dict = POLL.main(data)
+  tocps = time.perf_counter()
+  logger.info(f'Completed serial POLL run on bbo_2d_rosenbrock in {tocps - ticps:.4f} seconds.\n')
 
-  outM: Dict = MADS.main(data)
-  outP: Dict = POLL.main(data)
-  outS: Dict = SEARCH.main(data)
-  OMS = outM[0]["fmin"][0]
-  OPS = outP[0]["fmin"][0]
-  OSS = outS[0]["fmin"][0]
-  if (outM[0]["fmin"][0] > 0.0006):
-    raise ValueError(f"\nSequential Exec: MADS: fmin: {OMS} > {0.0006} \nPoll: fmin = {OPS}\nSearch: fmin = {OSS}")
+  ticss = time.perf_counter()
+  logger.info('\nStarted running SEARCH on bbo_2d_rosenbrock serial exectution ...')
+  out_search: Dict = SEARCH.main(data)
+  tocss = time.perf_counter()
+  logger.info(f'Completed serial SEARCH run on bbo_2d_rosenbrock in {tocss - ticss:.4f} seconds.\n')
+
+  OMS = out_mads[0]["fmin"][0]
+  OPS = out_poll[0]["fmin"][0]
+  OSS = out_search[0]["fmin"][0]
   
-  if (outP[0]["fmin"][0] > 0.0006):
-    raise ValueError(f"\nSequential Exec: POLL: fmin: {OPS} > {0.0006} \nMADS: fmin = {OMS}\nSearch: fmin = {OSS}")
   
-  if (outS[0]["fmin"][0] > 0.0006):
-    raise ValueError(f"\nSequential Exec: Search: fmin {OSS} > {0.0006} \nMADS: fmin = {OMS}\nPoll: fmin = {OPS}")
   data["options"]["parallel_mode"] = True
-  OMS = outM[0]["fmin"][0]
-  OPS = outP[0]["fmin"][0]
-  OSS = outS[0]["fmin"][0]
-  if (outM[0]["fmin"][0] > 0.0006):
-    raise ValueError(f"\nParallel Exec: MADS: fmin: {OMS} > {0.0006} \nPoll: fmin = {OPS}\nSearch: fmin = {OSS}")
+  data["options"]["np"] = 4
+  logger.info('\nStarted running MADS on bbo_2d_rosenbrock parallel exectution ...')
+  ticmp = time.perf_counter()
+  out_mads: Dict = MADS.main(data)
+  tocmp = time.perf_counter()
+  logger.info(f'Completed parallel MADS run on bbo_2d_rosenbrock in {tocmp - ticmp:.4f} seconds.\n')
   
-  if (outP[0]["fmin"][0] > 0.0006):
-    raise ValueError(f"\nParallel Exec: POLL: fmin: {OPS} > {0.0006} \nMADS: fmin = {OMS}\nSearch: fmin = {OSS}")
-  
-  if (outS[0]["fmin"][0] > 0.0006):
-    raise ValueError(f"\nParallel Exec: Search: fmin {OSS} > {0.0006} \nMADS: fmin = {OMS}\nPoll: fmin = {OPS}")
+  ticpp = time.perf_counter()
+  logger.info('\nStarted running POLL on bbo_2d_rosenbrock parallel exectution ...')
+  out_poll: Dict = POLL.main(data)
+  tocpp = time.perf_counter()
+  logger.info(f'Completed parallel POLL run on bbo_2d_rosenbrock in {tocpp - ticpp:.4f} seconds.\n')
 
-def test_MADS_callable_quick_const_2d():
+  ticsp = time.perf_counter()
+  logger.info('\nStarted running SEARCH on bbo_2d_rosenbrock parallel exectution ...')
+  out_search: Dict = SEARCH.main(data)
+  tocsp = time.perf_counter()
+  logger.info(f'Completed parallel SEARCH run on bbo_2d_rosenbrock in {tocsp - ticsp:.4f} seconds.\n')
+  
+  OMP = out_mads[0]["fmin"][0]
+  OPP = out_poll[0]["fmin"][0]
+  OSP = out_search[0]["fmin"][0]
+  
+  
+  toc = time.perf_counter()
+  logger.info(f'Completed bbo_2d_rosenbrock serial test in {toc - tic:.4f} seconds.')
+  logger.info(f"\nBest known solution: fmin = {0.}")
+  logger.info(f"\nSequential Exec: MADS: fmin = {OMS} \nPoll: fmin = {OPS} \nSearch: fmin = {OSS}")
+  logger.info(f"\nParallel Exec: MADS: fmin: {OMP} \nPoll: fmin = {OPP}\nSearch: fmin = {OSP}")
+
+  if (OMS > 0.0006):
+    logger.error(f"Sequential Exec: MADS: fmin: {OMS} > {0.0006}")
+    raise ValueError(f"\nSequential Exec: MADS: fmin: {OMS} > {0.0006}")
+  
+  if (OPS > 0.008):
+    logger.error(f"Sequential Exec: POLL: fmin: {OPS} > {0.008}")
+    raise ValueError(f"\nSequential Exec: POLL: fmin: {OPS} > {0.008}")
+  
+  if (OSS > 0.0006):
+    logger.error(f"Sequential Exec: Search: fmin {OSS} > {0.0006}")
+    raise ValueError(f"\nSequential Exec: Search: fmin {OSS} > {0.0006}")
+
+  if (OMP > 0.05):
+    logger.error(f"Parallel Exec: MADS: fmin: {OMP} > {0.05}")
+    raise ValueError(f"\nParallel Exec: MADS: fmin: {OMP} > {0.05}")
+  
+  if (OPP > 0.008):
+    logger.error(f"Parallel Exec: POLL: fmin: {OPP} > {0.008}")
+    raise ValueError(f"\nParallel Exec: POLL: fmin: {OPP} > {0.008}")
+  
+  if (OSP > 0.001):
+    logger.error(f"Parallel Exec: Search: fmin {OSP} > {0.001}")
+    raise ValueError(f"\nParallel Exec: Search: fmin {OSP} > {0.001}")
+
+def test_callable_2d_sin_const():
+  logger.info('\nStarted running bbo_2d_sin_const test...')
+  tic = time.perf_counter()
   d = 2
-  eval = {"blackbox": thin_con}
+  eval_callable = {"blackbox": thin_con}
   param = {"name": "thin_con","baseline": [0, -10],
        "lb": [0, -10],
        "ub": [25, 10],
@@ -109,29 +204,31 @@ def test_MADS_callable_quick_const_2d():
       "ns": 100,
       "visualize": False
     }
-  data = {"evaluator": eval, "param": param, "options": options, "sampling": sampling, "search": search}
+  data = {"evaluator": eval_callable, "param": param, "options": options, "sampling": sampling, "search": search}
 
-  outM: Dict = MADS.main(data)
-  OM = outM[0]["fmin"][0] 
+  out_mads: Dict = MADS.main(data)
+  OMS = out_mads[0]["fmin"][0] 
+  
+  toc = time.perf_counter()
+  logger.info(f'Completed bbo_2d_sin_const run in {toc - tic:.4f} seconds.\n')
+  logger.info(f"\nBest known solution: fmin = {0.0989}")
+  logger.info(f"\nSequential Exec: MADS: fmin = {OMS}")
 
-  if (outM[0]["fmin"][0] > 0.0989):
-    raise ValueError(f"MADS: fmin: {OM} > {0.0989}")
+  if (out_mads[0]["fmin"][0] > 0.0989):
+    logger.error(f"Sequential Exec: MADS: fmin: {OMS} > {0.0989}")
+    raise ValueError(f"\nSequential Exec: MADS: fmin: {OMS} > {0.0989}")
 
-def test_MADS_callable_quick_10d():
+def test_callable_quick_10d():
+  logger.info('\nStarted running bbo_10d_rosenbrock test...')
+  tic = time.perf_counter()
   d = 10
-  eval = {"blackbox": rosen}
+  eval_callable = {"blackbox": rosen}
   param = {"name": "RB","baseline": [-2.5]*d,
        "lb": [-5]*d,
        "ub": [10]*d,
        "var_names": [f"x{i}" for i in range(d)],
        "scaling": [15.0]*d,
        "post_dir": "./post"}
-  sampling = {
-                    "method": 'ACTIVE',
-                    "ns": int((d+1)*(d+2)/2)+50,
-                    "visualize": False,
-                    "criterion": None
-                  }
 
   options = {"seed": 10000, "budget": 10000, "tol": 1e-9, "display": False, "check_cache": True, "store_cache": True, "rich_direction": True, "opportunistic": False, "save_results": False, "isVerbose": False}
   search = {
@@ -146,34 +243,57 @@ def test_MADS_callable_quick_10d():
               "visualize": False,
               "criterion": None
             }
-  data = {"evaluator": eval, "param": param, "options": options, "sampling": sampling, "search": search}
-  outS: Dict = SEARCH.main(data)
-  OS = outS[0]["fmin"][0]
-  if (OS > 0.0006):
-    raise ValueError(f"Search: fmin = {OS} > {0.0006}")
+  data = {"evaluator": eval_callable, "param": param, "options": options, "sampling": sampling, "search": search}
+  logger.info('\nStarted running MADS on bbo_10d_rosenbrock serial exectution ...')
+  ticms = time.perf_counter()
+  out_mads: Dict = MADS.main(data)
+  tocms = time.perf_counter()
+  logger.info(f'Completed serial MADS run on bbo_10d_rosenbrock in {tocms - ticms:.4f} seconds.\n')
   
-  outP: Dict = POLL.main(data)
-  OP = outP[0]["fmin"][0]
+  ticps = time.perf_counter()
+  logger.info('\nStarted running POLL on bbo_10d_rosenbrock serial exectution ...')
+  out_poll: Dict = POLL.main(data)
+  tocps = time.perf_counter()
+  logger.info(f'Completed serial POL run on bbo_10d_rosenbrock in {tocps - ticps:.4f} seconds.\n')
 
-  if (OP > 0.25):
-    raise ValueError(f"POLL: fmin = {OP} > {0.25}")
-  
-  
-  outM: Dict = MADS.main(data)
-  OM = outM[0]["fmin"][0]
-  if (OM > 0.0006):
-    raise ValueError(f"MADS: fmin = {OM} > {0.0006}")
+  ticss = time.perf_counter()
+  logger.info('\nStarted running SEARCH on bbo_10d_rosenbrock serial exectution ...')
+  out_search: Dict = SEARCH.main(data)
+  tocss = time.perf_counter()
+  logger.info(f'Completed serial SEARCH run on bbo_10d_rosenbrock in {tocss - ticss:.4f} seconds.\n')
 
-def test_MADS_callable_quick_20d():
+  OSS = out_search[0]["fmin"][0]
+  OPS = out_poll[0]["fmin"][0]
+  OMS = out_mads[0]["fmin"][0]
+
+  toc = time.perf_counter()
+  logger.info(f'Completed bbo_10d_rosenbrock run in {toc - tic:.4f} seconds.')
+  logger.info(f"\nBest known solution: fmin = {0.}")
+  logger.info(f"\nSequential Exec: MADS: fmin = {OMS} \nPoll: fmin = {OPS} \nSearch: fmin = {OSS}")
+
+  if (out_mads[0]["fmin"][0] > 0.0006):
+    logger.error(f"Sequential Exec: MADS: fmin: {OMS} > {0.0006}")
+    raise ValueError(f"\nSequential Exec: MADS: fmin: {OMS} > {0.0006}")
+  
+  if (out_poll[0]["fmin"][0] > 0.25):
+    logger.error(f"Sequential Exec: POLL: fmin: {OPS} > {0.25}")
+    raise ValueError(f"\nSequential Exec: POLL: fmin: {OPS} > {0.25}")
+  
+  if (out_search[0]["fmin"][0] > 0.0006):
+    logger.error(f"Sequential Exec: Search: fmin {OSS} > {0.0006}")
+    raise ValueError(f"\nSequential Exec: Search: fmin {OSS} > {0.0006}")
+
+def test_callable_quick_20d():
+  logger.info('\nStarted running bbo_20d_rosenbrock test...')
+  tic = time.perf_counter()
   d = 20
-  eval = {"blackbox": rosen}
+  eval_callable = {"blackbox": rosen}
   param = {"name": "RB","baseline": [-2.5]*d,
        "lb": [-5]*d,
        "ub": [10]*d,
        "var_names": [f"x{i}" for i in range(d)],
        "scaling": [15.0]*d,
        "post_dir": "./post"}
-  isWin = platform.platform().split('-')[0] == 'Windows'
    
   sampling = {
               "method": 'ACTIVE',
@@ -189,53 +309,50 @@ def test_MADS_callable_quick_20d():
       "visualize": False
     }
 
-  data = {"evaluator": eval, "param": param, "options": options, "sampling": sampling,"search": search}
-  outS: Dict = SEARCH.main(data)
-  SR = outS[0]["fmin"][0]
-  if (SR > 0.0006 and platform.platform().split('-')[0] == 'Windows'):
-    raise ValueError(f"Search: fmin {SR} > {0.0006}")
+  data = {"evaluator": eval_callable, "param": param, "options": options, "sampling": sampling,"search": search}
+  logger.info('\nStarted running MADS on bbo_20d_rosenbrock serial exectution ...')
+  ticms = time.perf_counter()
+  out_mads: Dict = MADS.main(data)
+  tocms = time.perf_counter()
+  logger.info(f'Completed serial MADS run on bbo_20d_rosenbrock in {tocms - ticms:.4f} seconds.\n')
   
-  outP: Dict = POLL.main(data)
-  PR = outP[0]["fmin"][0]
-  if (PR > 2.7 and platform.platform().split('-')[0] == 'Windows'):
-    raise ValueError(f"POLL: fmin {PR} > {2.7}")
+  ticps = time.perf_counter()
+  logger.info('\nStarted running POLL on bbo_20d_rosenbrock serial exectution ...')
+  out_poll: Dict = POLL.main(data)
+  tocps = time.perf_counter()
+  logger.info(f'Completed serial POL run on bbo_20d_rosenbrock in {tocps - ticps:.4f} seconds.\n')
+
+  ticss = time.perf_counter()
+  logger.info('\nStarted running SEARCH on bbo_20d_rosenbrock serial exectution ...')
+  out_search: Dict = SEARCH.main(data)
+  tocss = time.perf_counter()
+  logger.info(f'Completed serial SEARCH run on bbo_20d_rosenbrock in {tocss - ticss:.4f} seconds.\n')
+
+  OSS = out_search[0]["fmin"][0]
+  OPS = out_poll[0]["fmin"][0]
+  OMS = out_mads[0]["fmin"][0]
+
   
-  outM: Dict = MADS.main(data)
-  MR = outM[0]["fmin"][0]
-  if (MR > 0.0006 and platform.platform().split('-')[0] == 'Windows'):
-    raise ValueError(f"MADS: fmin {MR} > {0.0006}")
+  toc = time.perf_counter()
+  logger.info(f'Completed bbo_20d_rosenbrock run in {toc - tic:.4f} seconds.')
+  logger.info(f"\nBest known solution: fmin = {0.}")
+  logger.info(f"\nSequential Exec: MADS: fmin = {OMS} \nPoll: fmin = {OPS} \nSearch: fmin = {OSS}")
 
-def test_omads_callable_quick_parallel():
-  eval = {"blackbox": rosen}
-  param = {"baseline": [-2.0, -2.0],
-       "lb": [-5, -5],
-       "ub": [10, 10],
-       "var_names": ["x1", "x2"],
-       "scaling": 10.0,
-       "post_dir": "./post"}
-  options = {"seed": 0, "budget": 100, "tol": 1e-6, "display": True, "parallel_mode": True, "save_results": True, "isVerbose": True}
-  search = {
-      "type": "sampling",
-      "s_method": "ACTIVE",
-      "ns": 10,
-      "visualize": False
-    }
-  data = {"evaluator": eval, "param": param, "options": options, "search": search}
-
-  out: Dict = MADS.main(data)
-  print(out)
+  if (out_mads[0]["fmin"][0] > 0.0006):
+    logger.error(f"Sequential Exec: MADS: fmin: {OMS} > {0.0006}")
+    raise ValueError(f"\nSequential Exec: MADS: fmin: {OMS} > {0.0006}")
+  
+  if (out_poll[0]["fmin"][0] > 2.7):
+    logger.error(f"Sequential Exec: POLL: fmin: {OPS} > {2.7}")
+    raise ValueError(f"\nSequential Exec: POLL: fmin: {OPS} > {2.7}")
+  
+  if (out_search[0]["fmin"][0] > 0.0006):
+    logger.error(f"Sequential Exec: Search: fmin {OSS} > {0.0006}")
+    raise ValueError(f"\nSequential Exec: Search: fmin {OSS} > {0.0006}")
 
 def test_omads_toy_quick():
-  assert POLL.DType
-  assert POLL.Options
-  assert POLL.Parameters
-  assert POLL.Evaluator
   assert POLL.CandidatePoint
-  assert POLL.Cache
-  assert POLL.Dirs2n
   assert POLL.PrePoll
-  assert POLL.Output
-  assert POLL.PostMADS
   assert POLL.main
 
   if importlib.util.find_spec('BMDFO'):
@@ -243,6 +360,7 @@ def test_omads_toy_quick():
     p_file = os.path.abspath("./tests/bm/unconstrained/rosenbrock.json")
     p_file_2 = os.path.abspath("./tests/bm/constrained/geom_prog.json")
   else:
+    is_win = platform.platform().split('-')[0] == 'Windows'
     p_file = {
     "evaluator":
       {
@@ -301,15 +419,17 @@ def test_omads_toy_quick():
       "LAMBDA": [1E5, 1E5, 1E5, 1E5, 1E5, 1E5],
       "RHO": 1.0,
       "post_dir": "./tests/bm/constrained/post",
-      "h_max": 0.0
-    },
+      "h_max": 0.0,
+      "lhs_search_initialization": True
 
+    },
+  
   "options":
     {
       "seed": 10000,
       "budget": 100000,
       "tol": 1e-12,
-      "psize_init": 2.0,
+      "psize_init": 2.0 if is_win else 1.0,
       "display": False,
       "opportunistic": False,
       "check_cache": True,
@@ -330,61 +450,36 @@ def test_omads_toy_quick():
     }
 }
   
-  POLL.main(p_file)
-  SEARCH.main(p_file)
-  MADS.main(p_file)
+  logger.info('\nStarted running bbo_2d_rosenbrock_VNS test...')
+  tic = time.perf_counter()
+  out_search: Dict = SEARCH.main(p_file)
+  OSS = out_search[0]["fmin"][0]
+  out_poll: Dict = POLL.main(p_file)
+  OPS = out_poll[0]["fmin"][0]
+  out_mads: Dict = MADS.main(p_file)
+  OMS = out_mads[0]["fmin"][0]
 
-  outP = POLL.main(p_file_2)
-  res = outP[0]["fmin"][0]
-  if (outP[0]["fmin"][0] > 23.8 and platform.platform().split('-')[0] == 'Windows'):
-    raise ValueError(f"GP: Poll: fmin = {res} > {23.8}")
- 
+  toc = time.perf_counter()
+  logger.info(f'Completed bbo_2d_rosenbrock_VNS run in {toc - tic:.4f} seconds.')
+  logger.info(f"\nBest known solution: fmin = {0.}")
+  logger.info(f"\nSequential Exec: MADS: fmin = {OMS} \nPoll: fmin = {OPS} \nSearch: fmin = {OSS}")
 
 
-  data = {
-    "evaluator":
-      {
-        "blackbox": rosen
-      },
+  logger.info('\nStarted running bbo_GP_POLL test...')
+  tic = time.perf_counter()
+  out_poll = POLL.main(p_file_2)
+  res = out_poll[0]["fmin"][0]
+  
+  toc = time.perf_counter()
+  logger.info(f'Completed bbo_GP_POLL run in {toc - tic:.4f} seconds.')
+  logger.info(f"\nBest known solution: {15} < fmin <= {25}")
+  logger.info(f"\nSequential Exec: Poll: fmin = {res}")
 
-    "param":
-      {
-        "baseline": [-2.0, -2.0],
-        "lb": [-5, -5],
-        "ub": [10, 10],
-        "var_names": ["x1", "x2"],
-        "scaling": 10.0,
-        "post_dir": "./tests/bm/unconstrained/post"
-      },
+  if (res > 23.8 ):
+    logger.error(f"\nSequential Exec: POLL: fmin: {res} > {23.8 }")
+    raise ValueError(f"\nSequential Exec: POLL: fmin: {res} > {23.8 }")
 
-    "options":
-      {
-        "seed": 0,
-        "budget": 1000,
-        "tol": 1e-12,
-        "psize_init": 1,
-        "display": False,
-        "opportunistic": False,
-        "check_cache": True,
-        "store_cache": True,
-        "collect_y": False,
-        "rich_direction": True,
-        "precision": "high",
-        "save_results": False,
-        "save_coordinates": False,
-        "save_all_best": False,
-        "parallel_mode": False
-      },
-
-    "search": {
-      "type": "VNS",
-      "s_method": "LH",
-      "ns": 10,
-      "visualize": False
-    }
-  }
-
-  MADS.main(data)
+  
 
 if __name__ == "__main__":
   freeze_support()

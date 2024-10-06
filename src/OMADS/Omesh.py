@@ -1,10 +1,12 @@
-import copy
-from typing import List
-from ._globals import *
+from typing import List, Optional
+
+import numpy as np
+from ._globals import DType, VAR_TYPE, GL_LIMITS
 from .Point import Point
 from .Mesh import Mesh
 from .Options import Options
 from .Parameters import Parameters
+from dataclasses import dataclass
 
 @dataclass
 class Omesh(Mesh):
@@ -20,27 +22,27 @@ class Omesh(Mesh):
   :param _dtype: numpy double data type precision
 
   """
-  _n: int = None
-  _meshSize: Point = None #1.0  # mesh size
-  _frameSize: Point = 1.0  # poll size
-  _rho: List[float] = 1.0  # poll size to mesh size ratio
+  _n: Optional[int] = None
+  _meshSize: Optional[Point] = None #1.0  # mesh size
+  _frameSize: Optional[Point] = None  # poll size
+  _rho: Optional[List[float]] = None  # poll size to mesh size ratio
   # Completed: manage the poll size granularity for discrete variables
   # A new class 'Gmesh' is now avialable. 
   # Gmesh adapts mesh granularity and anistropy
   # See: Audet et. al, The mesh adaptive direct search algorithm for
   # granular and discrete variable
-  _exp: Point = None
-  _mantissa: Point = None
-  _maximumFrameSize: Point = None
-  successfulFrameSize: Point = None
+  _exp: Optional[Point] = None
+  _mantissa: Optional[Point] = None
+  _maximumFrameSize: Optional[Point] = None
+  successfulFrameSize: Optional[Point] = None
 
   # numpy double data type precision
-  _dtype: DType = None
+  _dtype: Optional[DType] = None
 
-  def __init__(self, pbParam: Parameters, runOptions: Options):
+  def __init__(self, pb_param: Parameters, run_options: Options):
     """ Constructor """
-    super(Omesh, self).__init__(pbParams=pbParam, limitMaxMeshIndex=-GL_LIMITS, limitMinMeshIndex=GL_LIMITS)
-    self._n = len(pbParam.baseline)
+    super(Omesh, self).__init__(pb_params=pb_param, limit_max_mesh_index=-GL_LIMITS, limit_min_mesh_index=GL_LIMITS)
+    self._n = len(pb_param.baseline)
     self.meshSize = Point(self._n)
     self.frameSize = Point(self._n)
     self._exp = Point(self._n)
@@ -48,7 +50,7 @@ class Omesh(Mesh):
     self._maximumFrameSize = Point(self._n)
     self.successfulFrameSize = Point(self._n)
     self.rho = [0] * self._n
-    self.frameSize.coordinates = runOptions.psize_init if isinstance(runOptions.psize_init, list) else [runOptions.psize_init] * self._n
+    self.frameSize.coordinates = run_options.psize_init if isinstance(run_options.psize_init, list) else [run_options.psize_init] * self._n
     self.meshSize.reset(n=self._n, d=0)
     self._r = Point(self._n)
     self._r.coordinates = [1]*self._n

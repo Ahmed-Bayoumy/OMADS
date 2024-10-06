@@ -5,7 +5,7 @@ if __name__ == "__main__":
     name="OMADS",
     author="Ahmed H. Bayoumy",
     author_email="ahmed.bayoumy@mail.mcgill.ca",
-    version='2408.1',
+    version='2410',
     packages=find_packages(include=['OMADS', 'OMADS.*']),
     description="Mesh Adaptive Direct Search (MADS)",
     install_requires=[
@@ -14,7 +14,8 @@ if __name__ == "__main__":
       'scipy',
       'pyDOE2',
       'samplersLib>=2408',
-      'paramiko>=3.4.0'
+      'paramiko>=3.4.0',
+      'deap==1.4'
     ],
     extras_require={
         'interactive': ['matplotlib>=3.5.2', 'plotly>=5.14.1'],

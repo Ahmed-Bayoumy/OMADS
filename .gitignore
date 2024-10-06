@@ -27,3 +27,5 @@ vis.py
 deeplearning.mplstyle
 CFD
 temp
+tests/*.log
+testing*

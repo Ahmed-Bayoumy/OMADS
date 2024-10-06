@@ -1,10 +1,8 @@
 from dataclasses import dataclass, field
-import importlib
 import os
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from .CandidatePoint import CandidatePoint
 import json
-from ._globals import *
 import csv
 
 @dataclass
@@ -19,7 +17,7 @@ class Output:
   pname: str = "MADS0"
   runfolder: str = "undefined"
   replace: bool = True
-  stepName: str = "Poll"
+  step_name: str = "Poll"
   suffix: str = "all"
 
   def __post_init__(self):
@@ -64,20 +62,18 @@ class Output:
   def add_row(self, eval_time: int, iterno: int,
         evalno: int,
         source: str,
-        Mname: str,
+        m_name: str,
         poll_size: float,
         status: str,
-        fobj: float,
-        h: float, f: float, rho: float, L: List[float], hmax: float,
-        x: List[float], stepName: str, fnames: List[str]):
-    row = {f'{"Runtime (Sec)".rjust(25)}': f'{f"{eval_time}".rjust(25)}', f'{"Iteration".rjust(25)}': f'{f"{iterno}".rjust(25)}', f'{"Evaluation #".rjust(25)}': f'{f"{evalno}".rjust(25)}', f'{"Step".rjust(25)}': f'{f"{stepName}".rjust(25)}', f'{"Source".rjust(25)}': f'{f"{source}".rjust(25)}', f'{"Model_name".rjust(25)}': f'{f"{Mname}".rjust(25)}', f'{"Delta".rjust(25)}': f'{f"{min(poll_size)}".rjust(25)}', f'{"Status".rjust(25)}': f'{f"{status}".rjust(25)}', f'{"phi".rjust(25)}': f'{f"{max(f)}".rjust(25)}'} 
+        fobj: Any,
+        h: float, f: float, rho: float, lambdas: List[float], hmax: float,
+        x: List[float], step_name: str, fnames: List[str]):
+    row = {f'{"Runtime (Sec)".rjust(25)}': f'{f"{eval_time}".rjust(25)}', f'{"Iteration".rjust(25)}': f'{f"{iterno}".rjust(25)}', f'{"Evaluation #".rjust(25)}': f'{f"{evalno}".rjust(25)}', f'{"Step".rjust(25)}': f'{f"{step_name}".rjust(25)}', f'{"Source".rjust(25)}': f'{f"{source}".rjust(25)}', f'{"Model_name".rjust(25)}': f'{f"{m_name}".rjust(25)}', f'{"Delta".rjust(25)}': f'{f"{min(poll_size)}".rjust(25)}', f'{"Status".rjust(25)}': f'{f"{status}".rjust(25)}', f'{"phi".rjust(25)}': f'{f"{max(f)}".rjust(25)}'} 
     for i in range(len(fobj)):
       row.update({f'{f"{fnames[i]}".rjust(25)}': f'{f"{fobj[i]}".rjust(25)}'})
     
-    row.update({f'{"max(c_in)".rjust(25)}': f'{f"{h}".rjust(25)}', f'{"Penalty_parameter".rjust(25)}': f'{f"{rho}".rjust(25)}', f'{"Multipliers".rjust(25)}': f'{f"{max(L) if len(L)>0 else None}".rjust(25)}', f'{"hmax".rjust(25)}': f'{f"{hmax}".rjust(25)}'})
+    row.update({f'{"max(c_in)".rjust(25)}': f'{f"{h}".rjust(25)}', f'{"Penalty_parameter".rjust(25)}': f'{f"{rho}".rjust(25)}', f'{"Multipliers".rjust(25)}': f'{f"{max(lambdas) if len(lambdas)>0 else None}".rjust(25)}', f'{"hmax".rjust(25)}': f'{f"{hmax}".rjust(25)}'})
 
-    # row = {'Iter no.': iterno, 'Eval no.': evalno,
-    #      'poll_size': poll_size, 'hmin': h, 'fmin': f}
     ss = 0
     for k in range(13+len(fnames), len(self.field_names)):
       row[self.field_names[k]] = f'{f"{x[ss]}".rjust(25)}'
@@ -99,28 +95,28 @@ class PostMADS:
   iter: List[int] = field(default_factory=list)
   bb_eval: List[int] = field(default_factory=list)
   psize: List[float] = field(default_factory=list)
-  step_name: List[str] = None
+  step_name: Optional[List[str]] = None
   nd_points: List[CandidatePoint] = field(default_factory=list)
   counter: int = 0
-  def output_results(self, out: Output, allRes: bool = True):
+  def output_results(self, out: Output, all_res: bool = True):
     """ Create a results file from the saved cache"""
-    if allRes:
+    if all_res:
       self.counter = 0
     for p in self.poll_dirs[self.counter:]:
       if p.evaluated and self.counter < len(self.iter):
-        out.add_row(eval_time= p.Eval_time,
+        out.add_row(eval_time= p.eval_time,
               iterno=self.iter[self.counter],
               evalno=self.bb_eval[self.counter], poll_size=self.psize[self.counter],
               source=p.source,
-              Mname=p.Model,
+              m_name=p.model,
               f=p.f,
               status=p.status.name,
               h=max(p.c_ineq),
               fobj=p.fobj,
-              rho=p.RHO,
-              L=p.LAMBDA,
+              rho=p.rho,
+              lambdas=p.lambda_multipliers,
               x=p.coordinates,
-              hmax=p.hmax, stepName="Poll-2n" if self.step_name is None else self.step_name[self.counter], fnames=out.fnames)
+              hmax=p.h_max, step_name="Poll-2n" if self.step_name is None else self.step_name[self.counter], fnames=out.fnames)
         self.counter += 1
   
   def output_nd_results(self, out: Output):
@@ -129,19 +125,19 @@ class PostMADS:
     out.clear_csv_content()
     for p in self.nd_points:
       if p.evaluated and counter < len(self.iter):
-        out.add_row(eval_time= p.Eval_time,
+        out.add_row(eval_time= p.eval_time,
               iterno=self.iter[counter],
-              evalno=  p.evalNo, poll_size=self.psize[counter],
+              evalno=  p.eval_no, poll_size=self.psize[counter],
               source=p.source,
-              Mname=p.Model,
+              m_name=p.model,
               f=p.f,
               status=p.status.name,
               h=max(p.c_ineq),
               fobj=p.fobj,
-              rho=p.RHO,
-              L=p.LAMBDA,
+              rho=p.rho,
+              lambdas=p.lambda_multipliers,
               x=p.coordinates,
-              hmax=p.hmax, stepName="Poll-2n" if self.step_name is None else self.step_name[counter], fnames=out.fnames)
+              hmax=p.h_max, step_name="Poll-2n" if self.step_name is None else self.step_name[counter], fnames=out.fnames)
         counter += 1
 
   def output_coordinates(self, out: Output):
