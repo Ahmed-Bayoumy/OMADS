@@ -28,7 +28,7 @@ from .Point import Point
 from .Mesh import Mesh
 from .Options import Options
 from .Parameters import Parameters
-from typing import Any, Optional
+from typing import Any, Optional, List
 
 @dataclass
 class Gmesh(Mesh):
@@ -127,7 +127,7 @@ class Gmesh(Mesh):
       else:
         rho = self._frameSizeMant[i] * pow_diff
     else:
-      rho: auto = [None] * self._n
+      rho: List = [None] * self._n
       for i in range(self._n):
         diff: float = self._frameSizeExp[i] - self._initFrameSizeExp[i]
         pow_diff: float = 10.0 ** abs(diff)

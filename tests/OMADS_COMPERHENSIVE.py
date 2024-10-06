@@ -1,6 +1,7 @@
 from OMADS import POLL, SEARCH, MADS
 
 import copy
+import importlib
 import os
 if importlib.util.find_spec('BMDFO'):
   from BMDFO import toy
