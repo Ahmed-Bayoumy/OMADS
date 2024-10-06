@@ -11,7 +11,8 @@ from multiprocessing import freeze_support
 import platform
 
 import logging
-
+if importlib.util.find_spec('BMDFO'):
+  from BMDFO import toy
 # Configure the logging
 # Create a custom logger
 

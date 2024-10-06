@@ -17,7 +17,8 @@ from .Options import Options
 from .PostProcess import PostMADS
 from .Point import Point
 from dataclasses import dataclass
-
+if importlib.util.find_spec('BMDFO'):
+  from BMDFO import toy
 @dataclass
 class Evaluator:
   """ Define the evaluator attributes and settings

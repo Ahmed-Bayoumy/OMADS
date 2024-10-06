@@ -2,7 +2,8 @@ from OMADS import POLL, SEARCH, MADS
 
 import copy
 import os
-from BMDFO import toy
+if importlib.util.find_spec('BMDFO'):
+  from BMDFO import toy
 
 import pandas as pd
 import numpy as np
