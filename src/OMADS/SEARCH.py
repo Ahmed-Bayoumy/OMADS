@@ -54,9 +54,9 @@ def main(*args) -> Dict[str, Any]:
   """ Initialize the log file """
   log = logger()
   if not os.path.exists(data["param"]["post_dir"]):
-     try:
+    try:
       os.mkdir(data["param"]["post_dir"])
-     except Warning:
+    except:
       os.makedirs(data["param"]["post_dir"], exist_ok=True)
   log.initialize(data["param"]["post_dir"] + "/OMADS.log")
 

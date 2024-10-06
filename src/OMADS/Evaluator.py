@@ -234,7 +234,7 @@ class Evaluator:
         is_object = False
         try:
           sig = signature(self.blackbox)
-        except Warning:
+        except:
           is_object = True
         if not is_object:
           npar = len(sig.parameters) 
@@ -246,7 +246,7 @@ class Evaluator:
             if (npar == 1 or (npar> 0 and npar <= 3 and is_argv)) or (npar == 2 and is_argv):
               try:
                 f_eval = self.blackbox(values)
-              except Warning:
+              except:
                 evalerr = True
                 logging.error(f"Callable {str(self.blackbox)} evaluation returned an error at the poll point {values}")
                 f_eval = [inf, [inf]]
@@ -256,7 +256,7 @@ class Evaluator:
             if (npar == 2 or (npar> 0 and npar <= 3 and ('*argv' in inputs))):
               try:
                 f_eval = self.blackbox(values, self.constants)
-              except Warning:
+              except:
                 evalerr = True
                 logging.error(f"Callable {str(self.blackbox)} evaluation returned an error at the poll point {values}")
             else:
@@ -264,7 +264,7 @@ class Evaluator:
         else:
           try:
             f_eval = self.blackbox(values)
-          except Warning:
+          except:
             evalerr = True
             logging.error(f"Callable {str(self.blackbox)} evaluation returned an error at the poll point {values}")
             f_eval = [[inf], [inf]]

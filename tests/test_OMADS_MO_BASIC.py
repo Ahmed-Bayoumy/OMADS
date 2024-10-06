@@ -622,4 +622,4 @@ def test_MO_ZDT6():
 
 
 if __name__ == "__main__":
-  freeze_support()
+  test_MO_Binh_and_Korn()

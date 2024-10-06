@@ -80,7 +80,7 @@ class MADS:
     if not os.path.exists(data["param"]["post_dir"]):
       try:
         os.mkdir(data["param"]["post_dir"])
-      except Warning:
+      except:
         os.makedirs(data["param"]["post_dir"], exist_ok=True)
 
     self.log.initialize(data["param"]["post_dir"] + "/OMADS.log")
@@ -484,7 +484,7 @@ def main(*args) -> Dict[str, Any]:
   if not os.path.exists(data["param"]["post_dir"]):
      try:
       os.mkdir(data["param"]["post_dir"])
-     except Warning:
+     except:
       os.makedirs(data["param"]["post_dir"], exist_ok=True)
 
   log.initialize(data["param"]["post_dir"] + "/OMADS.log")
