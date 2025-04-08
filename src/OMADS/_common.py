@@ -1,6 +1,6 @@
-
+"""
 # ------------------------------------------------------------------------------------#
-#  Mesh Adaptive Direct Search - ORTHO-MADS (MADS)                                    #
+#  Mesh Adaptive Direct Search - (MADS)                                               #
 #                                                                                     #
 #  Author: Ahmed H. Bayoumy                                                           #
 #  email: ahmed.bayoumy@mail.mcgill.ca                                                #
@@ -21,6 +21,8 @@
 #  https://github.com/Ahmed-Bayoumy/OMADS                                             #
 #  Copyright (C) 2022  Ahmed H. Bayoumy                                               #
 # ------------------------------------------------------------------------------------#
+"""
+
 
 from dataclasses import dataclass
 import logging
@@ -34,6 +36,7 @@ import pkg_resources
 
 
 np.set_printoptions(legacy='1.21')
+
 
 @dataclass
 class validator:
@@ -52,84 +55,93 @@ class validator:
             raise IOError('invalid json file: ' + args[0])
         else:
           raise IOError(f"The input file {args[0]} is not a JSON dictionary. "
-                  f"Currently, OMADS supports JSON files solely!")
+                        f"Currently, OMADS supports JSON files solely!")
       else:
         raise IOError(f"Couldn't find {args[0]} file!")
     else:
-      raise IOError("The first input argument couldn't be recognized. "
-              "It should be either a dictionary object or a JSON file that holds "
-              "the required input parameters.")
+      raise IOError(
+          "The first input argument couldn't be recognized. "
+          "It should be either a dictionary object or a JSON file that holds "
+          "the required input parameters.")
     return data
+
 
 @dataclass
 class logger:
   log: None = None
   is_verbose: bool = False
 
-  def initialize(self, file: str, w_time = False, is_verbose = False):
-    # Create and configure logger 
+  def initialize(self, file: str, w_time=False, is_verbose=False):
+    # Create and configure logger
     self.is_verbose = is_verbose
-    logging.basicConfig(filename=file, 
-              format='%(message)s', 
-              filemode='w') 
+    logging.basicConfig(filename=file,
+                        format='%(message)s',
+                        filemode='w')
 
-    #Let us Create an object 
-    self.log = logging.getLogger() 
+    # Let us Create an object
+    self.log = logging.getLogger()
 
-    #Now we are going to Set the threshold of logger to DEBUG 
-    self.log.setLevel(logging.DEBUG) 
+    # Now we are going to Set the threshold of logger to DEBUG
+    self.log.setLevel(logging.DEBUG)
     cur_time = time.strftime("%Y-%m-%d, %H:%M:%S", time.localtime())
-    self.log_msg(msg="###################################################### \n", msg_type=MSG_TYPE.INFO)
-    self.log_msg(msg=f"################# OMADS release #{2410} #################### \n", msg_type=MSG_TYPE.INFO)
-    self.log_msg(msg=f"############### {cur_time} ################# \n", msg_type=MSG_TYPE.INFO)
+    self.log_msg(
+        msg="###################################################### \n",
+        msg_type=MSG_TYPE.INFO)
+    self.log_msg(
+        msg=f"################# OMADS release #{2503} #################### \n",
+        msg_type=MSG_TYPE.INFO)
+    self.log_msg(
+        msg=f"############### {cur_time} ################# \n",
+        msg_type=MSG_TYPE.INFO)
 
     # Remove all handlers associated with the root logger object.
     for handler in logging.root.handlers[:]:
-        logging.root.removeHandler(handler)
+      logging.root.removeHandler(handler)
 
-    # Create and configure logger 
+    # Create and configure logger
     if w_time:
-      logging.basicConfig(filename=file, 
-                format='%(asctime)s %(message)s', 
-                filemode='a') 
+      logging.basicConfig(filename=file,
+                          format='%(asctime)s %(message)s',
+                          filemode='a')
     else:
-      logging.basicConfig(filename=file, 
-                format='%(message)s', 
-                filemode='a') 
+      logging.basicConfig(filename=file,
+                          format='%(message)s',
+                          filemode='a')
 
-    # Let us Create an object 
+    # Let us Create an object
     self.log = None
-    self.log = logging.getLogger() 
+    self.log = logging.getLogger()
 
-    # Now we are going to Set the threshold of logger to DEBUG 
-    self.log.setLevel(logging.DEBUG) 
-  
+    # Now we are going to Set the threshold of logger to DEBUG
+    self.log.setLevel(logging.DEBUG)
+
   def log_msg(self, msg: str, msg_type: MSG_TYPE):
     if msg_type == MSG_TYPE.DEBUG:
-      self.log.debug(msg) 
+      self.log.debug(msg)
     elif msg_type == MSG_TYPE.INFO:
-      self.log.info(msg) 
+      self.log.info(msg)
     elif msg_type == MSG_TYPE.WARNING:
-      self.log.warning(msg) 
+      self.log.warning(msg)
     elif msg_type == MSG_TYPE.ERROR:
-      self.log.error(msg) 
+      self.log.error(msg)
     elif msg_type == MSG_TYPE.CRITICAL:
-      self.log.critical(msg) 
-  
+      self.log.critical(msg)
+
   def relocate_logger(self, source_file: str = None, dest_file: str = None):
-    if dest_file is not None and source_file is not None and os.path.exists(source_file):
+    if dest_file is not None and source_file is not None and os.path.exists(
+            source_file):
       shutil.copy(source_file, dest_file)
       if os.path.exists("DSMToDMDO.yaml"):
         shutil.copy("DSMToDMDO.yaml", dest_file)
       # Remove all handlers associated with the root logger object.
       for handler in logging.root.handlers[:]:
-          logging.root.removeHandler(handler)
-      # Create and configure logger 
-      logging.basicConfig(filename=os.path.join(dest_file, "DMDO.log"), 
-                format='%(asctime)s %(message)s', 
-                filemode='a')
-      #Let us Create an object 
-      self.log = logging.getLogger() 
+        logging.root.removeHandler(handler)
+      # Create and configure logger
+      logging.basicConfig(filename=os.path.join(dest_file, "DMDO.log"),
+                          format='%(asctime)s %(message)s',
+                          filemode='a')
+      # Let us Create an object
+      self.log = logging.getLogger()
 
-      #Now we are going to Set the threshold of logger to DEBUG 
-      self.log.setLevel(logging.DEBUG) 
+      # Now we are going to Set the threshold of logger to DEBUG
+      self.log.setLevel(logging.DEBUG)

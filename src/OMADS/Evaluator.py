@@ -1,34 +1,66 @@
-import copy
-import importlib
-import platform
-import time
-from ._globals import DType, VAR_TYPE, DESIGN_STATUS, BB_EVAL_STATUS
-import os
-from typing import List, Any, Optional, Callable
-from numpy import inf
-import numpy as np
+"""
+# ------------------------------------------------------------------------------------#
+#  Mesh Adaptive Direct Search - (MADS)                                               #
+#                                                                                     #
+#  Author: Ahmed H. Bayoumy                                                           #
+#  email: ahmed.bayoumy@mail.mcgill.ca                                                #
+#                                                                                     #
+#  This program is free software: you can redistribute it and/or modify it under the  #
+#  terms of the GNU Lesser General Public License as published by the Free Software   #
+#  Foundation, either version 3 of the License, or (at your option) any later         #
+#  version.                                                                           #
+#                                                                                     #
+#  This program is distributed in the hope that it will be useful, but WITHOUT ANY    #
+#  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A    #
+#  PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more details.   #
+#                                                                                     #
+#  You should have received a copy of the GNU Lesser General Public License along     #
+#  with this program. If not, see <http://www.gnu.org/licenses/>.                     #
+#                                                                                     #
+#  You can find information on OMADS at                                               #
+#  https://github.com/Ahmed-Bayoumy/OMADS                                             #
+#  Copyright (C) 2022  Ahmed H. Bayoumy                                               #
+# ------------------------------------------------------------------------------------#
+"""
+from dataclasses import dataclass
 from inspect import signature
 import concurrent.futures
 import subprocess
-import paramiko
+
 import logging
-from .CandidatePoint import CandidatePoint
-from .Options import Options
-from .PostProcess import PostMADS
-from .Point import Point
-from dataclasses import dataclass
-if importlib.util.find_spec('BMDFO'):
-  from BMDFO import toy
+import copy
+# import importlib
+import platform
+import os
+from typing import List, Any, Optional
+
+import paramiko
+
+from numpy import inf
+import numpy as np
+from .point import Point
+from .postprocess import PostMADS
+from .options import Options
+from .candidate_point import CandidatePoint
+from ._globals import DType, VAR_TYPE, DESIGN_STATUS, BB_EVAL_STATUS, PassException
+
+
+# if importlib.util.find_spec('BMDFO'):
+#   from BMDFO import toy
+
+
 @dataclass
 class Evaluator:
   """ Define the evaluator attributes and settings
     :param blackbox: The blackbox name (it can be a callable function or an executable file)
-    :param commandOptions: Define options that will be added to the execution command of the executable file. Command options should be defined as a string in one line
+    :param commandOptions: Define options that will be added to the execution command of the
+    executable file. Command options should be defined as a string in one line
     :param internal: If the blackbox callable function is part of the internal benchmarking library
-    :param path: The path of the executable file (if any) 
+    :param path: The path of the executable file (if any)
     :param input: The input file name -- should include the file extension
-    :param output: The output file name -- should include the file extension 
-    :param constants: Define constant parameters list, see the documentation in Tutorials->Blackbox evaluation->User parameters
+    :param output: The output file name -- should include the file extension
+    :param constants: Define constant parameters list, see the documentation in
+    Tutorials->Blackbox evaluation->User parameters
     :param _dtype: The precision delegator of the numpy library
     :param timeout: The time out of the evaluation process
   """
@@ -48,9 +80,6 @@ class Evaluator:
   mesh: List[Any] = None
   constraints_relaxation: Optional[dict] = None
   xmin: Optional[CandidatePoint] = None
-  
-
-
 
   def __post_init__(self):
     self._dtype = DType()
@@ -60,10 +89,11 @@ class Evaluator:
     self.directions = []
     self.mesh = []
     for xtry in eval_set:
-      if xtry.sets is not None and isinstance(xtry.sets,dict):
+      if xtry.sets is not None and isinstance(xtry.sets, dict):
         p: List[Any] = []
-        for i in range(len(xtry.var_type)):
-          if (xtry.var_type[i] == VAR_TYPE.DISCRETE or xtry.var_type[i] == VAR_TYPE.CATEGORICAL) and xtry.var_link[i] is not None:
+        for i, _ in enumerate((xtry.var_type)):
+          if (xtry.var_type[i] == VAR_TYPE.DISCRETE or xtry.var_type[i] == VAR_TYPE.CATEGORICAL) \
+                  and xtry.var_link[i] is not None:
             p.append(xtry.sets[xtry.var_link[i]][int(xtry.coordinates[i])])
           else:
             p.append(xtry.coordinates[i])
@@ -75,8 +105,12 @@ class Evaluator:
       self.candidates.append(temp_p)
       self.directions.append(xtry.direction)
       self.mesh.append(xtry.mesh)
-  
-  def run_callable_serial_local(self, iter:int, peval: int, eval_set:List[CandidatePoint], options: Options, post: PostMADS, psize: List[float], step_name: str = None, mesh: Any = None, constraints_relaxation: dict = None, budget:int = 1):
+
+  def run_callable_serial_local(
+          self, iter: int, peval: int, eval_set: List[CandidatePoint],
+          options: Options, post: PostMADS, psize: List[float],
+          step_name: str = None, mesh: Any = None, constraints_relaxation:
+          dict = None, budget: int = 1):
     xc: List[CandidatePoint] = []
     self.map_variables(eval_set)
     self.constraints_relaxation = copy.deepcopy(constraints_relaxation)
@@ -87,7 +121,7 @@ class Evaluator:
         xc.append(f)
         if mesh:
           xc[-1].mesh = copy.deepcopy(mesh)
-        
+
       post.bb_eval.append(peval)
       xc[-1].eval_no = peval
       post.iter.append(iter)
@@ -99,15 +133,17 @@ class Evaluator:
       if peval == budget:
         break
     return xc, post, peval
-  
-  def evaluate_blackbox(self, index: int)->List[Any]:
+
+  def evaluate_blackbox(self, index: int) -> List[Any]:
     f, err_status = self.eval(self.candidates[index].coordinates)
     x_cp: CandidatePoint = CandidatePoint()
     x_cp.coordinates = copy.deepcopy(self.candidates[index].coordinates)
-    x_cp.lambda_multipliers = copy.deepcopy(self.constraints_relaxation["LAMBDA"])
-    x_cp.rho = copy.deepcopy(self.constraints_relaxation["RHO"])
+    x_cp.lambda_multipliers = copy.deepcopy(
+        self.constraints_relaxation["lambda_multipliers"])
+    x_cp.rho = copy.deepcopy(self.constraints_relaxation["rho"])
     x_cp.h_max = copy.deepcopy(self.constraints_relaxation["hmax"])
-    x_cp.constraints_type = copy.deepcopy(self.constraints_relaxation["constraints_type"])
+    x_cp.constraints_type = copy.deepcopy(
+        self.constraints_relaxation["constraints_type"])
     x_cp.direction = copy.deepcopy(self.directions[index])
     x_cp.mesh = copy.deepcopy(self.mesh[index])
     x_cp.__eval__(f)
@@ -115,38 +151,56 @@ class Evaluator:
       x_cp.status = DESIGN_STATUS.ERROR
     # if x_cp.status == DESIGN_STATUS.INFEASIBLE:
       # self.constraintsRelaxation["hmax"] = x_cp.hmax
-    if self.constraints_relaxation["LAMBDA"] == None:
-      self.constraints_relaxation["LAMBDA"] = copy.deepcopy(self.xmin.lambda_multipliers)
-    if len(x_cp.cPB) > len(self.constraints_relaxation["LAMBDA"]):
-      self.constraints_relaxation["LAMBDA"] += [self.constraints_relaxation["LAMBDA"][-1]] * abs(len(self.constraints_relaxation["LAMBDA"])-len(x_cp.cPB))
-    if len(x_cp.cPB) < len(self.constraints_relaxation["LAMBDA"]):
-      del self.constraints_relaxation["LAMBDA"][len(x_cp.cPB):]
-    for i in range(len(x_cp.cPB)):
-      if np.isclose(self.constraints_relaxation["RHO"], 0., rtol=1e-09, atol=1e-09):
-        self.constraints_relaxation["RHO"] = 0.001
-      self.constraints_relaxation["LAMBDA"][i] = copy.deepcopy(max(self.dtype.zero, self.constraints_relaxation["LAMBDA"][i] + (1/self.constraints_relaxation["RHO"])*x_cp.cPB[i]))
-    
+    if self.constraints_relaxation["lambda_multipliers"] is None:
+      self.constraints_relaxation["lambda_multipliers"] = copy.deepcopy(
+          self.xmin.lambda_multipliers)
+    if len(x_cp.cpb) > len(self.constraints_relaxation["lambda_multipliers"]):
+      self.constraints_relaxation["lambda_multipliers"] += [
+          self.constraints_relaxation["lambda_multipliers"][-1]] * abs(
+          len(self.constraints_relaxation["lambda_multipliers"]) -
+          len(x_cp.cpb))
+    if len(x_cp.cpb) < len(self.constraints_relaxation["lambda_multipliers"]):
+      del self.constraints_relaxation["lambda_multipliers"][len(x_cp.cpb):]
+    for i, _ in enumerate((x_cp.cpb)):
+      if np.isclose(
+              self.constraints_relaxation["lambda_multipliers"][i],
+              0., rtol=1e-09, atol=1e-09):
+        self.constraints_relaxation["rho"] = 0.001
+      self.constraints_relaxation["lambda_multipliers"][i] = copy.deepcopy(
+          max(
+              self.dtype.zero, self.constraints_relaxation
+              ["lambda_multipliers"][i] +
+              (1 / self.constraints_relaxation["rho"]) * x_cp.cpb[i]))
+
     if x_cp.status == DESIGN_STATUS.FEASIBLE:
-      self.constraints_relaxation["RHO"] *= copy.deepcopy(0.5)
-    
+      self.constraints_relaxation["rho"] *= copy.deepcopy(0.5)
+
     return x_cp
 
-  def run_callable_parallel_local(self, iter:int, peval: int, eval_set:List[CandidatePoint], options: Options, post: PostMADS, psize: List[float], mesh: Any = None, step_name: str = None, constraints_relaxation: dict = None, budget:int = 1):
+  def run_callable_parallel_local(self, iter: int, peval: int,
+                                  eval_set: List[CandidatePoint],
+                                  options: Options, post: PostMADS,
+                                  psize: List[float],
+                                  mesh: Any = None, step_name: str = None,
+                                  constraints_relaxation: dict = None,
+                                  budget: int = 1):
     xc: List[CandidatePoint] = []
     self.map_variables(eval_set)
     self.constraints_relaxation = copy.deepcopy(constraints_relaxation)
     with concurrent.futures.ProcessPoolExecutor(max_workers=options.np) as executor:
-      results = [executor.submit(self.evaluate_blackbox, it) for it in range(len(eval_set))]
+      results = [
+          executor.submit(self.evaluate_blackbox, it)
+          for it in range(len(eval_set))]
       for f in concurrent.futures.as_completed(results):
         # if f.result()[0]:
         #     executor.shutdown(wait=False)
         # else:
-        peval = peval +1
+        peval = peval + 1
         if f.result().status != DESIGN_STATUS.UNEVALUATED:
           xc.append(f.result())
           if mesh:
             xc[-1].mesh = copy.deepcopy(mesh)
-          
+
           xc[-1].eval_no = self.bb_eval
           self.bb_eval = peval
           post.bb_eval.append(peval)
@@ -162,15 +216,16 @@ class Evaluator:
             break
         else:
           executor.shutdown(wait=False)
-    
+
     return peval, xc, post, peval
 
   # Function to execute .exe file locally
   def run_exe(self, exe_path):
     try:
-      result = subprocess.run(exe_path, capture_output=True, text=True, shell=True)
+      result = subprocess.run(
+          exe_path, capture_output=True, text=True, shell=True, check=False)
       return (exe_path, result.returncode, result.stdout, result.stderr)
-    except Exception as e:
+    except PassException as e:
       return (exe_path, -1, '', str(e))
 
   # Function to execute .exe file on a remote node
@@ -179,18 +234,18 @@ class Evaluator:
       ssh = paramiko.SSHClient()
       ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
       ssh.connect(host, username=username, password=password)
-      
+
       _, stdout, stderr = ssh.exec_command(exe_path)
-      
+
       output = stdout.read().decode()
       error = stderr.read().decode()
-      
+
       return (host, output, error)
-    except Exception as e:
+    except PassException as e:
       return (host, '', str(e))
     finally:
       ssh.close()
-  
+
   # Function to run .exe files locally
   def run_locally(self, exe_paths):
     with concurrent.futures.ProcessPoolExecutor() as executor:
@@ -204,7 +259,10 @@ class Evaluator:
 
   def run_remotely(self, hosts, username, password, exe_path):
     with concurrent.futures.ThreadPoolExecutor() as executor:
-      futures = [executor.submit(self.execute_on_remote, host, username, password, exe_path) for host in hosts]
+      futures = [
+          executor.submit(
+              self.execute_on_remote, host, username, password, exe_path)
+          for host in hosts]
       for future in concurrent.futures.as_completed(futures):
         host, output, error = future.result()
         print(f"Remote Host: {host}")
@@ -234,39 +292,55 @@ class Evaluator:
         is_object = False
         try:
           sig = signature(self.blackbox)
-        except:
+        except PassException:
           is_object = True
         if not is_object:
-          npar = len(sig.parameters) 
-          # Get input arguments defined for the callable 
-          inputs = str(sig).replace("(", "").replace(")", "").replace(" ","").split(',')
-          # Check if user constants list is defined and if the number of input args of the callable matches what OMADS expects 
+          npar = len(sig.parameters)
+          # Get input arguments defined for the callable
+          inputs = str(sig).replace(
+              "(", "").replace(
+              ")", "").replace(
+              " ", "").split(',')
+          # Check if user constants list is defined and if the
+          # number of input args of the callable matches what OMADS expects
           if self.constants is None:
             is_argv = '*argv' in inputs
-            if (npar == 1 or (npar> 0 and npar <= 3 and is_argv)) or (npar == 2 and is_argv):
+            if (npar == 1 or (npar > 0 and npar <= 3 and is_argv)) or (npar == 2 and is_argv):
               try:
                 f_eval = self.blackbox(values)
-              except:
+              except PassException:
                 evalerr = True
-                logging.error(f"Callable {str(self.blackbox)} evaluation returned an error at the poll point {values}")
+                logging.error(
+                    "Callable %s evaluation returned \
+                      an error at the poll point %s", str(self.blackbox), values)
                 f_eval = [inf, [inf]]
             else:
-              raise IOError(f'The callable {str(self.blackbox)} requires {npar} input args, but only one input can be provided! You can introduce other input parameters to the callable function using the constants list.')
+              raise IOError(
+                  f'The callable {str(self.blackbox)} requires {npar} input args, \
+                    but only one input can be provided! \
+                    You can introduce other input parameters to \
+                      the callable function using the constants list.')
           else:
-            if (npar == 2 or (npar> 0 and npar <= 3 and ('*argv' in inputs))):
+            if (npar == 2 or (npar > 0 and npar <= 3 and ('*argv' in inputs))):
               try:
                 f_eval = self.blackbox(values, self.constants)
-              except:
+              except PassException:
                 evalerr = True
-                logging.error(f"Callable {str(self.blackbox)} evaluation returned an error at the poll point {values}")
+                logging.error(
+                    "Callable %s evaluation returned \
+                      an error at the poll point %s", str(self.blackbox), values)
             else:
-              raise IOError(f'The callable {str(self.blackbox)} requires {npar} input args, but only two input args can be provided as the constants list is defined!')
+              raise IOError(
+                  f'The callable {str(self.blackbox)} requires {npar} input args, but only two \
+                    input args can be provided as the constants list is defined!')
         else:
           try:
             f_eval = self.blackbox(values)
-          except:
+          except PassException:
             evalerr = True
-            logging.error(f"Callable {str(self.blackbox)} evaluation returned an error at the poll point {values}")
+            logging.error(
+                "Callable %s evaluation returned \
+                  an error at the poll point %s", str(self.blackbox), values)
             f_eval = [[inf], [inf]]
         if isinstance(f_eval, list):
           return f_eval, evalerr
@@ -282,7 +356,9 @@ class Evaluator:
         #  Check if the file is executable
         executable = os.access(self.blackbox, os.X_OK)
         if not executable:
-          raise IOError(f"The blackbox file {str(self.blackbox)} is not an executable! Please provide a valid executable file.")
+          raise IOError(
+              f"The blackbox file {str(self.blackbox)} is not an executable! \
+              Please provide a valid executable file.")
         # Prepare the execution command based on the running machine's OS
         if is_win and self.command_options is None:
           cmd = self.blackbox
@@ -291,32 +367,35 @@ class Evaluator:
         elif self.command_options is None:
           cmd = f'./{self.blackbox}'
         else:
-          cmd =  f'./{self.blackbox} {self.command_options}'
+          cmd = f'./{self.blackbox} {self.command_options}'
         try:
-          p = subprocess.run(cmd, shell=True, timeout=self.timeout)
+          p = subprocess.run(
+              cmd, shell=True, timeout=self.timeout, check=False)
           if p.returncode != 0:
             evalerr = True
-            logging.error("Evaluation # {self.bb_eval} is errored at the poll point {values}")
+            logging.error(
+                "Evaluation # {self.bb_eval} is errored at the poll point {values}")
         except subprocess.TimeoutExpired:
-          timouterr = True 
-          logging.error(f'Timeout for {cmd} ({self.timeout}s) expired at evaluation # {self.bb_eval} at the poll point {values}')
+          timouterr = True
+          logging.error('Timeout for %s(%s s) expired at \
+              evaluation  # {%s} at the poll point {values}', cmd, self.timeout, self.bb_eval)
 
         os.chdir(pwd)
-        
+
         if evalerr or timouterr:
           out = [np.inf, [np.inf]]
         else:
           out = [self.read_output()[0], [self.read_output()[1:]]]
         return out, evalerr
-    elif importlib.util.find_spec('BMDFO') and self.internal == "uncon":
-      f_eval = toy.UnconSO(values) # type: ignore
-    elif importlib.util.find_spec('BMDFO') and self.internal == "con":
-      f_eval = toy.ConSO(values) # type: ignore
+    # elif importlib.util.find_spec('BMDFO') and self.internal == "uncon":
+    #   f_eval = toy.UnconSO(values)  # type: ignore
+    # elif importlib.util.find_spec('BMDFO') and self.internal == "con":
+    #   f_eval = toy.ConSO(values)  # type: ignore
     else:
       raise IOError(f"Input dict:: evaluator:: internal:: "
-              f"Incorrect internal method :: {self.internal} :: "
-              f"it should be a a BM library name, "
-              f"or None.")
+                    f"Incorrect internal method :: {self.internal} :: "
+                    f"it should be a a BM library name, "
+                    f"or None.")
     f_eval.dtype.dtype = self._dtype.dtype
     f_eval.name = self.blackbox
     f_eval.dtype.dtype = self._dtype.dtype
@@ -329,7 +408,7 @@ class Evaluator:
     :type values: List[float]
     """
     inp = os.path.join(self.path, self.input)
-    with open(inp, 'w+') as f:
+    with open(inp, 'w+', encoding='utf-8') as f:
       for c, value in enumerate(values, start=1):
         if c == len(values):
           f.write(str(value))
@@ -339,12 +418,12 @@ class Evaluator:
   def read_output(self) -> List[float]:
     """_summary_
 
-    :return: Read the output values from the output file 
+    :return: Read the output values from the output file
     :rtype: List[float]
     """
     out = os.path.join(self.path, self.output)
     f_eval = []
-    f = open(out)
+    f = open(out, encoding='utf-8')
     for line in f:  # read rest of lines
       f_eval.append(float(line))
     f.close()

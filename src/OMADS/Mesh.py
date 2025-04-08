@@ -1,8 +1,34 @@
+"""
+# ------------------------------------------------------------------------------------#
+#  Mesh Adaptive Direct Search - (MADS)                                               #
+#                                                                                     #
+#  Author: Ahmed H. Bayoumy                                                           #
+#  email: ahmed.bayoumy@mail.mcgill.ca                                                #
+#                                                                                     #
+#  This program is free software: you can redistribute it and/or modify it under the  #
+#  terms of the GNU Lesser General Public License as published by the Free Software   #
+#  Foundation, either version 3 of the License, or (at your option) any later         #
+#  version.                                                                           #
+#                                                                                     #
+#  This program is distributed in the hope that it will be useful, but WITHOUT ANY    #
+#  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A    #
+#  PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more details.   #
+#                                                                                     #
+#  You should have received a copy of the GNU Lesser General Public License along     #
+#  with this program. If not, see <http://www.gnu.org/licenses/>.                     #
+#                                                                                     #
+#  You can find information on OMADS at                                               #
+#  https://github.com/Ahmed-Bayoumy/OMADS                                             #
+#  Copyright (C) 2022  Ahmed H. Bayoumy                                               #
+# ------------------------------------------------------------------------------------#
+"""
+
 from dataclasses import dataclass
 from typing import Protocol, Any, List, Optional
 from ._globals import DType, M_INF_INT, P_INF_INT
-from .Point import Point
-from .Parameters import Parameters
+from .point import Point
+from .parameters import Parameters
+
 
 @dataclass
 class MeshData(Protocol):
@@ -11,7 +37,8 @@ class MeshData(Protocol):
   :param _delta: mesh size
   :param _Delta: poll size
   :param _rho: poll size to mesh size ratio
-  :param _exp:  manage the poll size granularity for discrete variables. See Audet et. al, The mesh adaptive direct search algorithm for granular and discrete variable
+  :param _exp:  manage the poll size granularity for discrete variables. 
+  See Audet et. al, The mesh adaptive direct search algorithm for granular and discrete variable
   :param _mantissa: Same as ``_exp``
   :param psize_max: Maximum poll size
   :param psize_success: Poll size at successful evaluation
@@ -19,20 +46,20 @@ class MeshData(Protocol):
 
   """
   _n: Optional[int] = None
-  _initialMeshSize: Optional[Point] = None  # mesh size
-  _initialFrameSize: Optional[Point] = None  # poll size
-  _minMeshSize: Optional[Point] = None  # mesh size
-  _minFrameSize: Optional[Point] = None  # poll size
-  _lowerBound: Optional[Point] = None
-  _upperBound: Optional[Point] = None
-  _isFinest: Optional[bool] = True
+  _initial_mesh_size: Optional[Point] = None  # mesh size
+  _initial_frame_size: Optional[Point] = None  # poll size
+  _min_mesh_size: Optional[Point] = None  # mesh size
+  _min_frame_size: Optional[Point] = None  # poll size
+  _lower_bound: Optional[Point] = None
+  _upper_bound: Optional[Point] = None
+  _is_finest: Optional[bool] = True
   _r: Optional[Point] = None
-  _rMin: Optional[Point] = None
-  _rMax: Optional[Point] = None
-  _limitMinMeshIndex: int = M_INF_INT
-  _limitMaxMeshIndex: int = P_INF_INT
-  _pbParams: Optional[Parameters] = None
-  _rho: Optional[List[float] ]= None  # poll size to mesh size ratio
+  _r_min: Optional[Point] = None
+  _r_max: Optional[Point] = None
+  _limit_min_mesh_index: int = M_INF_INT
+  _limit_max_mesh_index: int = P_INF_INT
+  _pb_params: Optional[Parameters] = None
+  _rho: Optional[List[float]] = None  # poll size to mesh size ratio
   _dtype: Optional[DType] = None
 
   # COMPLETED: manage the poll size granularity for discrete variables
@@ -44,38 +71,40 @@ class MeshData(Protocol):
   # psize_success: float = 0.0
   # numpy double data type precision
 
-  def getRho(self):
+  def get_rho(self):
     ...
-  
+
   # Update mesh size (small delta) based on frame size (big Delta)
   def updatedeltaMeshSize(self):
     ...
-  
-  def enlargeDeltaFrameSize(self):
+
+  def enlarge_delta_frame_size(self):
     ...
-  
-  def refineDeltaFrameSize(self):
+
+  def refine_delta_frame_size(self):
     ...
-  
+
   def checkMeshForStopping(self):
-    ... 
-  
-  def getdeltaMeshSize(self):
     ...
-  
-  def getDeltaFrameSize(self, i: int):
+
+  def get_delta_mesh_size(self):
+    ...
+
+  def get_delta_frame_size(self, i: int):
     ...
 
   def getDeltaFrameSizeCoarser(self):
     ...
-  
-  def setDeltas(self, i: int = None, delta_mesh_size: Any = None, delta_frame_size: Any = None):
-    ...
-  
-  def scaleAndProjectOnMesh(self, dir: Point = None):
+
+  def setDeltas(
+          self, i: int = None, delta_mesh_size: Any = None,
+          delta_frame_size: Any = None):
     ...
 
-  def projectOnMesh(self, point: Point, frame_center: Point):
+  def scale_and_project_on_mesh(self, dir_in: Point = None):
+    ...
+
+  def project_on_mesh(self, point: Point, frame_center: Point):
     ...
 
   def verifyPointIsOnMesh(self, point: Point, frame_center: Point):
@@ -88,24 +117,35 @@ class MeshData(Protocol):
 @dataclass
 class Mesh(MeshData):
 
-  def __init__(self, pb_params: Parameters, limit_min_mesh_index: int, limit_max_mesh_index: int):
+  def __init__(
+          self, pb_params: Parameters, limit_min_mesh_index: int,
+          limit_max_mesh_index: int):
     self._n = pb_params._n
-    self._initialMeshSize = pb_params.initialMeshSize
-    self._minMeshSize = pb_params.minMeshSize
-    self._initialFrameSize = pb_params.initialFrameSize
-    self._minFrameSize = pb_params.minFrameSize
-    self._lowerBound = Point(self._n, pb_params.lb)
-    self._upperBound = Point(self._n, pb_params.ub)
-    self._isFinest = True
+    self._initial_mesh_size = pb_params.initial_mesh_size
+    self._min_mesh_size = pb_params.min_mesh_size
+    self._initial_frame_size = pb_params.initial_frame_size
+    self._min_frame_size = pb_params.min_frame_size
+    self._lower_bound = Point(self._n, pb_params.lb)
+    self._upper_bound = Point(self._n, pb_params.ub)
+    self._is_finest = True
     self._r = Point(self._n).reset(n=self._n, d=0.)
-    self._rMin = Point(self._n).reset(n=self._n, d=0.)
-    self._rMax = Point(self._n).reset(n=self._n, d=0.)
-    self._limitMinMeshIndex = limit_min_mesh_index
-    self._limitMaxMeshIndex = limit_max_mesh_index
+    self._r_min = Point(self._n).reset(n=self._n, d=0.)
+    self._r_max = Point(self._n).reset(n=self._n, d=0.)
+    self._limit_min_mesh_index = limit_min_mesh_index
+    self._limit_max_mesh_index = limit_max_mesh_index
     self._dtype = DType()
-    self._pbParams = pb_params
-    if (not self._pbParams.to_be_checked()):
-      raise IOError("Parameters::checkAndComply() needs to be called before constructing a mesh.")
+    self._pb_params = pb_params
+    if not self._pb_params.to_be_checked():
+      raise IOError(
+          "Parameters::checkAndComply() needs to be called before constructing a mesh.")
+
+  @property
+  def n(self):
+    return self._n
+
+  @n.setter
+  def n(self, value: int) -> int:
+    self._n = value
 
   @property
   def rho(self):
@@ -121,29 +161,29 @@ class Mesh(MeshData):
 
   def getSize(self):
     return self._n
+
   def getInitialMeshSize(self):
-    return self._initialMeshSize
+    return self._initial_mesh_size
+
   def getMinMeshSize(self):
-    return self._minMeshSize
+    return self._min_mesh_size
+
   def getInitialFrameSize(self):
-    return self._initialFrameSize
+    return self._initial_frame_size
+
   def getMinFrameSize(self):
-    return self._minFrameSize
-  
+    return self._min_frame_size
+
   def getMeshIndex(self):
     return self._r
-  
-  def setMeshIndex(self, r:Point):
+
+  def setMeshIndex(self, r: Point):
     self._r = r
 
   def isFinest(self):
-    return self._isFinest
-  
-  def setLimitMeshIndices(self, limit_min_mesh_index: int, limit_max_mesh_index: int):
-    self._limitMaxMeshIndex = limit_max_mesh_index
-    self._limitMinMeshIndex = limit_min_mesh_index
+    return self._is_finest
 
-    
-  
-
-  
+  def setLimitMeshIndices(self, limit_min_mesh_index: int,
+                          limit_max_mesh_index: int):
+    self._limit_max_mesh_index = limit_max_mesh_index
+    self._limit_min_mesh_index = limit_min_mesh_index

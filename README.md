@@ -6,7 +6,7 @@
 <img width="870" alt="OMADS_logo" src="https://github.com/Ahmed-Bayoumy/OMADS/assets/22842095/dedff4b1-4ec5-4b1f-a155-8b64155d1558">
 
 # OMADS
-MADS: A python implementation for the mesh adaptive direct search (MADS) method; ORTHO-MADS algorithm. OMADS can solve both single- and multi-objective optimization problems.
+MADS: A python implementation for the mesh adaptive direct search (MADS) method; algorithm. OMADS can solve both single- and multi-objective optimization problems.
 
 For technical and code documentation, please visit [OMADS Webpage](https://ahmed-bayoumy.github.io/OMADS/).
 

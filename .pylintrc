@@ -1,0 +1,4 @@
+[FORMAT]
+indent-string = '  '
+[MESSAGES CONTROL]
+disable = unnecessary-ellipsis

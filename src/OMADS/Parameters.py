@@ -1,22 +1,53 @@
+"""
+# ------------------------------------------------------------------------------------#
+#  Mesh Adaptive Direct Search - (MADS)                                               #
+#                                                                                     #
+#  Author: Ahmed H. Bayoumy                                                           #
+#  email: ahmed.bayoumy@mail.mcgill.ca                                                #
+#                                                                                     #
+#  This program is free software: you can redistribute it and/or modify it under the  #
+#  terms of the GNU Lesser General Public License as published by the Free Software   #
+#  Foundation, either version 3 of the License, or (at your option) any later         #
+#  version.                                                                           #
+#                                                                                     #
+#  This program is distributed in the hope that it will be useful, but WITHOUT ANY    #
+#  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A    #
+#  PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more details.   #
+#                                                                                     #
+#  You should have received a copy of the GNU Lesser General Public License along     #
+#  with this program. If not, see <http://www.gnu.org/licenses/>.                     #
+#                                                                                     #
+#  You can find information on OMADS at                                               #
+#  https://github.com/Ahmed-Bayoumy/OMADS                                             #
+#  Copyright (C) 2022  Ahmed H. Bayoumy                                               #
+# ------------------------------------------------------------------------------------#
+"""
 from dataclasses import dataclass
 import os
 from typing import List, Dict, Optional
 import warnings
-import numpy as np
-from .Point import Point
-from ._globals import DType, VAR_TYPE, BARRIER_TYPES, MESH_TYPE
 import copy
+
+import numpy as np
+
+
+from ._globals import DType, VAR_TYPE, BARRIER_TYPES, MESH_TYPE
+from .point import Point
+
 
 @dataclass
 class Parameters:
   """ Variables and algorithmic parameters 
-  
+
     :param baseline: Baseline design point (initial point ``x0``)
     :param lb: The variables lower bound
     :param ub: The variables upper bound
     :param var_names: The variables name
-    :param scaling: Scaling factor (can be defined as a list (assigning a factor for each variable) or a scalar value that will be applied on all variables)
-    :param post_dir: The location and name of the post directory where the output results file will live in (if any)
+    :param scaling: Scaling factor (can be defined as a list 
+    (assigning a factor for each variable) or a scalar value 
+    that will be applied on all variables)
+    :param post_dir: The location and name of the post directory 
+    where the output results file will live in (if any)
   """
   _n: Optional[int] = None
   baseline: Optional[List[float]] = None
@@ -34,148 +65,170 @@ class Parameters:
   problem_name: str = "unknown"
   best_known: Optional[List[float]] = None
   constraints_type: Optional[List[BARRIER_TYPES]] = None
-  function_weights: Optional[List[float]] = None 
-  h_max: float = 0
-  RHO: float = 0.00005
-  LAMBDA: Optional[List[float]] = None
+  function_weights: Optional[List[float]] = None
+  h_max: float = np.inf
+  rho: float = 0.00005
+  lambda_multipliers: Optional[List[float]] = None
   name: str = "undefined"
   nobj: int = 1
   ref_point: Optional[List[float]] = None
   lhs_search_initialization: Optional[bool] = False
 
-
   # Mesh options
-  meshType: str = MESH_TYPE.ORTHO.name
+  mesh_type: str = MESH_TYPE.ORTHO.name
   fixed_variables: Optional[Point] = None
   granularity: Optional[Point] = None
-  minMeshSize: Optional[Point] = None
-  minFrameSize: Optional[Point] = None
-  initialMeshSize: Optional[Point] = None
-  initialFrameSize: Optional[Point] = None
-  warningInitialFrameSizeReset: bool = True
+  min_mesh_size: Optional[Point] = None
+  min_frame_size: Optional[Point] = None
+  initial_mesh_size: Optional[Point] = None
+  initial_frame_size: Optional[Point] = None
+  warning_initial_frame_size_reset: bool = True
   x0: Optional[Point] = None
   _initialized_and_checked: bool = False
-  isPareto: bool = False
-  incumbentincumbentSelectionParam: int = 1
-  barrierInitializedFromCache: bool = True
+  is_pareto: bool = False
+  incumbent_selection_param: int = 1
+  barrier_initialized_from_cache: bool = True
+  rng: np.random = None
+  w_min: int = 1
+  max_size: int = 30000
+  h_init: float = np.inf
 
   def __init__(
-      self,
-      baseline: List[float] = None,
-      lb: List[float] = None,
-      ub: List[float] = None,
-      var_names: List[str] = None,
-      fun_names: List[str] = None,
-      function_weights: List[float] = None,
-      scaling: float = 10.0,
-      post_dir: str = os.path.abspath("./"),
-      var_type: List[str] = None,
-      var_sets: Dict = None,
-      constants: List = None,
-      constants_name: List = None,
-      Failure_stop: bool = None,
-      problem_name: str = "unknown",
-      best_known: List[float] = None,
-      constraints_type: List[BARRIER_TYPES] = None,
-      h_max: float = 0,
-      RHO: float = 0.00005,
-      LAMBDA: List[float] = None,
-      name: str = "undefined",
-      meshType: str = MESH_TYPE.ORTHO.name,
-      fixed_variables: List[float] = None,
-      granularity: List[float] = None,
-      minMeshSize: List[float] = None,
-      minFrameSize: List[float] = None,
-      initialMeshSize: List[float] = None,
-      initialFrameSize: List[float] = None,
-      isPareto: bool = False,
-      nobj: int=1,
-      incumbentincumbentSelectionParam: int=1,
-      barrierInitializedFromCache:bool =True,
-      ref_point: List[float]=None,
-      lhs_search_initialization: bool = False):
-    self.incumbentincumbentSelectionParam = incumbentincumbentSelectionParam
-    self.barrierInitializedFromCache = barrierInitializedFromCache
+          self,
+          baseline: List[float] = None,
+          lb: List[float] = None,
+          ub: List[float] = None,
+          var_names: List[str] = None,
+          fun_names: List[str] = None,
+          function_weights: List[float] = None,
+          scaling: float = 10.0,
+          post_dir: str = os.path.abspath("./"),
+          var_type: List[str] = None,
+          var_sets: Dict = None,
+          constants: List = None,
+          constants_name: List = None,
+          failure_stop: bool = None,
+          problem_name: str = "unknown",
+          best_known: List[float] = None,
+          constraints_type: List[BARRIER_TYPES] = None,
+          h_max: float = 0,
+          rho: float = 0.00005,
+          lambda_multipliers: List[float] = None,
+          name: str = "undefined",
+          mesh_type: str = MESH_TYPE.ORTHO.name,
+          fixed_variables: List[float] = None,
+          granularity: List[float] = None,
+          min_mesh_size: List[float] = None,
+          min_frame_size: List[float] = None,
+          initial_mesh_size: List[float] = None,
+          initial_frame_size: List[float] = None,
+          is_pareto: bool = False,
+          nobj: int = 1,
+          incumbent_selection_param: int = 1,
+          barrier_initialized_from_cache: bool = True,
+          ref_point: List[float] = None,
+          lhs_search_initialization: bool = False):
+    self.incumbent_selection_param = incumbent_selection_param
+    self.barrier_initialized_from_cache = barrier_initialized_from_cache
     self.nobj = nobj
     self.baseline = baseline
-    self._n = len(baseline)
+    is_list_of_list = all(isinstance(item, list) for item in self.baseline)
+    self._n = len(self.baseline[0]) if is_list_of_list else len(baseline)
     self.x0 = Point(self._n)
-    self.x0.coordinates = self.baseline
+    if isinstance(self.baseline, Point):
+      self.x0 = copy.deepcopy(self.baseline)
+    elif isinstance(self.baseline, List):
+      if all(isinstance(item, list) for item in self.baseline):
+        self.x0 = [Point(self._n)]*len(self.baseline)
+        for i, _ in enumerate((self.baseline)):
+          self.x0[i].coordinates = copy.deepcopy(self.baseline[i])
+      elif all(isinstance(item, Point) for item in self.baseline):
+        self.x0 = [Point(self._n)]*len(self.baseline)
+        for i, _ in enumerate((self.baseline)):
+          self.x0[i] = copy.deepcopy(self.baseline[i])
+      else:
+        self.x0.coordinates = self.baseline
     self.lb = lb
     self.ub = ub
-    self.var_names = var_names if var_names else [f'x_{i}' for i in range(self._n)]
+    self.var_names = var_names if var_names else [
+        f'x_{i}' for i in range(self._n)]
     self.fun_names = fun_names if fun_names else ["fobj"]
-    self.function_weights = (np.divide(function_weights, np.sum(function_weights))).tolist() if function_weights else [1/(self.nobj)] * self.nobj
+    self.function_weights = (np.divide(function_weights, np.sum(
+        function_weights))).tolist() if function_weights else [1/(self.nobj)] * self.nobj
     self.scaling = scaling
     self.post_dir = post_dir
     self.var_type = var_type
     self.constants = constants
     self.constants_name = constants_name
-    self.failure_stop: bool = Failure_stop
+    self.failure_stop: bool = failure_stop
     self.problem_name = problem_name
     self.best_known = best_known
     self.constraints_type = constraints_type
     self.h_max = h_max
-    self.RHO = RHO
-    self.LAMBDA = LAMBDA
+    self.rho = rho
+    self.lambda_multipliers = lambda_multipliers
     self.name = name
     self.var_sets = var_sets
-    self.isPareto = isPareto
+    self.is_pareto = is_pareto
     self.lhs_search_initialization = lhs_search_initialization
     # Mesh options
-    self.meshType = meshType
+    self.mesh_type = mesh_type
     point_init = Point()
     point_init.reset(self._n, d=0)
     if fixed_variables:
       self.fixed_variables = point_init
-      self.fixed_variables
+      # self.fixed_variables
       self.fixed_variables.coordinates = fixed_variables
     else:
       self.fixed_variables = None
 
     self.granularity = copy.deepcopy(point_init)
-    self.minMeshSize = copy.deepcopy(point_init)
-    self.minFrameSize = copy.deepcopy(point_init)
-    self.initialMeshSize = copy.deepcopy(point_init)
-    self.initialFrameSize = copy.deepcopy(point_init)
+    self.min_mesh_size = copy.deepcopy(point_init)
+    self.min_frame_size = copy.deepcopy(point_init)
+    self.initial_mesh_size = copy.deepcopy(point_init)
+    self.initial_frame_size = copy.deepcopy(point_init)
     if granularity:
       self.granularity.coordinates = granularity
-    if minMeshSize:
-      self.minMeshSize.coordinates = minMeshSize
+    if min_mesh_size:
+      self.min_mesh_size.coordinates = min_mesh_size
     else:
-      self.minMeshSize.coordinates = [1E-9] * self._n
-    if minFrameSize:
-      self.minFrameSize.coordinates = minFrameSize
+      self.min_mesh_size.coordinates = [1E-9] * self._n
+    if min_frame_size:
+      self.min_frame_size.coordinates = min_frame_size
     else:
-      self.minFrameSize.coordinates = [1E-9] * self._n
-    if initialMeshSize:
-      self.initialMeshSize.coordinates = initialMeshSize
-    if initialFrameSize:
-      self.initialFrameSize.coordinates = initialFrameSize
-    self.warningInitialFrameSizeReset: bool = True
+      self.min_frame_size.coordinates = [1E-9] * self._n
+    if initial_mesh_size:
+      self.initial_mesh_size.coordinates = initial_mesh_size
+    if initial_frame_size:
+      self.initial_frame_size.coordinates = initial_frame_size
+    self.warning_initial_frame_size_reset: bool = True
 
-    if self.constraints_type is not None and isinstance(self.constraints_type, list):
-      for i in range(len(self.constraints_type)):
-        if self.constraints_type[i] == BARRIER_TYPES.PB.name or self.constraints_type[i] == BARRIER_TYPES.PB:
+    if self.constraints_type is not None and isinstance(
+            self.constraints_type, list):
+      for i, _ in enumerate((self.constraints_type)):
+        if self.constraints_type[i] == BARRIER_TYPES.PB.name or\
+                self.constraints_type[i] == BARRIER_TYPES.PB:
           self.constraints_type[i] = BARRIER_TYPES.PB
-        elif self.constraints_type[i] == BARRIER_TYPES.RB.name or self.constraints_type[i] == BARRIER_TYPES.RB:
+        elif self.constraints_type[i] == BARRIER_TYPES.RB.name or\
+                self.constraints_type[i] == BARRIER_TYPES.RB:
           self.constraints_type[i] = BARRIER_TYPES.RB
-        elif self.constraints_type[i] == BARRIER_TYPES.PEB.name or self.constraints_type[i] == BARRIER_TYPES.PEB:
+        elif self.constraints_type[i] == BARRIER_TYPES.PEB.name or\
+                self.constraints_type[i] == BARRIER_TYPES.PEB:
           self.constraints_type[i] = BARRIER_TYPES.PEB
         else:
           self.constraints_type[i] = BARRIER_TYPES.EB
     elif self.constraints_type is not None:
       self.constraints_type = BARRIER_TYPES(self.constraints_type)
 
-    if self.LAMBDA is None:
-      self.LAMBDA = [0]
-    if not isinstance(self.LAMBDA, list):
-      self.LAMBDA = [self.LAMBDA]
+    if self.lambda_multipliers is None:
+      self.lambda_multipliers = [0]
+    if not isinstance(self.lambda_multipliers, list):
+      self.lambda_multipliers = [self.lambda_multipliers]
 
     if self.var_type is not None:
       c = 0
       for k in self.var_type:
-        c+= 1
+        c += 1
         if k.lower()[0] == "d":
           if self.var_sets is not None and isinstance(self.var_sets, dict):
             if self.var_sets[k.split('_')[1]] is not None:
@@ -189,163 +242,233 @@ class Parameters:
 
     if self.granularity and self.granularity.size != self._n:
       if self.granularity.size > 0 and self.granularity.is_all_defined():
-        raise IOError(f'Parameter granularity has dimension {self.granularity.size}  which is different from problem dimension {self._n}')
+        raise IOError(
+            f'Parameter granularity has dimension {self.granularity.size} \
+                which is different from problem dimension {self._n}')
       self.granularity.reset(self._n, 0.0)
-    
+
     for i in range(self.n):
       if not self.granularity.defined[i]:
         self.granularity[i] = 0.
       elif self.granularity[i] < 0.:
         raise IOError("Check: invalid granular variables (negative values)")
-    
+
     if self.var_type is None or len(self.var_type) <= 0:
       self.var_type = [VAR_TYPE.REAL.name] * self.n
     self.set_min_mesh_parameters()
     self.set_min_frame_parameters()
     self.set_initial_mesh_parameters()
-    self.x0.check_for_granularity(g=self.granularity, name="baseline")
-    self.minMeshSize.check_for_granularity(g=self.granularity, name="minMeshSize")
-    self.minFrameSize.check_for_granularity(g=self.granularity, name="minFrameSize")
-    self.initialMeshSize.check_for_granularity(g=self.granularity, name="initialMeshSize")
-    self.initialFrameSize.check_for_granularity(g=self.granularity, name="initialFrameSize")
+    if isinstance(self.x0, list):
+      for i, _ in enumerate((self.x0)):
+        self.x0[i].check_for_granularity(g=self.granularity, name="baseline")
+    else:
+      self.x0.check_for_granularity(g=self.granularity, name="baseline")
+    self.min_mesh_size.check_for_granularity(
+        g=self.granularity, name="minMeshSize")
+    self.min_frame_size.check_for_granularity(
+        g=self.granularity, name="minFrameSize")
+    self.initial_mesh_size.check_for_granularity(
+        g=self.granularity, name="initialMeshSize")
+    self.initial_frame_size.check_for_granularity(
+        g=self.granularity, name="initialFrameSize")
 
     self._initialized_and_checked = True
     self.ref_point = ref_point
 
-
   def set_initial_mesh_parameters(self):
-    if self.initialMeshSize.is_all_defined() and self.initialMeshSize.size != self.n:
-      raise IOError(f"INITIAL_MESH_SIZE has dimension {self.initialMeshSize.size} which is different from problem dimension {self.n}")
-    
-    if self.initialFrameSize.is_all_defined() and self.initialFrameSize.size != self.n:
-      raise IOError(f"INITIAL_FRAME_SIZE has dimension {self.initialFrameSize.size} which is different from problem dimension {self.n}")
-    
-    if self.initialMeshSize.is_all_defined() and self.initialFrameSize.is_all_defined():
-      self.initialMeshSize.reset(self._n)
+    """Set the initial mesh parameters
 
-    if not self.initialMeshSize.is_all_defined():
-      self.initialMeshSize.reset(self.n, 0.)
-    
-    if not self.initialFrameSize.is_all_defined():
-      self.initialFrameSize.reset(self.n, 0.)
+    :raises IOError: _description_
+    :raises IOError: _description_
+    :raises IOError: _description_
+    :raises IOError: _description_
+    """
+    if self.initial_mesh_size.is_all_defined() and self.initial_mesh_size.size != self.n:
+      raise IOError(
+          f"INITIAL_MESH_SIZE has dimension {self.initial_mesh_size.size} \
+            which is different from problem dimension {self.n}")
+
+    if self.initial_frame_size.is_all_defined() and self.initial_frame_size.size != self.n:
+      raise IOError(
+          f"INITIAL_FRAME_SIZE has dimension {self.initial_frame_size.size} \
+            which is different from problem dimension {self.n}")
+
+    if self.initial_mesh_size.is_all_defined() and self.initial_frame_size.is_all_defined():
+      self.initial_mesh_size.reset(self._n)
+
+    if not self.initial_mesh_size.is_all_defined():
+      self.initial_mesh_size.reset(self.n, 0.)
+
+    if not self.initial_frame_size.is_all_defined():
+      self.initial_frame_size.reset(self.n, 0.)
     lb = self.lb
     ub = self.ub
+    is_list_of_list = all(isinstance(item, list) for item in self.baseline)
+    if is_list_of_list:
+      min_bl = np.min(self.baseline, axis=0)
+      max_bl = np.min(self.baseline, axis=0)
+    else:
+      min_bl = max_bl = self.baseline
     for j in range(self.n):
-      if self.lb[j] == None or self.baseline[j] < self.lb[j]:
-        lb[j] = self.baseline[j]
-      if self.ub[j] == None or self.baseline[j] > self.ub[j]:
-        ub[j] = self.baseline[j]
+      if self.lb[j] is None or min_bl[j] < self.lb[j]:
+        lb[j] = min_bl[j]
+      if self.ub[j] is None or max_bl[j] > self.ub[j]:
+        ub[j] = max_bl[j]
 
     for i in range(self.n):
-      if self.initialMeshSize.defined[i]:
-        if self.initialFrameSize.defined[i] and self.warningInitialFrameSizeReset:
-          self.warningInitialFrameSizeReset = False
+      if self.initial_mesh_size.defined[i]:
+        if self.initial_frame_size.defined[i] and self.warning_initial_frame_size_reset:
+          self.warning_initial_frame_size_reset = False
           warnings.warn("Initial frame size reset from initial mesh")
-        self.minFrameSize[i] = self.initialMeshSize[i] * np.power(self.n, 0.5)
-        self.initialFrameSize[i] = self.initialFrameSize.next_mult(g=self.granularity[i], i=i)
-        if self.initialFrameSize[i] < self.minFrameSize[i]:
-          self.initialFrameSize[i] = self.minFrameSize[i]
+        self.min_frame_size[i] = self.initial_mesh_size[i] * \
+            np.power(self.n, 0.5)
+        self.initial_frame_size[i] = self.initial_frame_size.next_mult(
+            g=self.granularity[i], i=i)
+        if self.initial_frame_size[i] < self.min_frame_size[i]:
+          self.initial_frame_size[i] = self.min_frame_size[i]
 
-      if not self.initialFrameSize.defined[i]:
+      if not self.initial_frame_size.defined[i]:
         if lb[i] is not None and ub[i] is not None:
-          self.initialFrameSize[i] = (ub[i] - lb[i]) / 10
+          self.initial_frame_size[i] = (ub[i] - lb[i]) / 10
         elif lb[i] is not None and self.lb[i] is not None and lb[i] != self.lb[i]:
-          self.initialFrameSize[i] = (lb[i] - self.lb[i]) / 10.0
+          self.initial_frame_size[i] = (lb[i] - self.lb[i]) / 10.0
         elif (ub[i] is not None and self.ub[i] is not None and ub[i] != self.ub[i]):
-          self.initialFrameSize[i] = (self.ub[i] - ub[i]) / 10.0
+          self.initial_frame_size[i] = (self.ub[i] - ub[i]) / 10.0
         else:
           if lb[i] is not None and abs(lb[i]) > DType("high")._zero * 10.0:
-            self.initialFrameSize[i] = abs(lb[i]) / 10.0
+            self.initial_frame_size[i] = abs(lb[i]) / 10.0
           else:
-            self.initialFrameSize[i] = 1.0
+            self.initial_frame_size[i] = 1.0
         # Adjust value with granularity
-        self.initialFrameSize[i] = self.initialFrameSize.next_mult(g=self.granularity[i], i=i)
+        self.initial_frame_size[i] = self.initial_frame_size.next_mult(
+            g=self.granularity[i], i=i)
         # Adjust value with minFrameSize
-        if self.initialFrameSize[i] < self.minFrameSize[i]:
-          self.initialFrameSize[i] = self.minFrameSize[i]
+        if self.initial_frame_size[i] < self.min_frame_size[i]:
+          self.initial_frame_size[i] = self.min_frame_size[i]
       # Determine initial mesh size from initial frame size
-      if not self.initialMeshSize.defined[i]:
-        self.initialMeshSize[i] = self.initialFrameSize[i] * self.n**-0.5
+      if not self.initial_mesh_size.defined[i]:
+        self.initial_mesh_size[i] = self.initial_frame_size[i] * self.n**-0.5
         # Adjust value with granularity
-        self.initialMeshSize[i] = self.initialMeshSize.next_mult(g=self.granularity[i], i=i)
+        self.initial_mesh_size[i] = self.initial_mesh_size.next_mult(
+            g=self.granularity[i], i=i)
         # Adjust value with minMeshSize
-        if (self.initialMeshSize[i] < self.minMeshSize[i]):
-          self.initialMeshSize[i] = self.minMeshSize[i]
-      
-      if (self.minMeshSize[i] > self.initialMeshSize[i]):
+        if self.initial_mesh_size[i] < self.min_mesh_size[i]:
+          self.initial_mesh_size[i] = self.min_mesh_size[i]
+
+      if self.min_mesh_size[i] > self.initial_mesh_size[i]:
         raise IOError("Check: initial mesh size is lower than min mesh size.\n"
-                      + f"INITIAL_MESH_SIZE  + {self.initialMeshSize[i]} \n"
-                      + f"MIN_MESH_SIZE {self.minMeshSize[i]}")
-      if (self.minFrameSize[i] > self.minFrameSize[i]):
-        raise IOError("Check: initial frame size is lower than min frame size.\n"
-                      + f"INITIAL_FRAME_SIZE  + {self.minFrameSize[i]} \n"
-                      + f"MIN_FRAME_SIZE {self.minFrameSize[i]}")
+                      + f"INITIAL_MESH_SIZE  + {self.initial_mesh_size[i]} \n"
+                      + f"MIN_MESH_SIZE {self.min_mesh_size[i]}")
+      if self.min_frame_size[i] > self.min_frame_size[i]:
+        raise IOError(
+            "Check: initial frame size is lower than min frame size.\n" +
+            f"INITIAL_FRAME_SIZE  + {self.min_frame_size[i]} \n" +
+            f"MIN_FRAME_SIZE {self.min_frame_size[i]}")
 
   def set_min_mesh_parameters(self):
-    if not self.minMeshSize.is_all_defined():
-      for i in range(self.n):
-        if self.granularity[i] > 0.0:
-          self.minMeshSize[i] = self.granularity[i]
-    else:
-      if self.minMeshSize.size != self.n:
-        raise IOError(f"minMeshSize parameter of size {self.minFrameSize.size} doesn't match the parameters dimensionality of {self.n}")
-      for i in range(self.n):
-        if self.minMeshSize.defined[i] and self.minMeshSize[i] < 0.0:
-          raise IOError(f"Invalid minMeshSize defined of value {self.minMeshSize[i]}")
-        elif (not self.minMeshSize.defined[i]) or (0.0 < self.granularity[i] and self.minMeshSize[i] < self.granularity[i]):
-          if self.granularity[i] > 0.0:
-            self.minMeshSize[i] = self.granularity[i]
-          else:
-            raise IOError("Error: granularity is defined with a negative value.")
-  
-  def set_min_frame_parameters(self):
-    if not self.minFrameSize.is_all_defined():
-      for i in range(self.n):
-        if self.granularity[i] > 0.0:
-          self.minFrameSize[i] = self.granularity[i]
-    else:
-      if self.minFrameSize.size != self.n:
-        raise IOError(f"minFrameSize parameter of size {self.minFrameSize.size} doesn't match the parameters dimensionality of {self.n}")
-      for i in range(self.n):
-        if self.minFrameSize.defined[i] and self.minFrameSize[i] < 0.0:
-          raise IOError(f"Invalid minFrameSize defined of value {self.minFrameSize[i]}")
-        elif (not self.minFrameSize.defined[i]) or (0.0 < self.granularity[i] and self.minFrameSize[i] < self.granularity[i]):
-          if self.granularity[i] > 0.0:
-            self.minFrameSize[i] = self.granularity[i]
-          else:
-            raise IOError("Error: granularity is defined with a negative value.")
+    """Set minimum mesh parameters
 
-  def to_be_checked(self)-> bool:
+    :raises IOError: _description_
+    :raises IOError: _description_
+    :raises IOError: _description_
+    """
+    if not self.min_mesh_size.is_all_defined():
+      for i in range(self.n):
+        if self.granularity[i] > 0.0:
+          self.min_mesh_size[i] = self.granularity[i]
+    else:
+      if self.min_mesh_size.size != self.n:
+        raise IOError(
+            f"minMeshSize parameter of size {self.min_frame_size.size} \
+              doesn't match the parameters dimensionality of {self.n}")
+      for i in range(self.n):
+        if self.min_mesh_size.defined[i] and self.min_mesh_size[i] < 0.0:
+          raise IOError(
+              f"Invalid minMeshSize defined of value {self.min_mesh_size[i]}")
+        elif (not self.min_mesh_size.defined[i]) or \
+            (0.0 < self.granularity[i]
+             and self.min_mesh_size[i] < self.granularity[i]):
+          if self.granularity[i] > 0.0:
+            self.min_mesh_size[i] = self.granularity[i]
+          else:
+            raise IOError(
+                "Error: granularity is defined with a negative value.")
+
+  def set_min_frame_parameters(self):
+    """Minimum frame size parameters
+
+    :raises IOError: _description_
+    :raises IOError: _description_
+    :raises IOError: _description_
+    """
+    if not self.min_frame_size.is_all_defined():
+      for i in range(self.n):
+        if self.granularity[i] > 0.0:
+          self.min_frame_size[i] = self.granularity[i]
+    else:
+      if self.min_frame_size.size != self.n:
+        raise IOError(
+            f"minFrameSize parameter of size {self.min_frame_size.size} \
+              doesn't match the parameters dimensionality of {self.n}")
+      for i in range(self.n):
+        if self.min_frame_size.defined[i] and self.min_frame_size[i] < 0.0:
+          raise IOError(
+              f"Invalid minFrameSize defined of value {self.min_frame_size[i]}")
+        elif (not self.min_frame_size.defined[i]) or \
+            (0.0 < self.granularity[i] and
+                self.min_frame_size[i] < self.granularity[i]):
+          if self.granularity[i] > 0.0:
+            self.min_frame_size[i] = self.granularity[i]
+          else:
+            raise IOError(
+                "Error: granularity is defined with a negative value.")
+
+  def to_be_checked(self) -> bool:
+    """Check whther parameters been initialized and checked
+
+    :return: _description_
+    :rtype: bool
+    """
     return self._initialized_and_checked
 
   # TODO: give better control on variabls' resolution (mesh granularity)
   # var_type: List[str] = field(default_factory=["cont", "cont"])
   # resolution: List[int] = field(default_factory=["cont", "cont"])
-      
-
-
 
   def get_barrier_type(self):
+    """Get the constraints barrier type
+
+    :return: _description_
+    :rtype: _type_
+    """
     if self.constraints_type is not None:
       if isinstance(self.constraints_type, list):
-        for i in range(len(self.constraints_type)):
+        for i, _ in enumerate((self.constraints_type)):
           if self.constraints_type[i] == BARRIER_TYPES.PB:
             return BARRIER_TYPES.PB
       else:
         if self.constraints_type == BARRIER_TYPES.PB:
-            return BARRIER_TYPES.PB
+          return BARRIER_TYPES.PB
 
-    
     return BARRIER_TYPES.EB
-  
-  def get_h_max_0 (self):
+
+  def get_h_max_0(self):
+    """Get constraints violation margine
+
+    :return: _description_
+    :rtype: _type_
+    """
     return self.h_max
-  
+
   @property
-  def n(self)->int:
+  def n(self) -> int:
+    """Get the problem number of dimensions
+
+    :return: _description_
+    :rtype: int
+    """
     return self._n
-  
+
   @n.setter
   def n(self, value: int) -> int:
     self._n = value
-  

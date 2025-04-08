@@ -1,5 +1,6 @@
+"""
 # ------------------------------------------------------------------------------------#
-#  Mesh Adaptive Direct Search - ORTHO-MADS (MADS)                                    #
+#  Mesh Adaptive Direct Search - (MADS)                                               #
 #                                                                                     #
 #  Author: Ahmed H. Bayoumy                                                           #
 #  email: ahmed.bayoumy@mail.mcgill.ca                                                #
@@ -20,7 +21,8 @@
 #  https://github.com/Ahmed-Bayoumy/OMADS                                             #
 #  Copyright (C) 2022  Ahmed H. Bayoumy                                               #
 # ------------------------------------------------------------------------------------#
+"""
 
-from OMADS import POLL, MADS, SEARCH
+from OMADS import poll, mads, search
 
-__all__ = ['POLL', 'MADS', 'SEARCH']
+__all__ = ['poll', 'mads', 'search']

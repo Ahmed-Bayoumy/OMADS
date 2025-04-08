@@ -1,4 +1,4 @@
-from OMADS import POLL, SEARCH, MADS
+from OMADS import poll, search, mads
 
 import copy
 import importlib
@@ -19,7 +19,7 @@ def rosen(x, *argv):
         axis=0), [0]]
   return y
 
-def test_MADS_callable_quick_40d():
+def test_mads_callable_quick_40d():
   d = 40
   eval = {"blackbox": rosen}
   param = {"name": "RB","baseline": [-2.5]*d,
@@ -48,18 +48,18 @@ def test_MADS_callable_quick_40d():
               "criterion": None
             }
   data = {"evaluator": eval, "param": param, "options": options, "sampling": sampling, "search": search}
-  outS: Dict = SEARCH.main(data)
+  outS: Dict = search.main(data)
 
   if (outS[0]["fmin"] > 0.0006):
-    raise ValueError(f"Search: fmin > {0.0006}")
+    raise ValueError(f"search: fmin > {0.0006}")
   
-  outP: Dict = POLL.main(data)
+  outP: Dict = poll.main(data)
   if (outP[0]["fmin"] > 2.7):
-    raise ValueError(f"POLL: fmin > {2.7}")
+    raise ValueError(f"poll: fmin > {2.7}")
   
-  outM: Dict = MADS.main(data)
+  outM: Dict = mads.main(data)
   if (outM[0]["fmin"] > 0.0006):
-    raise ValueError(f"MADS: fmin > {0.0006}")
+    raise ValueError(f"mads: fmin > {0.0006}")
 
 def test_omads_toy_extended():
   uncon_test_names = ["ackley", "beale", "dixonprice", "griewank", "levy", "michalewicz", "perm", "powell",
@@ -69,14 +69,14 @@ def test_omads_toy_extended():
             "speed_reducer", "wbeam"]
 
   for name in uncon_test_names:
-    POLL.main(os.path.abspath(os.path.join("./tests/bm/unconstrained", name + ".json")))
-    SEARCH.main(os.path.abspath(os.path.join("./tests/bm/unconstrained", name + ".json")))
-    MADS.main(os.path.abspath(os.path.join("./tests/bm/unconstrained", name + ".json")))
+    poll.main(os.path.abspath(os.path.join("./tests/bm/unconstrained", name + ".json")))
+    search.main(os.path.abspath(os.path.join("./tests/bm/unconstrained", name + ".json")))
+    mads.main(os.path.abspath(os.path.join("./tests/bm/unconstrained", name + ".json")))
 
   for name in con_test_names:
-    POLL.main(os.path.abspath(os.path.join("./tests/bm/constrained", name + ".json")))
-    SEARCH.main(os.path.abspath(os.path.join("./tests/bm/constrained", name + ".json")))
-    MADS.main(os.path.abspath(os.path.join("./tests/bm/constrained", name + ".json")))
+    poll.main(os.path.abspath(os.path.join("./tests/bm/constrained", name + ".json")))
+    search.main(os.path.abspath(os.path.join("./tests/bm/constrained", name + ".json")))
+    mads.main(os.path.abspath(os.path.join("./tests/bm/constrained", name + ".json")))
 
 def test_omads_toy_uncon_bm():
   p_files = []
@@ -111,9 +111,9 @@ def test_omads_toy_uncon_bm():
         print(f"Solving {p_files[i]}: run# {run:.0f}: seed is {sl[run]:.0f}")
         if file_exe == '.json':
           if ms:
-            MADS.main(os.path.join(bm_root, p_files[i]), bm, run, sl[run])
+            mads.main(os.path.join(bm_root, p_files[i]), bm, run, sl[run])
           else:
-            MADS.main(os.path.join(bm_root, p_files[i]), bm, run)
+            mads.main(os.path.join(bm_root, p_files[i]), bm, run)
       except RuntimeError:
         print("An error occured while running" + p_files[i])
 
@@ -153,9 +153,9 @@ def test_omads_toy_con_bm():
         _, file_exe = os.path.splitext(p_files[i])
         if file_exe == '.json':
           if ms:
-            POLL.main(os.path.join(bm_root, p_files[i]), bm, run, sl[run])
+            poll.main(os.path.join(bm_root, p_files[i]), bm, run, sl[run])
           else:
-            POLL.main(os.path.join(bm_root, p_files[i]), bm, run)
+            poll.main(os.path.join(bm_root, p_files[i]), bm, run)
       except RuntimeError:
         print("An error occured while running" + p_files[i])
 
@@ -174,20 +174,20 @@ def test_omads_toy_con_GP():
   bm.test_suite = "con"
   bm_root = os.path.abspath('./tests/bm/constrained')
 
-  outP = POLL.main(os.path.join(bm_root, 'geom_prog.json'), bm, 0)
+  outP = poll.main(os.path.join(bm_root, 'geom_prog.json'), bm, 0)
 
   if (outP[0]["fmin"] > 23.5):
-    raise ValueError(f"Search: fmin > {23.5}")
+    raise ValueError(f"search: fmin > {23.5}")
   
-  outM = MADS.main(os.path.join(bm_root, 'geom_prog.json'), bm, 0)
+  outM = mads.main(os.path.join(bm_root, 'geom_prog.json'), bm, 0)
 
   if (outM[0]["fmin"] > 17.7):
-    raise ValueError(f"Search: fmin > {17.7}")
+    raise ValueError(f"search: fmin > {17.7}")
   
-  outS = SEARCH.main(os.path.join(bm_root, 'geom_prog.json'), bm, 0)
+  outS = search.main(os.path.join(bm_root, 'geom_prog.json'), bm, 0)
 
   if (outS[0]["fmin"] > 17.7):
-    raise ValueError(f"Search: fmin > {17.7}")
+    raise ValueError(f"search: fmin > {17.7}")
 
 def test_omads_toy_con_WB():
   p_files = []
@@ -204,24 +204,24 @@ def test_omads_toy_con_WB():
   bm.test_suite = "con"
   bm_root = os.path.abspath('./tests/bm/constrained')
 
-  outP = POLL.main(os.path.join(bm_root, 'wbeam.json'), bm, 0)
+  outP = poll.main(os.path.join(bm_root, 'wbeam.json'), bm, 0)
 
   if (outP[0]["fmin"] > 2.42):
-    raise ValueError(f"Search: fmin > {2.42}")
+    raise ValueError(f"search: fmin > {2.42}")
   
-  outM = MADS.main(os.path.join(bm_root, 'wbeam.json'), bm, 0)
+  outM = mads.main(os.path.join(bm_root, 'wbeam.json'), bm, 0)
 
   if (outM[0]["fmin"] > 2.21):
-    raise ValueError(f"Search: fmin > {2.21}")
+    raise ValueError(f"search: fmin > {2.21}")
   
-  outS = SEARCH.main(os.path.join(bm_root, 'wbeam.json'), bm, 0)
+  outS = search.main(os.path.join(bm_root, 'wbeam.json'), bm, 0)
 
   if (outS[0]["fmin"] > 2.81):
-    raise ValueError(f"Search: fmin > {2.81}")
+    raise ValueError(f"search: fmin > {2.81}")
 
 
 if __name__ == "__main__":
-  test_MADS_callable_quick_40d()
+  test_mads_callable_quick_40d()
   test_omads_toy_con_GP()
   test_omads_toy_extended()
   test_omads_toy_uncon_bm()
