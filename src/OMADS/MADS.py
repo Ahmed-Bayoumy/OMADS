@@ -879,7 +879,8 @@ class MADS:
             - np.array(x_parent))
 
       self.stats.nfull_successes += 1
-    assert self.active_barrier.last_index == len(self.hashtable.hash_id)-1
+    if self.param.is_pareto:
+      assert self.active_barrier.last_index == len(self.hashtable.hash_id)-1
 
     # Reset state
     self.state.last_success = SUCCESS_TYPES.US

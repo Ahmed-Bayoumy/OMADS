@@ -144,11 +144,11 @@ class Cache:
     :type x: CandidatePoint
     """
     if not self._is_pareto:
-      if x.signature in self._best_hash_id:
-        return
       if len(self._best_hash_id) <= 0 and len(self._cache_dict) >= 1:
         self._best_hash_id.append(list(self.cache_dict.keys())[0])
       if not isinstance(x, list):
+        if x.signature in self._best_hash_id:
+          return
         if len(self._cache_dict) > 1:
           is_infeas_dom: bool = (
               x.status == DESIGN_STATUS.INFEASIBLE
@@ -162,7 +162,7 @@ class Cache:
           self._n_dim = len(x.coordinates)
           self._best_hash_id.append(x.signature)
       else:
-        for i, in enumerate((x)):
+        for i, _ in enumerate((x)):
           is_infeas_dom: bool = (
               x[i].status == DESIGN_STATUS.INFEASIBLE
               and (x[i].h < self._cache_dict[self._best_hash_id[0]].h))

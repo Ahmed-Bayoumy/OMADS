@@ -168,7 +168,7 @@ class Omesh(Mesh):
   def get_rho(self):
     return self.rho
 
-  def enlarge_delta_frame_size(self) -> bool:
+  def enlarge_delta_frame_size(self, direction: Point = None) -> bool:
     for i in range(self._n):
       self.frame_size[i] *= 2
 
