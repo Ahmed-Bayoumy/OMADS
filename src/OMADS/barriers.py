@@ -406,7 +406,7 @@ class BarrierMO(BarrierBase):
   _current_incumbent_inf: Optional[CandidatePoint] = None
   _fixed_variables: Optional[CandidatePoint] = None
   _x_filter_inf: Optional[List[CandidatePoint]] = None
-  _nobj: int = 0
+  _nobj: int = 1
   _bb_inputs_type: Optional[List[VAR_TYPE]] = None
   _incumbent_selection_param: int = 1
 
@@ -1143,6 +1143,10 @@ class BarrierMO(BarrierBase):
       if fmin == fmax:
         fmin = 0.0
         fmax = 1.0
+
+      if self._nobj == 1:
+        frame_ind = fvalues[0][1]
+        return int(frame_ind)
 
       # Intermediate points
       for i in range(1, len(fvalues) - 1):

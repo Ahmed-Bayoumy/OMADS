@@ -259,7 +259,7 @@ class PrePoll:
     param = Parameters(**self.data["param"])
     log.is_verbose = options.is_verbose
     barrier_defined = BarrierMO(
-        param=param, options=options) if param.is_pareto else Barrier(param)
+        param=param, options=options)  # if param.is_pareto else Barrier(param)
     barrier_defined.h_max = param.h_max
     ev = Evaluator(**self.data["evaluator"])
     if self.log is not None:

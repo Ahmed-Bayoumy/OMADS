@@ -113,7 +113,7 @@ class MadsIterationAttributes:
 class MADS:
   """
   MADS class object that has both the search and poll steps
-  that considers secondary and primary frame centers
+  where each considers secondary and primary frame centers
   """
   search: Optional[EfficientExploration] = None
   search_vns: VNS = None
@@ -495,6 +495,8 @@ class MADS:
 
     toc = time.perf_counter()
 
+    self.post.xmin = self.post.x_incumbent = self.search.xmin
+
     if self.log is not None:
       # log.log_msg(msg=" ---Run Summary--- ", msg_type=MSG_TYPE.INFO)
       self.log.log_msg(
@@ -754,6 +756,7 @@ class MADS:
 
     self.lambda_multipliers_k = self.poll.LAMBDA
     self.rho_k = self.poll.xmin.rho
+    self.post.xmin = self.post.x_incumbent = self.poll.xmin
 
     toc = time.perf_counter()
 
