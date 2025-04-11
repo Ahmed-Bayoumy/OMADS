@@ -246,7 +246,7 @@ class VNS(VNSData):
               size=(self._ns_dist[4],)) - delta)
         elif mean.var_type[i] == VAR_TYPE.INTEGER or \
                 mean.var_type[i] == VAR_TYPE.CATEGORICAL or \
-        mean.var_type[i] == VAR_TYPE.DISCRETE:
+            mean.var_type[i] == VAR_TYPE.DISCRETE:
           cs[:, i] = np.random.randint(low=int(
               mean.coordinates[i] - self._rho),
               high=int(
@@ -994,7 +994,7 @@ class EfficientExploration(GenericSamplerBase):
                                     size=(npts,))
       elif p.var_type[k] == VAR_TYPE.INTEGER or \
               p.var_type[k] == VAR_TYPE.DISCRETE or \
-          p.var_type[k] == VAR_TYPE.CATEGORICAL:
+      p.var_type[k] == VAR_TYPE.CATEGORICAL:
         cs[:, k] = np.random.randint(low=lb[k], high=ub[k], size=(npts,))
       else:
         cs[:, k] = [p.coordinates[k]]*npts
@@ -1038,14 +1038,17 @@ class EfficientExploration(GenericSamplerBase):
     temp: List[CandidatePoint] = []
     trial = 1
     npts = 1
-    for xtry in self._candidate_points_set:
+    for xi, xtry in enumerate(self._candidate_points_set):
       if n_total_evals+npts > self.eval_budget:
         break
       is_dup = xtry.signature in self.hashtable.hash_id \
           if not self.hashtable.is_pareto else self.hashtable.is_duplicate(
               xtry)
+      is_dup_in_the_set = sum([x.coordinates == xtry.coordinates
+                               for x in self._candidate_points_set[0:xi]]) >= 1
       is_duplicate: bool = (
-          self.check_cache and self.hashtable.size > 0 and is_dup)
+          (self.check_cache and self.hashtable.size > 0
+           and is_dup) or is_dup_in_the_set)
       # COMPLETED: The commented logic below needs more
       # investigation to make sure that it doesn't hurt.
       # while is_duplicate and unique_p_trials < 5:

@@ -904,7 +904,7 @@ class BarrierMO(BarrierBase):
     # More than three points in the barrier.
     else:
       # First case: biobjective optimization. Points are already ranked by lexicographic order.
-      if self._nobj:
+      if self._nobj and self._nobj <= 2:
         current_best_ind = 0
         max_gap = -1.0
         current_gap: float
@@ -915,6 +915,10 @@ class BarrierMO(BarrierBase):
           # In this case, it means all elements of _xFeas are equal (return the first one)
           if fmin == fmax:
             break
+
+          if self._nobj == 1:
+            self._current_incumbent_feas = self._x_feas[current_best_ind]
+            return
 
           # Intermediate points
           for i in range(1, len(self._x_feas)-1):
@@ -1057,6 +1061,12 @@ class BarrierMO(BarrierBase):
         fmin = 0.0
         fmax = 1.0
 
+      if self._nobj == 1:
+        frame_ind = fvalues[0][1]
+        self._current_incumbent_inf = copy.deepcopy(
+            self.elements[int(frame_ind)])
+        return int(frame_ind)
+
       # Intermediate points
       for i in range(1, len(fvalues) - 1):
         current_gap = (fvalues[i+1][0] - fvalues[i-1][0]) / (fmax - fmin)
@@ -1075,7 +1085,7 @@ class BarrierMO(BarrierBase):
         maximum_gap = current_gap
         frame_ind = fvalues[0][1]
     self._current_incumbent_inf = copy.deepcopy(self.elements[int(frame_ind)])
-    # return int(frame_ind)
+    return int(frame_ind)
 
   def feasible_frame_center(self, w: int):
     """_summary_
@@ -1146,6 +1156,8 @@ class BarrierMO(BarrierBase):
 
       if self._nobj == 1:
         frame_ind = fvalues[0][1]
+        self._current_incumbent_feas = copy.deepcopy(
+            self.elements[int(frame_ind)])
         return int(frame_ind)
 
       # Intermediate points
@@ -1165,7 +1177,7 @@ class BarrierMO(BarrierBase):
       if fvalues[0][1] in fk_selected_indexes and current_gap > maximum_gap:
         maximum_gap = current_gap
         frame_ind = fvalues[0][1]
-
+    self._current_incumbent_feas = copy.deepcopy(self.elements[int(frame_ind)])
     return int(frame_ind)
 
   # Return the extent of the Pareto front (a customized one)
