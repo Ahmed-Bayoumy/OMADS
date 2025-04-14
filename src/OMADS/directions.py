@@ -546,13 +546,16 @@ class Dirs2n(GenericSamplerBase):
   def omit_duplicates(self, n_total_evals: int = 0):
     temp: List[CandidatePoint] = []
     npts = 1
-    for xtry in self.poll_set:
+    for xi, xtry in enumerate(self.poll_set):
       if n_total_evals+npts > self.eval_budget:
         break
-      is_dup = xtry.signature in self.hashtable.hash_id if not self.hashtable._is_pareto else self.hashtable.is_duplicate(
+      is_dup = self.hashtable.is_duplicate(
           xtry)
+      is_dup_in_the_set = sum([x.coordinates == xtry.coordinates
+                               for x in self.poll_set[0:xi]]) >= 1
       is_duplicate: bool = (
-          self.check_cache and self.hashtable.size > 0 and is_dup)
+          (self.check_cache and self.hashtable.size > 0 and is_dup)
+          or is_dup_in_the_set)
       # COMPLETED: The commented logic below needs more
       # investigation to make sure that it doesn't hurt.
       # while is_duplicate and unique_p_trials < 5:

@@ -246,7 +246,7 @@ class VNS(VNSData):
               size=(self._ns_dist[4],)) - delta)
         elif mean.var_type[i] == VAR_TYPE.INTEGER or \
                 mean.var_type[i] == VAR_TYPE.CATEGORICAL or \
-            mean.var_type[i] == VAR_TYPE.DISCRETE:
+        mean.var_type[i] == VAR_TYPE.DISCRETE:
           cs[:, i] = np.random.randint(low=int(
               mean.coordinates[i] - self._rho),
               high=int(
@@ -706,7 +706,7 @@ class EfficientExploration(GenericSamplerBase):
     v = np.empty((self.nvars, 2))
     if self.bb_handle.bb_eval + nsamples > self.eval_budget:
       nsamples = self.eval_budget - self.bb_handle.bb_eval
-    if self.xmin and self.iter > 1 and self.sampling_t != SAMPLING_METHOD.ACTIVE.name:
+    if self.xmin and self.iter > 1 and self.sampling_t != SAMPLING_METHOD.ACTIVE.name and self.vicinity_ratio is not None:
       for i, _ in enumerate((self.prob_params.lb)):
         d_uc = abs(self.prob_params.ub[i] - self.prob_params.lb[i])
         lb = copy.deepcopy(
@@ -757,7 +757,7 @@ class EfficientExploration(GenericSamplerBase):
           self.hashtable.nd_points) else self.nds
 
       # or self.n_successes / (self.iter) <= 0.25:
-      if (len(self.hashtable.cache_dict) if isinstance(self.active_barrier, Barrier) or
+      if (len(self.hashtable.cache_dict) if not self.prob_params.is_pareto or
           self.active_barrier is None else
           len(self.hashtable.best_hash_id)) < self.ns or \
               self.iter == 1 or (self.prob_params.is_pareto and
@@ -994,7 +994,7 @@ class EfficientExploration(GenericSamplerBase):
                                     size=(npts,))
       elif p.var_type[k] == VAR_TYPE.INTEGER or \
               p.var_type[k] == VAR_TYPE.DISCRETE or \
-      p.var_type[k] == VAR_TYPE.CATEGORICAL:
+          p.var_type[k] == VAR_TYPE.CATEGORICAL:
         cs[:, k] = np.random.randint(low=lb[k], high=ub[k], size=(npts,))
       else:
         cs[:, k] = [p.coordinates[k]]*npts
@@ -1041,9 +1041,8 @@ class EfficientExploration(GenericSamplerBase):
     for xi, xtry in enumerate(self._candidate_points_set):
       if n_total_evals+npts > self.eval_budget:
         break
-      is_dup = xtry.signature in self.hashtable.hash_id \
-          if not self.hashtable.is_pareto else self.hashtable.is_duplicate(
-              xtry)
+      is_dup = self.hashtable.is_duplicate(
+          xtry)
       is_dup_in_the_set = sum([x.coordinates == xtry.coordinates
                                for x in self._candidate_points_set[0:xi]]) >= 1
       is_duplicate: bool = (

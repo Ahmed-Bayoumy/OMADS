@@ -150,7 +150,7 @@ def set_frame_centers_and_hvalues(
       if uk_index == -1:
         state.ordered_frame_centers = (fk_index, -1)
       else:
-        if options.use_dom_trigger:
+        if True:
             # Using extent is slightly more efficient
           dom = min([
               sum(
@@ -210,17 +210,19 @@ def poll_step(
   :rtype: CandidatePoint
   """
   tic = time.perf_counter()
+  poll.prob_params = copy.deepcopy(param)
   # Set mesh
   if state.fk_frame_center == -1:
     mk = active_barrier.meshes[state.ordered_frame_centers[0]]
   else:
     mk = active_barrier.meshes[state.fk_frame_center]
 
-  if mk.checkMeshForStopping():
+  if all(
+      [mk.get_delta_frame_size().coordinates[pp] < options.tol
+       for pp in range(poll.n)]):
     state.stop_reason = STOP_TYPE.MIN_MESH_REACHED
     return
-
-  poll.mesh.update()
+  poll.mesh = copy.deepcopy(mk)
   # """ Create the set of poll directions """
   if state.fk_frame_center >= 0:
     hhm = poll.create_housholder(
@@ -242,6 +244,7 @@ def poll_step(
   poll.constraints_handler.hmax = state.h_max
   xmin.h_max = state.h_max
   poll.xmin.h_max = state.h_max
+
   # xmin.mesh = copy.deepcopy(poll.mesh)
   # B = active_barrier
   # if HT is not None:
@@ -263,8 +266,8 @@ def poll_step(
           c_types=param.constraints_type,
           is_prim=active_barrier.elements[center].is_feasible())
 
-      poll.constraints_handler.lambda_multipliers = xmin.lambda_multipliers
-      poll.constraints_handler.rho = xmin.rho
+      poll.LAMBDA = poll.constraints_handler.lambda_multipliers = xmin.lambda_multipliers
+      poll.RHO = poll.constraints_handler.rho = xmin.rho
 
       poll.project_on_mesh_and_snap_to_bounds(
           m=mk, x_center=active_barrier.elements[center].coordinates,
@@ -281,7 +284,7 @@ def poll_step(
       # so they can be saved later in the post dir """
       if options.save_coordinates:
         post.coords.append(poll.poll_set)
-        post.x_incumbent.append(poll.xmin)
+      post.x_incumbent.append(poll.xmin)
       # """ Reset success boolean """
       poll.success = SUCCESS_TYPES.US
       # """ Reset the BB output """
@@ -296,10 +299,11 @@ def poll_step(
 
       if not options.parallel_mode:
         xt, post, peval = poll.bb_handle.run_callable_serial_local(
-            iter=iteration, peval=peval, eval_set=poll.poll_set,
+            iter=iteration, peval=peval, eval_set=poll._candidate_points_set,
             options=options, post=post,
-            psize=poll.mesh.get_delta_frame_size().coordinates, step_name=None,
-            mesh=mk, constraints_relaxation=poll.constraints_rp.__dict__,
+            psize=poll.mesh.get_delta_frame_size().coordinates,
+            step_name=None, mesh=mk,
+            constraints_relaxation=poll.constraints_rp.__dict__,
             budget=options.budget)
 
       else:
@@ -307,7 +311,7 @@ def poll_step(
         # """ Parallel evaluation for points in the samples set """
         poll.bb_eval, xt, post, peval = \
             poll.bb_handle.run_callable_parallel_local(
-                iter=iteration, peval=peval, eval_set=poll.poll_set,
+                iter=iteration, peval=peval, eval_set=poll._candidate_points_set,
                 options=options, post=post, mesh=mk, step_name=None,
                 psize=poll.mesh.get_delta_frame_size().coordinates,
                 constraints_relaxation=poll.constraints_rp.__dict__,
@@ -322,8 +326,8 @@ def poll_step(
         poll.constraints_rp.constraints_type = temp.constraints_type
         poll.constraints_rp.hmax = temp.hmax
 
-      # lambda_multipliers_k = poll.bb_handle.constraints_relaxation["LAMBDA"]
-      # rho_k = poll.bb_handle.constraints_relaxation["RHO"]
+      lambda_multipliers_k = poll.bb_handle.constraints_relaxation["lambda_multipliers"]
+      rho_k = poll.bb_handle.constraints_relaxation["rho"]
       poll.postprocess_evaluated_candidates(xt)
 
       idx = -1
@@ -360,8 +364,9 @@ def poll_step(
                 SUCCESS_TYPES[state.last_success].value):
           state.last_success = success_flag
 
-  # lambda_multipliers_k = poll.constraintsHandler.LAMBDA
-  # rho_k = poll.constraintsHandler.RHO
+  lambda_multipliers_k = poll.LAMBDA
+  rho_k = poll.xmin.rho
+  post.xmin = poll.xmin
 
   toc = time.perf_counter()
 
@@ -376,7 +381,7 @@ def poll_step(
   poll.hashtable.add_to_best_cache(active_barrier.get_all_points())
   # HT = poll.hashtable
   # active_barrier = B
-  # lambda_multipliers_k = poll.xmin.lambda_multipliers
+  lambda_multipliers_k = poll.xmin.lambda_multipliers
   return poll.xmin
 
 
@@ -496,7 +501,8 @@ def update(poll: Dirs2n, state: MadsState, options: Options,
                [new_incumbent_index]).coordinates) - np.array(x_parent))
 
     stats.nfull_successes += 1
-  assert active_barrier.last_index == len(poll.hashtable.hash_id)-1
+  if (poll.prob_params.is_pareto):
+    assert active_barrier.last_index == len(poll.hashtable.hash_id)-1
 
   # Reset state
   state.last_success = SUCCESS_TYPES.US
@@ -600,7 +606,7 @@ def main(*args) -> Dict[str, Any]:
     iteration += 1
 
   toc = time.perf_counter()
-  if isinstance(active_barrier, BarrierMO):
+  if poll.prob_params.is_pareto:
     rp: Optional[CandidatePoint] = None
     if param.ref_point:
       rp = Point()

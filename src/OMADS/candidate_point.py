@@ -729,10 +729,10 @@ class CandidatePoint:
   def __compare__(self, other):
     """Return dominance comparison between two candidates."""
     if len(
-            self.f) != len(
-            other.f) or not (
-            self.is_feasible() and other.is_feasible()) or (
-            not self.is_feasible() and not other.is_feasible()):
+        self.fobj) != len(
+            other.fobj) or (self.status != other.status):  # not (
+      # self.is_feasible() and other.is_feasible()) or (
+      # not self.is_feasible() and not other.is_feasible()):
       return COMPARE_TYPE.UNDEFINED
     isbetter = False
     isworse = False

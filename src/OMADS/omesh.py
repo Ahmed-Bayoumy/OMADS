@@ -171,10 +171,12 @@ class Omesh(Mesh):
   def enlarge_delta_frame_size(self, direction: Point = None) -> bool:
     for i in range(self._n):
       self.frame_size[i] *= 2
+    self.update()
 
   def refine_delta_frame_size(self) -> bool:
     for i in range(self._n):
       self.frame_size[i] /= 2
+    self.update()
 
   def project_on_mesh(self, point: Point, frame_center: Point = None) -> Point:
     if frame_center is None:
@@ -204,3 +206,7 @@ class Omesh(Mesh):
           point[i] = self._pb_params.lb[i]
 
     return point
+
+  def get_frame_size_parameter(self):
+    """Get frame size parameter"""
+    return self._frame_size.coordinates

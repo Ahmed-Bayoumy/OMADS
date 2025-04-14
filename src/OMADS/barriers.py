@@ -445,9 +445,17 @@ class BarrierMO(BarrierBase):
   def current_incumbent_feas(self) -> CandidatePoint:
     return self._current_incumbent_feas
 
+  @current_incumbent_feas.setter
+  def current_incumbent_feas(self, cpf: CandidatePoint):
+    self._current_incumbent_feas = copy.deepcopy(cpf)
+
   @property
   def current_incumbent_inf(self) -> CandidatePoint:
     return self._current_incumbent_inf
+
+  @current_incumbent_inf.setter
+  def current_incumbent_inf(self, cpinf: CandidatePoint):
+    self._current_incumbent_inf = copy.deepcopy(cpinf)
 
   @property
   def nobj(self):
@@ -1829,6 +1837,7 @@ class BarrierMO(BarrierBase):
         elif comp_flag == COMPARE_TYPE.DOMINATING:
           updated = True
           keep_in_x_feas[current_ind] = False
+          insertion_flag = INSERTION_FLAG.DOMINATES
           # INSERTION_FLAG.DOMINATES
         elif comp_flag == COMPARE_TYPE.EQUAL or comp_flag == COMPARE_TYPE.DOMINATED:
           insertion_flag = INSERTION_FLAG.IS_DOMINATED
@@ -1850,7 +1859,7 @@ class BarrierMO(BarrierBase):
           current_ind += 1
         updated = True
         my_dir = copy.deepcopy(eval_point.direction)
-        if my_dir is not None:
+        if my_dir is not None and self.nobj > 1:
           eval_point.mesh.enlarge_delta_frame_size(direction=my_dir)
 
         self._x_feas.append(eval_point)

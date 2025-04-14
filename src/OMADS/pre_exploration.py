@@ -236,6 +236,7 @@ class PreExploration:
     search._candidate_points_set.append(x_start)
     search.scale(ub=param.ub, lb=param.lb, factor=param.scaling)
     search.dim = x_start.n_dimensions
+    search.n = search.dim
     if not extend:
       search.hashtable = Cache()
       search.hashtable._n_dim = len(param.baseline)

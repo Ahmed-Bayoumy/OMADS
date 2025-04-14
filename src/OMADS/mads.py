@@ -339,14 +339,16 @@ class MADS:
     else:
       mk = self.active_barrier.meshes[self.state.fk_frame_center]
 
-    if mk.checkMeshForStopping():
+    if all(
+        [mk.get_delta_frame_size().coordinates[pp] < self.options.tol
+         for pp in range(self.param.n)]):
       self.state.stop_reason = STOP_TYPE.MIN_MESH_REACHED
       return
 
     # Generate candidates
-    # self.poll.mesh = Mk
+    self.search.mesh = copy.deepcopy(mk)
 
-    self.search.mesh.update()
+    # self.search.mesh.update()
     # Create the candidate points
     self.search.constraints_rp.hmax = self.state.h_max
     self.search.constraints_handler.hmax = self.state.h_max
@@ -392,7 +394,7 @@ class MADS:
             lb=self.param.lb, ub=self.param.ub)
 
         self.search.omit_duplicates(self.peval)
-
+        self.post.x_incumbent.append(self.search.xmin)
         for _ in self.search._candidate_points_set:
           parent_index_candidates.append(center)
           generated_during_search_step.append(False)
@@ -402,7 +404,7 @@ class MADS:
         #   so they can be saved later in the post dir
         if self.options.save_coordinates:
           self.post.coords.append(self.search._candidate_points_set)
-          self.post.x_incumbent.append(self.search.xmin)
+        self.post.x_incumbent.append(self.search.xmin)
         # """ Reset success boolean """
         self.search.success = SUCCESS_TYPES.US
         # """ Reset the BB output """
@@ -493,9 +495,11 @@ class MADS:
     self.lambda_multipliers_k = self.xmin.lambda_multipliers
     self.rho_k = self.search.xmin.rho
 
+    self.post.xmin = self.search.xmin
+
     toc = time.perf_counter()
 
-    self.post.xmin = self.post.x_incumbent = self.search.xmin
+    self.post.xmin = self.search.xmin
 
     if self.log is not None:
       # log.log_msg(msg=" ---Run Summary--- ", msg_type=MSG_TYPE.INFO)
@@ -600,29 +604,31 @@ class MADS:
     """
     # Set time
     tic = time.perf_counter()
+    self.poll.prob_params = copy.deepcopy(self.param)
     # Set mesh
     if self.state.fk_frame_center == -1:
       mk = self.active_barrier.meshes[self.state.ordered_frame_centers[0]]
     else:
       mk = self.active_barrier.meshes[self.state.fk_frame_center]
 
-    if mk.checkMeshForStopping():
+    if all(
+        [mk.get_delta_frame_size().coordinates[pp] < self.options.tol
+         for pp in range(self.poll.dim)]):
       self.state.stop_reason = STOP_TYPE.MIN_MESH_REACHED
       return
 
     # Generate candidates
     # self.poll.mesh = Mk
 
-    self.poll.mesh.update()
+    self.poll.mesh = copy.deepcopy(mk)
     # """ Create the set of poll directions """
     if (self.state.fk_frame_center >= 0 or self.state.uk_frame_center >= 0):
       hhm = self.poll.create_housholder(
           self.options.rich_direction,
-          domain=self.active_barrier.elements[self.state.fk_frame_center].
-          var_type)
+          domain=self.param.var_type)
     else:
       raise ValueError(
-          "Bothe primary and secondary frame centers arenot \
+          "Both primary and secondary frame centers are not \
             valid! Check the poll step configurations.")
 
     self.poll.lb = self.param.lb
@@ -665,7 +671,7 @@ class MADS:
         #   so they can be saved later in the post dir """
         if self.options.save_coordinates:
           self.post.coords.append(self.poll.poll_set)
-          self.post.x_incumbent.append(self.poll.xmin)
+        self.post.x_incumbent.append(self.poll.xmin)
         # """ Reset success boolean """
         self.poll.success = SUCCESS_TYPES.US
         # """ Reset the BB output """
@@ -756,8 +762,7 @@ class MADS:
 
     self.lambda_multipliers_k = self.poll.LAMBDA
     self.rho_k = self.poll.xmin.rho
-    self.post.xmin = self.post.x_incumbent = self.poll.xmin
-
+    self.post.xmin = self.poll.xmin
     toc = time.perf_counter()
 
     if self.log is not None:
@@ -1115,6 +1120,17 @@ def main(*args) -> Dict[str, Any]:
                 mads_agent.search.mesh.get_delta_mesh_size().coordinates
                 [pp]) < mads_agent.options.tol
             for pp in range(mads_agent.search.mesh.n)))
+    # bt = all(abs(mads_agent.active_barrier.meshes[mads_agent.state.fk_frame_center].get_delta_frame_size(
+    # ).coordinates[pp]) < mads_agent.options.tol for pp in range(mads_agent.poll.n))
+    if mads_agent.state.fk_frame_center == -1:
+      mk = mads_agent.active_barrier.meshes[mads_agent.state.ordered_frame_centers[0]]
+    else:
+      mk = mads_agent.active_barrier.meshes[mads_agent.state.fk_frame_center]
+    if all(
+        [mk.get_delta_frame_size().coordinates[pp] < mads_agent.options.tol
+         for pp in range(mads_agent.poll.n)]):
+      mads_agent.state.stop_reason = STOP_TYPE.MIN_MESH_REACHED
+    # bt = mads_agent.state.stop_reason == STOP_TYPE.MIN_MESH_REACHED
     # last_success = mads_agent.state.last_success
     # if not isinstance(mads_agent.state.last_success, SUCCESS_TYPES)
     # else mads_agent.state.last_success.name
@@ -1128,7 +1144,7 @@ def main(*args) -> Dict[str, Any]:
           mads_agent.post.nd_points.append(
               mads_agent.active_barrier.get_all_points()[i])
         mads_agent.post.output_nd_results(mads_agent.out_p)
-    if (pt or st or mads_agent.search.bb_eval + mads_agent.poll.bb_eval
+    if (pt or st or mads_agent.state.stop_reason == STOP_TYPE.MIN_MESH_REACHED or mads_agent.search.bb_eval + mads_agent.poll.bb_eval
             >= mads_agent.options.budget):
       mads_agent.log.log_msg(
           "\n--------------- Termination of MADS  ---------------", MSG_TYPE.INFO)

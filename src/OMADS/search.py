@@ -152,7 +152,7 @@ def set_frame_centers_and_hvalues(
       if uk_index == -1:
         state.ordered_frame_centers = (fk_index, -1)
       else:
-        if options.use_dom_trigger:
+        if True:
             # Using extent is slightly more efficient
           dom = min([
               sum(
@@ -216,20 +216,23 @@ def search_step(search: EfficientExploration, options: Options,
   """
   # Set time
   tic = time.perf_counter()
+  search.prob_params = copy.deepcopy(param)
   # Set mesh
   if state.fk_frame_center == -1:
     mk = active_barrier.meshes[state.ordered_frame_centers[0]]
   else:
     mk = active_barrier.meshes[state.fk_frame_center]
 
-  if mk.checkMeshForStopping():
+  if all(
+      [mk.get_delta_frame_size().coordinates[pp] < options.tol
+       for pp in range(param.n)]):
     state.stop_reason = STOP_TYPE.MIN_MESH_REACHED
     return
 
   # Generate candidates
-  # search.mesh = Mk
+  search.mesh = copy.deepcopy(mk)
 
-  search.mesh.update()
+  # search.mesh.update()
   # """ Create the candidate points """
   search.constraints_rp.hmax = state.h_max
   search.constraints_handler.hmax = state.h_max
@@ -266,14 +269,16 @@ def search_step(search: EfficientExploration, options: Options,
               ((search.dim + 2) / 2))
           if search.ns is None else search.ns)
 
-      # search.constraintsHandler.LAMBDA = lambda_multipliers_k
-      # search.constraintsHandler.RHO = rho_k
+      lambda_multipliers_k = search.xmin.lambda_multipliers
+      rho_k = search.xmin.rho
 
       search.project_on_mesh_and_snap_to_bounds(
           m=mk, x_center=active_barrier.elements[center].coordinates,
           lb=param.lb, ub=param.ub)
       peval = search.bb_handle.bb_eval
       search.omit_duplicates(peval)
+
+      post.x_incumbent.append(search.xmin)
 
       for _ in search.candidate_points_set:
         parent_index_candidates.append(center)
@@ -367,6 +372,12 @@ def search_step(search: EfficientExploration, options: Options,
 
   # lambda_multipliers_k = xmin.lambda_multipliers
   # rho_k = search.xmin.rho
+  if active_barrier.current_incumbent_feas is not None:
+    search.xmin = active_barrier.current_incumbent_feas
+  post.xmin = search.xmin
+  search._x_sc = active_barrier.current_incumbent_inf
+  if not search.prob_params.is_pareto:
+    active_barrier.update_current_incumbents()
 
   toc = time.perf_counter()
 
@@ -597,10 +608,10 @@ def main(*args) -> Dict[str, Any]:
           post.nd_points.append(active_barrier.get_all_points()[i])
         post.output_nd_results(out_p)
 
-    if log:
-      log.log_msg(msg=post, msg_type=MSG_TYPE.INFO)
-    if options.display:
-      print(post)
+    # if log:
+    #   log.log_msg(msg=post, msg_type=MSG_TYPE.INFO)
+    # if options.display:
+    #   print(post)
 
     failure_check = iteration > 0 and search.failure_stop is not None and \
         search.failure_stop and not (
@@ -638,7 +649,7 @@ def main(*args) -> Dict[str, Any]:
     iteration += 1
 
   toc = time.perf_counter()
-  if isinstance(active_barrier, BarrierMO):
+  if search.prob_params.is_pareto and isinstance(active_barrier, BarrierMO):
     rp: Optional[CandidatePoint] = None
     if param.ref_point:
       rp = Point()
