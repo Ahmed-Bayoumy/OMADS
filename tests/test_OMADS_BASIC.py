@@ -249,7 +249,7 @@ def test_callable_2d_sin_const():
   options = {
       "seed": 0, "budget": 2000, "tol": 1e-9, "display": False,
       "check_cache": True, "store_cache": True, "rich_direction": True,
-      "opportunistic": False, "save_results": False, "isVerbose": False,
+      "opportunistic": False, "save_results": False, "is_verbose": False,
       "precision": "high"}
   search_conf = {
       "type": "sampling",
@@ -375,7 +375,7 @@ def test_callable_quick_20d():
   options = {
       "seed": 12345, "budget": 5500, "tol": 1e-12, "display": False,
       "check_cache": True, "store_cache": True, "rich_direction": True,
-      "opportunistic": False, "save_results": False, "isVerbose": False,
+      "opportunistic": False, "save_results": False, "is_verbose": False,
       "precision": "high"}
   search_conf = {
       "type": "sampling",
@@ -573,4 +573,4 @@ def test_omads_toy_quick():
 
 
 if __name__ == "__main__":
-  test_callable_quick_2d()
+  test_callable_2d_sin_const()

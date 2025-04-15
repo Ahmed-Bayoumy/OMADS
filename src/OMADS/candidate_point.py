@@ -688,7 +688,7 @@ class CandidatePoint:
           self.fobj[fi] = np.inf
 
     if self.h > self.hzero:
-      if self.h > np.round(self.h_max, 2):
+      if self.h >= self.h_max:
         self.__penalize__(extreme=False)
       self.status = DESIGN_STATUS.INFEASIBLE
     else:

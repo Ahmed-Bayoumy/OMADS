@@ -732,8 +732,9 @@ class MADS:
         # assert len(self.HT.hash_id) - self.active_barrier.last_index + 1== 0
         for cp in xt:
           idx += 1
-          self.stats.neval_bb_feasible += 1
+
           if cp.is_feasible():
+            self.stats.neval_bb_feasible += 1
             _, insertion_flag = self.active_barrier.update_feas_with_point(
                 cp)
           else:
