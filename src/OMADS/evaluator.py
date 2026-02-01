@@ -22,34 +22,28 @@
 #  Copyright (C) 2022  Ahmed H. Bayoumy                                               #
 # ------------------------------------------------------------------------------------#
 """
-from dataclasses import dataclass
 from inspect import signature
 import concurrent.futures
 import subprocess
 
 import logging
-import copy
-# import importlib
 import platform
 import os
-from typing import List, Any, Optional
+import time
+from typing import List, Any
 
 import paramiko
 
 from numpy import inf
 import numpy as np
-from .point import Point
-from .postprocess import PostMADS
+from .postprocess import PostMADS, Output
 from .options import Options
 from .candidate_point import CandidatePoint
-from ._globals import DType, VAR_TYPE, DESIGN_STATUS, BB_EVAL_STATUS, PassException
+from ._globals import DType, DESIGN_STATUS, PassException
+from .optimizer import GenericSamplerBase
+from .barriers import AdaptiveBarrier
 
 
-# if importlib.util.find_spec('BMDFO'):
-#   from BMDFO import toy
-
-
-@dataclass
 class Evaluator:
   """ Define the evaluator attributes and settings
     :param blackbox: The blackbox name (it can be a callable function or an executable file)
@@ -64,162 +58,182 @@ class Evaluator:
     :param _dtype: The precision delegator of the numpy library
     :param timeout: The time out of the evaluation process
   """
-  blackbox: Any = "rosenbrock"
-  command_options: Any = None
-  internal: Optional[str] = None
-  path: str = "..\\tests\\Rosen"
-  input: str = "input.inp"
-  output: str = "output.out"
-  constants: Optional[List] = None
-  bb_eval: int = 0
-  _dtype: Optional[DType] = None
-  timeout: float = 1000000.
-  local_exec_jobs: Optional[List[str]] = None
-  candidates: Optional[List[Point]] = None
-  directions: Optional[List[Point]] = None
-  mesh: List[Any] = None
-  constraints_relaxation: Optional[dict] = None
-  xmin: Optional[CandidatePoint] = None
 
-  def __post_init__(self):
+  def __init__(
+          self, blackbox="BB", command_options=None, internal=None,
+          path="..\\tests\\Rosen", input="input.inp", output="output.out",
+          constants=None, bb_eval=0, _dtype=None, timeout=1000000,
+          local_exec_jobs=None, candidates=None, directions=None, mesh=None,
+          incumbent=None):
+    self.blackbox = blackbox
+    self.command_options = command_options
+    self.internal = internal
+    self.path = path
+    self.input = input
+    self.output = output
+    self.constants = constants
+    self.bb_eval: int = bb_eval
     self._dtype = DType()
-
-  def map_variables(self, eval_set: List[CandidatePoint]):
-    self.candidates = []
-    self.directions = []
-    self.mesh = []
-    for xtry in eval_set:
-      if xtry.sets is not None and isinstance(xtry.sets, dict):
-        p: List[Any] = []
-        for i, _ in enumerate((xtry.var_type)):
-          if (xtry.var_type[i] == VAR_TYPE.DISCRETE or xtry.var_type[i] == VAR_TYPE.CATEGORICAL) \
-                  and xtry.var_link[i] is not None:
-            p.append(xtry.sets[xtry.var_link[i]][int(xtry.coordinates[i])])
-          else:
-            p.append(xtry.coordinates[i])
-        temp_p: Point = Point()
-        temp_p.coordinates = p
-      else:
-        temp_p: Point = Point()
-        temp_p.coordinates = copy.deepcopy(xtry.coordinates)
-      self.candidates.append(temp_p)
-      self.directions.append(xtry.direction)
-      self.mesh.append(xtry.mesh)
+    self.timeout = timeout
+    self.local_exec_jobs = local_exec_jobs
+    self.candidates = candidates
+    self.directions = directions
+    self.mesh = mesh
+    self.incumbent = incumbent
 
   def run_callable_serial_local(
-          self, iter: int, peval: int, eval_set: List[CandidatePoint],
-          options: Options, post: PostMADS, psize: List[float],
-          step_name: str = None, mesh: Any = None, constraints_relaxation:
-          dict = None, budget: int = 1):
-    xc: List[CandidatePoint] = []
-    self.map_variables(eval_set)
-    self.constraints_relaxation = copy.deepcopy(constraints_relaxation)
-    for it in range(len(eval_set)):
-      peval += 1
-      f = self.evaluate_blackbox(it)
-      if f.status != BB_EVAL_STATUS.UNEVALUATED:
-        xc.append(f)
-        if mesh:
-          xc[-1].mesh = copy.deepcopy(mesh)
+          self, sampler: GenericSamplerBase, centers: List[int],
+          options: Options, stats: Any, active_barrier: AdaptiveBarrier,
+          post: PostMADS, step_name: str, parent_indices: List[int],
+          out: Output, hashtable=None):
 
-      post.bb_eval.append(peval)
-      xc[-1].eval_no = peval
-      post.iter.append(iter)
+    self.candidates = sampler._candidate_points_set
+    insertion_flag = [None] * len(sampler._candidate_points_set)
+    CS: List[CandidatePoint] = []
+    for index, candidate in enumerate(sampler._candidate_points_set):
+      tic = time.perf_counter()
+      stats.neval_bb += 1
+      self.incumbent = active_barrier.elements[parent_indices[index]]
+
+      self.evaluate_blackbox(index)
+      self.candidates[index].fc_index = parent_indices[index]
+      toc = time.perf_counter()
+      self.candidates[index].eval_time = toc - tic
+      self.candidates[index].eval_no = stats.neval_bb
+      hashtable.add_to_cache(self.candidates[index])
+
+      if self.candidates[index].is_feasible():
+        insertion_flag[index] = active_barrier.add_feasible(
+            self.candidates[index],
+            sampler.mesh)
+        stats.neval_bb_feasible += 1
+      elif self.candidates[index].status == DESIGN_STATUS.INFEASIBLE:
+        insertion_flag[index] = active_barrier.add_infeasible(
+            self.candidates[index],
+            sampler.mesh)
+        stats.neval_bb_infeasible += 1
+
+      active_barrier.parent_indexes[active_barrier.last_index] = parent_indices[index]
+
+      post.bb_eval.append(stats.neval_bb)
+
+      post.iter.append(sampler._iter)
       if step_name:
         post.step_name.append(step_name)
-      post.psize.append(psize)
-      if options.opportunistic and len(xc) > 0 and xc[-1] < self.xmin:
+      else:
+        post.step_name = []
+        post.step_name.append(step_name)
+
+      post.psize.append(sampler.mesh.get_delta_frame_size().coordinates)
+      post.x_incumbent.append(active_barrier.elements[centers[index]])
+
+      if options.opportunistic and self.candidates[index] < self.incumbent:
+        stats.nopportunistic_triggers += 1
         break
-      if peval == budget:
+      if stats.neval_bb == options.budget:
         break
-    return xc, post, peval
+
+    # COMPLETED: Output results here
+      post.iter.append(sampler._iter)
+      post.poll_dirs.append(sampler._candidate_points_set[index])
+    sampler._candidate_points_set = self.candidates
+    if options.save_coordinates:
+      post.coords.append(sampler._candidate_points_set)
+
+    if sampler.prob_params.is_pareto:
+      post.output_nd_results(out=out)
+    else:
+      post.output_results(out=out, all_res=False)
+
+    return insertion_flag, post
+
+  def evaluate_blackbox_parallel(self, point: CandidatePoint) -> List[Any]:
+    f, err_status = self.eval(point.mapped_coords)
+    point.__eval__(f)
+    if err_status:
+      point.status = DESIGN_STATUS.ERROR
+    return point
 
   def evaluate_blackbox(self, index: int) -> List[Any]:
-    f, err_status = self.eval(self.candidates[index].coordinates)
-    x_cp: CandidatePoint = CandidatePoint()
-    x_cp.coordinates = copy.deepcopy(self.candidates[index].coordinates)
-    x_cp.lambda_multipliers = copy.deepcopy(
-        self.constraints_relaxation["lambda_multipliers"])
-    x_cp.rho = copy.deepcopy(self.constraints_relaxation["rho"])
-    x_cp.h_max = copy.deepcopy(self.constraints_relaxation["hmax"])
-    x_cp.constraints_type = copy.deepcopy(
-        self.constraints_relaxation["constraints_type"])
-    x_cp.direction = copy.deepcopy(self.directions[index])
-    x_cp.mesh = copy.deepcopy(self.mesh[index])
-    x_cp.__eval__(f)
+    f, err_status = self.eval(self.candidates[index].mapped_coords)
+    self.candidates[index].__eval__(f)
     if err_status:
-      x_cp.status = DESIGN_STATUS.ERROR
-    # if x_cp.status == DESIGN_STATUS.INFEASIBLE:
-      # self.constraintsRelaxation["hmax"] = x_cp.hmax
-    if self.constraints_relaxation["lambda_multipliers"] is None:
-      self.constraints_relaxation["lambda_multipliers"] = copy.deepcopy(
-          self.xmin.lambda_multipliers)
-    if len(x_cp.cpb) > len(self.constraints_relaxation["lambda_multipliers"]):
-      self.constraints_relaxation["lambda_multipliers"] += [
-          self.constraints_relaxation["lambda_multipliers"][-1]] * abs(
-          len(self.constraints_relaxation["lambda_multipliers"]) -
-          len(x_cp.cpb))
-    if len(x_cp.cpb) < len(self.constraints_relaxation["lambda_multipliers"]):
-      del self.constraints_relaxation["lambda_multipliers"][len(x_cp.cpb):]
-    for i, _ in enumerate((x_cp.cpb)):
-      if np.isclose(
-              self.constraints_relaxation["lambda_multipliers"][i],
-              0., rtol=1e-09, atol=1e-09):
-        self.constraints_relaxation["rho"] = 0.001
-      self.constraints_relaxation["lambda_multipliers"][i] = copy.deepcopy(
-          max(
-              self.dtype.zero, self.constraints_relaxation
-              ["lambda_multipliers"][i] +
-              (1 / self.constraints_relaxation["rho"]) * x_cp.cpb[i]))
+      self.candidates[index].status = DESIGN_STATUS.ERROR
+    return self.candidates[index]
 
-    if x_cp.status == DESIGN_STATUS.FEASIBLE:
-      self.constraints_relaxation["rho"] *= copy.deepcopy(0.5)
+  def run_callable_parallel_local(
+          self, sampler: GenericSamplerBase, centers: List[int],
+          options: Options, stats: Any, active_barrier: AdaptiveBarrier,
+          post: PostMADS, step_name: str, parent_indices: List[int],
+          out: Output, hashtable=None):
+    self.candidates = sampler.candidate_points_set
+    insertion_flag = []
+    insertion_flag = [None] * len(sampler._candidate_points_set)
 
-    return x_cp
-
-  def run_callable_parallel_local(self, iter: int, peval: int,
-                                  eval_set: List[CandidatePoint],
-                                  options: Options, post: PostMADS,
-                                  psize: List[float],
-                                  mesh: Any = None, step_name: str = None,
-                                  constraints_relaxation: dict = None,
-                                  budget: int = 1):
-    xc: List[CandidatePoint] = []
-    self.map_variables(eval_set)
-    self.constraints_relaxation = copy.deepcopy(constraints_relaxation)
     with concurrent.futures.ProcessPoolExecutor(max_workers=options.np) as executor:
-      results = [
-          executor.submit(self.evaluate_blackbox, it)
-          for it in range(len(eval_set))]
-      for f in concurrent.futures.as_completed(results):
-        # if f.result()[0]:
-        #     executor.shutdown(wait=False)
-        # else:
-        peval = peval + 1
-        if f.result().status != DESIGN_STATUS.UNEVALUATED:
-          xc.append(f.result())
-          if mesh:
-            xc[-1].mesh = copy.deepcopy(mesh)
+      tic = time.perf_counter()
+      future_to_index = {
+          executor.submit(self.evaluate_blackbox_parallel, point): (i, point)
+          for i, point in enumerate(self.candidates)}
+      completed_result = None
+      for future in concurrent.futures.as_completed(future_to_index):
+        time.sleep(0.1)
+        toc = time.perf_counter()
+        index, point = future_to_index[future]
+        stats.neval_bb += 1
+        self.candidates[index] = future.result()
+        sampler.candidate_points_set[index] = self.candidates[index]
+        sampler.candidate_points_set[index].eval_time = toc - tic
+        sampler._candidate_points_set[index].eval_no = stats.neval_bb
+        hashtable.add_to_cache(self.candidates[index])
+        self.incumbent = active_barrier.elements[parent_indices[index]]
 
-          xc[-1].eval_no = self.bb_eval
-          self.bb_eval = peval
-          post.bb_eval.append(peval)
-          post.iter.append(iter)
-          # post.poll_dirs.append(poll.poll_dirs[f.result()[1]])
-          if step_name:
-            post.step_name.append(step_name)
-          post.psize.append(psize)
+        if sampler.candidate_points_set[index].is_feasible():
+          insertion_flag[index] = active_barrier.add_feasible(
+              sampler.candidate_points_set[index],
+              sampler.mesh)
+          stats.neval_bb_feasible += 1
+        elif sampler.candidate_points_set[index].status == DESIGN_STATUS.INFEASIBLE:
+          insertion_flag[index] = active_barrier.add_infeasible(
+              sampler.candidate_points_set[index],
+              sampler.mesh)
+          stats.neval_bb_infeasible += 1
 
-          if options.opportunistic and len(xc) > 0 and xc[-1] < self.xmin:
-            break
-          if peval == budget:
-            break
+        active_barrier.parent_indexes[active_barrier.last_index] = parent_indices[index]
+        post.x_incumbent.append(active_barrier.elements[centers[index]])
+
+        post.bb_eval.append(stats.neval_bb)
+        post.iter.append(sampler._iter)
+        if step_name:
+          post.step_name.append(step_name)
         else:
-          executor.shutdown(wait=False)
+          post.step_name = []
+          post.step_name.append(step_name)
+        post.psize.append(sampler.mesh.get_delta_frame_size().coordinates)
+        if options.opportunistic and sampler.candidate_points_set[index] < self.incumbent:
+          stats.nopportunistic_triggers += 1
+          completed_result = future.result()
+          break
+        if stats.neval_bb == options.budget:
+          completed_result = future.result()
+          break
+      if (completed_result):
+        for f in future_to_index:
+          if not f.done():
+            f.cancel()
 
-    return peval, xc, post, peval
+    if options.save_coordinates:
+      post.coords.append(sampler.candidate_points_set)
+
+    if sampler.prob_params.is_pareto:
+      post.output_nd_results(out=out)
+    else:
+      post.output_results(out=out, all_res=False)
+
+    return insertion_flag, post
 
   # Function to execute .exe file locally
+
   def run_exe(self, exe_path):
     try:
       result = subprocess.run(
@@ -387,10 +401,6 @@ class Evaluator:
         else:
           out = [self.read_output()[0], [self.read_output()[1:]]]
         return out, evalerr
-    # elif importlib.util.find_spec('BMDFO') and self.internal == "uncon":
-    #   f_eval = toy.UnconSO(values)  # type: ignore
-    # elif importlib.util.find_spec('BMDFO') and self.internal == "con":
-    #   f_eval = toy.ConSO(values)  # type: ignore
     else:
       raise IOError(f"Input dict:: evaluator:: internal:: "
                     f"Incorrect internal method :: {self.internal} :: "

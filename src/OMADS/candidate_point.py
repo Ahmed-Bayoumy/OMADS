@@ -24,18 +24,14 @@
 """
 
 import copy
-from dataclasses import dataclass, field
 from typing import List, Dict, Any, Optional
 from numpy import subtract, add, maximum, power, inf
 import numpy as np
 
 
-from ._globals import DType, BARRIER_TYPES, MPP, DESIGN_STATUS, COMPARE_TYPE
-from .gmesh import Gmesh
-from .point import Point
+from ._globals import VAR_TYPE, DType, BARRIER_TYPES, MPP, DESIGN_STATUS, COMPARE_TYPE
 
 
-@dataclass
 class CandidatePoint:
   """ A class for the poll point
 
@@ -52,67 +48,152 @@ class CandidatePoint:
     and storing coordinates, hash signature, in the cache memory
     :param _dtype:  numpy double data type precision
   """
-  # Dimension of the point
-  _n: int = 0
-  # Coordinates of the point
-  _coords: List[float] = field(default_factory=list)
-  # Coordinates definition boolean
-  _defined: List[bool] = field(default_factory=lambda: [False])
-  # Evaluation boolean
-  _evaluated: bool = False
-  # Objective function
-  _f: List[float] = field(default_factory=lambda: [inf])
-  _freal: List[float] = field(default_factory=lambda: [inf])
-  # Inequality constraints
-  _c_ineq: List[float] = field(default_factory=list)
-  # Equality constraints
-  _c_eq: List[float] = field(default_factory=list)
-  # Aggregated constraints; active set
-  _h: float = inf
-  # hash signature; facilitate looking for duplicates and storing coordinates,
-  # hash signature, in the cache memory
-  _signature: int = 0
-  # numpy double data type precision
-  _dtype: Optional[DType] = None
-  # Variables type
-  _var_type: Optional[List[int]] = None
-  # Discrete set
-  _sets: Optional[Dict] = None
 
-  _var_link: Optional[List[str]] = None
+  def __init__(
+      self,
+      _fc_index: Optional[int] = None,
+      _n: int = 0,
+      _coords: Optional[List[float]] = None,
+      _defined: Optional[List[bool]] = None,
+      _evaluated: bool = False,
+      _f: Optional[List[float]] = None,
+      _freal: Optional[List[float]] = None,
+      _c_ineq: Optional[List[float]] = None,
+      _c_eq: Optional[List[float]] = None,
+      _h: float = inf,
+      _signature: int = 0,
+      _dtype: Optional[DType] = None,
+      _var_type: Optional[List[int]] = None,
+      _sets: Optional[Dict] = None,
+      _var_link: Optional[List[str]] = None,
+      _status: DESIGN_STATUS = DESIGN_STATUS.UNEVALUATED,
+      _constraints_type: Optional[List[BARRIER_TYPES]] = None,
+      _is_eb_passed: bool = False,
+      _lambda: Optional[List[float]] = None,
+      _rho: float = MPP.RHO.value,
+      _hmax: float = 1.0,
+      _hmin: float = inf,
+      _eval_time: float = 0.0,
+      _source: str = "Current run",
+      _model: str = "Simulation",
+      _hzero: Optional[float] = None,
+      _direction: Optional[List[Any]] = None,
+      _fs: Optional[List[Any]] = None,
+      _eval_no: int = 0,
+      _incumbent_signature: Optional[int] = None,
+      _improving: bool = False,
+      _cpb: Optional[List[float]] = None,
+      _mapped_coords: Optional[List[Any]] = None,
+      _is_nondominated: bool = False,
+      _was_center: bool = False
+  ):
+    self._fc_index = _fc_index
+    self._n = _n
+    self._coords = _coords if _coords is not None else []
+    self._defined = _defined if _defined is not None else []
+    self._evaluated = _evaluated
+    self._f = _f if _f is not None else []
+    self._freal = _freal if _freal is not None else []
+    self._c_ineq = _c_ineq if _c_ineq is not None else []
+    self._c_eq = _c_eq if _c_eq is not None else []
+    self._h = _h
+    self._signature = _signature
+    self._dtype = _dtype if _dtype is not None else DType()
+    self._var_type = _var_type
+    self._sets = _sets
+    self._var_link = _var_link
+    self._status = _status
+    self._constraints_type = _constraints_type
+    self._is_eb_passed = _is_eb_passed
+    self._lambda = _lambda
+    self._rho = _rho
+    self._hmax = _hmax
+    self._hmin = _hmin
+    self._eval_time = _eval_time
+    self._source = _source
+    self._model = _model
+    self._hzero = _hzero
+    self._direction = _direction
+    self._fs = _fs
+    self._eval_no = _eval_no
+    self._incumbent_signature = _incumbent_signature
+    self._improving = _improving
+    self._cpb = _cpb
+    self._mapped_coords = _mapped_coords if _mapped_coords is not None else []
+    self._is_nondominated = _is_nondominated
+    self._was_center = _was_center
 
-  _status: DESIGN_STATUS = DESIGN_STATUS.UNEVALUATED
+  @property
+  def cpb(self):
+    return self._cpb
 
-  _constraints_type: Optional[List[BARRIER_TYPES]] = None
+  @cpb.setter
+  def cpb(self, value: List[float]) -> List[float]:
+    self._cpb = value
 
-  _is_eb_passed: bool = False
+  @property
+  def eval_no(self):
+    return self._eval_no
 
-  _lambda: Optional[List[float]] = None
-  _rho: float = MPP.RHO.value
+  @eval_no.setter
+  def eval_no(self, value: int) -> int:
+    self._eval_no = value
 
-  _hmax: float = 1.
+  @property
+  def model(self):
+    return self._model
 
-  _hmin: float = inf
+  @model.setter
+  def model(self, value: str) -> str:
+    self._model = value
 
-  eval_time: float = 0.
+  @property
+  def source(self):
+    return self._source
 
-  source: str = "Current run"
+  @source.setter
+  def source(self, value: str) -> str:
+    self._source = value
 
-  model: str = "Simulation"
+  @property
+  def eval_time(self):
+    return self._eval_time
 
-  _hzero: Optional[float] = None
+  @eval_time.setter
+  def eval_time(self, value: float) -> float:
+    self._eval_time = value
 
-  _mesh: Optional[Gmesh] = None
+  @property
+  def fc_index(self):
+    return self._fc_index
 
-  _direction: Optional[Point] = None
+  @fc_index.setter
+  def fc_index(self, value: int) -> int:
+    self._fc_index = value
 
-  _fs: Optional[Point] = None
+  @property
+  def was_center(self):
+    return self._was_center
 
-  eval_no: int = 0
+  @was_center.setter
+  def was_center(self, value: Any) -> Any:
+    self._was_center = value
 
-  _incumbent_signature: int = None
+  @property
+  def improving(self):
+    return self._improving
 
-  cpb: List[float] = None
+  @improving.setter
+  def improving(self, value: bool) -> bool:
+    self._improving = value
+
+  @property
+  def is_nondominated(self):
+    return self._is_nondominated
+
+  @is_nondominated.setter
+  def is_nondominated(self, value: bool) -> bool:
+    self._is_nondominated = value
 
   def __post_init__(self, f=None, h=None, coords=None):
     if f is not None:
@@ -125,6 +206,7 @@ class CandidatePoint:
       self.h = copy.deepcopy(h)
     if coords is not None:
       self.coordinates = copy.deepcopy(coords)
+
     self._dtype = DType()
 
   # def __post_init__(self):
@@ -136,6 +218,14 @@ class CandidatePoint:
   @n.setter
   def n(self, value: int) -> int:
     self._n = value
+
+  @property
+  def mapped_coords(self):
+    return self._mapped_coords
+
+  @mapped_coords.setter
+  def mapped_coords(self, value: List[Any]) -> Any:
+    self._mapped_coords = list(value)
 
   @property
   def is_extreme_barrier_passed(self) -> bool:
@@ -160,36 +250,35 @@ class CandidatePoint:
     self._incumbent_signature = value
 
   @property
-  def fs(self) -> Point:
+  def fs(self) -> List[Any]:
     """Point coordinates on the functions space
 
     :return: Functions Point
     :rtype: Point
     """
     if self._fs is None:
-      self._fs = Point(len(self.f))
-      self._fs.coordinates = self.f
+      self._fs = self.f
     return self._fs
 
   @fs.setter
-  def fs(self, value: Point) -> Any:
+  def fs(self, value: List[Any]) -> Any:
     self._fs = value
 
+  # @property
+  # def mesh(self) -> Gmesh:
+  #   """The mesh settings the current point has been generated on
+
+  #   :return: A mesh instant
+  #   :rtype: Gmesh
+  #   """
+  #   return self._mesh
+
+  # @mesh.setter
+  # def mesh(self, value: Any) -> Any:
+  #   self._mesh = value
+
   @property
-  def mesh(self) -> Gmesh:
-    """The mesh settings the current point has been generated on
-
-    :return: A mesh instant
-    :rtype: Gmesh
-    """
-    return self._mesh
-
-  @mesh.setter
-  def mesh(self, value: Any) -> Any:
-    self._mesh = value
-
-  @property
-  def direction(self) -> Point:
+  def direction(self) -> List[Any]:
     """Point instant of the direction from the incumbent to the current point
 
     :return: Direction Point
@@ -269,7 +358,7 @@ class CandidatePoint:
     return self._var_link
 
   @var_link.setter
-  def var_link(self, value: Any):
+  def var_link(self, value: List[str]):
     self._var_link = value
 
   @property
@@ -364,6 +453,10 @@ class CandidatePoint:
     """
     return self._signature
 
+  @signature.setter
+  def signature(self, value: int) -> int:
+    self._signature = value
+
   @property
   def n_dimensions(self) -> int:
     """Number of dimensions
@@ -399,11 +492,25 @@ class CandidatePoint:
     self._n = len(coords)
     self._coords = list(coords)
     self._signature = hash(tuple(self._coords))
+    self.map_coordinates()
     self._defined = [True] * self._n
 
   @coordinates.deleter
   def coordinates(self):
     del self._coords
+
+  def map_coordinates(self):
+    self._mapped_coords = [None] * self._n
+    if self.sets is not None and isinstance(self.sets, dict):
+      for i, t in enumerate((self.var_type)):
+        if (t == VAR_TYPE.DISCRETE or t == VAR_TYPE.CATEGORICAL) \
+                and self.var_link[i] is not None:
+          self._mapped_coords[i] = self.sets[self.var_link[i]][
+              int(self._coords[i])]
+        else:
+          self._mapped_coords[i] = self._coords[i]
+    else:
+      self._mapped_coords = self._coords
 
   @property
   def defined(self) -> List[bool]:
@@ -466,13 +573,7 @@ class CandidatePoint:
     else:
       self._freal = [other]
 
-    if self.fs is None or len(
-            self._fs.coordinates) < 0 or not isinstance(
-            self._freal, list):
-      self.fs = Point(len(self._freal))
-      self.fs.coordinates = self._freal
-    else:
-      self.fs.coordinates = self._freal
+    self.fs = self._freal
 
   @property
   def hmin(self) -> float:
@@ -561,6 +662,7 @@ class CandidatePoint:
     elif not self.is_feasible() and not other.is_feasible():
       strict_dom = all(f1 < f2 for f1, f2 in zip(
           self.f, other.f)) and self.h < other.h
+
     return strict_dom
     # return (other.h > (self.h_max if self._is_EB_passed else ..
     # self._dtype.zero) > self.__dh__(other=other)) or \
@@ -569,7 +671,8 @@ class CandidatePoint:
 
   def __le__(self, other):
     """Weak dominance: satisfied if current candidate (self) is equal or dominating other."""
-    return self.__compare__(other) in [COMPARE_TYPE.EQUAL, COMPARE_TYPE.DOMINATING]
+    return self.__compare__(other) in [COMPARE_TYPE.EQUAL, COMPARE_TYPE.
+                                       DOMINATING]
 
   def __gt__(self, other):
     return not self.__lt__(other=other)
@@ -604,17 +707,17 @@ class CandidatePoint:
       return True
     return False
 
-  def __eval__(self, bb_output):
-    """ Evaluate point """
-    # """ Objective function """
+  def _update_candidate_design_criteria(self, bb_output):
+    """ Objective function, equality constraints and inequality constraints (can be an empty vector) """
     self.f = bb_output[0]
     self.fobj = bb_output[0]
-    # """ Inequality constraints (can be an empty vector) """
     self.c_ineq = bb_output[1]
     if not isinstance(self.c_ineq, list):
       self.c_ineq = [self.c_ineq]
     self.evaluated = True
-    # """ Check the multiplier matrix """
+
+  def _check_and_initialize_multipliers_if_needed(self):
+    """ Check the multiplier matrix """
     if self.lambda_multipliers is None:
       self.lambda_multipliers = []
       for _ in range(len(self.c_ineq)):
@@ -623,7 +726,9 @@ class CandidatePoint:
       if len(self.c_ineq) != len(self.lambda_multipliers):
         for _ in range(len(self.lambda_multipliers), len(self.c_ineq)):
           self.lambda_multipliers.append(MPP.LAMBDA.value)
-    # """ Check and adapt the barriers matrix"""
+
+  def _check_and_update_barriers_type_if_needed(self):
+    """ Check and adapt the barriers matrix"""
     if self.constraints_type is not None:
       if len(self.c_ineq) != len(self.constraints_type):
         if len(self.c_ineq) > len(self.constraints_type):
@@ -636,7 +741,9 @@ class CandidatePoint:
       self.constraints_type = []
       for _ in range(len(self.c_ineq)):
         self.constraints_type.append(BARRIER_TYPES.EB)
-    # """ Check if all extreme barriers are satisfied """
+
+  def _calculate_barriers_based_violations(self):
+    """ Check if all extreme barriers are satisfied """
     ceb = []
     cpb = []
     self.cpb = []
@@ -644,7 +751,7 @@ class CandidatePoint:
       if self.constraints_type[i] == BARRIER_TYPES.EB:
         ceb.append(self.c_ineq[i])
       else:
-        cpb.append(self.c_ineq[i])
+        cpb.append(self.c_ineq[i] if self.c_ineq[i] > 0. else 0.)
     if isinstance(ceb, list) and len(ceb) >= 1:
       ceb_max = maximum(ceb, self._dtype.zero, dtype=self._dtype.dtype)
       if max(ceb_max) != self._dtype.zero:
@@ -662,25 +769,34 @@ class CandidatePoint:
       self.cpb = cpb
     else:
       hpb = self._dtype.zero
+    return heb, hpb
+
+  def _calculate_constraints_violation_function(self):
+    heb: float = 0.
+    hpb: float = 0.
+    heb, hpb = self._calculate_barriers_based_violations()
     if heb <= self.hzero:
       self.is_extreme_barrier_passed = True
       if hpb > self.hzero:
         self.status = DESIGN_STATUS.INFEASIBLE
       self.h = copy.deepcopy(hpb)
-      if hpb < self.h_max:
-        self.h_max = copy.deepcopy(hpb)
+      # if hpb < self.h_max:
+      #   self.h_max = copy.deepcopy(hpb)
     else:
       self.is_extreme_barrier_passed = False
       self.status = DESIGN_STATUS.INFEASIBLE
       self.h = copy.deepcopy(heb)
-      self.__penalize__(extreme=True)
       return
     # """ Aggregate all constraints """
     if np.isnan(self.h) or np.any(np.isnan(self.c_ineq)):
       self.h = inf
       self.status = DESIGN_STATUS.ERROR
 
-    # """ Penalize relaxable constraints violation """
+  def _penalize_relaxable_constraints_violation(self):
+    """ Penalize relaxable constraints violation """
+    if (not self.is_extreme_barrier_passed):
+      self.__penalize__(extreme=True)
+      return
     if any(np.isnan(self.f)):
       for fi, _ in enumerate((self.f)):
         if np.isnan(self.f[fi]):
@@ -688,28 +804,51 @@ class CandidatePoint:
           self.fobj[fi] = np.inf
 
     if self.h > self.hzero:
-      if self.h >= self.h_max:
+      if self.h >= self.h_max and self.h_max < np.inf:
         self.__penalize__(extreme=False)
       self.status = DESIGN_STATUS.INFEASIBLE
     else:
-      self.h_max = copy.deepcopy(self.h)
+      # self.h_max = copy.deepcopy(self.h)
       self.status = DESIGN_STATUS.FEASIBLE
+
+  def _update_multipliers_and_penalty_param(self):
+    for i, _ in enumerate(self.lambda_multipliers):
+      self.lambda_multipliers[i] = np.max(
+          [self.hzero, self.lambda_multipliers[i] + (1 / self.rho) * self.c_ineq[i]])
+
+    if self.h < self.h_max:
+      self.h_max = self.h
+    self.rho *= 0.5
+
+  def __eval__(self, bb_output):
+    """ Evaluate point """
+    self._update_candidate_design_criteria(bb_output)
+    self._check_and_initialize_multipliers_if_needed()
+    self._check_and_update_barriers_type_if_needed()
+    self._calculate_constraints_violation_function()
+    self._penalize_relaxable_constraints_violation()
+    # self._update_multipliers_and_penalty_param()
+    if self.h < self.h_max:
+      self.h_max = self.h
 
   def __penalize__(self, extreme: bool = True):
     if len(self.cpb) > len(self.lambda_multipliers):
       self.lambda_multipliers += [self.lambda_multipliers[-1]
-                                  ] * abs(len(self.lambda_multipliers)-len(self.cpb))
+                                  ] * abs(len(self.lambda_multipliers) - len(self.cpb))
     if 0 < len(self.cpb) < len(self.lambda_multipliers):
       del self.lambda_multipliers[len(self.cpb):]
     if extreme:
       self.hmin = inf
     else:
-      # np.dot(self.lambda_multipliers, self.cPB) + ((1/(2*self.rho)) ..
-      # * self.h if self.rho > 0. else np.inf)
-      self.hmin = self.h
+      # np.dot(self.lambda_multipliers, self.cpb) + ((1/(2*self.rho))
+      #                                              * self.h if self.rho > 0. else np.inf)
+      # self.hmin = self.h
+      # TODO: Check the following for MOO
       self.f = [
-          self.fobj[i] * (1. / len(self.fobj)) + self.hmin
-          for i in range(len(self.fobj))]
+          self.fobj[i] * (1. / len(self.fobj)) + np.dot(
+              self.lambda_multipliers, self.cpb) +
+          ((1 / (2 * self.rho)) * self.h if self.rho > 0. else np.inf)
+          for i in range(len(self.fobj))] if len(self.fobj) == 1 else self.fobj
 
   def __is_duplicate__(self, other) -> bool:
     return other.signature is self._signature
@@ -734,9 +873,10 @@ class CandidatePoint:
       # self.is_feasible() and other.is_feasible()) or (
       # not self.is_feasible() and not other.is_feasible()):
       return COMPARE_TYPE.UNDEFINED
+
     isbetter = False
     isworse = False
-    for f1, f2 in zip(self.f, other.f):
+    for f1, f2 in zip(self.fobj, other.fobj):
       if f1 < f2:
         isbetter = True
       if f2 < f1:
@@ -748,12 +888,24 @@ class CandidatePoint:
     # // Jaszkiewicz, A., & Lust, T. (2018).
     # // ND-tree-based update: a fast algorithm for the dynamic nondominance problem.
     # // IEEE Transactions on Evolutionary Computation, 22(5), 778-791.
-
-    if not (isworse and isbetter):
-      if self.h < other.h:
-        isbetter = True
-      if other.h < self.h:
-        isworse = True
+    if (self.status == DESIGN_STATUS.INFEASIBLE and other.status == DESIGN_STATUS.INFEASIBLE) or DESIGN_STATUS.INFEASIBLE in [self.status, other.status]:
+      if not (isworse and isbetter):
+        if self.h < other.h:
+          isbetter = True
+        if other.h < self.h:
+          isworse = True
+    # elif (self.status == DESIGN_STATUS.INFEASIBLE and other.status == DESIGN_STATUS.FEASIBLE):
+    #   if not (isworse and isbetter):
+    #     if self.h <= self.h_max:
+    #       isbetter = True
+    #     if self.h_max < self.h:
+    #       isworse = True
+    # elif (self.status == DESIGN_STATUS.FEASIBLE and other.status == DESIGN_STATUS.INFEASIBLE):
+    #   if not (isworse and isbetter):
+    #     if other.h <= self.h_max:
+    #       isbetter = True
+    #     if self.h_max < other.h:
+    #       isworse = True
 
     if isworse:
       if isbetter:
@@ -774,3 +926,35 @@ class CandidatePoint:
   def is_feasible(self):
     """Check if the candidate is feasible."""
     return self.status == DESIGN_STATUS.FEASIBLE
+
+  def create_candidate_point_from_coords(
+          self, temp, var_type: List, var_sets: Dict, var_link: List[str],
+          c_types: List[BARRIER_TYPES] = None, fc_index: int = None, other=None):
+    self.constraints_type = copy.deepcopy(
+        [xb for xb in c_types] if isinstance(c_types, list) else [c_types])
+    self.sets = copy.deepcopy(var_sets)
+    self.var_type = copy.deepcopy(var_type)
+    self.var_link = copy.deepcopy(var_link)
+    self.coordinates = temp
+    self.dtype.precision = self.dtype.precision
+    # tmp.mesh = copy.deepcopy(self.mesh)
+    self.fc_index = fc_index
+    self.rho = other.rho
+    self.lambda_multipliers = other.lambda_multipliers
+    self.incumbent_signature = other.signature
+
+  def to_dict(self) -> Dict[str, Any]:
+    return {
+        key: value
+        for key, value in self.__dict__.items()
+    }
+
+  def __dir__(self):
+      # Collect instance attributes
+    instance_attrs = list(self.__dict__.keys())
+
+    # Collect class attributes and methods
+    class_attrs = list(set(dir(self.__class__)))
+
+    # Combine and deduplicate
+    return sorted(set(instance_attrs + class_attrs))

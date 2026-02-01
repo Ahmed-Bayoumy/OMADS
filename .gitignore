@@ -29,3 +29,6 @@ CFD
 temp
 tests/*.log
 testing*
+archive
+dntTrack
+tests/_*

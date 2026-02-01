@@ -28,15 +28,16 @@ import copy
 
 import numpy as np
 
-from ._globals import DType, VAR_TYPE, BARRIER_TYPES, SUCCESS_TYPES, DESIGN_STATUS, MSG_TYPE
+from ._globals import DType, VAR_TYPE, BARRIER_TYPES, MSG_TYPE
 from .candidate_point import CandidatePoint
 from .point import Point
-from .optimizer import GenericSamplerBase
+from .optimizer import GenericSamplerBase, GenericSamplerBaseData
 from .mesh import Mesh
+from .cache import Cache
+from .metadata import MadsStatistics
 
 
-@dataclass
-class Dirs2n(GenericSamplerBase):
+class Dirs2n(GenericSamplerBaseData, GenericSamplerBase):
   """This is the orthognal 2n-directions class used for the poll step
 
     :param _poll_dirs: Poll set (list of points)
@@ -45,19 +46,18 @@ class Dirs2n(GenericSamplerBase):
     :param _defined: A boolean that indicate if the poll points are defined
   """
 
-  def __post_init__(self):
-    self._dtype = DType()
-    self._xmin: CandidatePoint = CandidatePoint()
-    self._x_sc: CandidatePoint = CandidatePoint()
+  def __init__(self):
+    super().__init__()
 
   @property
-  def x_sc(self) -> CandidatePoint:
-    """Secondary incumbent
+  def rng(self):
+    if self._rng is None:
+      self._rng = np.random.default_rng(seed=self.seed + (self.iter) * 123)
+    return self._rng
 
-    :return: Secondary incumbent design candidate
-    :rtype: CandidatePoint
-    """
-    return self._x_sc
+  @rng.setter
+  def rng(self, value: np.random) -> np.random:
+    self._rng = value
 
   @property
   def n(self):
@@ -66,10 +66,6 @@ class Dirs2n(GenericSamplerBase):
   @n.setter
   def n(self, value: int) -> int:
     self._n = value
-
-  @x_sc.setter
-  def x_sc(self, value: CandidatePoint):
-    self._x_sc = value
 
   @property
   def bb_output(self) -> List[float]:
@@ -184,12 +180,12 @@ class Dirs2n(GenericSamplerBase):
     self._bb_eval = other
 
   @property
-  def psize(self):
-    return self._psize
+  def frame_size(self):
+    return self._frame_size
 
-  @psize.setter
-  def psize(self, other: float):
-    self._psize = other
+  @frame_size.setter
+  def frame_size(self, other: float):
+    self._frame_size = other
 
   @property
   def iter(self):
@@ -200,15 +196,17 @@ class Dirs2n(GenericSamplerBase):
     self._iter = other
 
   @property
-  def poll_set(self):
+  def candidate_points_set(self):
     return self._candidate_points_set
 
-  @poll_set.setter
-  def poll_set(self, p: CandidatePoint):
+  @candidate_points_set.setter
+  def candidate_points_set(self, p: CandidatePoint):
+    if not isinstance(self._candidate_points_set, list):
+      self._candidate_points_set = []
     self._candidate_points_set.append(p)
 
-  @poll_set.deleter
-  def poll_set(self):
+  @candidate_points_set.deleter
+  def candidate_points_set(self):
     del self._candidate_points_set
     self._candidate_points_set = []
 
@@ -250,12 +248,12 @@ class Dirs2n(GenericSamplerBase):
     del self._defined
 
   @property
-  def xmin(self) -> CandidatePoint:
-    return self._xmin
+  def center(self) -> CandidatePoint:
+    return self._center
 
-  @xmin.setter
-  def xmin(self, other: CandidatePoint):
-    self._xmin = other
+  @center.setter
+  def center(self, other: CandidatePoint):
+    self._center = other
 
   @property
   def nb_success(self):
@@ -265,11 +263,24 @@ class Dirs2n(GenericSamplerBase):
   def nb_success(self, other: int):
     self._nb_success = other
 
-  def generate_dir(self):
-    return np.random.rand(self._n).tolist()
+  def generate_candidate_points(self):
+    pass
+
+  def postprocess_evaluated_candidates(self):
+    pass
+
+  def update(self):
+    pass
+
+  def generate_random_dir(self):
+    # np.random.seed(seed=self.seed+(self.iter)*123)
+    # np.random.seed(seed=self.seed)
+    return self.rng.rand(self._n).tolist()
 
   def ran(self):
-    return np.random.random(self._n).astype(dtype=self._dtype.dtype)
+    # np.random.seed(seed=self.seed+(self.iter)*123)
+    # np.random.seed(seed=self.seed)
+    return self.rng.standard_normal(self._n).astype(dtype=self._dtype.dtype)
 
   def create_housholder(self, is_rich: bool, domain: List[int] = None,
                         is_one_dir: bool = False) -> np.ndarray:
@@ -321,11 +332,11 @@ class Dirs2n(GenericSamplerBase):
         hhm[i][i] = int(np.floor((-1 if i % 2 else 1) - 2 **
                         self.mesh.get_delta_mesh_size().coordinates[i]))
       elif domain[i] == VAR_TYPE.CATEGORICAL:
-        hhm[i][i] = np.ceil(np.random.random(
+        hhm[i][i] = np.ceil(self.rng.random(
             1).astype(dtype=self._dtype.dtype))
       else:
         for j, _ in enumerate((domain)):
-          if domain[j] != VAR_TYPE.REAL:
+          if domain[j] != VAR_TYPE.REAL.name:
             hhm[i][j] = int(
                 np.floor(-1 + 2**self.mesh.get_delta_mesh_size().coordinates[i]))
 
@@ -337,10 +348,11 @@ class Dirs2n(GenericSamplerBase):
     return hhm
 
   def create_poll_set(
-          self, hhm: np.ndarray, ub: List[float],
-          lb: List[float],
+          self, ub: List[float],
+          lb: List[float], fc: CandidatePoint, fci: int,
           it: int, var_type: List, var_sets: Dict, var_link: List[str],
-          c_types: List[BARRIER_TYPES] = None, is_prim: bool = True):
+          c_types: List[BARRIER_TYPES] = None,
+          rich_direction: bool = True):
     """Create the poll directions
 
     :param hhm: Householder matrix
@@ -352,18 +364,17 @@ class Dirs2n(GenericSamplerBase):
     :param it: iteration
     :type it: int
     """
-    del self.poll_set
+    del self.candidate_points_set
     del self.poll_dirs
-    if is_prim:
-      temp = np.add(hhm, np.array(self.xmin.coordinates).T,
-                    dtype=self._dtype.dtype)
-    else:
-      temp = np.add(
-          hhm, np.array(self.x_sc.coordinates),
-          dtype=self._dtype.dtype)
-    # np.random.seed(self._seed)
-    np.random.seed(seed=self.seed+self.iter*123)
-    temp = np.random.permutation(temp)
+    hhm = self.create_housholder(
+        rich_direction,
+        domain=self.prob_params.var_type)
+    temp = np.add(
+        hhm, np.array(
+            fc.coordinates).T,
+        dtype=self._dtype.dtype)
+
+    temp = self.rng.permutation(temp)
     temp = np.minimum(temp, ub, dtype=self._dtype.dtype)
     temp = np.maximum(temp, lb, dtype=self._dtype.dtype)
     temp = np.unique(temp, axis=0)
@@ -375,26 +386,23 @@ class Dirs2n(GenericSamplerBase):
           np.ndarray) else 1
     else:
       ndirs = 0
+
     for k in range(ndirs):
       tmp = CandidatePoint()
-      tmp.constraints_type = copy.deepcopy(
-          [xb for xb in c_types] if isinstance(c_types, list) else [c_types])
-      tmp.sets = copy.deepcopy(var_sets)
-      tmp.var_type = copy.deepcopy(var_type)
-      tmp.var_link = copy.deepcopy(var_link)
-      tmp.coordinates = temp[k]
-      tmp.dtype.precision = self.dtype.precision
-      tmp.mesh = copy.deepcopy(self.mesh)
-      tmp.incumbent_signature = self.xmin.signature
-      self.poll_set = tmp
-      if is_prim:
-        tmp.direction = Point(self.mesh.n)
-        tmp.direction.coordinates = tmp - self.xmin
-        self.poll_dirs = tmp - self.xmin
+      tmp.create_candidate_point_from_coords(
+          temp=temp[k],
+          var_type=var_type, var_sets=var_sets, var_link=var_link,
+          c_types=c_types, fc_index=fci, other=fc)
+      self.candidate_points_set = tmp
+      # tmp.mesh = self.mesh
+      if fc.is_feasible():
+        tmp.direction = tmp - fc
+        tmp.fc_index = fc
+        self.poll_dirs = tmp - fc
       else:
-        tmp.direction = Point(self.mesh.n)
-        tmp.direction.coordinates = tmp - self.x_sc
-        self.poll_dirs = tmp - self.x_sc
+        tmp.fc_index = fc
+        tmp.direction = tmp - fc
+        self.poll_dirs = tmp - fc
       del tmp
     del temp
 
@@ -422,7 +430,7 @@ class Dirs2n(GenericSamplerBase):
     lb = self.prob_params.lb
     ub = self.prob_params.ub
     scaling = self.mesh.get_delta_mesh_size().coordinates
-    p_trials: List[CandidatePoint] = [0]*len(scaling)
+    p_trials: List[CandidatePoint] = [0] * len(scaling)
     for k, _ in enumerate((scaling)):
       p_trials[k] = copy.deepcopy(p)
       p_trials[k].coordinates = copy.deepcopy(
@@ -444,12 +452,12 @@ class Dirs2n(GenericSamplerBase):
     pts: List[CandidatePoint] = [0] * npts
     for k in range(p.n_dimensions):
       if p.var_type[k] == VAR_TYPE.REAL:
-        cs[:, k] = np.random.normal(loc=p.coordinates[k],
-                                    scale=self.mesh.get_delta_mesh_size().coordinates[k],
-                                    size=(npts,))
+        cs[:, k] = self.rng.normal(loc=p.coordinates[k],
+                                   scale=self.mesh.get_delta_mesh_size().coordinates[k],
+                                   size=(npts,))
       elif p.var_type[k] == VAR_TYPE.INTEGER or \
               p.var_type[k] == VAR_TYPE.CATEGORICAL or p.var_type[k] == VAR_TYPE.DISCRETE:
-        cs[:, k] = np.random.randint(low=lb[k], high=ub[k], size=(npts,))
+        cs[:, k] = self.rng.randint(low=lb[k], high=ub[k], size=(npts,))
         for i in range(npts):
           cs[i, k] = int(cs[i, k])
       for i in range(npts):
@@ -467,9 +475,9 @@ class Dirs2n(GenericSamplerBase):
   def project_on_mesh_and_snap_to_bounds(
           self, m: Mesh, x_center: List[float],
           lb: List[float],
-          ub: List[float]):
+          ub: List[float], hashtable: Cache):
     # Length check equivalent in Python
-    for k, _ in enumerate((self.poll_set)):
+    for k, _ in enumerate((self.candidate_points_set)):
       if len(lb) != m.n or len(ub) != m.n:
         raise ValueError(
             f"Expected vectors of length {m.n}, but got lengths {len(lb)} and {len(ub)}")
@@ -482,7 +490,7 @@ class Dirs2n(GenericSamplerBase):
 
       # 1. Project on the mesh
       px = Point(self.mesh.n)
-      px.coordinates = self.poll_set[k].coordinates
+      px.coordinates = self.candidate_points_set[k].coordinates
       candidate = m.project_on_mesh(point=px, frame_center=x_center)
 
       # 2. Snap to bounds if necessary
@@ -491,92 +499,61 @@ class Dirs2n(GenericSamplerBase):
 
       for i in range(m.n):
         if lb[i] <= candidate[i] <= ub[i]:
-          self.poll_set[k].coordinates[i] = candidate[i]
+          self.candidate_points_set[k].coordinates[i] = candidate[i]
         else:
           if candidate[i] < lb[i]:
               # Mesh center is supposed to be >= lb; normally,
               # this rounding is supposed to be in the box constraints
-            self.poll_set[k].coordinates[i] = δ[i] * np.ceil(
+            self.candidate_points_set[k].coordinates[i] = δ[i] * np.ceil(
                 (lb[i] - x_center[i]) / δ[i]) + x_center[i]
           else:
               # Ref value is supposed to be <= ub; normally,
               # this rounding is supposed to be in the box constraints
-            self.poll_set[k].coordinates[i] = δ[i] * np.floor(
+            self.candidate_points_set[k].coordinates[i] = δ[i] * np.floor(
                 (ub[i] - x_center[i]) / δ[i]) + x_center[i]
 
           # Warnings as defined in Nomad 3
-          if self.poll_set[k].coordinates[i] < lb[i]:
+          if self.candidate_points_set[k].coordinates[i] < lb[i]:
             print(
                 f"Warning: snap_to_bounds: Error snapping {candidate[i]} to lower bound {lb[i]}")
             print(
                 f"frameCenter = {x_center[i]}, δ = {δ[i]} : it gave \
-                  {self.poll_set[i]} which is still lower than {lb[i]}")
+                  {self.candidate_points_set[i]} which is still lower than {lb[i]}")
             # TODO: Force the snapping?
 
-          if self.poll_set[k].coordinates[i] > ub[i]:
+          if self.candidate_points_set[k].coordinates[i] > ub[i]:
             print(
                 f"Warning: snap_to_bounds: Error snapping {candidate[i]} to upper bound {ub[i]}")
             print(
                 f"frameCenter = {x_center[i]}, δ = {δ[i]} : it gave \
-                  {self.poll_set[i]} which is still higher than {ub[i]}")
-            # TODO: Force the snapping?
+                  {self.candidate_points_set[i]} which is still higher than {ub[i]}")
+
+    filtered = [x for x in self._candidate_points_set
+                if not hashtable.is_duplicate(x, False)]
+    del self._candidate_points_set
+    self._candidate_points_set = filtered
+    # TODO: Force the snapping?
 
     # return snapped_candidate
 
-  def postprocess_evaluated_candidates(
-          self, x_cps: List[CandidatePoint] = None):
-    #   self.hashtable._best_hash_ID.append(self.xmin.signature)
-    for xtry in x_cps:
-      if self.log is not None and self.log.is_verbose:
-        self.log.log_msg(
-            msg=f"Completed evaluation of point # {xtry.eval_no} in \
-            {xtry.eval_time} seconds, ftry={xtry.f},\
-              status={xtry.status.name} and htry={xtry.h}. \n",
-            msg_type=MSG_TYPE.INFO)
-      # """ Add to the cache memory """
-      # self.hashtable.add_to_cache(xtry)
-      # if not self.hashtable._is_pareto:
-      #   self.hashtable.add_to_best_cache(xtry)
-      if self.store_cache and xtry.signature not in self.hashtable.hash_id:
-        self.hashtable.hash_id = xtry
-
-      self.bb_eval = self.bb_handle.bb_eval
-      self.psize = copy.deepcopy(self.mesh.get_delta_frame_size().coordinates)
-
-  def omit_duplicates(self, n_total_evals: int = 0):
+  def omit_duplicates(
+          self, n_total_evals: int = 0, stats: MadsStatistics = None,
+          hashtable: Cache = None):
     temp: List[CandidatePoint] = []
     npts = 1
-    for xi, xtry in enumerate(self.poll_set):
-      if n_total_evals+npts > self.eval_budget:
+    if stats is None:
+      stats = MadsStatistics()
+    for xi, xtry in enumerate(self.candidate_points_set):
+      if n_total_evals + npts > self.eval_budget:
         break
-      is_dup = self.hashtable.is_duplicate(
-          xtry)
-      is_dup_in_the_set = sum([x.coordinates == xtry.coordinates
-                               for x in self.poll_set[0:xi]]) >= 1
+      is_dup = xtry is None or hashtable.is_duplicate(
+          xtry, add=False)
+      is_dup_in_the_set = xtry is None or sum(
+          [x.coordinates == xtry.coordinates
+           for x in self.candidate_points_set[0: xi]]) >= 1
       is_duplicate: bool = (
-          (self.check_cache and self.hashtable.size > 0 and is_dup)
+          (self.check_cache and hashtable.last_index >= 0 and is_dup)
           or is_dup_in_the_set)
-      # COMPLETED: The commented logic below needs more
-      # investigation to make sure that it doesn't hurt.
-      # while is_duplicate and unique_p_trials < 5:
-      #   if self.display:
-      #     print(f'Cache hit. Trial# {unique_p_trials}: Looking for
-      # a non-duplicate along
-      # the poll direction where the duplicate point is located...')
-      #   if xtry.var_type is None:
-      #     if self.xmin.var_type is not None:
-      #       xtry.var_type = self.xmin.var_type
-      #     else:
-      #       xtry.var_type = [VAR_TYPE.CONTINUOUS] * len(self.xmin.coordinates)
-      #   xtries: List[Point] = self.directional_scaling(p=xtry, npts=len(self.poll_dirs)*2)
-      #   for tr in range(len(xtries)):
-      #     is_duplicate = self.hashtable.is_duplicate(xtries[tr])
-      #     if is_duplicate:
-      #        continue
-      #     else:
-      #       xtry = copy.deepcopy(xtries[tr])
-      #       break
-      #   unique_p_trials += 1
       if is_duplicate:
         if self.log is not None and self.log.is_verbose:
           self.log.log_msg(
@@ -584,55 +561,24 @@ class Dirs2n(GenericSamplerBase):
               msg_type=MSG_TYPE.INFO)
         if self.display:
           print("Cache hit ... Failed to find a non-duplicate alternative.")
+        stats.ncache_hits += 1
       else:
-        # self.hashtable.add_to_cache(xtry)
-        if n_total_evals+npts == self.eval_budget:
+        if n_total_evals + npts == self.eval_budget:
           temp.append(xtry)
           break
         else:
           npts += 1
           temp.append(xtry)
-    del self.poll_set
+    del self.candidate_points_set
     for t in temp:
-      self.poll_set = copy.deepcopy(t)
+      self.candidate_points_set = copy.deepcopy(t)
 
-  def master_updates(
-          self, x: List[CandidatePoint],
-          peval, save_all_best: bool = False, save_all: bool = False):
-    if peval >= self.eval_budget:
-      self.terminate = True
-    x_post: List[CandidatePoint] = []
-    for xtry in x:
-      # """ Check success conditions """
-      is_infeas_dom: bool = (
-          xtry.status == DESIGN_STATUS.INFEASIBLE and (xtry.h < self.xmin.h))
-      is_feas_dom: bool = (
-          xtry.status == DESIGN_STATUS.FEASIBLE and xtry.fobj < self.xmin.fobj)
-      success = SUCCESS_TYPES.US
-      if (is_infeas_dom or is_feas_dom):
-        self.success = SUCCESS_TYPES.FS
-        self.n_successes += 1
-        success = SUCCESS_TYPES.FS  # <- This redundant variable is important
-        # for managing concurrent parallel execution
-        self.nb_success += 1
-        # """ Update the post instant """
-        del self._xmin
-        self._xmin = CandidatePoint()
-        self._xmin = copy.deepcopy(xtry)
-        self.constraints_rp.hmax = copy.deepcopy(xtry.h_max)
-        if self.display:
-          if self._dtype.dtype == np.float64:
-            print(f"Success: fmin = {self.xmin.f} (hmin = {self.xmin.h:.15})")
-          elif self._dtype.dtype == np.float32:
-            print(f"Success: fmin = {self.xmin.f} (hmin = {self.xmin.h:.6})")
-          else:
-            print(f"Success: fmin = {self.xmin.f} (hmin = {self.xmin.h:.18})")
 
-        self.mesh.psize_success = copy.deepcopy(
-            self.mesh.get_delta_frame_size().coordinates)
-        self.mesh.psize_max = copy.deepcopy(
-            max(self.mesh.get_delta_frame_size().coordinates))
-      if (save_all_best and success == SUCCESS_TYPES.FS) or (save_all):
-        x_post.append(xtry)
-
-    return x_post
+@dataclass
+class DirsNP1(GenericSamplerBase):
+  def __post_init__(self):
+    self._dtype = DType()
+    self._xmin: CandidatePoint = CandidatePoint()
+    self._x_sc: CandidatePoint = CandidatePoint()
+    self._x_secondary_fc = CandidatePoint()
+    self._x_primary_fc = CandidatePoint()

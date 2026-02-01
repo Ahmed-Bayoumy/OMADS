@@ -23,7 +23,6 @@
 # ------------------------------------------------------------------------------------#
 """
 import copy
-from dataclasses import dataclass
 from typing import List, Dict, Any, Optional
 from numpy import subtract, add
 import numpy as np
@@ -32,7 +31,6 @@ import numpy as np
 from ._globals import DType
 
 
-@dataclass
 class Point:
   """ A class for the poll point
 
@@ -64,8 +62,17 @@ class Point:
 
   model_type: str = "Simulation"
 
-  def __post_init__(self):
-    self._dtype = DType()
+  def __init__(self, n: int = 0, dtype: Optional[DType] = DType()):
+    self._n = n
+    self._coords = None
+    self._defined = None
+    self._evaluated = False
+    self._signature = 0
+    self.dtype = dtype
+    self._var_type = None
+    self._sets = None
+    self.source = "Current run"
+    self.model_type = "Simulation"
 
   @property
   def n(self):
@@ -139,13 +146,13 @@ class Point:
     if isinstance(val, list):
       self.coordinates = val
     else:
-      self.coordinates = [val]*self._n
+      self.coordinates = [val] * self._n
 
   def push_back(self, val: Any):
     if isinstance(val, list):
       self.coordinates = self._coords + val
     else:
-      self.coordinates = self._coords + [val]*self._n
+      self.coordinates = self._coords + [val] * self._n
 
   def check_for_granularity(self, g: Any, name: str) -> bool:
     for i in range(self._n):
@@ -217,10 +224,10 @@ class Point:
     else:
       # granularity > 0, and _value is not a multiple of granularity.
       # Adjust value with granularity
-      gran_mult = round(abs(value)/g)
+      gran_mult = round(abs(value) / g)
       if value > 0:
         gran_mult += 1
-      d = gran_mult*g
+      d = gran_mult * g
 
       if not self.is_mult(d, g):
         raise IOError("nextMult(gran): cannot get a multiple of granularity")
@@ -243,12 +250,12 @@ class Point:
             g):
       d = self.coordinates[i]
     else:
-      gran_mult: int = int(self.coordinates[i]/g)
+      gran_mult: int = int(self.coordinates[i] / g)
       if self.coordinates[i] < 0:
         gran_mult -= 1
       big_gran_exp: int = 10 ** self.n_decimals(g)
-      big_gran: int = int(g*big_gran_exp)
-      d = gran_mult * big_gran/big_gran_exp
+      big_gran: int = int(g * big_gran_exp)
+      d = gran_mult * big_gran / big_gran_exp
     return d
 
   def is_mult(self, v1: float, v2: float):
@@ -256,9 +263,9 @@ class Point:
     if abs(v1) <= self.dtype.zero:
       is_mult = True
     elif abs(v2) > 0:
-      mult = round(v1/v2)
+      mult = round(v1 / v2)
       verif_value = mult * v2
-      if abs(v1-verif_value) < abs(mult)*self.dtype.zero:
+      if abs(v1 - verif_value) < abs(mult) * self.dtype.zero:
         is_mult = True
 
     elif v2 < 0:

@@ -23,11 +23,9 @@
 # ------------------------------------------------------------------------------------#
 """
 
-from dataclasses import dataclass
 from typing import Any
 
 
-@dataclass
 class Options:
   """ The running study and algorithmic options of OMADS
 
@@ -52,29 +50,59 @@ class Options:
     in parallel multiprocessing
     :param np: The number of CPUs
   """
-  seed: int = 0
-  budget: int = 1000
-  tol: float = 1e-9
-  psize_init: float = 1.0
-  display: bool = False
-  opportunistic: bool = False
-  check_cache: bool = False
-  store_cache: bool = False
-  collect_y: bool = False
-  rich_direction: bool = False
-  precision: str = "high"
-  save_results: bool = False
-  save_coordinates: bool = False
-  save_all_best: bool = False
-  parallel_mode: bool = False
-  np: int = 1
-  extend: Any = None
-  is_verbose: bool = False
-  anisotropy_factor: int = 0.1
-  anistropic_mesh: bool = True
-  refine_freq: int = 1
-  use_dms_success: bool = False
-  use_nomad_partial_success: bool = True
-  use_penalty_approach: bool = False
-  noutbound_hits_max: int = 60000
-  use_dom_trigger: bool = True
+
+  def __init__(
+      self,
+      seed: int = 0,
+      budget: int = 1000,
+      tol: float = 1e-9,
+      psize_init: float = 1.0,
+      display: bool = False,
+      opportunistic: bool = False,
+      check_cache: bool = False,
+      store_cache: bool = False,
+      collect_y: bool = False,
+      rich_direction: bool = False,
+      precision: str = "high",
+      save_results: bool = False,
+      save_coordinates: bool = False,
+      save_all_best: bool = False,
+      parallel_mode: bool = False,
+      np: int = 1,
+      extend: Any = None,
+      is_verbose: bool = False,
+      anisotropy_factor: float = 0.1,
+      anistropic_mesh: bool = True,
+      refine_freq: int = 1,
+      use_dms_success: bool = False,
+      use_nomad_partial_success: bool = True,
+      use_penalty_approach: bool = False,
+      noutbound_hits_max: int = 60000,
+      use_dom_trigger: bool = True,
+  ):
+    self.seed = seed
+    self.budget = budget
+    self.tol = tol
+    self.psize_init = psize_init
+    self.display = display
+    self.opportunistic = opportunistic
+    self.check_cache = check_cache
+    self.store_cache = store_cache
+    self.collect_y = collect_y
+    self.rich_direction = rich_direction
+    self.precision = precision
+    self.save_results = save_results
+    self.save_coordinates = save_coordinates
+    self.save_all_best = save_all_best
+    self.parallel_mode = parallel_mode
+    self.np = np
+    self.extend = extend
+    self.is_verbose = is_verbose
+    self.anisotropy_factor = anisotropy_factor
+    self.anistropic_mesh = anistropic_mesh
+    self.refine_freq = refine_freq
+    self.use_dms_success = use_dms_success
+    self.use_nomad_partial_success = use_nomad_partial_success
+    self.use_penalty_approach = use_penalty_approach
+    self.noutbound_hits_max = noutbound_hits_max
+    self.use_dom_trigger = use_dom_trigger

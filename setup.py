@@ -13,7 +13,7 @@ if __name__ == "__main__":
           'setuptools>=58.1.0',
           'scipy',
           'pyDOE2',
-          'samplersLib>=2408',
+          'samplersLib>=2601.1',
           'paramiko>=3.4.0',
           'deap==1.4'
       ],

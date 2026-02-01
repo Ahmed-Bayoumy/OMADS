@@ -23,7 +23,6 @@
 # ------------------------------------------------------------------------------------#
 """
 import copy
-from dataclasses import dataclass
 from typing import Any, Optional, List
 import numpy as np
 
@@ -35,7 +34,6 @@ from .options import Options
 from .parameters import Parameters
 
 
-@dataclass
 class Gmesh(Mesh):
   """ GMesh: Granular mesh """
   _init_frame_size_exp: Optional[Point] = None
@@ -60,8 +58,7 @@ class Gmesh(Mesh):
 
   def __init__(self, pb_param: Parameters, run_options: Options):
     """ Constructor """
-    super(
-        Gmesh, self).__init__(
+    super().__init__(
         pb_params=pb_param, limit_max_mesh_index=-GL_LIMITS,
         limit_min_mesh_index=GL_LIMITS)
 
@@ -77,6 +74,7 @@ class Gmesh(Mesh):
     self._refine_freq = run_options.refine_freq
     self._refine_count = 0
     self._dtype = DType(run_options.precision)
+
     self.init()
 
   @property
@@ -97,7 +95,7 @@ class Gmesh(Mesh):
 
     self._frame_size_exp.reset(n=self._n)
     self._frame_size_mant.reset(n=self._n)
-
+    self._init_frame_size_exp.reset(self._n)
     if delta_min is not None and delta_min.is_all_defined():
       self._min_mesh_size = copy.deepcopy(delta_min)
     exp: List[int] = [
@@ -109,6 +107,7 @@ class Gmesh(Mesh):
       self._frame_size_exp[i] = self.roundFrameSizeExp(exp[i])
       self._frame_size_mant[i] = self.roundFrameSizeMant(
           div * 10 ** -self.roundFrameSizeExp(exp[i]))
+      self._init_frame_size_exp[i] = self.roundFrameSizeExp(exp[i])
 
   def roundFrameSizeExp(self, exp: float) -> int:
     frame_size_exp: int = int(exp)
@@ -169,7 +168,6 @@ class Gmesh(Mesh):
         delta[i] = 10.0 ** exp
 
         if 0.0 < self._granularity[i]:
-          # delta[i] = self._granularity[i] * max(self.getMinMeshSize(), delta[i])
           delta[i] = max(self.getMinMeshSize(), delta[i])
 
       return delta
@@ -179,7 +177,6 @@ class Gmesh(Mesh):
       delta[i] = 10.0 ** exp
 
       if 0.0 < self._granularity[i]:
-        # delta[i] = self._granularity[i] * max(self.getMinMeshSize(), delta[i])
         delta[i] = max(self.getMinMeshSize(), delta[i])
       return delta[i]
 
@@ -214,6 +211,9 @@ class Gmesh(Mesh):
       self._frame_size_exp[i] = frame_size_exp_old
 
     return delta_frame
+
+  def getMaxDeltaFrameSizeCoarser(self):
+    return max(self.getDeltaFrameSizeCoarser().coordinates)
 
   def getLargerMantExp(self, frame_size_mant: float, i: int):
     if frame_size_mant == 1:
@@ -258,19 +258,19 @@ class Gmesh(Mesh):
     # Compute mantisse first
     # There are only 3 cases: 1, 2, 5, so compute all
     # 3 possibilities and then assign the values that work.
-    mant1: float = delta_frame_size / (1.*gran)
-    mant2: float = delta_frame_size / (2.*gran)
+    mant1: float = delta_frame_size / (1. * gran)
+    mant2: float = delta_frame_size / (2. * gran)
     mant5: float = delta_frame_size / (5. * gran)
 
     exp1: float = np.log10(mant1)
     exp2: float = np.log10(mant2)
     exp5: float = np.log10(mant5)
 
-    # // deltaFrameSize = gran * mant * 10^exp  (where gran is 1.0 if granularity is not defined)
-    # // => exp = log10(deltaFrameSize / (mant * gran))
-    # // exp must be an integer so verify which one of the 3 values exp1, exp2, exp5
-    # // is an integer and use that value for exp, and the corresponding value
-    # // 1, 2 or 5 for mant.
+    # deltaFrameSize = gran * mant * 10^exp  (where gran is 1.0 if granularity is not defined)
+    #  => exp = log10(deltaFrameSize / (mant * gran))
+    #  exp must be an integer so verify which one of the 3 values exp1, exp2, exp5
+    #  is an integer and use that value for exp, and the corresponding value
+    #  1, 2 or 5 for mant.
     if exp1.is_integer():
       mant = 1
       exp = exp1
@@ -344,7 +344,8 @@ class Gmesh(Mesh):
     if self._frame_size_mant.is_all_defined() and self._frame_size_exp.is_all_defined():
       for i in range(self._n):
         delta: Any = self.get_delta_mesh_size(i=i)
-        proj[i] = np.round(self.get_rho(i=i)*dir_in[i]/infinite_norm) * delta
+        proj[i] = np.round(self.get_rho(
+            i=i) * dir_in[i] / infinite_norm) * delta
     else:
       err = "GMesh: scaleAndProjectOnMesh cannot be performed."
       err += f" i = {i}"
@@ -354,6 +355,9 @@ class Gmesh(Mesh):
       raise IOError(err)
 
     return proj
+
+  def verifyPointIsOnMesh(self):
+    pass
 
   def project_on_mesh(self, point: Point, frame_center: Point):
     proj: Point = point
@@ -368,11 +372,11 @@ class Gmesh(Mesh):
       diff_proj_frame_center: float = proj[i] - frame_center[i]
       verif_value_i[i] = proj[i] if (
           frame_center_is_on_mesh) else diff_proj_frame_center
-      # // Force verifValueI to be a multiple of deltaI.
-      # // nbTry = 0 means point is already on mesh.
-      # // nbTry = 1 means the projection worked.
-      # // nbTry > 1 means the process went hacky by forcing the value to work
-      # // for verifyPointIsOnMesh.
+      #  Force verifValueI to be a multiple of deltaI.
+      #  nbTry = 0 means point is already on mesh.
+      #  nbTry = 1 means the projection worked.
+      #  nbTry > 1 means the process went hacky by forcing the value to work
+      #  for verifyPointIsOnMesh.
       nb_try = 0
       while (not self.isMult(verif_value_i[i], delta_i) and nb_try <= max_nb_try):
         new_verif_value_i: float
@@ -459,8 +463,8 @@ class Gmesh(Mesh):
     :param  delta: The mesh size parameter delta^k --  OUT.
     :param  i: The index of the mesh size
   """
-    delta: float = 10**(self._frame_size_exp.coordinates[i]-abs(
-        self._frame_size_exp.coordinates[i]-self._init_frame_size_exp.coordinates[i]))
+    delta: float = 10**(self._frame_size_exp.coordinates[i] - abs(
+        self._frame_size_exp.coordinates[i] - self._init_frame_size_exp.coordinates[i]))
     if self._granularity.coordinates[i]:
       delta = self._granularity[i] * max(1.0, delta)
     return delta
@@ -481,13 +485,13 @@ class Gmesh(Mesh):
   def init(self):
     """Initialization of granular poll size mantissa and exponent"""
     self._r = Point(self._n)
-    self._r.coordinates = [0]*self._n
+    self._r.coordinates = [0] * self._n
     self._r_max = Point(self._n)
-    self._r_max.coordinates = [0]*self._n
+    self._r_max.coordinates = [0] * self._n
     self._r_min = Point(self._n)
-    self._r_min.coordinates = [0]*self._n
+    self._r_min.coordinates = [0] * self._n
     self.initFrameSizeGranular(self._initial_frame_size)
-    self._init_frame_size_exp.reset(self._n)
+
     self._finest_mesh_size = self.get_delta_mesh_size()
 
     for i in range(self._n):
@@ -527,9 +531,9 @@ class Gmesh(Mesh):
     for i in range(self._n):
       frame_size_i_changed = False
       if (not self._anisotropic_mesh or
-          abs(direction[i])/self.get_delta_mesh_size(i=i)/self.get_rho(i=i) > self._anisotropy_factor or
+          abs(direction[i]) / self.get_delta_mesh_size(i=i) / self.get_rho(i=i) > self._anisotropy_factor or
           (self._granularity[i] == 0 and self._frame_size_exp[i] < self._init_frame_size_exp[i] and
-           self.get_rho(i=i) > min_rho*min_rho)):
+           self.get_rho(i=i) > min_rho * min_rho)):
         self.getLargerMantExp(frame_size_mant=self._frame_size_mant[i], i=i)
         frame_size_i_changed = True
         one_frame_size_changed = True
@@ -583,15 +587,15 @@ class Gmesh(Mesh):
     return delta
 
   def refine_delta_frame_size(self):
-    # // Compute the new values frameSizeMant and frameSizeExp first.
-    # // We will do some verifications before setting them.
+    #  Compute the new values frameSizeMant and frameSizeExp first.
+    #  We will do some verifications before setting them.
     self._refine_count += 1
     if self._refine_count % self._refine_freq != 0:
       return
 
     for i in range(self._n):
-      # // Compute the new values frameSizeMant and frameSizeExp first.
-      # // We will do some verifications before setting them.
+      #  Compute the new values frameSizeMant and frameSizeExp first.
+      #  We will do some verifications before setting them.
       frame_size_mant = self._frame_size_mant[i]
       frame_size_exp = self._frame_size_exp[i]
       frame_size_mant, frame_size_exp = self.refineDeltaFrameSizeME(
@@ -635,10 +639,18 @@ class Gmesh(Mesh):
 
   def check_mesh_for_stopping(self):
     delta = [self.get_delta(i=k) for k in range(self.n)]
-    if any(self.getMinMeshSize().coordinates >= delta):
+    crit = [self.getMinMeshSize().coordinates[di] >= d for di,
+            d in enumerate(delta)]
+    if any(crit):
       return True
     else:
       return False
 
   def update(self):
     return
+
+  def checkMeshForStopping(self):
+    pass
+
+  def verifyDimension(self, name: str, dim: int):
+    pass

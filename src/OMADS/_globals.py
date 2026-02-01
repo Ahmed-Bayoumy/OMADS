@@ -23,9 +23,7 @@
 # ------------------------------------------------------------------------------------#
 """
 from enum import Enum, auto
-from dataclasses import dataclass, field
 import warnings
-import platform
 
 import numpy as np
 
@@ -38,7 +36,6 @@ class PassException(Exception):
   pass
 
 
-@dataclass
 class DType:
   """A numpy data type delegator for decimal precision control
 
@@ -52,11 +49,14 @@ class DType:
     :param zero: Zero value resolution, defaults to np.finfo(np.float64).resolution
     :type zero: float, optional
   """
-  _prec: str = "medium"
-  _dtype: np.dtype = np.float64
-  _itype: np.dtype = np.int_
-  _zero: float = (np.finfo(np.float64)).resolution  # pylint: disable=no-member
-  _warned: bool = False
+
+  def __init__(self, prec="medium"):
+    self._prec: str = prec
+    self._dtype: np.dtype = np.float64
+    self._itype: np.dtype = np.int_
+    self._zero: float = (np.finfo(np.float64)
+                         ).resolution  # pylint: disable=no-member
+    self._warned: bool = False
 
   @property
   def zero(self) -> float:
@@ -221,6 +221,11 @@ class DIST_TYPE(Enum):
   POISSON: int = auto()
 
 
+class SAMPLER_TYPE(Enum):
+  POLL: int = auto()
+  SEARCH: int = auto()
+
+
 class STOP_TYPE(Enum):
   NO_STOP: int = auto()
   ERROR: int = auto()
@@ -257,15 +262,15 @@ class EVAL_TYPE(Enum):
 
 
 class COMPARE_TYPE(Enum):
-  EQUAL = auto()  # ///< Both points are feasible or infeasible, and their
-  # ///< objective values and h (where h is the squared sum
-  # ///< of violations of all constraints) are equal to
-  # ///< approximation tolerance rounding.
-  # ///< Both point are non dominated relatively to each other.
+  EQUAL = auto()  # Both points are feasible or infeasible, and their
+  # objective values and h (where h is the squared sum
+  # of violations of all constraints) are equal to
+  # approximation tolerance rounding.
+  # Both point are non dominated relatively to each other.
   INDIFFERENT = auto()
-  DOMINATED = auto()  # ///< The first point is dominated by the other.
-  DOMINATING = auto()  # ///< The first point dominates the other.
-  UNDEFINED = auto()  # ///< May be used for initialization.
+  DOMINATED = auto()  # The first point is dominated by the other.
+  DOMINATING = auto()  # The first point dominates the other.
+  UNDEFINED = auto()  # May be used for initialization.
 
 
 class INSERTION_FLAG(Enum):
@@ -279,8 +284,8 @@ class INSERTION_FLAG(Enum):
 
 HARD_MIN_MESH_INDEX: int = -300
 # gmesh index constants
-GL_LIMITS: int = -50  # < Limits for the gmesh index values
-UNDEFINED_GL: int = GL_LIMITS-1  # < Undefined value for the gmesh index
+GL_LIMITS: int = -50  # Limits for the gmesh index values
+UNDEFINED_GL: int = GL_LIMITS - 1  # Undefined value for the gmesh index
 
 M_INF_INT = -2147483647 - 1
 P_INF_INT = 2147483647

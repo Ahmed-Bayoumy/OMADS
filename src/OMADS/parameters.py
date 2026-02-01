@@ -22,9 +22,8 @@
 #  Copyright (C) 2022  Ahmed H. Bayoumy                                               #
 # ------------------------------------------------------------------------------------#
 """
-from dataclasses import dataclass
 import os
-from typing import List, Dict, Optional
+from typing import List, Dict
 import warnings
 import copy
 
@@ -35,7 +34,6 @@ from ._globals import DType, VAR_TYPE, BARRIER_TYPES, MESH_TYPE
 from .point import Point
 
 
-@dataclass
 class Parameters:
   """ Variables and algorithmic parameters 
 
@@ -49,49 +47,6 @@ class Parameters:
     :param post_dir: The location and name of the post directory 
     where the output results file will live in (if any)
   """
-  _n: Optional[int] = None
-  baseline: Optional[List[float]] = None
-  lb: Optional[List[float]] = None
-  ub: Optional[List[float]] = None
-  var_names: Optional[List[str]] = None
-  fun_names: Optional[List[str]] = None
-  scaling: Optional[List[float]] = None
-  post_dir: Optional[str] = os.path.abspath("./")
-  var_type: Optional[List[str]] = None
-  var_sets: Optional[Dict] = None
-  constants: Optional[List] = None
-  constants_name: Optional[List] = None
-  failure_stop: Optional[bool] = None
-  problem_name: str = "unknown"
-  best_known: Optional[List[float]] = None
-  constraints_type: Optional[List[BARRIER_TYPES]] = None
-  function_weights: Optional[List[float]] = None
-  h_max: float = np.inf
-  rho: float = 0.00005
-  lambda_multipliers: Optional[List[float]] = None
-  name: str = "undefined"
-  nobj: int = 1
-  ref_point: Optional[List[float]] = None
-  lhs_search_initialization: Optional[bool] = False
-
-  # Mesh options
-  mesh_type: str = MESH_TYPE.ORTHO.name
-  fixed_variables: Optional[Point] = None
-  granularity: Optional[Point] = None
-  min_mesh_size: Optional[Point] = None
-  min_frame_size: Optional[Point] = None
-  initial_mesh_size: Optional[Point] = None
-  initial_frame_size: Optional[Point] = None
-  warning_initial_frame_size_reset: bool = True
-  x0: Optional[Point] = None
-  _initialized_and_checked: bool = False
-  is_pareto: bool = False
-  incumbent_selection_param: int = 1
-  barrier_initialized_from_cache: bool = True
-  rng: np.random = None
-  w_min: int = 1
-  max_size: int = 30000
-  h_init: float = np.inf
 
   def __init__(
           self,
@@ -111,7 +66,7 @@ class Parameters:
           problem_name: str = "unknown",
           best_known: List[float] = None,
           constraints_type: List[BARRIER_TYPES] = None,
-          h_max: float = 0,
+          h_max: float = np.inf,
           rho: float = 0.00005,
           lambda_multipliers: List[float] = None,
           name: str = "undefined",
@@ -127,7 +82,10 @@ class Parameters:
           incumbent_selection_param: int = 1,
           barrier_initialized_from_cache: bool = True,
           ref_point: List[float] = None,
-          lhs_search_initialization: bool = False):
+          lhs_search_initialization: bool = False,
+          mesh_adjustment: float = 2.0,
+          w_min: int = 1):
+    self.w_min = w_min
     self.incumbent_selection_param = incumbent_selection_param
     self.barrier_initialized_from_cache = barrier_initialized_from_cache
     self.nobj = nobj
@@ -139,11 +97,11 @@ class Parameters:
       self.x0 = copy.deepcopy(self.baseline)
     elif isinstance(self.baseline, List):
       if all(isinstance(item, list) for item in self.baseline):
-        self.x0 = [Point(self._n)]*len(self.baseline)
+        self.x0 = [Point(self._n)] * len(self.baseline)
         for i, _ in enumerate((self.baseline)):
           self.x0[i].coordinates = copy.deepcopy(self.baseline[i])
       elif all(isinstance(item, Point) for item in self.baseline):
-        self.x0 = [Point(self._n)]*len(self.baseline)
+        self.x0 = [Point(self._n)] * len(self.baseline)
         for i, _ in enumerate((self.baseline)):
           self.x0[i] = copy.deepcopy(self.baseline[i])
       else:
@@ -154,7 +112,7 @@ class Parameters:
         f'x_{i}' for i in range(self._n)]
     self.fun_names = fun_names if fun_names else ["fobj"]
     self.function_weights = (np.divide(function_weights, np.sum(
-        function_weights))).tolist() if function_weights else [1/(self.nobj)] * self.nobj
+        function_weights))).tolist() if function_weights else [1 / (self.nobj)] * self.nobj
     self.scaling = scaling
     self.post_dir = post_dir
     self.var_type = var_type
@@ -232,10 +190,10 @@ class Parameters:
         if k.lower()[0] == "d":
           if self.var_sets is not None and isinstance(self.var_sets, dict):
             if self.var_sets[k.split('_')[1]] is not None:
-              if self.ub[c-1] > len(self.var_sets[k.split('_')[1]])-1:
-                self.ub[c-1] = len(self.var_sets[k.split('_')[1]])-1
-              if self.lb[c-1] < 0:
-                self.lb[c-1] = 0
+              if self.ub[c - 1] > len(self.var_sets[k.split('_')[1]]) - 1:
+                self.ub[c - 1] = len(self.var_sets[k.split('_')[1]]) - 1
+              if self.lb[c - 1] < 0:
+                self.lb[c - 1] = 0
     if constants:
       self.fixed_variables = point_init
       self.fixed_variables.coordinates = constants
@@ -274,6 +232,7 @@ class Parameters:
 
     self._initialized_and_checked = True
     self.ref_point = ref_point
+    self.mesh_adjustment = mesh_adjustment
 
   def set_initial_mesh_parameters(self):
     """Set the initial mesh parameters

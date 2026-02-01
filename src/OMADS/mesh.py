@@ -23,99 +23,14 @@
 # ------------------------------------------------------------------------------------#
 """
 
-from dataclasses import dataclass
-from typing import Protocol, Any, List, Optional
-from ._globals import DType, M_INF_INT, P_INF_INT
+from typing import Any
+from ._globals import DType
 from .point import Point
 from .parameters import Parameters
+from abc import ABC, abstractmethod
 
 
-@dataclass
-class MeshData(Protocol):
-  """ Orthognal Mesh class
-
-  :param _delta: mesh size
-  :param _Delta: poll size
-  :param _rho: poll size to mesh size ratio
-  :param _exp:  manage the poll size granularity for discrete variables. 
-  See Audet et. al, The mesh adaptive direct search algorithm for granular and discrete variable
-  :param _mantissa: Same as ``_exp``
-  :param psize_max: Maximum poll size
-  :param psize_success: Poll size at successful evaluation
-  :param _dtype: numpy double data type precision
-
-  """
-  _n: Optional[int] = None
-  _initial_mesh_size: Optional[Point] = None  # mesh size
-  _initial_frame_size: Optional[Point] = None  # poll size
-  _min_mesh_size: Optional[Point] = None  # mesh size
-  _min_frame_size: Optional[Point] = None  # poll size
-  _lower_bound: Optional[Point] = None
-  _upper_bound: Optional[Point] = None
-  _is_finest: Optional[bool] = True
-  _r: Optional[Point] = None
-  _r_min: Optional[Point] = None
-  _r_max: Optional[Point] = None
-  _limit_min_mesh_index: int = M_INF_INT
-  _limit_max_mesh_index: int = P_INF_INT
-  _pb_params: Optional[Parameters] = None
-  _rho: Optional[List[float]] = None  # poll size to mesh size ratio
-  _dtype: Optional[DType] = None
-
-  # COMPLETED: manage the poll size granularity for discrete variables
-  # # See: Audet et. al, The mesh adaptive direct search algorithm for
-  # # granular and discrete variable
-  # _exp: int = 0
-  # _mantissa: int = 1
-  # psize_max: float = 0.0
-  # psize_success: float = 0.0
-  # numpy double data type precision
-
-  def get_rho(self):
-    ...
-
-  # Update mesh size (small delta) based on frame size (big Delta)
-  def updatedeltaMeshSize(self):
-    ...
-
-  def enlarge_delta_frame_size(self):
-    ...
-
-  def refine_delta_frame_size(self):
-    ...
-
-  def checkMeshForStopping(self):
-    ...
-
-  def get_delta_mesh_size(self):
-    ...
-
-  def get_delta_frame_size(self, i: int):
-    ...
-
-  def getDeltaFrameSizeCoarser(self):
-    ...
-
-  def setDeltas(
-          self, i: int = None, delta_mesh_size: Any = None,
-          delta_frame_size: Any = None):
-    ...
-
-  def scale_and_project_on_mesh(self, dir_in: Point = None):
-    ...
-
-  def project_on_mesh(self, point: Point, frame_center: Point):
-    ...
-
-  def verifyPointIsOnMesh(self, point: Point, frame_center: Point):
-    ...
-
-  def verifyDimension(self, name: str, dim: int):
-    ...
-
-
-@dataclass
-class Mesh(MeshData):
+class Mesh(ABC):
 
   def __init__(
           self, pb_params: Parameters, limit_min_mesh_index: int,
@@ -187,3 +102,62 @@ class Mesh(MeshData):
                           limit_max_mesh_index: int):
     self._limit_max_mesh_index = limit_max_mesh_index
     self._limit_min_mesh_index = limit_min_mesh_index
+
+  @abstractmethod
+  def get_rho(self):
+    pass
+
+  # Update mesh size (small delta) based on frame size (big Delta)
+  @abstractmethod
+  def updatedeltaMeshSize(self):
+    pass
+
+  @abstractmethod
+  def enlarge_delta_frame_size(self, direction: Point = None):
+    pass
+
+  @abstractmethod
+  def refine_delta_frame_size(self):
+    pass
+
+  @abstractmethod
+  def checkMeshForStopping(self):
+    pass
+
+  @abstractmethod
+  def get_delta_mesh_size(self):
+    pass
+
+  @abstractmethod
+  def get_delta_frame_size(self, i: int):
+    pass
+
+  @abstractmethod
+  def getDeltaFrameSizeCoarser(self):
+    pass
+
+  @abstractmethod
+  def setDeltas(
+          self, i: int = None, delta_mesh_size: Any = None,
+          delta_frame_size: Any = None):
+    pass
+
+  @abstractmethod
+  def scale_and_project_on_mesh(self, dir_in: Point = None):
+    pass
+
+  @abstractmethod
+  def project_on_mesh(self, point: Point, frame_center: Point):
+    pass
+
+  @abstractmethod
+  def verifyPointIsOnMesh(self, point: Point, frame_center: Point):
+    pass
+
+  @abstractmethod
+  def verifyDimension(self, name: str, dim: int):
+    pass
+
+  @abstractmethod
+  def get_frame_size_parameter(self):
+    pass

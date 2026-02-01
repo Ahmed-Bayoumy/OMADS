@@ -22,15 +22,16 @@
 #  Copyright (C) 2022  Ahmed H. Bayoumy                                               #
 # ------------------------------------------------------------------------------------#
 """
-from dataclasses import dataclass, field
+from dataclasses import field
 import os
 from typing import List, Dict, Any, Optional
 import json
 import csv
+
+import numpy as np
 from .candidate_point import CandidatePoint
 
 
-@dataclass
 class Output:
   """ Results output file decorator
   """
@@ -44,8 +45,32 @@ class Output:
   replace: bool = True
   step_name: str = "Poll"
   suffix: str = "all"
+  h_max: float = np.inf
 
-  def __post_init__(self):
+  def __init__(self, file_path: str = None,
+               vnames: List[str] = None,
+               fnames: List[str] = None,
+               file_writer: Any = None,
+               field_names: List[str] = [],
+               pname: str = "MADS0",
+               runfolder: str = "undefined",
+               replace: bool = True,
+               step_name: str = "Poll",
+               suffix: str = "all",
+               h_max: float = np.inf):
+
+    self.file_path: str = file_path
+    self.vnames: List[str] = vnames
+    self.fnames: List[str] = fnames
+    self.file_writer: Any = file_writer
+    self.field_names: List[str] = field_names
+    self.pname: str = pname
+    self.runfolder: str = runfolder
+    self.replace: bool = replace
+    self.step_name: str = step_name
+    self.suffix: str = suffix
+    self.h_max: float = h_max
+
     if not os.path.exists(self.file_path):
       os.mkdir(self.file_path)
     self.field_names = [
@@ -98,6 +123,7 @@ class Output:
           f: float, rho: float, lambdas: List[float],
           hmax: float, x: List[float],
           step_name: str, fnames: List[str]):
+
     row = {
         f'{"Runtime (Sec)".rjust(25)}': f'{f"{eval_time}".rjust(25)}',
         f'{"Iteration".rjust(25)}': f'{f"{iterno}".rjust(25)}',
@@ -115,11 +141,11 @@ class Output:
         {f'{"max(c_in)".rjust(25)}': f'{f"{h}".rjust(25)}',
          f'{"Penalty_parameter".rjust(25)}': f'{f"{rho}".rjust(25)}',
          f'{"Multipliers".rjust(25)}':
-         f'{f"{max(lambdas) if len(lambdas)>0 else None}".rjust(25)}',
+         f'{f"{max(lambdas) if len(lambdas) > 0 else None}".rjust(25)}',
          f'{"hmax".rjust(25)}': f'{f"{hmax}".rjust(25)}'})
 
     ss = 0
-    for k in range(13+len(fnames), len(self.field_names)):
+    for k in range(13 + len(fnames), len(self.field_names)):
       row[self.field_names[k]] = f'{f"{x[ss]}".rjust(25)}'
       ss += 1
     with open(os.path.abspath(os.path.join(os.path.join(self.file_path, self.runfolder),
@@ -129,7 +155,6 @@ class Output:
       self.file_writer.writerow(row)
 
 
-@dataclass
 class PostMADS:
   """ Results postprocessor
   """
@@ -144,37 +169,70 @@ class PostMADS:
   nd_points: List[CandidatePoint] = field(default_factory=list)
   counter: int = 0
 
+  def __init__(self, x_incumbent: List[CandidatePoint] = [],
+               xmin: CandidatePoint = None,
+               coords: List[List[CandidatePoint]] = [],
+               poll_dirs: List[CandidatePoint] = [],
+               iter: List[int] = [],
+               bb_eval: List[int] = [],
+               psize: List[float] = [],
+               step_name: Optional[List[str]] = [],
+               nd_points: List[CandidatePoint] = [],
+               counter: int = 0):
+    self.x_incumbent = x_incumbent
+    self.xmin = xmin
+    self.coords = coords
+    self.poll_dirs = poll_dirs
+    self.iter = iter
+    self.bb_eval = bb_eval
+    self.psize = psize
+    self.step_name = step_name
+    self.nd_points = nd_points
+    self.counter = counter
+
   def output_results(self, out: Output, all_res: bool = True):
     """ Create a results file from the saved cache"""
     if all_res:
       self.counter = 0
-    for p in self.poll_dirs[self.counter:]:
-      if p.evaluated and self.counter < len(self.iter):
+    self.h_max = out.h_max
+    for i, p in enumerate(self.poll_dirs):
+      if p.evaluated:
         out.add_row(
-            eval_time=p.eval_time, iterno=self.iter[self.counter],
-            evalno=self.bb_eval[self.counter],
-            poll_size=self.psize[self.counter],
+            eval_time=p.eval_time, iterno=self.iter[i],
+            evalno=self.bb_eval[i],
+            poll_size=self.psize[i],
             source=p.source, m_name=p.model, f=p.f, status=p.status.name,
-            h=max(p.c_ineq),
+            h=self.h_max,
             fobj=p.fobj, rho=p.rho, lambdas=p.lambda_multipliers,
-            x=p.coordinates, hmax=p.h_max, step_name="Poll-2n"
-            if self.step_name is None else self.step_name[self.counter],
+            x=p.coordinates, hmax=self.h_max, step_name="Poll-2n"
+            if self.step_name is None else self.step_name[i],
             fnames=out.fnames)
         self.counter += 1
+
+    # del self.poll_dirs[-2]
+    del self.poll_dirs
+    self.poll_dirs = []
+    del self.step_name
+    self.step_name = []
+
+    self.bb_eval = [self.bb_eval[-1]]
+    self.psize = [self.psize[-1]]
+    self.iter = [self.iter[-1]]
 
   def output_nd_results(self, out: Output):
     """ Create a results file from the saved cache"""
     counter = 0
     out.clear_csv_content()
+    self.h_max = out.h_max
     for p in self.nd_points:
       if p.evaluated and counter < len(self.iter):
         out.add_row(
             eval_time=p.eval_time, iterno=self.iter[counter],
             evalno=p.eval_no, poll_size=self.psize[counter],
             source=p.source, m_name=p.model, f=p.f, status=p.status.name,
-            h=max(p.c_ineq),
+            h=self.h_max,
             fobj=p.fobj, rho=p.rho, lambdas=p.lambda_multipliers,
-            x=p.coordinates, hmax=p.h_max, step_name="Poll-2n"
+            x=p.coordinates, hmax=self.h_max, step_name="Poll-2n"
             if self.step_name is None else self.step_name[counter],
             fnames=out.fnames)
         counter += 1
@@ -195,11 +253,14 @@ class PostMADS:
 
   def __str__(self):
     """ Initialize the log file """
-    return f'"iteration=  {self.iter[-1]}, bbeval=  ' \
-        f'{self.bb_eval[-1]}, psize=  {self.psize[-1]}, ' \
-        f'hmin =  {self.xmin.h if self.xmin else None}, status:  \
-          {self.xmin.status.name if self.xmin else None} , \
-            fmin =  {self.xmin.f if self.xmin else None}'
+    return f'iteration {
+        self.iter[-1]}, bbeval=  'f'{
+        self.bb_eval[-1]}, min(psize)=  {
+        min(self.psize[-1])}, hmax =  {
+        self.h_max if self.h_max else None}, hmin =  {
+        self.xmin.h if self.xmin else None}, status: {
+        self.xmin.status.name if self.xmin else None}  , fmin =  {
+        self.xmin.fobj if self.xmin else None} '
 
   def __add_to_cache__(self, x: CandidatePoint):
     self.x_incumbent.append(x)

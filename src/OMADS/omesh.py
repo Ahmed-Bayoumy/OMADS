@@ -22,8 +22,7 @@
 #  Copyright (C) 2022  Ahmed H. Bayoumy                                               #
 # ------------------------------------------------------------------------------------#
 """
-from dataclasses import dataclass
-from typing import List, Optional
+from typing import Any, List, Optional
 import numpy as np
 
 
@@ -34,7 +33,6 @@ from .options import Options
 from .parameters import Parameters
 
 
-@dataclass
 class Omesh(Mesh):
   """ Mesh coarsness update class
 
@@ -62,17 +60,18 @@ class Omesh(Mesh):
   _mantissa: Optional[Point] = None
   _maximum_frame_size: Optional[Point] = None
   successful_frame_size: Optional[Point] = None
+  _tao: Optional[float] = 2.0
 
   # numpy double data type precision
   _dtype: Optional[DType] = None
 
   def __init__(self, pb_param: Parameters, run_options: Options):
     """ Constructor """
-    super(
-        Omesh, self).__init__(
+    super().__init__(
         pb_params=pb_param, limit_max_mesh_index=-GL_LIMITS,
         limit_min_mesh_index=GL_LIMITS)
     self._n = len(pb_param.baseline)
+    self._tao = pb_param.mesh_adjustment
     self.mesh_size = Point(self._n)
     self.frame_size = Point(self._n)
     self._exp = Point(self._n)
@@ -84,11 +83,11 @@ class Omesh(Mesh):
         run_options.psize_init, list) else [run_options.psize_init] * self._n
     self.mesh_size.reset(n=self._n, d=0)
     self._r = Point(self._n)
-    self._r.coordinates = [1]*self._n
+    self._r.coordinates = [1] * self._n
     self._r_max = Point(self._n)
-    self._r_max.coordinates = [1]*self._n
+    self._r_max.coordinates = [1] * self._n
     self._r_min = Point(self._n)
-    self._r_min.coordinates = [1]*self._n
+    self._r_min.coordinates = [1] * self._n
     self.init()
 
   def init(self):
@@ -180,14 +179,14 @@ class Omesh(Mesh):
 
   def project_on_mesh(self, point: Point, frame_center: Point = None) -> Point:
     if frame_center is None:
-      frame_center = [0.]*self._n
+      frame_center = [0.] * self._n
     if self._pb_params.var_type is None:
       self._pb_params.var_type = [VAR_TYPE.REAL.name] * self._n
     for i in range(self._n):
       if self._pb_params.var_type[i] != VAR_TYPE.CATEGORICAL.name:
         if self._pb_params.var_type[i] == VAR_TYPE.REAL.name:
           point[i] = frame_center[i] + (
-              np.round((point[i]-frame_center[i])/self.mesh_size[i]) * self.mesh_size[i])
+              np.round((point[i] - frame_center[i]) / self.mesh_size[i]) * self.mesh_size[i])
         else:
           point[i] = int(
               frame_center[i] +
@@ -210,3 +209,38 @@ class Omesh(Mesh):
   def get_frame_size_parameter(self):
     """Get frame size parameter"""
     return self._frame_size.coordinates
+
+  def check_mesh_for_stopping(self):
+    delta = [self.get_delta_mesh_size(i=k) for k in range(self.n)]
+    if any(np.array(self.getMinMeshSize().coordinates) >= np.array(delta)):
+      return True
+    else:
+      return False
+
+  # Update mesh size (small delta) based on frame size (big Delta)
+
+  def updatedeltaMeshSize(self):
+    pass
+
+  def checkMeshForStopping(self):
+    pass
+
+  def getDeltaFrameSizeCoarser(self):
+    return
+
+  def getMaxDeltaFrameSizeCoarser(self):
+    return max(self.frame_size.coordinates) * 2
+
+  def setDeltas(
+          self, i: int = None, delta_mesh_size: Any = None,
+          delta_frame_size: Any = None):
+    pass
+
+  def scale_and_project_on_mesh(self, dir_in: Point = None):
+    pass
+
+  def verifyPointIsOnMesh(self, point: Point, frame_center: Point):
+    pass
+
+  def verifyDimension(self, name: str, dim: int):
+    pass

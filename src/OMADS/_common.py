@@ -24,21 +24,17 @@
 """
 
 
-from dataclasses import dataclass
 import logging
+import sys
 import time
-import shutil
 import os
 import numpy as np
 import json
 from ._globals import MSG_TYPE
-import pkg_resources
-
 
 np.set_printoptions(legacy='1.21')
 
 
-@dataclass
 class validator:
 
   def check_input_file(self, args) -> dict:
@@ -66,10 +62,13 @@ class validator:
     return data
 
 
-@dataclass
 class logger:
   log: None = None
   is_verbose: bool = False
+
+  def __init__(self, log: None = None, is_verbose: bool = False):
+    self.log = log
+    self.is_verbose = is_verbose
 
   def initialize(self, file: str, w_time=False, is_verbose=False):
     # Create and configure logger
@@ -88,7 +87,7 @@ class logger:
         msg="###################################################### \n",
         msg_type=MSG_TYPE.INFO)
     self.log_msg(
-        msg=f"################# OMADS release #{2503} #################### \n",
+        msg=f"################# OMADS release no {2503} #################### \n",
         msg_type=MSG_TYPE.INFO)
     self.log_msg(
         msg=f"############### {cur_time} ################# \n",
@@ -127,21 +126,25 @@ class logger:
     elif msg_type == MSG_TYPE.CRITICAL:
       self.log.critical(msg)
 
-  def relocate_logger(self, source_file: str = None, dest_file: str = None):
-    if dest_file is not None and source_file is not None and os.path.exists(
-            source_file):
-      shutil.copy(source_file, dest_file)
-      if os.path.exists("DSMToDMDO.yaml"):
-        shutil.copy("DSMToDMDO.yaml", dest_file)
-      # Remove all handlers associated with the root logger object.
-      for handler in logging.root.handlers[:]:
-        logging.root.removeHandler(handler)
-      # Create and configure logger
-      logging.basicConfig(filename=os.path.join(dest_file, "DMDO.log"),
-                          format='%(asctime)s %(message)s',
-                          filemode='a')
-      # Let us Create an object
-      self.log = logging.getLogger()
 
-      # Now we are going to Set the threshold of logger to DEBUG
-      self.log.setLevel(logging.DEBUG)
+def total_size(obj, seen=None):
+  """Recursively finds the total size of an object including attributes."""
+  if seen is None:
+    seen = set()
+
+  obj_id = id(obj)
+  if obj_id in seen:
+    return 0
+
+  seen.add(obj_id)
+  size = sys.getsizeof(obj)
+
+  if isinstance(obj, dict):
+    size += sum(total_size(k, seen) + total_size(v, seen)
+                for k, v in obj.items())
+  elif hasattr(obj, '__dict__'):
+    size += total_size(vars(obj), seen)
+  elif hasattr(obj, '__iter__') and not isinstance(obj, (str, bytes, bytearray)):
+    size += sum(total_size(i, seen) for i in obj)
+
+  return size

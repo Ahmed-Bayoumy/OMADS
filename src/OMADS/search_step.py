@@ -1,0 +1,267 @@
+"""
+# ------------------------------------------------------------------------------------#
+#  Mesh Adaptive Direct Search - (MADS)                                               #
+#                                                                                     #
+#  Author: Ahmed H. Bayoumy                                                           #
+#  email: ahmed.bayoumy@mail.mcgill.ca                                                #
+#                                                                                     #
+#  This program is free software: you can redistribute it and/or modify it under the  #
+#  terms of the GNU Lesser General Public License as published by the Free Software   #
+#  Foundation, either version 3 of the License, or (at your option) any later         #
+#  version.                                                                           #
+#                                                                                     #
+#  This program is distributed in the hope that it will be useful, but WITHOUT ANY    #
+#  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A    #
+#  PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more details.   #
+#                                                                                     #
+#  You should have received a copy of the GNU Lesser General Public License along     #
+#  with this program. If not, see <http://www.gnu.org/licenses/>.                     #
+#                                                                                     #
+#  You can find information on OMADS at                                               #
+#  https://github.com/Ahmed-Bayoumy/OMADS                                             #
+#  Copyright (C) 2022  Ahmed H. Bayoumy                                               #
+# ------------------------------------------------------------------------------------#
+"""
+from multiprocessing import freeze_support
+
+import os
+import sys
+import time
+import copy
+from typing import List, Dict, Any, Optional
+import numpy as np
+
+from .evaluator import Evaluator
+
+from ._globals import INSERTION_FLAG, SEARCH_TYPE, STOP_TYPE, VAR_TYPE, MSG_TYPE, SUCCESS_TYPES
+from .candidate_point import CandidatePoint
+from ._common import logger, validator
+from .exploration import SAMPLING_METHOD, VNS, EfficientExploration
+from .barriers import AdaptiveBarrier
+from .point import Point
+from .metrics import Metrics
+from .options import Options
+from .parameters import Parameters
+from .mads import MadsState, MadsStatistics
+from .postprocess import PostMADS, Output
+from .optimizer import ConstraintsRelaxationParameters
+from .success import compute_success
+from .cache import Cache
+
+np.set_printoptions(legacy='1.21')
+
+
+def search_cycle(search: EfficientExploration, options: Options,
+                 param: Parameters, state: MadsState, stats: MadsStatistics,
+                 active_barrier: AdaptiveBarrier, iteration: int, log: logger,
+                 post: PostMADS, bb_handle: Evaluator, out: Output,
+                 hashtable: Cache, search_vns: VNS = None):
+  # Forget any sets and directions been previously generated
+  del search.candidate_points_set
+  state.last_success = SUCCESS_TYPES.US
+
+  if post.step_name == None:
+    post.step_name = []
+  # tic = time.perf_counter()
+  candidates: List[CandidatePoint] = []
+  generated_candidates_during_step = []
+  parent_index_candidates = []
+  generated_during_search_step = []
+  # Generate candidate points given each center
+  for center in state.ordered_frame_centers:
+    xc = hashtable.get_candidate_from_cache_by_index(center)
+    hashtable.set_center_candidate(xc)
+    generated_candidates_during_step = search_step(
+        search=search, options=options, param=param, state=state, stats=stats,
+        active_barrier=active_barrier, iteration=iteration,
+        frame_center=center, log=log, post=post, hashtable=hashtable,
+        search_vns=search_vns)
+
+    # Add generated points to the list of candidates
+    if generated_candidates_during_step is not None:
+      candidates.extend(generated_candidates_during_step)
+      for _ in range(len(generated_candidates_during_step)):
+        parent_index_candidates.append(center)
+        generated_during_search_step.append(True)
+
+  if (len(candidates) <= 0):
+    return
+  # Evaluate the generated candidate points
+  search._candidate_points_set = []
+  for ci, c in enumerate(candidates):
+    if hashtable.last_index + 1 < options.budget and not hashtable.is_duplicate(
+            c, add=False) and not hashtable.is_duplicate_in_set(
+            c, search.candidate_points_set):
+      search.candidate_points_set = c
+  del candidates
+  candidates = search._candidate_points_set
+  if not options.parallel_mode:
+    insertion_flag, post = bb_handle.run_callable_serial_local(
+        sampler=search, centers=parent_index_candidates, options=options,
+        stats=stats, active_barrier=active_barrier, post=post,
+        step_name='Poll_2n', parent_indices=parent_index_candidates, out=out,
+        hashtable=hashtable)
+
+  else:
+    # COMPLETED: Review and make it consistent with the serial evaluator
+    search.point_index = -1
+    # """ Parallel evaluation for points in the samples set """
+    insertion_flag, post = bb_handle.run_callable_parallel_local(
+        sampler=search, options=options, stats=stats,
+        active_barrier=active_barrier, post=post, step_name='Poll_2n',
+        parent_indices=parent_index_candidates, hashtable=hashtable,
+        centers=parent_index_candidates, out=out)
+
+  # COMPLETED: Add a new logic to evaluate suceess criteria and update insertion flags accordingly
+
+  for index, candidate in enumerate(candidates):
+    success_flag = SUCCESS_TYPES.US if insertion_flag is None or insertion_flag[index] is None else compute_success(
+        active_barrier=active_barrier, state=state, options=options, insertion_flag=insertion_flag[index], v=candidate)
+    # Update mesh; slightly different from the article for better performance
+    if insertion_flag[index] is not None and insertion_flag[index] in [
+            INSERTION_FLAG.DOMINATES, INSERTION_FLAG.EXTENDS]:
+      x_parent: Point = Point()
+      x_parent.coordinates = hashtable.get_candidate_from_cache_by_index(
+          parent_index_candidates[index]).coordinates
+      direction: Point = Point()
+      direction.coordinates = np.array(hashtable.get_candidate_from_cache_by_index(
+          hashtable.last_index).coordinates) - np.array(x_parent.coordinates)
+      # TODO: Check whether frame size update can be applied in this loop or at the end of each iteration
+      m_index: int = active_barrier.elements.get_index_loc_by_signature(
+          candidate.signature)
+      active_barrier.meshes[m_index].enlarge_delta_frame_size(
+          direction=direction)
+      post.xmin = active_barrier.elements.get_candidate_from_elements_by_signature(
+          candidate.signature)
+      hashtable.set_improving_candidate(x=candidate)
+
+    # Update success flag
+    if success_flag.value > (
+            state.last_success.value
+            if
+            isinstance(state.last_success, SUCCESS_TYPES) else
+            SUCCESS_TYPES[state.last_success].value):
+
+      state.last_success = success_flag
+      search.n_successes += 1
+
+    # Detect potential stopping reasons
+    if (search.bb_eval >= options.budget):
+      state.stop_reason = STOP_TYPE.MAX_BB_EVAL_REACHED
+      return
+
+    if (search.bb_eval >= options.noutbound_hits_max):
+      state.stop_reason = STOP_TYPE.MAX_BB_OUTBOUND_REACHED
+      return
+
+    # Detect feasibility in case we are in phase one
+    if state.is_phase_one and insertion_flag is not None:
+      if active_barrier.elements[active_barrier.last_index].h == 0:
+        state.stop_reason = STOP_TYPE.STOP_IF_FEASIBLE
+        return
+
+    # Trigger opportunistic strategy only when an iteration is considered as a full success
+    if success_flag.value > SUCCESS_TYPES.PS.value and options.opportunistic:
+      stats.nopportunistic_triggers += 1
+      break
+
+  # toc = time.perf_counter()
+
+
+def search_step(search: EfficientExploration, options: Options,
+                param: Parameters, state: MadsState, stats: MadsStatistics,
+                active_barrier: AdaptiveBarrier, iteration: int,
+                frame_center: int, log: logger, post: PostMADS, hashtable:
+                Cache, search_vns: VNS = None) -> List[CandidatePoint]:
+  """_summary_
+
+  :param poll: The poll step algorithm
+  :type poll: Dirs2n
+  :param options: The directions class object
+  :type options: Options
+  :param param: Algorithmic options
+  :type param: Parameters
+  :param state: Algorithmic parameters
+  :type state: MadsState
+  :param stats: Success status
+  :type stats: MadsStatistics
+  :param active_barrier: Statistics and metadata class object
+  :type active_barrier: BarrierMO
+  :param iteration: The active barrier class object
+  :type iteration: int
+  :param xmin: iteration number
+  :type xmin: CandidatePoint
+  :param log: current incumbent candidate
+  :type log: logger
+  :param post: updated log
+  :type post: PostMADS
+  :return: Updated incumbent candidate
+  :rtype: CandidatePoint
+  """
+
+  search.prob_params = copy.deepcopy(param)
+
+  # Set mesh
+  if state.fk_frame_center == -1:
+    mk = active_barrier.meshes[state.ordered_frame_centers[0]]
+  else:
+    mk = active_barrier.meshes[state.fk_frame_center]
+
+  post.mesh = mk
+
+  # Check the mesh size with the min mesh threshold
+  if all(
+      [mk.get_delta_frame_size().coordinates[pp] < options.tol
+       for pp in range(search.n)]):
+    state.stop_reason = STOP_TYPE.MIN_MESH_REACHED
+    return
+
+  # Assign the mesh to the poll instant and constraints relaxation parameters from the current state instant
+  search.mesh = copy.deepcopy(mk)
+  search.constraints_rp.hmax = state.h_max
+  search.constraints_handler.hmax = state.h_max
+
+  parent_index_candidates = []
+  generated_during_search_step = []
+
+  # poll.active_barrier = copy.deepcopy(active_barrier)
+  search.success = SUCCESS_TYPES.US
+
+  if frame_center != -1:
+    xcp_frame: CandidatePoint = hashtable.get_candidate_from_cache_by_index(
+        frame_center)
+    x_frame: Point = Point()
+    x_frame.coordinates = np.array(xcp_frame.coordinates)
+    parent_index = active_barrier.parent_indexes[frame_center]
+    x_parent: Point = Point()
+    if parent_index != 0:
+      x_parent.coordinates = hashtable.get_candidate_from_cache_by_index(
+          parent_index).coordinates
+
+    generated_candidates_during_step = None
+    search.generate_sample_points(
+        nsamples=int(
+            ((search.dim + 1) / 2) *
+            ((search.dim + 2) / 2))
+        if search.ns is None else search.ns,
+        hashtable=hashtable,
+        active_barrier=active_barrier, ub=param.ub,
+        lb=param.lb, fc=xcp_frame,
+        fci=frame_center, it=iteration,
+        var_type=param.var_type,
+        var_sets=param.var_sets, var_link=None,
+        last_success=state.last_success)
+
+    # poll.candidate_points_set
+    if search.candidate_points_set is not None and len(
+            search.candidate_points_set) > 0:
+      search.project_on_mesh_and_snap_to_bounds(
+          m=mk, x_center=active_barrier.elements[frame_center].coordinates,
+          lb=param.lb, ub=param.ub, hashtable=hashtable)
+
+      peval = search.bb_eval
+      search.omit_duplicates(peval, stats, hashtable=hashtable)
+
+    generated_candidates_during_step = search.candidate_points_set
+
+  return generated_candidates_during_step

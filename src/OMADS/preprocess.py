@@ -25,12 +25,11 @@
 
 from multiprocessing import cpu_count
 from typing import Any, Dict, List, Optional
-from dataclasses import dataclass
 import copy
 
-from ._globals import VAR_TYPE, MSG_TYPE, DESIGN_STATUS
+from ._globals import SAMPLER_TYPE, SUCCESS_TYPES, VAR_TYPE, MSG_TYPE, DType
 from .candidate_point import CandidatePoint
-from .barriers import Barrier, BarrierMO
+from .barriers import AdaptiveBarrier
 from .omesh import Omesh
 from .directions import Dirs2n
 from .parameters import Parameters
@@ -40,17 +39,33 @@ from .postprocess import PostMADS, Output
 from ._common import logger
 from .gmesh import Gmesh
 from .cache import Cache
+from .metadata import MadsState, MadsStatistics
+from .optimizer import GenericSamplerBase
+from .exploration import EfficientExploration, search_sampling
 
 
-@dataclass
-class PrePoll:
+class preprocess:
   """ Preprocessor for setting up optimization settings and parameters"""
-  data: Dict[Any, Any]
+  data: Dict[Any, Any] = {}
   log: Optional[logger] = None
+  sampler: GenericSamplerBase = None
 
-  def set_variables_type(self, is_xs: bool, xs: List[float],
-                         x_start: CandidatePoint,
-                         param: Parameters) -> CandidatePoint:
+  def __init__(
+          self, data: Dict[Any, Any] = {},
+          log: logger = None, sampler_t: SAMPLER_TYPE = None):
+    self.data = data
+    self.log = log
+    if sampler_t == SAMPLER_TYPE.POLL:
+      self.sampler = Dirs2n()
+    elif sampler_t == SAMPLER_TYPE.SEARCH:
+      self.sampler = EfficientExploration()
+    else:
+      raise IOError(
+          "Unknown search type provided in a preprocess instantiation!")
+
+  def set_variables_type(
+          self, param: Parameters, x_start: CandidatePoint, is_xs: bool,
+          xs: CandidatePoint = None) -> CandidatePoint:
     if not is_xs:
       x_start.coordinates = xs
       x_start.sets = param.var_sets
@@ -100,10 +115,10 @@ class PrePoll:
                   real, integer, discrete, categorical, ordinal, or binary")
     return x_start
 
-  def poll_preparation_and_initialization(
+  def sampler_preparation_and_initialization(
           self, param: Parameters, x_start: CandidatePoint, is_xs: bool,
-          options: Options, poll: Dirs2n, extend: bool, B: Barrier,
-          iteration: int):
+          options: Options, B: AdaptiveBarrier, iteration: int, state: MadsState,
+          stats: MadsStatistics, ev: Evaluator):
     """_summary_
     """
     # Get the starting point: best start given a list of coordinates (if any)
@@ -127,10 +142,10 @@ class PrePoll:
           else:
             p.append(x_start.coordinates[i])
         if not is_xs:
-          poll.bb_output, _ = poll.bb_handle.eval(p)
+          self.sampler.bb_output, _ = ev.eval(p)
       else:
         if not is_xs:
-          poll.bb_output, _ = poll.bb_handle.eval(x_start.coordinates)
+          self.sampler.bb_output, _ = ev.eval(x_start.coordinates)
       x_start.h_max = param.h_max
       x_start.rho = param.rho
 
@@ -140,83 +155,50 @@ class PrePoll:
         param.lambda_multipliers = [param.lambda_multipliers]
       if len(x_start.c_ineq) > len(param.lambda_multipliers):
         param.lambda_multipliers += [param.lambda_multipliers[-1]
-                                     ] * abs(len(param.lambda_multipliers)-len(x_start.c_ineq))
+                                     ] * abs(len(param.lambda_multipliers) - len(x_start.c_ineq))
       if len(x_start.c_ineq) < len(param.lambda_multipliers):
         del param.lambda_multipliers[len(x_start.c_ineq):]
       x_start.lambda_multipliers = param.lambda_multipliers
 
       if not is_xs:
-        x_start.__eval__(poll.bb_output)
-        # if isinstance(B, Barrier) or isinstance(B, BarrierMO):
-        #   B._h_max = x_start.h_max
-      # """ 9- Copy the starting point object to the poll's  minimizer subclass """
-      if not extend:
-        if x_start.status == DESIGN_STATUS.INFEASIBLE and isinstance(
-                B, BarrierMO):
-          poll.x_sc = copy.deepcopy(x_start) if (
-              poll.x_sc is None or x_start < poll.x_sc) else poll.x_sc
-        else:
-          poll.xmin = copy.deepcopy(x_start) if (
-              poll.xmin is None or not poll.xmin.evaluated or x_start < poll.xmin) else poll.xmin
+        x_start.__eval__(self.sampler.bb_output)
+        stats.neval_bb += 1
+        self.sampler.bb_eval += 1
+        x_start.eval_no = stats.neval_bb
       # """ 10- Hold the starting point in the poll
       # directions subclass and define problem parameters """
-      poll.poll_set.append(x_start)
-      poll.scale(ub=param.ub, lb=param.lb, factor=param.scaling)
-      poll.dim = x_start.n_dimensions
-      if not extend:
-        if poll.hashtable is None or poll.hashtable._n_dim == 0:
-          poll.hashtable = Cache()
-          poll.hashtable._n_dim = len(x_start.coordinates)
-          poll.hashtable._is_pareto = param.is_pareto
-        if param.is_pareto:
-          poll.hashtable.nd_points = []
+      self.sampler.candidate_points_set = x_start
+      self.sampler.scale(ub=param.ub, lb=param.lb, factor=param.scaling)
+      self.sampler.dim = x_start.n_dimensions
+
+      hashtable = Cache(capacity=options.budget)
+      hashtable._is_pareto = param.is_pareto
+
       # """ 10- Initialize the number of successful points
       # found and check if the starting minimizer performs better
       # than the worst (f = inf) """
-      poll.nb_success = 0
-      if not extend and poll.xmin.evaluated and poll.xmin < CandidatePoint():
-        poll.poll_set = [poll.xmin]
-      elif extend and x_start.status == DESIGN_STATUS.FEASIBLE and x_start < poll.xmin:
-        poll.xmin = copy.deepcopy(x_start)
-        poll.mesh.enlarge_delta_frame_size()
-      elif extend and x_start.status == DESIGN_STATUS.INFEASIBLE and x_start < poll.x_sc:
-        poll.x_sc = copy.deepcopy(x_start)
-      elif extend and x_start.status == DESIGN_STATUS.FEASIBLE and x_start >= poll.xmin:
-        poll.mesh.refine_delta_frame_size()
-      elif extend and x_start.status == DESIGN_STATUS.INFEASIBLE and x_start >= poll.x_sc:
-        poll.mesh.refine_delta_frame_size()
+      self.sampler.nb_success = 0
 
-      poll.xmin.mesh = copy.deepcopy(poll.mesh)
-      poll.x_sc.mesh = copy.deepcopy(poll.mesh)
+      post = PostMADS(
+          x_incumbent=[x_start],
+          xmin=x_start, poll_dirs=[x_start])
+      post.psize.append(self.sampler.mesh.get_delta_frame_size().coordinates)
+      post.bb_eval.append(self.sampler.bb_eval)
+      post.iter.append(iteration)
+      post.step_name = []
+      post.step_name.append("Poll_2n")
 
       # """ 11- Construct the results postprocessor class object 'post' """
-      if poll.xmin.evaluated:
-        x_start.eval_no = poll.bb_handle.bb_eval
-        poll.xmin.eval_no = poll.bb_handle.bb_eval
-        post = PostMADS(
-            x_incumbent=[poll.xmin],
-            xmin=poll.xmin, poll_dirs=[poll.xmin])
-        post.psize.append(poll.mesh.get_delta_frame_size().coordinates)
-        post.bb_eval.append(poll.bb_handle.bb_eval)
-        x_start.mesh = poll.mesh
-        post.iter.append(iteration)
-      elif poll.x_sc.evaluated:
-        x_start.eval_no = poll.bb_handle.bb_eval
-        poll.x_sc.eval_no = poll.bb_handle.bb_eval
-        post = PostMADS(
-            x_incumbent=[poll.x_sc],
-            xmin=poll.x_sc, poll_dirs=[poll.x_sc])
-        post.psize.append(poll.mesh.get_delta_frame_size().coordinates)
-        post.bb_eval.append(poll.bb_handle.bb_eval)
-
-        post.iter.append(iteration)
 
       # """ Note: printing the post will print a results row
       # within the results table shown in Python console if the
       # 'display' option is true """
       # """ 12- Add the starting point hash value to the cache memory """
+      x_start.improving = True
+      x_start.was_center = True
+      x_start.is_nondominated = True
       if options.store_cache:
-        poll.hashtable.add_to_cache(x_start)
+        hashtable.add_to_cache(x_start)
       # """ 13- Initialize the output results file object  """
       out = Output(
           file_path=param.post_dir, vnames=param.var_names,
@@ -237,18 +219,22 @@ class PrePoll:
               msg_type=MSG_TYPE.INFO)
 
       # """ 14- Update the barrier with points """
-      B.update_with_points(x_start if isinstance(x_start, list) else [x_start])
+      stot = x_start if isinstance(x_start, list) else [x_start]
+      for xt in stot:
+        if xt.is_feasible():
+          B.add_feasible(xt, self.sampler.mesh)
+        else:
+          B.add_infeasible(xt, self.sampler.mesh)
 
       iteration += 1
 
-    return iteration, x_start, poll, options, param, post, out, B, out_p
+      return iteration, x_start, self.sampler, options, param, post, out, B, out_p, state, stats, ev, hashtable
 
-  def initialize_from_dict(
-          self, log: logger = None, xs: CandidatePoint = None):
+  def initialize_from_dict(self, xs: CandidatePoint = None):
     # """ MADS initialization """
     # """ 1- Construct the following classes by unpacking
     #  their respective dictionaries from the input JSON file """
-    self.log = copy.deepcopy(log)
+    self.log = copy.deepcopy(self.log)
     if self.log is not None:
       self.log.log_msg(
           msg="---------------- Preprocess the POLL step ----------------",
@@ -257,8 +243,8 @@ class PrePoll:
                        msg_type=MSG_TYPE.INFO)
     options = Options(**self.data["options"])
     param = Parameters(**self.data["param"])
-    log.is_verbose = options.is_verbose
-    barrier_defined = BarrierMO(
+    self.log.is_verbose = options.is_verbose
+    barrier_defined = AdaptiveBarrier(
         param=param, options=options)  # if param.is_pareto else Barrier(param)
     barrier_defined.h_max = param.h_max
     ev = Evaluator(**self.data["evaluator"])
@@ -281,43 +267,57 @@ class PrePoll:
 
     if not extend:
       # """ 3- Construct an instant for the poll 2n orthogonal directions class object """
-      poll = Dirs2n()
       if param.failure_stop is not None and isinstance(
               param.failure_stop, bool):
-        poll.failure_stop = param.failure_stop
-      poll.dtype.precision = options.precision
+        self.sampler.failure_stop = param.failure_stop
+      self.sampler.dtype = DType()
+      self.sampler.dtype.precision = options.precision
+      if isinstance(self.sampler, EfficientExploration):
+        search_step = search_sampling(**self.data["search"])
+        self.sampler.sampling_t = search_step.s_method
+        self.sampler.type = search_step.type
+        self.sampler.ns = search_step.ns
+        self.sampler.sampling_criter = search_step.criterion
+        self.sampler.visualize = search_step.visualize
+        self.sampler.weights = search_step.weights
       # """ 4- Construct an instant for the mesh subclass object by inheriting
       # initial parameters from mesh_params() """
       # COMPLETED: Add the Gmesh constructor req inputs
-      poll.mesh = Gmesh(
+      self.sampler.mesh = Gmesh(
           pb_param=param, run_options=options) if (
           param.mesh_type).lower() == "gmesh" else Omesh(
           pb_param=param, run_options=options)
       # """ 5- Assign optional algorithmic parameters to the constructed poll instant  """
-      poll.opportunistic = options.opportunistic
-      poll.seed = options.seed
-      poll.eval_budget = options.budget
-      poll.store_cache = options.store_cache
-      poll.check_cache = options.check_cache
-      poll.display = options.display
+      self.sampler.opportunistic = options.opportunistic
+      self.sampler.seed = options.seed
+      self.sampler.eval_budget = options.budget
+      self.sampler.store_cache = options.store_cache
+      self.sampler.check_cache = options.check_cache
+      self.sampler.display = options.display
       # poll.scaling
     else:
-      poll = options.extend
+      self.sampler = options.extend
 
     n_available_cores = cpu_count()
     if options.parallel_mode and options.np > n_available_cores:
       options.np = n_available_cores
     # """ 6- Initialize blackbox handling subclass by copying
     #  the evaluator 'ev' instance to the poll object"""
-    poll.bb_handle = ev
-    poll.bb_handle.bb_eval = ev.bb_eval
+    self.sampler.bb_eval = ev.bb_eval
     # """ 7- Evaluate the starting point """
     if options.display:
       print(" Evaluation of the starting points")
       if self.log is not None:
         self.log.log_msg(msg="- Evaluate the starting point",
                          msg_type=MSG_TYPE.INFO)
+    # x_start.mesh = poll.mesh
 
-    return self.poll_preparation_and_initialization(
-        param=param, x_start=x_start, is_xs=is_xs, options=options, poll=poll,
-        extend=extend, B=barrier_defined, iteration=iteration)
+    state: MadsState = MadsState()
+    state.h_max = param.h_max
+    stats: MadsStatistics = MadsStatistics()
+    state.last_success = SUCCESS_TYPES.US
+
+    return self.sampler_preparation_and_initialization(
+        param=param, x_start=x_start, is_xs=is_xs, options=options,
+        B=barrier_defined, iteration=iteration, state=state, stats=stats,
+        ev=ev)

@@ -23,7 +23,6 @@
 # ------------------------------------------------------------------------------------#
 """
 import copy
-from dataclasses import dataclass
 from typing import List, Optional
 import numpy as np
 from deap.tools._hypervolume import pyhv as hv
@@ -33,11 +32,14 @@ from .candidate_point import CandidatePoint
 from .point import Point
 
 
-@dataclass
 class Metrics:
-  nd_solutions: Optional[List[CandidatePoint]] = None
-  nobj: int = 2
-  ref_point: Optional[Point] = None
+
+  def __init__(
+          self, nd_solutions: Optional[List[CandidatePoint]] = None, nobj: int = 2,
+          ref_point: Optional[Point] = None):
+    self.nd_solutions: Optional[List[CandidatePoint]] = nd_solutions
+    self.nobj: int = nobj
+    self.ref_point: Optional[Point] = ref_point
 
   def find_ref_point(self):
     if self.nd_solutions:
@@ -48,7 +50,7 @@ class Metrics:
         f: List[float] = []
         for p in self.nd_solutions:
           f.append(p.fobj[i])
-        ftemp.append(max(f)+abs(max(f))*0.025)
+        ftemp.append(max(f) + abs(max(f)) * 0.025)
       self.ref_point.coordinates = copy.deepcopy(ftemp)
 
   def get_pareto_points(self):
@@ -116,50 +118,6 @@ class Metrics:
 
     pf_n_list = np.array(pf_n_list)
     return hv.hypervolume(pointset=pf_n_list, ref=np.array(list(ref_n)))
-
-    # # Ensure all objectives are minimized (convert to maximization problem)
-    # nd_solutions = np.array([np.subtract(self._ref_point.f, xf.f) for xf in self.nd_solutions])
-
-    # # Sort self.ND_solutionss lexicographically
-    # nd_solutions.sort(axis=0)
-
-    # hypervolume_value = 0.0
-    # last_volume = [1.0]*self.nobj
-
-    # for point in nd_solutions:
-    #   current_volume = 1.0
-    #   for i in range(len(self._ref_point.f)):
-    #     current_volume *= max(last_volume[i], point[i]) - last_volume[i]
-
-    #   hypervolume_value += current_volume
-    #   last_volume = point
-
-    # return hypervolume_value
-
-  # def normalize_data(self, pareto_front, reference_point):
-  #   """
-  #   Normalize Pareto points and the reference point.
-
-  #   :param pareto_front: List of Pareto points where each point is a tuple (x, y).
-  #   :param reference_point: The reference point (rx, ry).
-  #   :return: Normalized Pareto points and reference point.
-  #   """
-  #   # Convert Pareto front and reference point to numpy arrays
-  #   pareto_front = np.array(pareto_front)
-  #   reference_point = np.array(reference_point)
-
-  #   # Find min and max values for each objective
-  #   min_vals = np.min(pareto_front, axis=0)
-  #   max_vals = np.max(pareto_front, axis=0)
-
-  #   # Normalize Pareto points
-  #   normalized_pareto_front = (pareto_front - min_vals) / (max_vals - min_vals)
-
-  #   # Normalize reference point
-  #   normalized_reference_point = (
-  #       reference_point - min_vals) / (max_vals - min_vals)
-
-  #   return normalized_pareto_front, normalized_reference_point
 
   def calculate_hypervolume(self, pf, rp):
     """
