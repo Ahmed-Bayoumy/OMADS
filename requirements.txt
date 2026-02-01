@@ -1,7 +1,0 @@
-cocopp==2.6.3
-matplotlib==3.6.2
-NOBM==1.0.1
-numpy==1.24.1
-pandas==1.5.2
-scipy==1.9.3
-setuptools==58.1.0

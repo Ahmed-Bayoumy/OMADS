@@ -1,28 +1,60 @@
-[build-system]
-requires = [
-    "setuptools>=58.1.0",
-    "wheel"
+[project]
+name = "OMADS"
+version = "2601"
+requires-python = ">=3.10"
+
+description = "Optimization using Mesh Adaptive Direct Search (MADS)"
+
+authors = [
+    { name = "Ahmed H. Bayoumy", email = "ahmed.bayoumy@mail.mcgill.ca" }
 ]
-build-backend = "setuptools.build_meta"
 
-[tool.pytest.ini_options]
-testpaths = [
-    "tests",
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: BSD License",  # Use this standardized version
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
 ]
 
-[tool.mypy]
-mypy_path = "src"
-check_untyped_defs = true
-disallow_any_generics = true
-ignore_missing_imports = true
-no_implicit_optional = true
-show_error_codes = true
-strict_equality = true
-warn_redundant_casts = true
-warn_return_any = true
-warn_unreachable = true
-warn_unused_configs = true
-no_implicit_reexport = true
+dependencies = [
+    "deap==1.4",
+    "numpy>=2.2.6",
+    "pandas>=2.3.3",
+    "paramiko>=3.4.0",
+    "requests>=2.32.5",
+    "samplerslib>=2601.1",
+    "scipy>=1.15.3",
+]
 
-[tool.pylint."MESSAGES CONTROL"]
-disable = ["bad-indentation"]
+[project.optional-dependencies]
+visualization = [
+    "matplotlib>=3.10.8",
+    "plotly>=6.5.0",
+]
+
+test = [
+    "pytest>=8.0",
+    "pytest-cov>=7.0.0",
+]
+
+[dependency-groups]
+dev = [
+    "flake8>=7.3.0",
+    "pytest>=9.0.2",
+    "pytest-cov>=7.0.0",
+]
+
+[tool.ruff]
+line-length = 127
+
+[tool.ruff.lint]
+# E9, F63, F7, F82 are standard in Ruff's default 'E' and 'F' selections
+select = ["E", "F", "C90"] 
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
