@@ -30,7 +30,7 @@ from .._analytics._metadata import MadsState
 from .._include import Options
 
 
-def compute_success(
+def compute_success(  # noqa: C901
         active_barrier: AdaptiveBarrier, state: MadsState, options: Options,
         insertion_flag: str, v: CandidatePoint) -> SUCCESS_TYPES:
   """_summary_

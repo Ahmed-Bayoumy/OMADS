@@ -48,7 +48,7 @@ class Parameters:
     where the output results file will live in (if any)
   """
 
-  def __init__(
+  def __init__(  # noqa: C901
           self,
           baseline: List[float] = None,
           lb: List[float] = None,
@@ -234,7 +234,7 @@ class Parameters:
     self.ref_point = ref_point
     self.mesh_adjustment = mesh_adjustment
 
-  def set_initial_mesh_parameters(self):
+  def set_initial_mesh_parameters(self):  # noqa: C901
     """Set the initial mesh parameters
 
     :raises IOError: _description_

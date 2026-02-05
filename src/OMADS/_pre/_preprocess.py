@@ -63,7 +63,7 @@ class preprocess:
       raise IOError(
           "Unknown search type provided in a preprocess instantiation!")
 
-  def set_variables_type(
+  def set_variables_type(  # noqa: C901
           self, param: Parameters, x_start: CandidatePoint, is_xs: bool,
           xs: CandidatePoint = None) -> CandidatePoint:
     if not is_xs:
@@ -115,7 +115,7 @@ class preprocess:
                   real, integer, discrete, categorical, ordinal, or binary")
     return x_start
 
-  def sampler_preparation_and_initialization(
+  def sampler_preparation_and_initialization(  # noqa: C901
           self, param: Parameters, x_start: CandidatePoint, is_xs: bool,
           options: Options, B: AdaptiveBarrier, iteration: int, state: MadsState,
           stats: MadsStatistics, ev: Evaluator):
@@ -230,7 +230,7 @@ class preprocess:
 
       return iteration, x_start, self.sampler, options, param, post, out, B, out_p, state, stats, ev, hashtable
 
-  def initialize_from_dict(self, xs: CandidatePoint = None):
+  def initialize_from_dict(self, xs: CandidatePoint = None):  # noqa: C901
     # """ MADS initialization """
     # """ 1- Construct the following classes by unpacking
     #  their respective dictionaries from the input JSON file """

@@ -43,7 +43,7 @@ from .._include import MadsState, MadsStatistics
 from .._include import Cache
 
 
-def poll_cycle(poll: Dirs2n, options: Options, param: Parameters,
+def poll_cycle(poll: Dirs2n, options: Options, param: Parameters,  # noqa: C901
                state: MadsState, stats: MadsStatistics,
                active_barrier: AdaptiveBarrier, iteration: int, log: logger,
                post: PostMADS, bb_handle: Evaluator, out: Output,
@@ -52,7 +52,7 @@ def poll_cycle(poll: Dirs2n, options: Options, param: Parameters,
   del poll.candidate_points_set
   del poll.poll_dirs
 
-  if post.step_name == None:
+  if post.step_name is None:
     post.step_name = []
   # tic = time.perf_counter()
   candidates: List[CandidatePoint] = []

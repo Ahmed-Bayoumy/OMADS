@@ -110,7 +110,7 @@ def set_frame_centers_and_hvalues(
       state.h_max = max(elt.h for elt in active_barrier.get_ik())
 
 
-def update(sampler: GenericSamplerBase, state: MadsState, options: Options,
+def update(sampler: GenericSamplerBase, state: MadsState, options: Options,  # noqa: C901
            active_barrier: AdaptiveBarrier, stats: MadsStatistics,
            hashtable: Cache = None):
   """Update step

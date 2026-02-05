@@ -49,7 +49,7 @@ from .._include import WarningSuppressor
 np.set_printoptions(legacy='1.21')
 
 
-def main(*args) -> Dict[str, Any]:
+def main(*args) -> Dict[str, Any]:  # noqa: C901
   """ MADS: Search step main algorithm """
 
   # """ Validate and parse the parameters file """
@@ -81,7 +81,8 @@ def main(*args) -> Dict[str, Any]:
   stats = MadsStatistics()
   pre = preprocess(
       data=data, log=log, sampler_t=SAMPLER_TYPE.SEARCH)
-  iteration, _, search, options, param, post, out, active_barrier, out_p, state, stats, bb_handle, hashtable = pre.initialize_from_dict()
+  iteration, _, search, options, param, post, out, active_barrier, \
+      out_p, state, stats, bb_handle, hashtable = pre.initialize_from_dict()
   del pre
 
   if out_p:
@@ -151,7 +152,10 @@ def main(*args) -> Dict[str, Any]:
         msg=f"Iteration {search.iter} completed in {toc - tic:.4f} seconds",
         msg_type=MSG_TYPE.INFO)
     log.log_msg(
-        msg=f"Iteration {search.iter} success status: {'Full Success' if state.last_success == SUCCESS_TYPES.FS else 'Partial Success' if state.last_success == SUCCESS_TYPES.PS else 'Unsuccessful'}",
+        msg=f"Iteration {search.iter}  success status: \
+        {'Full Success'
+         if state.last_success == SUCCESS_TYPES.FS else 'Partial Success'
+         if state.last_success == SUCCESS_TYPES.PS else 'Unsuccessful'} ",
         msg_type=MSG_TYPE.INFO)
     log.log_msg(
         msg=post,
@@ -295,8 +299,12 @@ def main(*args) -> Dict[str, Any]:
                             "nbb_evals": stats.neval_bb,
                             "niterations": iteration,
                             "nb_success": stats.nfull_successes,
-                            "psize": active_barrier.meshes[state.ordered_frame_centers[0]].get_delta_frame_size().coordinates,
-                            "psuccess": active_barrier.meshes[state.ordered_frame_centers[0]].get_delta_frame_size().coordinates,
+                            "psize":
+                            active_barrier.meshes[state.ordered_frame_centers[0]].get_delta_frame_size(
+                            ).coordinates,
+                            "psuccess":
+                            active_barrier.meshes[state.ordered_frame_centers[0]].get_delta_frame_size(
+                            ).coordinates,
                             # "pmax": poll.mesh.psize_max,
                             "msize": search.mesh.get_delta_mesh_size().coordinates,
                             "HV": hv if param.is_pareto else "NA"}

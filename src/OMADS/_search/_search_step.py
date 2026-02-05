@@ -22,8 +22,6 @@
 #  Copyright (C) 2026  Ahmed H. Bayoumy                                               #
 # ------------------------------------------------------------------------------------#
 """
-from multiprocessing import freeze_support
-
 
 import copy
 from typing import List
@@ -47,7 +45,7 @@ from .._include import Cache
 np.set_printoptions(legacy='1.21')
 
 
-def search_cycle(search: EfficientExploration, options: Options,
+def search_cycle(search: EfficientExploration, options: Options,  # noqa: C901
                  param: Parameters, state: MadsState, stats: MadsStatistics,
                  active_barrier: AdaptiveBarrier, iteration: int, log: logger,
                  post: PostMADS, bb_handle: Evaluator, out: Output,
@@ -56,7 +54,7 @@ def search_cycle(search: EfficientExploration, options: Options,
   del search.candidate_points_set
   state.last_success = SUCCESS_TYPES.US
 
-  if post.step_name == None:
+  if post.step_name is None:
     post.step_name = []
   # tic = time.perf_counter()
   candidates: List[CandidatePoint] = []
@@ -216,9 +214,6 @@ def search_step(search: EfficientExploration, options: Options,
   search.mesh = copy.deepcopy(mk)
   search.constraints_rp.hmax = state.h_max
   search.constraints_handler.hmax = state.h_max
-
-  parent_index_candidates = []
-  generated_during_search_step = []
 
   # poll.active_barrier = copy.deepcopy(active_barrier)
   search.success = SUCCESS_TYPES.US

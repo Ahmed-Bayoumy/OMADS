@@ -46,7 +46,7 @@ from .._include import WarningSuppressor
 np.set_printoptions(legacy='1.21')
 
 
-def main(*args) -> Dict[str, Any]:
+def main(*args) -> Dict[str, Any]:  # noqa: C901
   """MADS: Poll step main algorithm
 
   :raises IOError: Exceptions
@@ -84,7 +84,8 @@ def main(*args) -> Dict[str, Any]:
   stats = MadsStatistics()
   pre = preprocess(
       data=data, log=log, sampler_t=SAMPLER_TYPE.POLL)
-  iteration, _, poll, options, param, post, out, active_barrier, out_p, state, stats, bb_handle, hashtable = pre.initialize_from_dict()
+  iteration, _, poll, options, param, post, out, active_barrier, \
+      out_p, state, stats, bb_handle, hashtable = pre.initialize_from_dict()
   del pre
   out.step_name = "Poll"
   if out_p:
@@ -131,15 +132,19 @@ def main(*args) -> Dict[str, Any]:
         msg=f"Iteration {poll.iter} completed in {toc - tic:.4f} seconds",
         msg_type=MSG_TYPE.INFO)
     log.log_msg(
-        msg=f"Iteration {poll.iter} success status: {'Full Success' if state.last_success == SUCCESS_TYPES.FS else 'Partial Success' if state.last_success == SUCCESS_TYPES.PS else 'Unsuccessful'}",
+        msg=f"Iteration {poll.iter}  success status: \
+        {'Full Success'
+         if state.last_success == SUCCESS_TYPES.FS else 'Partial Success'
+         if state.last_success == SUCCESS_TYPES.PS else 'Unsuccessful'} ",
         msg_type=MSG_TYPE.INFO)
     post.h_max = active_barrier.h_max
     log.log_msg(
         msg=post,
         msg_type=MSG_TYPE.INFO)
 
-    failure_check = iteration > 0 and state.stop_reason is not None and state.stop_reason != STOP_TYPE.UNKNOWN_STOP_REASON and (
-        state.last_success == SUCCESS_TYPES.US)
+    failure_check = iteration > 0 and state.stop_reason is not None \
+        and state.stop_reason != STOP_TYPE.UNKNOWN_STOP_REASON and (
+            state.last_success == SUCCESS_TYPES.US)
     state.last_success = SUCCESS_TYPES.US
     pb = ProgressBar(options, active_barrier)
     pb.display(peval=stats.neval_bb)
@@ -283,8 +288,12 @@ def main(*args) -> Dict[str, Any]:
                             "nbb_evals": poll.bb_eval,
                             "niterations": iteration,
                             "nb_success": poll.nb_success,
-                            "psize": active_barrier.meshes[state.ordered_frame_centers[0]].get_delta_frame_size().coordinates,
-                            "psuccess": active_barrier.meshes[state.ordered_frame_centers[0]].get_delta_frame_size().coordinates,
+                            "psize":
+                            active_barrier.meshes[state.ordered_frame_centers[0]].get_delta_frame_size(
+                            ).coordinates,
+                            "psuccess":
+                            active_barrier.meshes[state.ordered_frame_centers[0]].get_delta_frame_size(
+                            ).coordinates,
                             # "pmax": poll.mesh.psize_max,
                             "msize": poll.mesh.get_delta_mesh_size().coordinates,
                             "HV": hv if param.is_pareto else "NA"}

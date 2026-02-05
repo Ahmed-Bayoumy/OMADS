@@ -159,7 +159,8 @@ class Point:
       if not self.is_mult(self.coordinates[i], g[i]):
         raise IOError(
             "Check: Invalid granularity of parameter " + name +
-            f"at index {i} : {self.coordinates[i]} vs granularity value {g[i]} found a non-zero remainder of {self.coordinates[i] % g[i]}.")
+            f"at index {i} : {self.coordinates[i]} vs granularity value \
+              {g[i]} found a non-zero remainder of {self.coordinates[i] % g[i]}.")
 
     return True
 

@@ -30,12 +30,11 @@ import logging
 import platform
 import os
 import time
-from typing import List, Any
+from typing import List, Any, Tuple
 
 import paramiko
 
 from numpy import inf
-import numpy as np
 from .._post._postprocess import PostMADS, Output
 from .._setup._options import Options
 from .._include import CandidatePoint
@@ -89,7 +88,6 @@ class Evaluator:
 
     self.candidates = sampler._candidate_points_set
     insertion_flag = [None] * len(sampler._candidate_points_set)
-    CS: List[CandidatePoint] = []
     for index, candidate in enumerate(sampler._candidate_points_set):
       tic = time.perf_counter()
       stats.neval_bb += 1
@@ -161,7 +159,7 @@ class Evaluator:
       self.candidates[index].status = DESIGN_STATUS.ERROR
     return self.candidates[index]
 
-  def run_callable_parallel_local(
+  def run_callable_parallel_local(  # noqa: C901
           self, sampler: GenericSamplerBase, centers: List[int],
           options: Options, stats: Any, active_barrier: AdaptiveBarrier,
           post: PostMADS, step_name: str, parent_indices: List[int],
@@ -287,129 +285,123 @@ class Evaluator:
   def dtype(self):
     return self._dtype
 
-  def eval(self, values: List[float]):
-    """ Evaluate the poll point
+  def eval(self, values: List[float]) -> Tuple[List[float], bool]:
+    """Evaluate the poll point.
 
     :param values: Poll point coordinates (design vector)
-    :type values: List[float]
-    :raises IOError: Incorrect number of input arguments introduced to the callable function
-    :raises IOError: Incorrect number of input arguments introduced to the callable function
-    :raises IOError: The blackbox file is not an executable file (if not a callable function)
-    :raises IOError: Incorrect benchmarking keyword category
-    :return: Evaluated optimization functions
-    :rtype: List[float, List[float]]
+    :return: Evaluated optimization functions and error flag
     """
     self.bb_eval += 1
+
+    # Handle internal method
+    if self.internal not in (None, "None", "none"):
+      raise IOError(f"Invalid internal method: {self.internal}. "
+                    "Must be a BM library name or None.")
+
+    # Handle callable blackbox
+    if callable(self.blackbox):
+      return self._evaluate_callable(values)
+
+    # Handle external executable
+    return self._evaluate_executable(values)
+
+  def _evaluate_callable(self, values: List[float]) -> Tuple[List[float], bool]:
+    """Evaluate a callable blackbox function."""
     evalerr = False
-    if self.internal is None or self.internal == "None" or self.internal == "none":
-      if callable(self.blackbox):
-        is_object = False
-        try:
-          sig = signature(self.blackbox)
-        except PassException:
-          is_object = True
-        if not is_object:
-          npar = len(sig.parameters)
-          # Get input arguments defined for the callable
-          inputs = str(sig).replace(
-              "(", "").replace(
-              ")", "").replace(
-              " ", "").split(',')
-          # Check if user constants list is defined and if the
-          # number of input args of the callable matches what OMADS expects
-          if self.constants is None:
-            is_argv = '*argv' in inputs
-            if (npar == 1 or (npar > 0 and npar <= 3 and is_argv)) or (npar == 2 and is_argv):
-              try:
-                f_eval = self.blackbox(values)
-              except PassException:
-                evalerr = True
-                logging.error(
-                    "Callable %s evaluation returned \
-                      an error at the poll point %s", str(self.blackbox), values)
-                f_eval = [inf, [inf]]
-            else:
-              raise IOError(
-                  f'The callable {str(self.blackbox)} requires {npar} input args, \
-                    but only one input can be provided! \
-                    You can introduce other input parameters to \
-                      the callable function using the constants list.')
-          else:
-            if (npar == 2 or (npar > 0 and npar <= 3 and ('*argv' in inputs))):
-              try:
-                f_eval = self.blackbox(values, self.constants)
-              except PassException:
-                evalerr = True
-                logging.error(
-                    "Callable %s evaluation returned \
-                      an error at the poll point %s", str(self.blackbox), values)
-            else:
-              raise IOError(
-                  f'The callable {str(self.blackbox)} requires {npar} input args, but only two \
-                    input args can be provided as the constants list is defined!')
-        else:
-          try:
-            f_eval = self.blackbox(values)
-          except PassException:
-            evalerr = True
-            logging.error(
-                "Callable %s evaluation returned \
-                  an error at the poll point %s", str(self.blackbox), values)
-            f_eval = [[inf], [inf]]
-        if isinstance(f_eval, list):
-          return f_eval, evalerr
-        elif isinstance(f_eval, float) or isinstance(f_eval, int):
-          return [[f_eval], [0]], evalerr
-      else:
-        self.write_input(values)
-        pwd = os.getcwd()
-        os.chdir(self.path)
-        is_win = platform.platform().split('-')[0] == 'Windows'
-        evalerr = False
-        timouterr = False
-        #  Check if the file is executable
-        executable = os.access(self.blackbox, os.X_OK)
-        if not executable:
+    try:
+      # Determine expected number of args
+      sig = signature(self.blackbox)
+      npar = len(sig.parameters)
+      inputs = str(sig).replace(
+          "(", "").replace(
+          ")", "").replace(
+          " ", "").split(',')
+
+      # Check if constants are used
+      if self.constants is None:
+        if not self._is_valid_callable_signature(npar, inputs):
           raise IOError(
-              f"The blackbox file {str(self.blackbox)} is not an executable! \
-              Please provide a valid executable file.")
-        # Prepare the execution command based on the running machine's OS
-        if is_win and self.command_options is None:
-          cmd = self.blackbox
-        elif is_win:
-          cmd = f'{self.blackbox} {self.command_options}'
-        elif self.command_options is None:
-          cmd = f'./{self.blackbox}'
-        else:
-          cmd = f'./{self.blackbox} {self.command_options}'
-        try:
-          p = subprocess.run(
-              cmd, shell=True, timeout=self.timeout, check=False)
-          if p.returncode != 0:
-            evalerr = True
-            logging.error(
-                "Evaluation # {self.bb_eval} is errored at the poll point {values}")
-        except subprocess.TimeoutExpired:
-          timouterr = True
-          logging.error('Timeout for %s(%s s) expired at \
-              evaluation  # {%s} at the poll point {values}', cmd, self.timeout, self.bb_eval)
+              f"Callable {self.blackbox} requires {npar} args, "
+              "but only one input can be provided. "
+              "Use the constants list for additional parameters.")
+        f_eval = self.blackbox(values)
+      else:
+        if not self._is_valid_callable_with_constants(npar, inputs):
+          raise IOError(
+              f"Callable {self.blackbox} requires {npar} args, "
+              "but only two inputs can be provided with constants.")
+        f_eval = self.blackbox(values, self.constants)
 
-        os.chdir(pwd)
+      return self._format_evaluation_result(f_eval), evalerr
 
-        if evalerr or timouterr:
-          out = [np.inf, [np.inf]]
-        else:
-          out = [self.read_output()[0], [self.read_output()[1:]]]
-        return out, evalerr
-    else:
-      raise IOError(f"Input dict:: evaluator:: internal:: "
-                    f"Incorrect internal method :: {self.internal} :: "
-                    f"it should be a a BM library name, "
-                    f"or None.")
-    f_eval.dtype.dtype = self._dtype.dtype
-    f_eval.name = self.blackbox
-    f_eval.dtype.dtype = self._dtype.dtype
-    return getattr(f_eval, self.blackbox)(), evalerr
+    except PassException:
+      evalerr = True
+      logging.error(
+          "Callable %s evaluation failed at poll point %s", self.blackbox,
+          values)
+      return [[inf], [inf]], evalerr
+
+  def _evaluate_executable(self, values: List[float]) -> Tuple[List[float], bool]:
+    """Evaluate an external executable."""
+    evalerr = False
+    timouterr = False
+    pwd = os.getcwd()
+    os.chdir(self.path)
+
+    try:
+      # Check if executable
+      if not os.access(self.blackbox, os.X_OK):
+        raise IOError(f"Blackbox file {self.blackbox} is not executable.")
+
+      # Build command
+      cmd = self._build_command()
+
+      # Run with timeout
+      p = subprocess.run(cmd, shell=True, timeout=self.timeout, check=False)
+      if p.returncode != 0:
+        evalerr = True
+        logging.error("Evaluation #%d failed at poll point %s",
+                      self.bb_eval, values)
+
+    except subprocess.TimeoutExpired:
+      timouterr = True
+      logging.error("Timeout (%s s) expired for %s at evaluation #%d",
+                    self.timeout, self.blackbox, self.bb_eval)
+
+    finally:
+      os.chdir(pwd)
+
+    # Read output
+    if evalerr or timouterr:
+      return [inf, [inf]], evalerr
+
+    output = self.read_output()
+    return [output[0], output[1:]], evalerr
+
+  def _build_command(self) -> str:
+    """Build execution command based on OS and options."""
+    is_win = platform.platform().split('-')[0] == 'Windows'
+    if is_win:
+      return self.command_options if self.command_options else self.blackbox
+    return f'./{self.blackbox} {self.command_options}' if self.command_options else f'./{self.blackbox}'
+
+  def _is_valid_callable_signature(self, npar: int, inputs: List[str]) -> bool:
+    """Check if callable signature matches expected input count."""
+    return (npar == 1 or (npar > 0 and npar <= 3 and '*argv' in inputs)) or \
+           (npar == 2 and '*argv' in inputs)
+
+  def _is_valid_callable_with_constants(
+          self, npar: int, inputs: List[str]) -> bool:
+    """Check if callable supports constants."""
+    return (npar == 2 or (npar > 0 and npar <= 3 and '*argv' in inputs))
+
+  def _format_evaluation_result(self, f_eval) -> List[float]:
+    """Format the evaluation result into expected structure."""
+    if isinstance(f_eval, list):
+      return f_eval
+    if isinstance(f_eval, (float, int)):
+      return [[f_eval], [0]]
+    raise TypeError(f"Unexpected return type from blackbox: {type(f_eval)}")
 
   def write_input(self, values: List[float]):
     """_summary_

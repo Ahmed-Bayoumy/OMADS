@@ -583,7 +583,7 @@ class EfficientExploration(GenericSamplerBaseData, GenericSamplerBase):
 
     return grid_points[:n, :]
 
-  def project_on_mesh_and_snap_to_bounds(
+  def project_on_mesh_and_snap_to_bounds(  # noqa: C901
           self, m: Mesh, x_center: List[float],
           lb: List[float],
           ub: List[float], hashtable: Cache):
@@ -646,7 +646,7 @@ class EfficientExploration(GenericSamplerBaseData, GenericSamplerBase):
     for fi, f in enumerate(filtered):
       self.candidate_points_set = f
 
-  def generate_sample_points(
+  def generate_sample_points(  # noqa: C901
           self, active_barrier: AdaptiveBarrier, hashtable: Cache,
           ub: List[float],
           lb: List[float],
@@ -800,7 +800,8 @@ class EfficientExploration(GenericSamplerBaseData, GenericSamplerBase):
         center_points_f   = np.array(f_better) if f_better else np.empty((0, self.prob_params.nobj))
         non_improving_f    = np.array(f_worse)  if f_worse  else np.empty((0, self.prob_params.nobj))
         self.active_sampling = explore.samplers.BiTPE(
-            good_data=center_points, good_f_values=center_points_f, bad_data=non_improving, bad_f_values=non_improving_f, n_r=self.ns, vlim=v,
+            good_data=center_points, good_f_values=center_points_f, bad_data=non_improving, \
+              bad_f_values=non_improving_f, n_r=self.ns, vlim=v,
             kernel_type={"Gaussian": 0.5, "Gaussian_RBF": 0.1,
                          "Multiquadric_RBF": 0.1, "Laplace": 0.1,
                          "cosine": 0.1, "logistic": 0.05,

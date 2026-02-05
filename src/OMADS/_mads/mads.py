@@ -184,7 +184,7 @@ class MADS:
       return
 
 
-def main(*args) -> Dict[str, Any]:
+def main(*args) -> Dict[str, Any]:  # noqa: C901
   """ MADS main algorithm """
 
   # """ Validate and parse the parameters file """
@@ -215,7 +215,8 @@ def main(*args) -> Dict[str, Any]:
   # of optimization process """
   pre = preprocess(
       data=data, log=log, sampler_t=SAMPLER_TYPE.POLL)
-  iteration, _, poll_sampler, options, param, post, out, active_barrier, out_p, state, stats, bb_handle, hashtable = pre.initialize_from_dict()
+  iteration, _, poll_sampler, options, param, post, out, active_barrier, \
+      out_p, state, stats, bb_handle, hashtable = pre.initialize_from_dict()
   del pre
 
   pre = preprocess(
@@ -247,10 +248,6 @@ def main(*args) -> Dict[str, Any]:
     search_vn = None
 
   state.h_max = active_barrier.h_max
-  # lambda_multipliers_k = lambda_multipliers
-  # original_st = copy.deepcopy(search_sampler.sampling_t)
-  # init_phase()
-  num_strat = 0
 
   search_vn = None
   if search_sampler.type == SEARCH_TYPE.VNS.name:
@@ -303,7 +300,10 @@ def main(*args) -> Dict[str, Any]:
           msg=f"Iteration {poll_sampler.iter} completed in {toc - tic:.4f} seconds",
           msg_type=MSG_TYPE.INFO)
       log.log_msg(
-          msg=f"Iteration {poll_sampler.iter} success status: {'Full Success' if state.last_success == SUCCESS_TYPES.FS else 'Partial Success' if state.last_success == SUCCESS_TYPES.PS else 'Unsuccessful'}",
+          msg=f"Iteration {poll_sampler.iter}  success status: \
+          {'Full Success'
+           if state.last_success == SUCCESS_TYPES.FS else 'Partial Success'
+           if state.last_success == SUCCESS_TYPES.PS else 'Unsuccessful'} ",
           msg_type=MSG_TYPE.INFO)
       log.log_msg(
           msg=post,
@@ -311,7 +311,7 @@ def main(*args) -> Dict[str, Any]:
 
     # """ Run the search step (optional step) """
     can_search = (
-        state.last_success == SUCCESS_TYPES.US or state.last_success
+        state.last_success == SUCCESS_TYPES.US or state.last_success  # noqa: E712
         == False) and iteration > 1
     if can_search:
       log.log_msg(
@@ -334,7 +334,10 @@ def main(*args) -> Dict[str, Any]:
           msg=f"Iteration {search_sampler.iter} completed in {toc - tic:.4f} seconds",
           msg_type=MSG_TYPE.INFO)
       log.log_msg(
-          msg=f"Iteration {search_sampler.iter} success status: {'Full Success' if state.last_success == SUCCESS_TYPES.FS else 'Partial Success' if state.last_success == SUCCESS_TYPES.PS else 'Unsuccessful'}",
+          msg=f"Iteration {search_sampler.iter}  success status: \
+          {'Full Success'
+           if state.last_success == SUCCESS_TYPES.FS else 'Partial Success'
+           if state.last_success == SUCCESS_TYPES.PS else 'Unsuccessful'} ",
           msg_type=MSG_TYPE.INFO)
       log.log_msg(
           msg=post,
@@ -543,7 +546,9 @@ def main(*args) -> Dict[str, Any]:
                             "niterations": iteration,
                             "nb_success": poll_sampler.n_successes + search_sampler.n_successes,
                             "psize": poll_sampler.mesh.get_delta_frame_size().coordinates,
-                            "psuccess": active_barrier.meshes[state.ordered_frame_centers[0]].get_delta_frame_size().coordinates,
+                            "psuccess":
+                            active_barrier.meshes[state.ordered_frame_centers[0]].get_delta_frame_size(
+                            ).coordinates,
                             # "pmax": poll.mesh.psize_max,
                             "msize": active_barrier.meshes[state.ordered_frame_centers[0]].get_delta_mesh_size().coordinates,
                             "HV": hv if param.is_pareto else "NA"}

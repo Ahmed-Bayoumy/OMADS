@@ -265,15 +265,15 @@ class AdaptiveBarrier:
       raise ValueError("Maximum size of barrier reached: cannot add element")
 
   def get_fk(self) -> np.ndarray[CandidatePoint]:
-    fk_i = np.where(np.array(self.within_fk) == True)[0]
+    fk_i = np.where(np.array(self.within_fk) == True)[0]  # noqa: E712
     return self.elements[fk_i] if len(fk_i) > 0 else np.empty((0,))
 
   def get_ik(self) -> np.ndarray[CandidatePoint]:
-    ik_i = np.where(np.array(self.within_ik) == True)[0]
+    ik_i = np.where(np.array(self.within_ik) == True)[0]  # noqa: E712
     return self.elements[ik_i] if len(ik_i) > 0 else np.empty((0,))
 
   def get_uk(self) -> np.ndarray[CandidatePoint]:
-    uk_i = np.where(np.array(self.within_uk) == True)[0]
+    uk_i = np.where(np.array(self.within_uk) == True)[0]  # noqa: E712
     return self.elements[uk_i] if len(uk_i) > 0 else np.empty((0,))
 
   def get_nd_elements(self):
@@ -343,7 +343,7 @@ class AdaptiveBarrier:
 
     return insertion_flag
 
-  def add_infeasible(self, v: CandidatePoint, m: Mesh):
+  def add_infeasible(self, v: CandidatePoint, m: Mesh):  # noqa: C901
     # Preliminary checks
     self.check_dimension(v, m)
     self.check_is_full()
@@ -541,7 +541,7 @@ class AdaptiveBarrier:
               break
         self.within_ik[index] = insert
 
-  def frame_centers(self, w: int, use_dom_selection=True):
+  def frame_centers(self, w: int, use_dom_selection=True):  # noqa: C901
     # TODO: Syncing the mesh updates conducted on active barrier elements last index with the center index selected below
     feasible_index = self.feasible_frame_center(w)
 
@@ -595,7 +595,7 @@ class AdaptiveBarrier:
 
     return {"feasible": feasible_index, "infeasible": infeasible_index}
 
-  def feasible_frame_center(self, w: int):
+  def feasible_frame_center(self, w: int):  # noqa: C901
     # Get the feasible points (fh)
     fh = self.get_fk()
     if len(fh) == 0:
@@ -674,7 +674,7 @@ class AdaptiveBarrier:
 
     return int(frame_ind)
 
-  def infeasible_frame_center(self):
+  def infeasible_frame_center(self):  # noqa: C901
     # Get the infeasible points (uk)
     uk = self.get_uk()
     if len(uk) == 0:
