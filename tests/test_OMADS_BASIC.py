@@ -253,7 +253,7 @@ def test_callable_2d_sin_const():
   data = {"evaluator": eval_callable, "param": param, "options": options,
           "search": search_conf}
 
-  out_mads: Dict = search.main(data)
+  out_mads: Dict = mads.main(data)
   oms = out_mads[0]["fmin"][0]
 
   toc = time.perf_counter()
