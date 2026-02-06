@@ -8,10 +8,8 @@ import logging
 from typing import Dict
 
 import numpy as np
-from OMADS import poll, search
+from OMADS import poll, search, mads
 from multiprocessing import freeze_support
-
-from OMADS._mads import mads
 
 
 # Configure the logging
