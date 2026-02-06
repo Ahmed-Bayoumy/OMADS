@@ -253,14 +253,15 @@ class PostMADS:
 
   def __str__(self):
     """ Initialize the log file """
-    return f'iteration {
-        self.iter[-1]}, bbeval=  'f'{
-        self.bb_eval[-1]}, min(psize)=  {
-        min(self.psize[-1])}, hmax =  {
-        self.h_max if self.h_max else None}, hmin =  {
-        self.xmin.h if self.xmin else None}, status: {
-        self.xmin.status.name if self.xmin else None}  , fmin =  {
-        self.xmin.fobj if self.xmin else None} '
+    return (
+        f'iteration {self.iter[-1]}, '
+        f'bbeval= {self.bb_eval[-1]}, '
+        f'min(psize)= {min(self.psize[-1])}, '
+        f'hmax = {self.h_max if self.h_max else None}, '
+        f'hmin = {self.xmin.h if self.xmin else None}, '
+        f'status: {self.xmin.status.name if self.xmin else None}, '
+        f'fmin = {self.xmin.fobj if self.xmin else None}'
+    )
 
   def __add_to_cache__(self, x: CandidatePoint):
     self.x_incumbent.append(x)

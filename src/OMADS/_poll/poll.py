@@ -131,12 +131,17 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
     log.log_msg(
         msg=f"Iteration {poll.iter} completed in {toc - tic:.4f} seconds",
         msg_type=MSG_TYPE.INFO)
-    log.log_msg(
-        msg=f"Iteration {poll.iter}  success status: \
-        {'Full Success'
-         if state.last_success == SUCCESS_TYPES.FS else 'Partial Success'
-         if state.last_success == SUCCESS_TYPES.PS else 'Unsuccessful'} ",
-        msg_type=MSG_TYPE.INFO)
+    status_text = (
+        "Full Success" if state.last_success == SUCCESS_TYPES.FS
+        else "Partial Success" if state.last_success == SUCCESS_TYPES.PS
+        else "Unsuccessful"
+    )
+
+    msg = (
+        f"Iteration {poll.iter}  success status: "
+        f"{status_text}"
+    )
+    log.log_msg(msg=msg, msg_type=MSG_TYPE.INFO)
     post.h_max = active_barrier.h_max
     log.log_msg(
         msg=post,

@@ -299,12 +299,16 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
       log.log_msg(
           msg=f"Iteration {poll_sampler.iter} completed in {toc - tic:.4f} seconds",
           msg_type=MSG_TYPE.INFO)
+      status = (
+          'Full Success' if state.last_success == SUCCESS_TYPES.FS else
+          'Partial Success' if state.last_success == SUCCESS_TYPES.PS else
+          'Unsuccessful'
+      )
+
       log.log_msg(
-          msg=f"Iteration {poll_sampler.iter}  success status: \
-          {'Full Success'
-           if state.last_success == SUCCESS_TYPES.FS else 'Partial Success'
-           if state.last_success == SUCCESS_TYPES.PS else 'Unsuccessful'} ",
-          msg_type=MSG_TYPE.INFO)
+          msg=f"Iteration {poll_sampler.iter} success status: {status}",
+          msg_type=MSG_TYPE.INFO
+      )
       log.log_msg(
           msg=post,
           msg_type=MSG_TYPE.INFO)
@@ -333,12 +337,16 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
       log.log_msg(
           msg=f"Iteration {search_sampler.iter} completed in {toc - tic:.4f} seconds",
           msg_type=MSG_TYPE.INFO)
+      status = (
+          'Full Success' if state.last_success == SUCCESS_TYPES.FS else
+          'Partial Success' if state.last_success == SUCCESS_TYPES.PS else
+          'Unsuccessful'
+      )
+
       log.log_msg(
-          msg=f"Iteration {search_sampler.iter}  success status: \
-          {'Full Success'
-           if state.last_success == SUCCESS_TYPES.FS else 'Partial Success'
-           if state.last_success == SUCCESS_TYPES.PS else 'Unsuccessful'} ",
-          msg_type=MSG_TYPE.INFO)
+          msg=f"Iteration {search_sampler.iter} success status: {status}",
+          msg_type=MSG_TYPE.INFO
+      )
       log.log_msg(
           msg=post,
           msg_type=MSG_TYPE.INFO)
