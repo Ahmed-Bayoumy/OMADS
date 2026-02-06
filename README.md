@@ -1,7 +1,7 @@
 [![pages-build-deployment](https://github.com/Ahmed-Bayoumy/OMADS/actions/workflows/pages/pages-build-deployment/badge.svg?branch=DEV)](https://github.com/Ahmed-Bayoumy/OMADS/actions/workflows/pages/pages-build-deployment)
-[![lx-build-and-pytest](https://github.com/Ahmed-Bayoumy/OMADS/actions/workflows/lx-build-and-tests.yml/badge.svg)](https://github.com/Ahmed-Bayoumy/OMADS/actions/workflows/lx-build-and-tests.yml)
-[![win-build-and-pytest](https://github.com/Ahmed-Bayoumy/OMADS/actions/workflows/win-build-and-pytest.yml/badge.svg)](https://github.com/Ahmed-Bayoumy/OMADS/actions/workflows/win-build-and-pytest.yml)
-[![macos-build-and-pytest](https://github.com/Ahmed-Bayoumy/OMADS/actions/workflows/macos-build-and-pytest.yml/badge.svg)](https://github.com/Ahmed-Bayoumy/OMADS/actions/workflows/macos-build-and-pytest.yml)
+[![lx-build-and-pytest](https://github.com/Ahmed-Bayoumy/OMADS/actions/workflows/lx-build-and-tests.yml/badge.svg?branch=DEV)](https://github.com/Ahmed-Bayoumy/OMADS/actions/workflows/lx-build-and-tests.yml)
+[![win-build-and-pytest](https://github.com/Ahmed-Bayoumy/OMADS/actions/workflows/win-build-and-pytest.yml/badge.svg?branch=DEV)](https://github.com/Ahmed-Bayoumy/OMADS/actions/workflows/win-build-and-pytest.yml)
+[![macos-build-and-pytest](https://github.com/Ahmed-Bayoumy/OMADS/actions/workflows/macos-build-and-pytest.yml/badge.svg?branch=DEV)](https://github.com/Ahmed-Bayoumy/OMADS/actions/workflows/macos-build-and-pytest.yml)
 
 <img width="870" alt="OMADS_logo" src="https://github.com/Ahmed-Bayoumy/OMADS/assets/22842095/dedff4b1-4ec5-4b1f-a155-8b64155d1558">
 
@@ -23,7 +23,7 @@ For technical and code documentation, please visit [OMADS Webpage](https://ahmed
 
 ## Citation
 
-If you use this code, please cite it as below.
+If you use this code, please cite it as follows.
 
 ```pycon
    @software{OMADS_AB,
@@ -36,17 +36,17 @@ If you use this code, please cite it as below.
    }
 ```
 
-## How to use OMADS package
+## How to use the OMADS package
 
 After installing the `OMADS` package from [PYPI](https://pypi.org/) website, the functions and classes of `OMADS` basic 
-module can be imported directly to the python script as follows:
+module can be imported directly to the Python script as follows:
 
 ```pycon
 from OMADS import *
 ```
 
-## How to run OMADS from terminal
-After installing `OMADS` the `SEARCH`, `POLL`, and `MADS` modules can be called directly from a 
+## How to run OMADS from the terminal
+After installing `OMADS`, `SEARCH`, `POLL`, and `MADS` modules can be called directly from a 
 terminal window under the src directory. The path of the JSON template, which contains the problem input parameters, 
 should be entered as an input argument to the aforementioned modules call. 
 
@@ -58,23 +58,23 @@ python ./OMADS/MADS.py ../../tests/unconstrained/rosenbrock.json
 
 ## Input parameters
 Input parameters are serialized in a `JSON` template using predefined attributes (keywords) under four dictionaries; 
-`evaluator`, `param`, `options` and `search`. Here is a brief description of each dictionary and its key attributes.
+`evaluator`, `param`, `options`, and `search`. Here is a brief description of each dictionary and its key attributes.
 
 * `evaluator`: in this dictionary, we define the blackbox location and the name of input and output files (if exist)
   * `blackbox`: blackbox executable file name, or the function name if this is an internal function defined within the BM_suite
   * `internal`: the name of the testing category that holds your internal/external test function or blackbox evaluator
     * `con`: internal constrained single-objective function
-    * `uncon`: internal unconctrained single-objective function
+    * `uncon`: internal unconstrained single-objective function
     * `exe`: external executable blackbox evaluator
-  * `input`: the name of the input file (considered if external executable was defined)
-  * `output`: the name of the output file (considered if external executable was defined)
+  * `input`: the name of the input file (considered if an external executable was defined)
+  * `output`: the name of the output file (considered if an external executable was defined)
 ---
 * `param`: problem setup
   * `baseline`: this is the initial starting point (initial design vector)
   * `lb`: lower bounds vector
   * `ub`: upper bounds vector
-  * `var_names`: list of design variables name
-  * `var_types`: list of the variables type
+  * `var_names`: list of design variable names
+  * `var_types`: list of variable types
      * `R`: real variable
      * `I`: integer variable
      * `C_<set name>`: categorical variable. A set name from the sets dict should be added after the underscore that follows `C`
@@ -88,13 +88,13 @@ Input parameters are serialized in a `JSON` template using predefined attributes
   * `hmax`: the maximum feasibility threshold
   * `nobj`: number of objectives
   * `isPareto`: boolean for running a Pareto study
-  * `meshType`: specify whether to use granular or orthogonal mesh
+  * `meshType`: specify whether to use a granular or an orthogonal mesh
     * `GMESH`: granular mesh
     * `OMESH`: orthogonal mesh
   * `name`: problem name (that name will be used for naming the output files)
 ---
 * `options`: algorithmic options
-  * `seed`: the random generator seed that ensures results reproducibility. This should be an integer value
+  * `seed`: the random generator seed that ensures reproducibility of results. This should be an integer value
   * `budget`: the evaluation budget; the maximum number of evaluations for the blackbox defined
   * `tol`: the minimum poll size tolerance; the algorithm terminates once the poll size falls below this value
   * `psize_init`: initial poll size
@@ -117,10 +117,10 @@ Input parameters are serialized in a `JSON` template using predefined attributes
    * `type`: search type can take one of the following values 
       * `VNS`: variable neighbor search 
       * `sampling`: sampling search
-      * `BO`: Bayesian optimization (TODO: not published yet as it is still in the testing and BM phase)
-      * `NM`: Nelder-Mead (TODO: not published yet as it is still in the testing and BM phase)
+      * `BO`: Bayesian optimization (TODO: not published yet, as it is still in the testing and BM phase)
+      * `NM`: Nelder-Mead (TODO: not published ye,t as it is still in the testing and BM phase)
       * `PSO`: particle swarm optimization (TODO: not published yet as it is in the testing phase)
-      * `CMA-ES`: covariance matrix adaptation evolution strategy (TODO: not published yet as it is in the testing phase)
+      * `CMA-ES`: covariance matrix adaptation evolution strategy (TODO: not published yet, as it is in the testing phase)
    * `s_method`: can take one of the following values
       * `ACTIVE`: Online active sampling using kernel density estimators (KDE) 
       * `LH`: Latin Hypercube sampling\
@@ -135,21 +135,22 @@ The poll, search, and MADS algorithms are capable of solving both unconstrained 
 
 ### Constrained test functions
 
-![constrained_MOO](https://github.com/user-attachments/assets/a5ddc927-3d82-48de-83db-74a99fcbb742)
+![BM_res_ConstrainedMOO](https://github.com/user-attachments/assets/033012c6-8e4f-4f8f-b6e3-982ef4ec1f47)
 
-### Unonstrained test functions
 
-![UnconstrainedMO](https://github.com/user-attachments/assets/a449f09e-8da7-4c44-aac0-05ac944b0308)
+### Unconstrained test functions
+
+![BM_res_UnconstrainedMOO](https://github.com/user-attachments/assets/4b856656-e294-41b0-89ab-ea79818ecf76)
 
 ---
 
 ## Benchmarking
 
 To benchmark `OMADS`, per se, you need to install the non-linear optimization benchmarking project `NOBM` (will be installed automatically when you install `OMADS`) from 
-[PYPI](https://pypi.org/).  Two benchmarking suits are provided under the `BMDFO` package -- `BMDFO` stands for 
-benchmarking derivative-free optimization algorithms.  The benchmarking suits have different constrained and 
+[PYPI](https://pypi.org/).  Two benchmarking suites are provided under the `BMDFO` package -- `BMDFO` stands for 
+benchmarking derivative-free optimization algorithms.  The benchmarking suites have different constrained and 
 unconstrained optimization problems with various characteristics.  The `BMDFO` modules can be imported directly 
-to the python script as shown below: 
+to the Python script as shown below: 
 ```pycon
 from BMDFO import toy
 ```
