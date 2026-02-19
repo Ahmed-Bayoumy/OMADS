@@ -1,9 +1,21 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "OMADS"
 version = "2601"
 requires-python = ">=3.10"
-
 description = "Optimization using Mesh Adaptive Direct Search (MADS)"
+readme = "README.md"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Operating System :: OS Independent",
+]
+
+[tool.build]
+extensions._C = { sources = ["src/_C.cpp"], language = "c++", include-dirs = ["."] }
 
 authors = [
     { name = "Ahmed H. Bayoumy", email = "ahmed.bayoumy@mail.mcgill.ca" }
@@ -15,7 +27,7 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
-    "License :: OSI Approved :: BSD License",  # Use this standardized version
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
     "Intended Audience :: Developers",
     "Operating System :: OS Independent",
 ]
@@ -26,7 +38,7 @@ dependencies = [
     "pandas>=2.3.3",
     "paramiko>=3.4.0",
     "requests>=2.32.5",
-    "samplerslib>=2601.1",
+    "samplerslib>=2602.0",
     "scipy>=1.15.3",
 ]
 
