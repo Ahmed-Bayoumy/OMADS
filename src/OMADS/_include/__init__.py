@@ -1,5 +1,5 @@
 from .._utils._common import validator, logger, total_size
-from .._utils._globals import DType, VAR_TYPE, BARRIER_TYPES, SUCCESS_TYPES, MPP, DESIGN_STATUS, BB_EVAL_STATUS, MSG_TYPE, \
+from .._utils._globals import DType, VAR_TYPE, BARRIER_TYPES, SUCCESS_TYPES, MPP, DESIGN_STATUS, BB_EVAL_STATUS, MSG_TYPE, DESIGN_CRITERIA, \
     SAMPLING_METHOD, SEARCH_TYPE, DIST_TYPE, SAMPLER_TYPE, STOP_TYPE, MESH_TYPE, EVAL_TYPE, COMPARE_TYPE, INSERTION_FLAG, \
     HARD_MIN_MESH_INDEX, GL_LIMITS, UNDEFINED_GL, M_INF_INT, P_INF_INT, PassException
 from .._utils._context_manager import WarningSuppressor
@@ -25,6 +25,7 @@ from .._directions._directions import Dirs2n
 from .._analytics._metadata import MadsState, MadsStatistics, MadsIterationAttributes
 from .._search._search_step import search_cycle
 from .._poll._poll_step import poll_cycle
+from .._multisource._multisource import MultiSource
 
 __all__ = [
     "validator",
@@ -45,6 +46,7 @@ __all__ = [
     "STOP_TYPE",
     "MESH_TYPE",
     "EVAL_TYPE",
+    "DESIGN_CRITERIA",
     "COMPARE_TYPE",
     "INSERTION_FLAG",
     "HARD_MIN_MESH_INDEX",
@@ -86,4 +88,5 @@ __all__ = [
     "MadsIterationAttributes",
     "search_cycle",
     "poll_cycle",
+    "MultiSource"
 ]

@@ -41,6 +41,7 @@ from .._include import MadsState, MadsStatistics
 from .._include import PostMADS, Output
 from .._include import compute_success
 from .._include import Cache
+from .._multisource._multisource import MultiSource
 
 np.set_printoptions(legacy='1.21')
 
@@ -49,7 +50,7 @@ def search_cycle(search: EfficientExploration, options: Options,  # noqa: C901
                  param: Parameters, state: MadsState, stats: MadsStatistics,
                  active_barrier: AdaptiveBarrier, iteration: int, log: logger,
                  post: PostMADS, bb_handle: Evaluator, out: Output,
-                 hashtable: Cache, search_vns: VNS = None):
+                 hashtable: Cache, search_vns: VNS = None, ms: MultiSource = None):
   # Forget any sets and directions been previously generated
   del search.candidate_points_set
   state.last_success = SUCCESS_TYPES.US
@@ -89,22 +90,35 @@ def search_cycle(search: EfficientExploration, options: Options,  # noqa: C901
       search.candidate_points_set = c
   del candidates
   candidates = search._candidate_points_set
-  if not options.parallel_mode:
-    insertion_flag, post = bb_handle.run_callable_serial_local(
+  if ms is None:
+    if not options.parallel_mode:
+      insertion_flag, post = bb_handle.run_callable_serial_local(
+          sampler=search, centers=parent_index_candidates, options=options,
+          stats=stats, active_barrier=active_barrier, post=post,
+          step_name='Search', parent_indices=parent_index_candidates, out=out,
+          hashtable=hashtable)
+
+    else:
+      # COMPLETED: Review and make it consistent with the serial evaluator
+      search.point_index = -1
+      # """ Parallel evaluation for points in the samples set """
+      insertion_flag, post = bb_handle.run_callable_parallel_local(
+          sampler=search, options=options, stats=stats,
+          active_barrier=active_barrier, post=post, step_name='Search',
+          parent_indices=parent_index_candidates, hashtable=hashtable,
+          centers=parent_index_candidates, out=out)
+  else:
+    if iteration == 1:
+      ms.initialize_multisource_manager(
+          sampler=search, centers=parent_index_candidates, options=options,
+          stats=stats, active_barrier=active_barrier, post=post,
+          step_name='Search', parent_indices=parent_index_candidates, out=out,
+          hashtable=hashtable, log=log)
+    insertion_flag, post = ms.ms_serial_evaluation(
         sampler=search, centers=parent_index_candidates, options=options,
         stats=stats, active_barrier=active_barrier, post=post,
-        step_name='Poll_2n', parent_indices=parent_index_candidates, out=out,
+        step_name='Search', parent_indices=parent_index_candidates, out=out,
         hashtable=hashtable)
-
-  else:
-    # COMPLETED: Review and make it consistent with the serial evaluator
-    search.point_index = -1
-    # """ Parallel evaluation for points in the samples set """
-    insertion_flag, post = bb_handle.run_callable_parallel_local(
-        sampler=search, options=options, stats=stats,
-        active_barrier=active_barrier, post=post, step_name='Poll_2n',
-        parent_indices=parent_index_candidates, hashtable=hashtable,
-        centers=parent_index_candidates, out=out)
 
   # COMPLETED: Add a new logic to evaluate suceess criteria and update insertion flags accordingly
 

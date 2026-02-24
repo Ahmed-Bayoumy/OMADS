@@ -82,7 +82,7 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
   pre = preprocess(
       data=data, log=log, sampler_t=SAMPLER_TYPE.SEARCH)
   iteration, _, search, options, param, post, out, active_barrier, \
-      out_p, state, stats, bb_handle, hashtable = pre.initialize_from_dict()
+      out_p, state, stats, bb_handle, hashtable, ms = pre.initialize_from_dict()
   del pre
 
   if out_p:

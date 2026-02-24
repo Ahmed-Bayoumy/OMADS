@@ -42,6 +42,7 @@ from .._include import Cache
 from .._analytics._metadata import MadsState, MadsStatistics
 from .._templates._optimizer import GenericSamplerBase
 from .._heuristics._exploration import EfficientExploration, search_sampling
+from .._multisource._multisource import MultiSource
 
 
 class preprocess:
@@ -118,7 +119,7 @@ class preprocess:
   def sampler_preparation_and_initialization(  # noqa: C901
           self, param: Parameters, x_start: CandidatePoint, is_xs: bool,
           options: Options, B: AdaptiveBarrier, iteration: int, state: MadsState,
-          stats: MadsStatistics, ev: Evaluator):
+          stats: MadsStatistics, ev: Evaluator, ms: MultiSource):
     """_summary_
     """
     # Get the starting point: best start given a list of coordinates (if any)
@@ -228,9 +229,9 @@ class preprocess:
 
       iteration += 1
 
-      return iteration, x_start, self.sampler, options, param, post, out, B, out_p, state, stats, ev, hashtable
+      return iteration, x_start, self.sampler, options, param, post, out, B, out_p, state, stats, ev, hashtable, ms
 
-  def initialize_from_dict(self, xs: CandidatePoint = None):  # noqa: C901
+  def initialize_from_dict(self, xs: CandidatePoint = None, ignore_ms: bool = False):  # noqa: C901
     # """ MADS initialization """
     # """ 1- Construct the following classes by unpacking
     #  their respective dictionaries from the input JSON file """
@@ -248,6 +249,12 @@ class preprocess:
         param=param, options=options)  # if param.is_pareto else Barrier(param)
     barrier_defined.h_max = param.h_max
     ev = Evaluator(**self.data["evaluator"])
+    ms: MultiSource = None
+    if not ignore_ms and "multisource" in self.data.keys():
+      evaluators = {k: Evaluator(**e)
+                    for k, e in self.data["multisource"]["sources"].items()}
+      self.data["multisource"]["sources"] = evaluators
+      ms = MultiSource(**self.data["multisource"])
     if self.log is not None:
       self.log.log_msg(msg="- Set the POLL configurations",
                        msg_type=MSG_TYPE.INFO)
@@ -320,4 +327,4 @@ class preprocess:
     return self.sampler_preparation_and_initialization(
         param=param, x_start=x_start, is_xs=is_xs, options=options,
         B=barrier_defined, iteration=iteration, state=state, stats=stats,
-        ev=ev)
+        ev=ev, ms=ms)

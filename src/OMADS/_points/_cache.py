@@ -24,6 +24,7 @@
 """
 
 from typing import List
+import os
 import pandas as pd
 import numpy as np
 
@@ -544,3 +545,26 @@ class Cache:
         self.add_to_cache(xt)
       else:
         self.update_candidate_in_cache(xt)
+
+  def remove_candidates_from_hash(self, x: List[CandidatePoint]):
+    signatures_to_remove = []
+    for xt in x:
+      if xt.signature in self._data_cache.index:
+        signatures_to_remove.append(xt.signature)
+
+    if signatures_to_remove:
+      self._data_cache = self._data_cache.drop(index=signatures_to_remove)
+      self._last_index -= len(signatures_to_remove)
+
+  def save_cache(self, path: str = None, table_name: str = 'data_cache'):
+    if path is None:
+      path = os.path.join(os.getcwd(), "cache.hd5")
+    with pd.HDFStore('cache_data.h5', mode='a') as store:
+      # format='table' enables appending/querying
+      store.append(table_name, path, format='table')
+
+  def load_cache(self, path: str = None, table_name: str = "data_cache"):
+    if path is None:
+      raise FileNotFoundError("Could not find the cache file for loading!")
+
+    self._data_cache = pd.read_hdf('cache_data.h5', key=table_name)

@@ -28,6 +28,7 @@ from typing import List
 import numpy as np
 
 from .._include import Evaluator
+from .._multisource._multisource import MultiSource
 
 from .._include import Point
 from .._include import INSERTION_FLAG, STOP_TYPE, SUCCESS_TYPES
@@ -47,7 +48,7 @@ def poll_cycle(poll: Dirs2n, options: Options, param: Parameters,  # noqa: C901
                state: MadsState, stats: MadsStatistics,
                active_barrier: AdaptiveBarrier, iteration: int, log: logger,
                post: PostMADS, bb_handle: Evaluator, out: Output,
-               hashtable: Cache):
+               hashtable: Cache, ms: MultiSource = None):
   # Forget any sets and directions been previously generated
   del poll.candidate_points_set
   del poll.poll_dirs
@@ -82,22 +83,35 @@ def poll_cycle(poll: Dirs2n, options: Options, param: Parameters,  # noqa: C901
       poll.candidate_points_set = c
   del candidates
   candidates = poll._candidate_points_set
-  if not options.parallel_mode:
-    insertion_flag, post = bb_handle.run_callable_serial_local(
+  if ms is None:
+    if not options.parallel_mode:
+      insertion_flag, post = bb_handle.run_callable_serial_local(
+          sampler=poll, centers=parent_index_candidates, options=options,
+          stats=stats, active_barrier=active_barrier, post=post,
+          step_name='Poll_2n', parent_indices=parent_index_candidates, out=out,
+          hashtable=hashtable)
+
+    else:
+      # COMPLETED: Review and make it consistent with the serial evaluator
+      poll.point_index = -1
+      # """ Parallel evaluation for points in the samples set """
+      insertion_flag, post = bb_handle.run_callable_parallel_local(
+          sampler=poll, options=options, stats=stats,
+          active_barrier=active_barrier, post=post, step_name='Poll_2n',
+          parent_indices=parent_index_candidates, hashtable=hashtable,
+          centers=parent_index_candidates, out=out)
+  else:
+    if iteration == 1:
+      ms.initialize_multisource_manager(
+          sampler=poll, centers=parent_index_candidates, options=options,
+          stats=stats, active_barrier=active_barrier, post=post,
+          step_name='Poll_2n', parent_indices=parent_index_candidates, out=out,
+          hashtable=hashtable, log=log)
+    insertion_flag, post = ms.ms_serial_evaluation(
         sampler=poll, centers=parent_index_candidates, options=options,
         stats=stats, active_barrier=active_barrier, post=post,
-        step_name='Poll_2n', parent_indices=parent_index_candidates, out=out,
+        step_name='Poll', parent_indices=parent_index_candidates, out=out,
         hashtable=hashtable)
-
-  else:
-    # COMPLETED: Review and make it consistent with the serial evaluator
-    poll.point_index = -1
-    # """ Parallel evaluation for points in the samples set """
-    insertion_flag, post = bb_handle.run_callable_parallel_local(
-        sampler=poll, options=options, stats=stats,
-        active_barrier=active_barrier, post=post, step_name='Poll_2n',
-        parent_indices=parent_index_candidates, hashtable=hashtable,
-        centers=parent_index_candidates, out=out)
 
   # COMPLETED: Add a new logic to evaluate suceess criteria and update insertion flags accordingly
 

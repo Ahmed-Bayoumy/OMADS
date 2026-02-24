@@ -30,7 +30,7 @@ import copy
 import numpy as np
 
 
-from .._include import DType, VAR_TYPE, BARRIER_TYPES, MESH_TYPE
+from .._include import DType, VAR_TYPE, BARRIER_TYPES, MESH_TYPE, DESIGN_CRITERIA
 from .._points._point import Point
 
 
@@ -55,6 +55,7 @@ class Parameters:
           ub: List[float] = None,
           var_names: List[str] = None,
           fun_names: List[str] = None,
+          design_criteria: Dict[str, DESIGN_CRITERIA] = None,
           function_weights: List[float] = None,
           scaling: float = 10.0,
           post_dir: str = os.path.abspath("./"),
@@ -111,6 +112,12 @@ class Parameters:
     self.var_names = var_names if var_names else [
         f'x_{i}' for i in range(self._n)]
     self.fun_names = fun_names if fun_names else ["fobj"]
+    self.design_criteria = design_criteria if design_criteria is not None else {
+        self.fun_names[0]: DESIGN_CRITERIA.OBJECTIVE}
+    if len(self.fun_names) > 1:
+      self.design_criteria.update(
+          {name: DESIGN_CRITERIA.INEQUALITY_CONSTRAINT
+           for name in self.fun_names[1:]})
     self.function_weights = (np.divide(function_weights, np.sum(
         function_weights))).tolist() if function_weights else [1 / (self.nobj)] * self.nobj
     self.scaling = scaling

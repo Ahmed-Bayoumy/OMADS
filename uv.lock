@@ -1085,7 +1085,7 @@ wheels = [
 [[package]]
 name = "omads"
 version = "2601"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "deap" },
     { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -1127,7 +1127,7 @@ requires-dist = [
     { name = "pytest", marker = "extra == 'test'", specifier = ">=8.0" },
     { name = "pytest-cov", marker = "extra == 'test'", specifier = ">=7.0.0" },
     { name = "requests", specifier = ">=2.32.5" },
-    { name = "samplerslib", specifier = ">=2601.1" },
+    { name = "samplerslib", specifier = ">=2602.0" },
     { name = "scipy", specifier = ">=1.15.3" },
 ]
 provides-extras = ["visualization", "test"]
@@ -1565,20 +1565,21 @@ wheels = [
 
 [[package]]
 name = "samplerslib"
-version = "2601.2"
+version = "2602.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "numpy", version = "2.4.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "pandas", version = "2.3.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "pandas", version = "3.0.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "plotly" },
     { name = "requests" },
     { name = "scipy", version = "1.15.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "scipy", version = "1.17.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "seaborn" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c2/f9/e27a0e55a956b316af9ce524e7d77bbba258477f0cd334eb146fd02b9ea1/samplerslib-2601.2-py3-none-any.whl", hash = "sha256:27cbcbc237c88058401381f173820cf522315651dfa8a2305fe1f8aecc11f52f", size = 39418, upload-time = "2026-01-11T20:41:05.263Z" },
+    { url = "https://files.pythonhosted.org/packages/cd/3a/19be3fd0f981a8229fe7b19d1e7757b2d723853ee28e91d58b0b2bf4e416/samplerslib-2602.1-py3-none-any.whl", hash = "sha256:0a1d92a4a975165e640f6339601fc095f10b77600ce27781a145715a315de287", size = 4847097, upload-time = "2026-02-19T13:33:24.288Z" },
 ]
 
 [[package]]

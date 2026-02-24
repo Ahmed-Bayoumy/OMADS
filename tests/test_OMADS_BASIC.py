@@ -173,6 +173,7 @@ def test_callable_quick_2d():
   ticsp = time.perf_counter()
   logger.info(
       '\nStarted running search on bbo_2d_rosenbrock parallel exectution ...')
+  data["search"]["ns"] = int((d + 1) * (d + 2) / 2) + 250
   out_search: Dict = search.main(data)
   tocsp = time.perf_counter()
   logger.info(
@@ -289,7 +290,7 @@ def test_callable_quick_10d():
   search_conf = {
       "type": "sampling",
       "s_method": "ACTIVE",
-      "ns": int((d + 1) * (d + 2) / 2) + 50,
+      "ns": int((d + 1) * (d + 2) / 2) + 150,
       "visualize": False
   }
   data = {"evaluator": eval_callable, "param": param,

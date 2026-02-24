@@ -216,12 +216,13 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
   pre = preprocess(
       data=data, log=log, sampler_t=SAMPLER_TYPE.POLL)
   iteration, _, poll_sampler, options, param, post, out, active_barrier, \
-      out_p, state, stats, bb_handle, hashtable = pre.initialize_from_dict()
+      out_p, state, stats, bb_handle, hashtable, ms = pre.initialize_from_dict()
   del pre
 
   pre = preprocess(
       data=data, log=log, sampler_t=SAMPLER_TYPE.SEARCH)
-  _, _, search_sampler, _, _, _, _, _, _, _, _, _, _ = pre.initialize_from_dict()
+  _, _, search_sampler, _, _, _, _, _, _, _, _, _, _, _ = pre.initialize_from_dict(
+      ignore_ms=True)
   del pre
 
   # mads_agent: MADS = MADS(data=data)
@@ -259,7 +260,7 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
         if search_sampler.ns is None else search_sampler.ns] * len(
         search_vn.dist)
     search_sampler.ns = sum(search_vn.ns_dist)
-  can_search = False
+  can_search = False if ms is None else True
   while True:
     # """ Run search step (Optional) """
     # COMPLETED: This rule cannot be generalized -- needs further invistigation
@@ -282,7 +283,7 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
           poll=poll_sampler, options=options, param=param, state=state,
           stats=stats, active_barrier=active_barrier, iteration=iteration,
           log=log, post=post, bb_handle=bb_handle, out=out,
-          hashtable=hashtable)
+          hashtable=hashtable, ms=ms)
 
       # 3- Updates
       # search_sampler.mesh = copy.deepcopy(poll_sampler.mesh)
@@ -314,7 +315,7 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
           msg_type=MSG_TYPE.INFO)
 
     # """ Run the search step (optional step) """
-    can_search = (
+    can_search = (iteration == 1 and ms is not None) or (
         state.last_success == SUCCESS_TYPES.US or state.last_success  # noqa: E712
         == False) and iteration > 1
     if can_search:
@@ -327,7 +328,7 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
           search=search_sampler, options=options, param=param, state=state,
           stats=stats, active_barrier=active_barrier, iteration=iteration,
           log=log, post=post, search_vns=search_vn, bb_handle=bb_handle,
-          hashtable=hashtable, out=out)
+          hashtable=hashtable, out=out, ms=ms)
       toc = time.perf_counter()
       total_time += toc - tic
       update(sampler=search_sampler, state=state,

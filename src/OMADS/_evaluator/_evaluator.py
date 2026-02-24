@@ -84,7 +84,7 @@ class Evaluator:
           self, sampler: GenericSamplerBase, centers: List[int],
           options: Options, stats: Any, active_barrier: AdaptiveBarrier,
           post: PostMADS, step_name: str, parent_indices: List[int],
-          out: Output, hashtable=None):
+          out: Output, hashtable=None, internal: bool = False):
 
     self.candidates = sampler._candidate_points_set
     insertion_flag = [None] * len(sampler._candidate_points_set)
@@ -93,7 +93,10 @@ class Evaluator:
       stats.neval_bb += 1
       self.incumbent = active_barrier.elements[parent_indices[index]]
 
-      self.evaluate_blackbox(index)
+      if internal:
+        self._internal_dummy_Callable(index)
+      else:
+        self.evaluate_blackbox(index)
       self.candidates[index].fc_index = parent_indices[index]
       toc = time.perf_counter()
       self.candidates[index].eval_time = toc - tic
@@ -144,6 +147,30 @@ class Evaluator:
       post.output_results(out=out, all_res=False)
 
     return insertion_flag, post
+
+  def _internal_dummy_Callable(self, index: int):
+    return self.candidates[index]
+
+  def neutral_run_callable_serial_local(
+          self, candidate_points_set: List[CandidatePoint],
+          stats: Any, active_barrier: AdaptiveBarrier, parent_indices: List[int],
+          hashtable=None, internal: bool = False):
+
+    self.candidates = candidate_points_set
+    insertion_flag = [None] * len(candidate_points_set)
+    for index, candidate in enumerate(candidate_points_set):
+      tic = time.perf_counter()
+      stats.neval_bb += 1
+      self.incumbent = active_barrier.elements[parent_indices[index]]
+
+      self.evaluate_blackbox(index)
+      self.candidates[index].fc_index = parent_indices[index]
+      toc = time.perf_counter()
+      self.candidates[index].eval_time = toc - tic
+      self.candidates[index].eval_no = stats.neval_bb
+      hashtable.add_to_cache(self.candidates[index])
+
+    candidate_points_set = self.candidates
 
   def evaluate_blackbox_parallel(self, point: CandidatePoint) -> List[Any]:
     f, err_status = self.eval(point.mapped_coords)

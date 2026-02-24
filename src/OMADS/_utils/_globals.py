@@ -182,6 +182,13 @@ class DESIGN_STATUS(Enum):
   UNEVALUATED = auto()
 
 
+class DESIGN_CRITERIA(Enum):
+  OBJECTIVE = auto()
+  INEQUALITY_CONSTRAINT = auto()
+  EQALITY_CONSTRAINT = auto()
+  UNDEFINED = auto()
+
+
 class BB_EVAL_STATUS(Enum):
   SUCCESS = auto()
   ERROR = auto()

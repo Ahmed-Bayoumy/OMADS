@@ -85,7 +85,7 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
   pre = preprocess(
       data=data, log=log, sampler_t=SAMPLER_TYPE.POLL)
   iteration, _, poll, options, param, post, out, active_barrier, \
-      out_p, state, stats, bb_handle, hashtable = pre.initialize_from_dict()
+      out_p, state, stats, bb_handle, hashtable, ms = pre.initialize_from_dict()
   del pre
   out.step_name = "Poll"
   if out_p:
