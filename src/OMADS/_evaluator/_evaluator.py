@@ -157,7 +157,7 @@ class Evaluator:
           hashtable=None, internal: bool = False):
 
     self.candidates = candidate_points_set
-    insertion_flag = [None] * len(candidate_points_set)
+    # insertion_flag = [None] * len(candidate_points_set)  # noqa: F841
     for index, candidate in enumerate(candidate_points_set):
       tic = time.perf_counter()
       stats.neval_bb += 1
