@@ -1,5 +1,4 @@
 from typing import Dict, List, Tuple, Any
-from UARAF.uaraf import UARAF
 
 from pydantic import BaseModel, field_validator, model_validator
 
@@ -21,7 +20,7 @@ class MultiSource(BaseModel):
   _allowed_conf: Tuple = {
       "abs_ref", "rel_ref", "acceleration", "adequacy", "relevance",
       "confidence", "data_split", "save_dir"}
-  _uaraf: UARAF | None = None
+  _uaraf: Any | None = None
   _initialized: bool = False
   _train: bool = False
   _training_freq: int = 150
