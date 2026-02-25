@@ -3,19 +3,14 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/samplersLib"]
+packages = ["src/OMADS"]
 
-# This ensures Hatch doesn't exclude the binaries
 [tool.hatch.build]
-artifacts = [
-    "*.pyd",
-    "*.so",
-]
 exclude = [
-  # Exclude any unwanted files that might be picked up by default
-  "src/samplersLib/__pycache__",
-  "src/samplersLib/*.pyc",
-  "src/samplersLib/*.pyo"
+    "*.so",
+    "*.pyd",
+    "*.dll",
+    "*.dylib"
 ]
 
 [project]
@@ -42,6 +37,7 @@ classifiers = [
 
 dependencies = [
     "deap==1.4",
+    "ipython>=8.38.0",
     "numpy>=2.2.6",
     "pandas>=2.3.3",
     "paramiko>=3.4.0",
