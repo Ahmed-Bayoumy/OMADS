@@ -33,3 +33,4 @@ archive
 dntTrack
 tests/_*
 .*
+!.github
