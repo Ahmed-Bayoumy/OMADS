@@ -573,4 +573,4 @@ def test_omads_toy_quick():
 
 
 if __name__ == "__main__":
-  test_callable_2d_sin_const()
+  freeze_support()
