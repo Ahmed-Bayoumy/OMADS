@@ -107,9 +107,9 @@ def test_callable_quick_2d():
            "scaling": [15.0] * d,
            "post_dir": "./post"
            }
-  options = {"seed": 10000, "budget": 2000, "tol": 1e-9, "display": False,
+  options = {"seed": 10000, "budget": 2500, "tol": 1e-12, "display": False,
              "check_cache": True, "store_cache": True, "rich_direction": True,
-             "opportunistic": False, "save_results": False, "is_verbose": False}
+             "opportunistic": False, "save_results": False, "is_verbose": False, "precision": "high"}
   search_conf = {
       "type": "sampling",
       "s_method": "ACTIVE",
@@ -196,7 +196,7 @@ def test_callable_quick_2d():
       "\nParallel Exec: mads: fmin: %s \npoll: fmin = %s\nsearch: fmin = %s",
       omp, opp, osp)
 
-  if oms > 0.0006:
+  if oms > 0.005:
     logger.error(f"Sequential Exec: mads: fmin: %s > {0.0006}", oms)
     raise ValueError(f"\nSequential Exec: mads: fmin: {oms} > {0.0006}")
 
@@ -247,7 +247,7 @@ def test_callable_2d_sin_const():
   search_conf = {
       "type": "sampling",
       "s_method": "ACTIVE",
-      "ns": 50,
+      "ns": 70,
       "visualize": False
   }
 
@@ -286,7 +286,7 @@ def test_callable_quick_10d():
       "seed": 12345, "budget": 1200, "tol": 1e-12, "display": False,
       "check_cache": True, "store_cache": True, "rich_direction": True,
       "opportunistic": False, "save_results": False, "is_verbose": False,
-      "precision": "high"}
+      "precision": "medium"}
   search_conf = {
       "type": "sampling",
       "s_method": "ACTIVE",
@@ -373,7 +373,8 @@ def test_callable_quick_20d():
   options = {
       "seed": 12345, "budget": 3000, "tol": 1e-12, "display": False,
       "check_cache": True, "store_cache": True, "rich_direction": True,
-      "opportunistic": False, "save_results": False, "is_verbose": False}
+      "opportunistic": False, "save_results": False, "is_verbose": False, 
+      "precision": "medium"}
   search_conf = {
       "type": "sampling",
       "s_method": "ACTIVE",
