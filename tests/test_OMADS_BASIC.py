@@ -107,9 +107,11 @@ def test_callable_quick_2d():
            "scaling": [15.0] * d,
            "post_dir": "./post"
            }
-  options = {"seed": 10000, "budget": 2500, "tol": 1e-12, "display": False,
-             "check_cache": True, "store_cache": True, "rich_direction": True,
-             "opportunistic": False, "save_results": False, "is_verbose": False, "precision": "high"}
+  options = {
+      "seed": 10000, "budget": 2500, "tol": 1e-12, "display": False,
+      "check_cache": True, "store_cache": True, "rich_direction": True,
+      "opportunistic": False, "save_results": False, "is_verbose": False,
+      "precision": "high"}
   search_conf = {
       "type": "sampling",
       "s_method": "ACTIVE",
@@ -234,16 +236,16 @@ def test_callable_2d_sin_const():
            "ub": [25, 10],
            "var_names": [f"x{i}" for i in range(d)],
            "constraints_type": ["PB", "PB"],
-           "scaling": [20.0] * d,
+           "scaling": [25.0, 20],
            "post_dir": "./post",
-           "rho": 1,
-           "lambda_multipliers": 1,
+           #  "rho": 1,
+           #  "lambda_multipliers": 1,
            "h_max": np.inf}
   options = {
       "seed": 1234, "budget": 2000, "tol": 1e-9, "display": True,
       "check_cache": True, "store_cache": True, "rich_direction": True,
       "opportunistic": False, "save_results": False, "is_verbose": False,
-      "precision": "high"}
+      "precision": "high", "psize_init": 5}
   search_conf = {
       "type": "sampling",
       "s_method": "ACTIVE",
@@ -373,7 +375,7 @@ def test_callable_quick_20d():
   options = {
       "seed": 12345, "budget": 3000, "tol": 1e-12, "display": False,
       "check_cache": True, "store_cache": True, "rich_direction": True,
-      "opportunistic": False, "save_results": False, "is_verbose": False, 
+      "opportunistic": False, "save_results": False, "is_verbose": False,
       "precision": "medium"}
   search_conf = {
       "type": "sampling",
@@ -571,4 +573,4 @@ def test_omads_toy_quick():
 
 
 if __name__ == "__main__":
-  freeze_support()
+  test_callable_2d_sin_const()
