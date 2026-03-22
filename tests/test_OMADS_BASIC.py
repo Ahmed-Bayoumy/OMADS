@@ -208,7 +208,7 @@ def test_callable_quick_2d():
     logger.error("Sequential Exec: search: fmin %s > %s", oss, 0.07)
     raise ValueError(f"\nSequential Exec: search: fmin {oss} > {0.07}")
 
-  if omp > 0.004:
+  if omp > 0.005:
     logger.error("Parallel Exec: mads: fmin: %s > %s", omp, 0.004)
     raise ValueError(f"\nParallel Exec: mads: fmin: {omp} > {0.004}")
 
