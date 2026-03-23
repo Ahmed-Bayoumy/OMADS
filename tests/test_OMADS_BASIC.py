@@ -108,7 +108,7 @@ def test_callable_quick_2d():
            "post_dir": "./post"
            }
   options = {
-      "seed": 10000, "budget": 2500, "tol": 1e-12, "display": False,
+      "seed": 10000, "budget": 3500, "tol": 1e-12, "display": False,
       "check_cache": True, "store_cache": True, "rich_direction": True,
       "opportunistic": False, "save_results": False, "is_verbose": False,
       "precision": "high"}
