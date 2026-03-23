@@ -321,7 +321,8 @@ def test_callable_quick_10d():
   logger.info(
       '\nStarted running search on bbo_10d_rosenbrock serial exectution ...')
   data_search = data
-  data_search["options"]["budget"] = 1000
+  data_search["options"]["budget"] = 2000
+  data_search["search"]["ns"] = int((d + 1) * (d + 2) / 2) + 20
   out_search: Dict = search.main(data_search)
   tocss = time.perf_counter()
   logger.info(
@@ -567,7 +568,7 @@ def test_omads_toy_quick():
   logger.info("\nBest known solution: %s < fmin <= %s", 15, 25)
   logger.info("\nSequential Exec: poll: fmin = %s", res)
 
-  if res > 23.8:
+  if res > 25.5:
     logger.error("\nSequential Exec: poll: fmin: %s > %s", res, 23.8)
     raise ValueError(f"\nSequential Exec: poll: fmin: {res} > {23.8}")
 

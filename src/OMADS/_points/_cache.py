@@ -344,7 +344,10 @@ class Cache:
     for i, h_id in enumerate(df.index):
       index: int = df.index.get_loc(h_id)
       x.append(self._set_candidate_attr(df.iloc[index].to_dict()))
-    return x if nsamples is None or x[:nsamples] > len(x) else x[-1:-nsamples]
+    if nsamples is None or nsamples >= len(x):
+      return x
+    else:
+      return x[-1:-nsamples]
 
   def get_all_center_points(
           self, nsamples: int = None, hmax: float = None) -> List[float]:
