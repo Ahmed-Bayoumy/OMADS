@@ -322,7 +322,8 @@ def test_callable_quick_10d():
       '\nStarted running search on bbo_10d_rosenbrock serial exectution ...')
   data_search = data
   data_search["options"]["budget"] = 2000
-  data_search["search"]["ns"] = int((d + 1) * (d + 2) / 2) + 20
+  if platform.platform().split('-')[0] == "macOS":
+    data_search["search"]["ns"] = int((d + 1) * (d + 2) / 2) + 20
   out_search: Dict = search.main(data_search)
   tocss = time.perf_counter()
   logger.info(
