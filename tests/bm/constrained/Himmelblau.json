@@ -1,49 +1,82 @@
 {
-  "evaluator":
-    {
-      "blackbox": "himmelblau",
-      "internal": "con",
-      "path": "D:\\Data\\Research\\Code\\NM-POLL\\bm\\constrained",
-      "input": "input.inp",
-      "output": "output.out"
-    },
-
-  "param":
-    {
-      "baseline": [80.0, 35.0, 35.0, 35.0, 35.0],
-      "lb": [78.0, 33.0, 27.0, 27.0, 27.0],
-      "ub": [102.0, 45.0, 45.0, 45.0, 45.0],
-      "var_names": ["x1", "x2", "x3", "x4", "x5"],
-      "scaling": 1,
-      "constraints_type": ["PB", "PB", "PB","PB", "PB", "PB"],
-      "LAMBDA": [5, 5, 5, 5, 5, 5],
-      "RHO": 1,
-      "post_dir": "./tests/bm/constrained/post",
-      "h_max": 10
-    },
-
-  "options":
-    {
-      "seed": 0,
-      "budget": 100000,
-      "tol": 1e-12,
-      "psize_init": 1.0,
-      "display": false,
-      "opportunistic": false,
-      "check_cache": true,
-      "store_cache": true,
-      "collect_y": false,
-      "rich_direction": true,
-      "precision": "high",
-      "save_results": false,
-      "save_coordinates": false,
-      "save_all_best": false,
-      "parallel_mode": false
-    },
-    "search": {
-      "type": "VNS",
-      "s_method": "LH",
-      "ns": 100,
-      "visualize": false
-    }
+  "evaluator": {
+    "blackbox": "himmelblau",
+    "internal": "con",
+    "path": "D:\\Data\\Research\\Code\\NM-POLL\\bm\\constrained",
+    "input": "input.inp",
+    "output": "output.out"
+  },
+  "param": {
+    "baseline": [
+      80.0,
+      35.0,
+      35.0,
+      35.0,
+      35.0
+    ],
+    "lb": [
+      78.0,
+      33.0,
+      27.0,
+      27.0,
+      27.0
+    ],
+    "ub": [
+      102.0,
+      45.0,
+      45.0,
+      45.0,
+      45.0
+    ],
+    "var_names": [
+      "x1",
+      "x2",
+      "x3",
+      "x4",
+      "x5"
+    ],
+    "scaling": 1,
+    "constraints_type": [
+      "PB",
+      "PB",
+      "PB",
+      "PB",
+      "PB",
+      "PB"
+    ],
+    "lambda_multipliers": [
+      5,
+      5,
+      5,
+      5,
+      5,
+      5
+    ],
+    "rho": 1,
+    "post_dir": "./tests/bm/constrained/post",
+    "h_max": 10
+  },
+  "options": {
+    "seed": 0,
+    "budget": 100000,
+    "tol": 1e-12,
+    "psize_init": 1.0,
+    "display": false,
+    "opportunistic": false,
+    "check_cache": true,
+    "store_cache": true,
+    "collect_y": false,
+    "rich_direction": true,
+    "precision": "high",
+    "save_results": false,
+    "save_coordinates": false,
+    "save_all_best": false,
+    "parallel_mode": false
+  },
+  "search": {
+    "type": "VNS",
+    "s_method": "LH",
+    "ns": 100,
+    "visualize": false
+  }
 }
