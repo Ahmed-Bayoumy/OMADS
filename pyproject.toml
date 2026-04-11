@@ -15,7 +15,7 @@ exclude = [
 
 [project]
 name = "OMADS"
-version = "2601.0"
+version = "2604.0"
 requires-python = ">=3.10"
 description = "Optimization using Mesh Adaptive Direct Search (MADS)"
 readme = "README.md"

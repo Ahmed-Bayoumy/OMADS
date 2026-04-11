@@ -1211,7 +1211,7 @@ wheels = [
 
 [[package]]
 name = "omads"
-version = "2601.0"
+version = "2604.0"
 source = { editable = "." }
 dependencies = [
     { name = "deap" },
