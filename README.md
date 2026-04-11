@@ -12,7 +12,7 @@ For technical and code documentation, please visit [OMADS Webpage](https://ahmed
 
 ---
 
-**Version 2404.0**
+**Version 2604.0**
 
 ---
 
