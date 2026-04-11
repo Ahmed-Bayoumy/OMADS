@@ -214,11 +214,20 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
         nobj=active_barrier.dims[1], ref_point=rp)
     hv = perf_m.hypervolume()
 
-  xmin: CandidatePoint = active_barrier.get_fk()[-1]
-  if any(active_barrier.within_uk):
-    xsc: CandidatePoint = active_barrier.get_uk()[-1]
+  xmin_found = False
+  if active_barrier is not None:
+    if len(active_barrier.get_fk()) > 0:
+      xmin: CandidatePoint = active_barrier.get_fk()[-1]
+      xmin_found = True
+
+    if any(active_barrier.within_uk):
+      xsc: CandidatePoint = active_barrier.get_uk()[-1]
+    else:
+      xsc = CandidatePoint()
+    if not xmin_found:
+      xmin = xsc
   else:
-    xsc = CandidatePoint()
+    raise IOError("Internal error: empty active_barrier object!")
 
   if options.display:
     if log:
