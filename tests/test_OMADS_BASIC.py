@@ -621,7 +621,7 @@ def test_Sellar_OMADS_POLL():
 
   bl = [1., 5., 2., 2.]
 
-  is_win = platform.platform().split('-')[0] == 'Windows'
+  # is_win = platform.platform().split('-')[0] == 'Windows'
   p_file = {
       "evaluator":
       {
@@ -668,7 +668,7 @@ def test_Sellar_OMADS_POLL():
       }
   }
 
-  out_poll: Dict = poll.main(p_file)
+  poll.main(p_file)
 
 
 if __name__ == "__main__":
