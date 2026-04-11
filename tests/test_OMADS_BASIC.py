@@ -574,5 +574,102 @@ def test_omads_toy_quick():
     raise ValueError(f"\nSequential Exec: poll: fmin: {res} > {23.8}")
 
 
+def Sellar_A1(x):
+  return [x[0] + x[1]**2 + x[2] - 0.2 * x[3]]
+
+
+def Sellar_A2(x):
+  return [x[0] + x[1] + np.sqrt(x[2])]
+
+
+def Sellar_opt1(x):
+  y = Sellar_A1(x)
+  return [x[0]**2 + x[2] + y[0] + np.exp(-x[3]), [3.16 - y[0]]]
+
+
+def Sellar_opt2(x, *args):
+  y = Sellar_A2(x)
+  return [0., [y[0] - 24.]]
+
+
+def test_Sellar_OMADS_POLL():
+  #  Sellar - Two discipline problem with IDF
+
+  #  Variables grouping and problem setup
+  # Define variable names
+  N = ["x", "z1", "z2", "y2"]
+
+  # Coupling types
+
+  # Realistic lower bounds
+  lb = [0, -10, 0, 1.77763888346]
+  # Realistic upper bounds
+  ub = [10., 10., 10., 24.]
+
+  # # Artificial lower bounds
+  # lb = [0, -10, 0, 2., 1.5, -10, 0, 2., 1.5]
+  # # Artificial upper bounds
+  # ub = [10.,10.,10., 50., 50, 10.,10., 50., 50]
+
+  # Bad artificial lower bounds
+  # lb = [0, -10, 0, 0., 0., -10, 0, 0., 0.]
+  # Bad artificial upper bounds
+  # ub = [10.]*9
+
+  # Baseline
+  # x0 = [1., 5., 2., 0., 0., 5., 2., 0., 0.]
+
+  bl = [1., 5., 2., 2.]
+
+  is_win = platform.platform().split('-')[0] == 'Windows'
+  p_file = {
+      "evaluator":
+      {
+          "blackbox": Sellar_opt1,
+      },
+      "param":
+      {
+          "baseline": bl,
+          "lb": lb,
+          "ub": ub,
+          "var_names": N,
+          "scaling": [1, 1, 1, 1],
+          "constraints_type": ["PB"],
+          "mesh_type": "GMESH",
+          "post_dir": "./tests/bm/unconstrained/post",
+          "h_max": np.inf,
+          "rho": 1.0,
+          "lambda_multipliers": 1
+      },
+
+      "options":
+      {
+          "seed": 10000,
+          "budget": 150,
+          "tol": 0.0000000000001,
+          "psize_init": 1,
+          "display": True,
+          "opportunistic": False,
+          "check_cache": True,
+          "store_cache": True,
+          "collect_y": False,
+          "rich_direction": True,
+          "precision": "low",
+          "save_results": False,
+          "save_coordinates": False,
+          "save_all_best": False,
+          "parallel_mode": False
+      },
+      "search": {
+          "type": "sampling",
+          "s_method": "LH",
+          "ns": 3,
+          "visualize": False
+      }
+  }
+
+  out_poll: Dict = poll.main(p_file)
+
+
 if __name__ == "__main__":
   freeze_support()

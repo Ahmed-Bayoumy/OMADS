@@ -447,19 +447,27 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
 
   # if out_step is None:
   #   out_step = poll_sampler
-  xmin: CandidatePoint = active_barrier.get_fk()[-1]
+  xmin_found = False
+  if active_barrier is not None:
+    if len(active_barrier.get_fk()) > 0:
+      xmin: CandidatePoint = active_barrier.get_fk()[-1]
+      xmin_found = True
+
+    if any(active_barrier.within_uk):
+      xsc: CandidatePoint = active_barrier.get_uk()[-1]
+    else:
+      xsc = CandidatePoint()
+    if not xmin_found:
+        xmin = xsc
+  else:
+    raise IOError("Internal error: empty active_barrier object!")
+  
+  if options.save_coordinates:
+    post.output_coordinates(out)
   if options.display:
     print(" end of MADS ")
     print(" Final objective value: " + str(xmin.f) +
           ", hmin= " + str(xmin.h))
-
-  if options.save_coordinates:
-    post.output_coordinates(out)
-
-  if any(active_barrier.within_uk):
-    xsc: CandidatePoint = active_barrier.get_uk()[-1]
-  else:
-    xsc = CandidatePoint()
 
   if log is not None:
     log.log_msg(
