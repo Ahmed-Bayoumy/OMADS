@@ -131,6 +131,14 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
     log.log_msg(
         msg=f"Iteration {poll.iter} completed in {toc - tic:.4f} seconds",
         msg_type=MSG_TYPE.INFO)
+    
+    if state.last_success == SUCCESS_TYPES.US:
+      stats.nno_successes += 1
+    else:
+      stats.nno_successes = 0
+    
+    if stats.nno_successes >= options.budget:
+      state.stop_reason.UNKNOWN_STOP_REASON
     status_text = (
         "Full Success" if state.last_success == SUCCESS_TYPES.FS
         else "Partial Success" if state.last_success == SUCCESS_TYPES.PS

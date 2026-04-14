@@ -136,6 +136,14 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
     # 4- Generate output files
     toc = time.perf_counter()
 
+    if state.last_success == SUCCESS_TYPES.US:
+      stats.nno_successes += 1
+    else:
+      stats.nno_successes = 0
+    
+    if stats.nno_successes >= options.budget:
+      state.stop_reason.UNKNOWN_STOP_REASON
+
     total_time += toc - tic
     if options.save_results:
       post.nd_points = []
