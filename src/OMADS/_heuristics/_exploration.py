@@ -629,7 +629,7 @@ class EfficientExploration(GenericSamplerBaseData, GenericSamplerBase):
                 f"Warning: snap_to_bounds: Error snapping {candidate[i]} to lower bound {lb[i]}")
             print(
                 f"frameCenter = {x_center[i]}, δ = {δ[i]} : it gave \
-                  {self._candidate_points_set[i]} which is still lower than {lb[i]}")
+                  {self._candidate_points_set[k]} which is still lower than {lb[i]}")
             # TODO: Force the snapping?
 
           if self._candidate_points_set[k].coordinates[i] > ub[i]:
@@ -637,7 +637,7 @@ class EfficientExploration(GenericSamplerBaseData, GenericSamplerBase):
                 f"Warning: snap_to_bounds: Error snapping {candidate[i]} to upper bound {ub[i]}")
             print(
                 f"frameCenter = {x_center[i]}, δ = {δ[i]} : it gave \
-                  {self._candidate_points_set[i]} which is still higher than {ub[i]}")
+                  {self._candidate_points_set[k]} which is still higher than {ub[i]}")
             # TODO: Force the snapping?
     filtered = [x for x in self._candidate_points_set
                 if not hashtable.is_duplicate(x, False)]
