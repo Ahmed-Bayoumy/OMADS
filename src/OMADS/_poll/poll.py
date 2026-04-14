@@ -153,7 +153,7 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
     state.last_success = SUCCESS_TYPES.US
     pb = ProgressBar(options, active_barrier)
     pb.display(peval=stats.neval_bb)
-    if (failure_check or stats.neval_bb >= options.budget) or state.stop_reason != STOP_TYPE.NO_STOP \
+    if (failure_check or stats.neval_bb >= options.budget) or state.stop_reason != STOP_TYPE.NO_STOP or \
         (all([abs(poll.mesh.get_delta_frame_size().coordinates[pp]) < options.tol
          for pp in range(poll.dim)]) or stats.neval_bb >= options.budget or poll.terminate):
       log.log_msg(
