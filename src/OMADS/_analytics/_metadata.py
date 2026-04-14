@@ -44,7 +44,7 @@ class MadsState:
   is_phase_one: bool = False
 
   last_success: SUCCESS_TYPES = SUCCESS_TYPES.US
-  stop_reason: STOP_TYPE = STOP_TYPE.UNKNOWN_STOP_REASON
+  stop_reason: STOP_TYPE = STOP_TYPE.NO_STOP
 
   def __init__(self):
     self.fk_frame_center = 0
@@ -57,7 +57,7 @@ class MadsState:
     self.is_phase_one = False
 
     self.last_success = SUCCESS_TYPES.US
-    self.stop_reason = STOP_TYPE.UNKNOWN_STOP_REASON
+    self.stop_reason = STOP_TYPE.NO_STOP
 
 
 class MadsStatistics:

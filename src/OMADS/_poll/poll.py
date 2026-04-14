@@ -148,12 +148,12 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
         msg_type=MSG_TYPE.INFO)
 
     failure_check = iteration > 0 and state.stop_reason is not None \
-        and state.stop_reason != STOP_TYPE.UNKNOWN_STOP_REASON and (
+        and state.stop_reason != STOP_TYPE.NO_STOP and (
             state.last_success == SUCCESS_TYPES.US)
     state.last_success = SUCCESS_TYPES.US
     pb = ProgressBar(options, active_barrier)
     pb.display(peval=stats.neval_bb)
-    if (failure_check or stats.neval_bb >= options.budget) or \
+    if (failure_check or stats.neval_bb >= options.budget) or state.stop_reason.name != STOP_TYPE.NO_STOP.name\
         (all([abs(poll.mesh.get_delta_frame_size().coordinates[pp]) < options.tol
          for pp in range(poll.dim)]) or stats.neval_bb >= options.budget or poll.terminate):
       log.log_msg(
@@ -173,6 +173,10 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
         log.log_msg(
             "Termination criterion hit (optional): failed to find \
             a successful point in iteration # {iteration}.",
+            MSG_TYPE.INFO)
+      if (state.stop_reason != STOP_TYPE.NO_STOP):
+        log.log_msg(
+            f"Termination criterion hit: {state.stop_reason.name}.",
             MSG_TYPE.INFO)
       log.log_msg(
           "---------------------------------------------------------------\n",

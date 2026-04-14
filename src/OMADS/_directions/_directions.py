@@ -475,7 +475,7 @@ class Dirs2n(GenericSamplerBaseData, GenericSamplerBase):
   def project_on_mesh_and_snap_to_bounds(
           self, m: Mesh, x_center: List[float],
           lb: List[float],
-          ub: List[float], hashtable: Cache):
+          ub: List[float], hashtable: Cache, stats: MadsStatistics):
     # Length check equivalent in Python
     for k, _ in enumerate((self.candidate_points_set)):
       if len(lb) != m.n or len(ub) != m.n:
@@ -513,6 +513,7 @@ class Dirs2n(GenericSamplerBaseData, GenericSamplerBase):
                 (ub[i] - x_center[i]) / δ[i]) + x_center[i]
 
           # Warnings as defined in Nomad 3
+          # snapRandGen = np.random.default_rng(seed=self.seed+self.iter)
           if self.candidate_points_set[k].coordinates[i] < lb[i]:
             print(
                 f"Warning: snap_to_bounds: Error snapping {candidate[i]} to lower bound {lb[i]}")
@@ -520,13 +521,18 @@ class Dirs2n(GenericSamplerBaseData, GenericSamplerBase):
                 f"frameCenter = {x_center[i]}, δ = {δ[i]} : it gave \
                   {self.candidate_points_set[k]} which is still lower than {lb[i]}")
             # TODO: Force the snapping?
-
+            # diff = lb[i] - self._candidate_points_set[k].coordinates[i]
+            # self._candidate_points_set[k].coordinates[i] = lb[i] + snapRandGen.random() * diff
+            stats.noutbound_hits+=1
           if self.candidate_points_set[k].coordinates[i] > ub[i]:
             print(
                 f"Warning: snap_to_bounds: Error snapping {candidate[i]} to upper bound {ub[i]}")
             print(
                 f"frameCenter = {x_center[i]}, δ = {δ[i]} : it gave \
                   {self.candidate_points_set[k]} which is still higher than {ub[i]}")
+            # diff = self._candidate_points_set[k].coordinates[i] - ub[i]
+            # self._candidate_points_set[k].coordinates[i] = ub[i] - snapRandGen.random() * diff
+            stats.noutbound_hits+=1
 
     filtered = [x for x in self._candidate_points_set
                 if not hashtable.is_duplicate(x, False)]

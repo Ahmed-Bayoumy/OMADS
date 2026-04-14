@@ -176,7 +176,7 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
     state.last_success = SUCCESS_TYPES.US
     pb = ProgressBar(options, active_barrier)
     pb.display(peval=stats.neval_bb)
-    if (failure_check or stats.neval_bb >= options.budget) or \
+    if (failure_check or stats.neval_bb >= options.budget or state.stop_reason.name != "NO_STOP") or \
         (all(abs(search.mesh.get_delta_mesh_size().coordinates[pp]) < options.tol
          for pp in range(search.mesh.n)) or stats.neval_bb >= options.budget
          or search.terminate):
@@ -197,6 +197,11 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
             "Termination criterion hit (optional): failed to find a \
             successful point in iteration # {iteration}.",
             MSG_TYPE.INFO)
+      if (state.stop_reason.name != "NO_STOP"):
+        log.log_msg(
+            f"Termination criterion hit: {state.stop_reason.name}.",
+            MSG_TYPE.INFO)
+      
       log.log_msg(
           "-----------------------------------------------------------------\n",
           MSG_TYPE.INFO)

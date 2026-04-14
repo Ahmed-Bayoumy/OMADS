@@ -396,7 +396,7 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
     state.last_success = SUCCESS_TYPES.US
     pb = ProgressBar(options, active_barrier)
     pb.display(peval=stats.neval_bb)
-    if (pt or st or state.stop_reason == STOP_TYPE.MIN_MESH_REACHED or stats.neval_bb >= options.budget):
+    if (pt or st or state.stop_reason != STOP_TYPE.NO_STOP or stats.neval_bb >= options.budget):
       log.log_msg(
           "\n--------------- Termination of MADS  ---------------", MSG_TYPE.INFO)
       if pt:
@@ -407,12 +407,16 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
         log.log_msg(
             "Termination criterion hit: the mesh size is below the minimum threshold defined.",
             MSG_TYPE.INFO)
-      if search_sampler.bb_eval + poll_sampler.bb_eval >= options.budget:
+      if stats.neval_bb >= options.budget:
         log.log_msg(
             "Termination criterion hit: Evaluation budget is exhausted.",
             MSG_TYPE.INFO)
       log.log_msg(
           "----------------------------------------------------\n", MSG_TYPE.INFO)
+      if (state.stop_reason != STOP_TYPE.NO_STOP):
+        log.log_msg(
+            f"Termination criterion hit: {state.stop_reason.name}.",
+            MSG_TYPE.INFO)
       break
 
     # toc = time.perf_counter()
