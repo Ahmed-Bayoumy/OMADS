@@ -36,15 +36,15 @@ classifiers = [
 ]
 
 dependencies = [
-    "deap==1.4",
-    "ipython>=8.38.0",
-    "numpy>=2.2.6",
-    "pandas>=2.3.3",
-    "paramiko>=3.4.0",
-    "pydantic>=2.12.5",
-    "requests>=2.32.5",
-    "samplerslib>=2602.0",
-    "scipy>=1.15.3",
+    "numpy>=2.2.6",           # ✅ Ok except for some old versions of TF
+    "pandas>=2.2.2, <3.0.0",  # ✅ Fixes Colab UI issues (3.0+ breaks Colab)
+    "deap==1.4.1",            # ✅ Standard stable version
+    "ipython>=8.30.0",        # ✅ Colab uses 8.30+; 8.38 is very aggressive
+    "paramiko>=3.4.0",        # ✅ Safe
+    "pydantic>=2.10.0",       # ✅ Standard V2 support
+    "requests>=2.32.4",       # ✅ Matches Colab's pinned version
+    "samplerslib>=2602.0",    # ✅ Safe
+    "scipy>=1.15.3",          # ✅ Safe
 ]
 
 [project.optional-dependencies]
