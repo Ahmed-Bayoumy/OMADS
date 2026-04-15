@@ -306,13 +306,13 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
           'Unsuccessful'
       )
 
-      if state.last_success == SUCCESS_TYPES.US:
+      if state.last_success == SUCCESS_TYPES.US or status == 'Unsuccessful':
         stats.nno_successes += 1
       else:
         stats.nno_successes = 0
-        
+      
       if stats.nno_successes >= options.budget:
-        state.stop_reason.UNKNOWN_STOP_REASON
+        state.stop_reason = STOP_TYPE.UNKNOWN_STOP_REASON
 
       log.log_msg(
           msg=f"Iteration {poll_sampler.iter} success status: {status}",
@@ -352,13 +352,13 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
           'Unsuccessful'
       )
 
-      if state.last_success == SUCCESS_TYPES.US:
+      if state.last_success == SUCCESS_TYPES.US or status == 'Unsuccessful':
         stats.nno_successes += 1
       else:
         stats.nno_successes = 0
-        
+      
       if stats.nno_successes >= options.budget:
-        state.stop_reason.UNKNOWN_STOP_REASON
+        state.stop_reason = STOP_TYPE.UNKNOWN_STOP_REASON
 
       log.log_msg(
           msg=f"Iteration {search_sampler.iter} success status: {status}",

@@ -132,18 +132,20 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
         msg=f"Iteration {poll.iter} completed in {toc - tic:.4f} seconds",
         msg_type=MSG_TYPE.INFO)
     
-    if state.last_success == SUCCESS_TYPES.US:
-      stats.nno_successes += 1
-    else:
-      stats.nno_successes = 0
     
-    if stats.nno_successes >= options.budget:
-      state.stop_reason.UNKNOWN_STOP_REASON
     status_text = (
         "Full Success" if state.last_success == SUCCESS_TYPES.FS
         else "Partial Success" if state.last_success == SUCCESS_TYPES.PS
         else "Unsuccessful"
     )
+
+    if state.last_success == SUCCESS_TYPES.US or status_text == 'Unsuccessful':
+      stats.nno_successes += 1
+    else:
+      stats.nno_successes = 0
+    
+    if stats.nno_successes >= options.budget:
+      state.stop_reason = STOP_TYPE.UNKNOWN_STOP_REASON
 
     msg = (
         f"Iteration {poll.iter}  success status: "
