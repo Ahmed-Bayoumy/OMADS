@@ -131,8 +131,7 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
     log.log_msg(
         msg=f"Iteration {poll.iter} completed in {toc - tic:.4f} seconds",
         msg_type=MSG_TYPE.INFO)
-    
-    
+
     status_text = (
         "Full Success" if state.last_success == SUCCESS_TYPES.FS
         else "Partial Success" if state.last_success == SUCCESS_TYPES.PS
@@ -143,7 +142,7 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
       stats.nno_successes += 1
     else:
       stats.nno_successes = 0
-    
+
     if stats.nno_successes >= options.budget:
       state.stop_reason = STOP_TYPE.UNKNOWN_STOP_REASON
 
@@ -175,7 +174,7 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
         log.log_msg(
             "Termination criterion hit: the mesh size is below the minimum threshold defined.",
             MSG_TYPE.INFO)
-      if (poll.bb_eval >= options.budget or poll.terminate):
+      if (stats.neval_bb >= options.budget or poll.terminate):
         log.log_msg(
             "Termination criterion hit: evaluation budget is exhausted.",
             MSG_TYPE.INFO)
@@ -217,7 +216,7 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
     else:
       xsc = CandidatePoint()
     if not xmin_found:
-        xmin = xsc
+      xmin = xsc
   else:
     raise IOError("Internal error: empty active_barrier object!")
 

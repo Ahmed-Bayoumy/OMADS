@@ -292,7 +292,7 @@ def test_callable_quick_10d():
   search_conf = {
       "type": "sampling",
       "s_method": "ACTIVE",
-      "ns": int((d + 1) * (d + 2) / 2) + 150,
+      "ns": int((d + 1) * (d + 2) / 2),
       "visualize": False
   }
   data = {"evaluator": eval_callable, "param": param,
@@ -672,4 +672,4 @@ def test_Sellar_OMADS_POLL():
 
 
 if __name__ == "__main__":
-  freeze_support()
+  test_callable_quick_10d()

@@ -626,22 +626,26 @@ class EfficientExploration(GenericSamplerBaseData, GenericSamplerBase):
           # Warnings as defined in Nomad 3
           # snapRandGen = np.random.default_rng(seed=self.seed+self.iter)
           if self._candidate_points_set[k].coordinates[i] < lb[i]:
-            print(
-                f"Warning: snap_to_bounds: Error snapping {candidate[i]} to lower bound {lb[i]}")
-            print(
-                f"frameCenter = {x_center[i]}, δ = {δ[i]} : it gave \
-                  {self._candidate_points_set[k]} which is still lower than {lb[i]}")
+            self.log.log_msg(
+              msg=f"Warning: snap_to_bounds: Error snapping {candidate[i]} to lower bound {lb[i]}",
+              msg_type=MSG_TYPE.INFO)
+            self.log.log_msg(
+              msg=f"frameCenter = {x_center[i]}, δ = {δ[i]} : it gave \
+                  {self._candidate_points_set[k]} which is still lower than {lb[i]}",
+              msg_type=MSG_TYPE.INFO)
             # TODO: Force the snapping?
             # diff = lb[i] - self._candidate_points_set[k].coordinates[i]
             # self._candidate_points_set[k].coordinates[i] = lb[i] + snapRandGen.random() * diff
             stats.noutbound_hits+=1
 
           if self._candidate_points_set[k].coordinates[i] > ub[i]:
-            print(
-                f"Warning: snap_to_bounds: Error snapping {candidate[i]} to upper bound {ub[i]}")
-            print(
-                f"frameCenter = {x_center[i]}, δ = {δ[i]} : it gave \
-                  {self._candidate_points_set[k]} which is still higher than {ub[i]}")
+            self.log.log_msg(
+              msg=f"Warning: snap_to_bounds: Error snapping {candidate[i]} to upper bound {ub[i]}",
+              msg_type=MSG_TYPE.INFO)
+            self.log.log_msg(
+              msg=f"frameCenter = {x_center[i]}, δ = {δ[i]} : it gave \
+                  {self._candidate_points_set[k]} which is still higher than {ub[i]}",
+              msg_type=MSG_TYPE.INFO)
             # TODO: Force the snapping?
             # diff = self._candidate_points_set[k].coordinates[i] - ub[i]
             # self._candidate_points_set[k].coordinates[i] = ub[i] - snapRandGen.random() * diff
@@ -716,7 +720,7 @@ class EfficientExploration(GenericSamplerBaseData, GenericSamplerBase):
       sampling = explore.samplers.RS(ns=nsamples, vlim=v)
       sampling.options["randomness"] = self.seed
     elif self.sampling_t == SAMPLING_METHOD.HALTON.name:
-      sampling = explore.samplers.halton(ns=nsamples, vlim=v, is_ham=True)
+      sampling = explore.samplers.Halton(ns=nsamples, vlim=v, is_ham=True)
     elif self.sampling_t == SAMPLING_METHOD.LH.name:
       sampling = explore.samplers.LHS(ns=nsamples, vlim=v)
       sampling.options["randomness"] = self.seed+self.iter
@@ -735,7 +739,7 @@ class EfficientExploration(GenericSamplerBaseData, GenericSamplerBase):
       if self.iter == 1 or (
               self.prob_params.is_pareto and len(
                   hashtable.get_all_nd_candidates) < 5) or hashtable.n_all_non_error_candidates() < 5:
-        sampling = explore.samplers.halton(
+        sampling = explore.samplers.Halton(
             ns=nsamples, vlim=v) if active_barrier is None or (
             not self.explore_new and not switch_to_global_sampling and self.
             iter > 1) else explore.samplers.LHS(
@@ -750,7 +754,7 @@ class EfficientExploration(GenericSamplerBaseData, GenericSamplerBase):
         initial_temp = max(1000-self.search_trial, 100)
         cooling_rate = 0.95
         sampling_sas = explore.samplers.TunableSA(
-            data=hashtable.get_all_center_candidates(nsamples=hashtable.n_centers()),
+            data=np.array(hashtable.get_all_center_candidates(nsamples=hashtable.n_centers())),
             y=np.array(
                 [xnd.fobj + [xnd.h]
                  if self.prob_params.is_pareto else xnd.f + [xnd.h]
@@ -760,8 +764,8 @@ class EfficientExploration(GenericSamplerBaseData, GenericSamplerBase):
             self.iter, max_iter=10000, initial_temp=initial_temp,
             cooling_rate=cooling_rate)
         sampling_pss = explore.samplers.TunablePSS(
-            data=hashtable.get_all_center_candidates(
-                nsamples=hashtable.n_centers()),
+            data=np.array(hashtable.get_all_center_candidates(
+                nsamples=hashtable.n_centers())),
             y=np.array(
                 [xnd.fobj + [xnd.h]
                  if self.prob_params.is_pareto else xnd.f + [xnd.h]
@@ -808,6 +812,7 @@ class EfficientExploration(GenericSamplerBaseData, GenericSamplerBase):
         non_improving    = np.array(x_worse)  if x_worse  else np.empty((0, self._n))
         center_points_f   = np.array(f_better) if f_better else np.empty((0, self.prob_params.nobj))
         non_improving_f    = np.array(f_worse)  if f_worse  else np.empty((0, self.prob_params.nobj))
+        # if stats.nno_successes < 10:
         self.active_sampling = explore.samplers.BiTPE(
             good_data=center_points, good_f_values=center_points_f, bad_data=non_improving, \
               bad_f_values=non_improving_f, n_r=self.ns, vlim=v,
@@ -824,6 +829,18 @@ class EfficientExploration(GenericSamplerBaseData, GenericSamplerBase):
             bw_method="SCOTT", seed=int(self.seed + self.iter),
             h=[np.linalg.norm(
                 self.mesh.get_delta_frame_size().coordinates)] * self.dim, gamma=0.1)
+        # else:
+        #   self.active_sampling = explore.samplers.BayesianActiveSampling(
+        #                                   data=center_points,
+        #                                   f_values=center_points_f,
+        #                                   n_r=self.ns,
+        #                                   vlim=v,
+        #                                   kernel_type={"Gaussian": 1},
+        #                                   bw_method="scott",
+        #                                   seed=int(self.seed + self.iter),
+        #                                   h=[np.linalg.norm(
+        #                                                 self.mesh.get_delta_frame_size().coordinates)] * self.dim,
+                                      # )
 
         for ki, _ in enumerate((self.active_sampling.kernel)):
           self.active_sampling.kernel[ki].bw_method = "SCOTT" if np.linalg.norm(
@@ -847,7 +864,14 @@ class EfficientExploration(GenericSamplerBaseData, GenericSamplerBase):
         ps = copy.deepcopy(
             self.active_sampling.resample(
                 size=10, seed=int(self.seed + self.iter),
-                scale=s))
+                scale=s)) #if stats.nno_successes<10 else self.active_sampling.resample(
+                # size=10)
+        rng = np.random.default_rng(seed=self.seed+self.iter)
+        rval = rng.random()
+        ps = np.vstack((ps, np.array([x+rval* (v[i][1]-x) for i, x in enumerate(center_points[-1])]))) 
+        ps = np.vstack((ps, np.array([x+rval* (x-v[i][0]) for i, x in enumerate(center_points[-1])]))) 
+        ps = np.vstack((ps, np.array([x+rval*(v[i][1]-v[i][0])/2 for i, x in enumerate(ps[0])]))) 
+          
       elif is_pss and is_sas:
         ps1 = copy.deepcopy(
             sampling_sas.resample(

@@ -161,7 +161,7 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
       stats.nno_successes += 1
     else:
       stats.nno_successes = 0
-    
+
     if stats.nno_successes >= options.budget:
       state.stop_reason = STOP_TYPE.UNKNOWN_STOP_REASON
 
@@ -196,7 +196,7 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
         log.log_msg(
             "Termination criterion hit: the mesh size is below the minimum threshold defined.",
             MSG_TYPE.INFO)
-      if (search.bb_eval >= options.budget or search.terminate):
+      if (stats.neval_bb >= options.budget or search.terminate):
         log.log_msg(
             "Termination criterion hit: evaluation budget is exhausted.",
             MSG_TYPE.INFO)
@@ -205,11 +205,11 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
             "Termination criterion hit (optional): failed to find a \
             successful point in iteration # {iteration}.",
             MSG_TYPE.INFO)
-      if (state.stop_reason.name != STOP_TYPE.NO_STOP):
+      if (state.stop_reason != STOP_TYPE.NO_STOP):
         log.log_msg(
             f"Termination criterion hit: {state.stop_reason.name}.",
             MSG_TYPE.INFO)
-      
+
       log.log_msg(
           "-----------------------------------------------------------------\n",
           MSG_TYPE.INFO)
