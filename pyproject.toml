@@ -37,7 +37,7 @@ classifiers = [
 
 dependencies = [
     "numpy>=2.2.6",           # ✅ Ok except for some old versions of TF
-    "pandas>=2.2.2, <3.0.0",          # 🟢 Fixes google-colab & Gradio errors
+    "pandas>=2.2.3, <3.0.0",          # 🟢 Fixes google-colab & Gradio errors
     "ipython==7.34.0",        # 🟢 Fixes the "Runtime Crash" warning
     "pydantic>=2.0, <=2.12.3",# 🟢 Fixes Gradio compatibility
     "requests>=2.32.4",       # 🟢 Fixes google-colab system error
