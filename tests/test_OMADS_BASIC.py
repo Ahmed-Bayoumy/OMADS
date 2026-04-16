@@ -672,4 +672,4 @@ def test_Sellar_OMADS_POLL():
 
 
 if __name__ == "__main__":
-  test_callable_quick_10d()
+  freeze_support()
