@@ -1,6 +1,7 @@
 # ... (existing imports)
 
 import os
+import sys
 from .._setup._options import Options
 from .._barriers._barriers import AdaptiveBarrier
 from .._include import DESIGN_STATUS
@@ -21,10 +22,13 @@ class ProgressBar:
       "unevaluated": "\033[2;35m"  # "\033[35m",
   }
 
-  def __init__(self, options: Options, active_barrier: AdaptiveBarrier):
+  def __init__(
+          self, options: Options, active_barrier: AdaptiveBarrier,
+          p_name="undefined"):
     self.options = options
     self.active_barrier = active_barrier
     self.length = 50
+    self.p_name: str = p_name
 
   def _update_counts(self, status_list=None):
     """Count statuses and update `status_list` in place."""
@@ -67,7 +71,7 @@ class ProgressBar:
 
   def display(self, peval: int, prefix="", status_list=None):
     nf, ninf, nu, npen, nerr, status_list = self._update_counts(status_list)
-    os.system('cls' if os.name == 'nt' else 'clear')
+    # os.system('cls' if os.name == 'nt' else 'clear')
     prog_bar = self._build_bar((ninf, nf, nu, npen, nerr))
 
     legend = (
@@ -76,5 +80,5 @@ class ProgressBar:
         f", Infeasible: {self.COLORS['infeasible']} █ {self.COLORS['pending']}"
     )
     # `end=''` keeps the cursor on the same line; `flush=True` forces an update
-    print(f"\r{legend} |{prog_bar}| {peval}/{self.options.budget} #Evaluated\n",
-          end='')
+    sys.stdout.write(
+        "\r\033[K" + f"\r{legend} |{prog_bar}| {peval}/{self.options.budget} #Evaluated| {self.p_name}\n")

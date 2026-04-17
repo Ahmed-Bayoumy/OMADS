@@ -631,6 +631,7 @@ def test_Sellar_OMADS_POLL():
       },
       "param":
       {
+          "name": "Sellar",
           "baseline": bl,
           "lb": lb,
           "ub": ub,

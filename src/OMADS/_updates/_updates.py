@@ -140,7 +140,7 @@ def update(sampler: GenericSamplerBase, state: MadsState, options: Options,  # n
 
   # There can remain some points in the set Uk which have better h-value,
   # To check if the flag is activated
-  if not options.use_nomad_partial_success:
+  if not options.use_omads_partial_success:
     if state.last_success == SUCCESS_TYPES.US and state.uk_frame_center != -1:
       tmp_hx_inf_min = min(elt.h for elt in active_barrier.get_uk())
       if tmp_hx_inf_min < active_barrier.elements[state.uk_frame_center].h:
@@ -180,7 +180,6 @@ def update(sampler: GenericSamplerBase, state: MadsState, options: Options,  # n
     stats.nno_successes += 1
 
   elif state.last_success == SUCCESS_TYPES.PS:
-    # Update the barrier threshold. This follows the implementation of Nomad 3.
     if state.h_max is not None:
       below_hxi_elements = [
           elt
