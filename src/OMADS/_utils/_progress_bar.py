@@ -1,6 +1,5 @@
 # ... (existing imports)
 
-import os
 import sys
 from .._setup._options import Options
 from .._barriers._barriers import AdaptiveBarrier
@@ -24,7 +23,7 @@ class ProgressBar:
 
   def __init__(
           self, options: Options, active_barrier: AdaptiveBarrier,
-          p_name="undefined"):
+          p_name="untitled_prob"):
     self.options = options
     self.active_barrier = active_barrier
     self.length = 50
@@ -81,4 +80,4 @@ class ProgressBar:
     )
     # `end=''` keeps the cursor on the same line; `flush=True` forces an update
     sys.stdout.write(
-        "\r\033[K" + f"\r{legend} |{prog_bar}| {peval}/{self.options.budget} #Evaluated| {self.p_name}\n")
+        "\r\033[K" + f"\r{self.p_name}: |{legend} |{prog_bar}| {peval}/{self.options.budget} #Evaluated\n")
