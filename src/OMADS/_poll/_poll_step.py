@@ -245,11 +245,13 @@ def poll_step(
             poll.candidate_points_set) > 0:
       poll.project_on_mesh_and_snap_to_bounds(
           m=mk, x_center=active_barrier.elements[frame_center].coordinates,
-          lb=param.lb, ub=param.ub, hashtable=hashtable)
+          lb=param.lb, ub=param.ub, hashtable=hashtable, stats=stats)
 
       peval = poll.bb_eval
       poll.omit_duplicates(peval, stats, hashtable=hashtable)
 
     generated_candidates_during_step = poll.candidate_points_set
+    if (stats.noutbound_hits > poll.eval_budget and len(generated_candidates_during_step) == 0):
+      state.stop_reason = STOP_TYPE.MAX_BB_OUTBOUND_REACHED
 
   return generated_candidates_during_step

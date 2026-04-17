@@ -87,7 +87,7 @@ class logger:
         msg="###################################################### \n",
         msg_type=_globals.MSG_TYPE.INFO)
     self.log_msg(
-        msg=f"################# OMADS release no {2503} #################### \n",
+        msg=f"################# OMADS release no {2604.01} #################### \n",
         msg_type=_globals.MSG_TYPE.INFO)
     self.log_msg(
         msg=f"############### {cur_time} ################# \n",

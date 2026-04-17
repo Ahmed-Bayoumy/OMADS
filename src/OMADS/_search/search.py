@@ -32,7 +32,7 @@ from typing import List, Dict, Any, Optional
 import warnings
 import numpy as np
 
-from .._include import SAMPLER_TYPE, SEARCH_TYPE, VAR_TYPE, MSG_TYPE, SUCCESS_TYPES
+from .._include import SAMPLER_TYPE, SEARCH_TYPE, VAR_TYPE, MSG_TYPE, SUCCESS_TYPES, STOP_TYPE
 from .._include import CandidatePoint
 from .._include import logger, validator
 from .._include import VNS
@@ -157,6 +157,14 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
         'Unsuccessful'
     )
 
+    if state.last_success == SUCCESS_TYPES.US or status == 'Unsuccessful':
+      stats.nno_successes += 1
+    else:
+      stats.nno_successes = 0
+
+    if stats.nno_successes >= options.budget:
+      state.stop_reason = STOP_TYPE.UNKNOWN_STOP_REASON
+
     log.log_msg(
         msg=f"Iteration {search.iter} success status: {status}",
         msg_type=MSG_TYPE.INFO
@@ -176,7 +184,7 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
     state.last_success = SUCCESS_TYPES.US
     pb = ProgressBar(options, active_barrier)
     pb.display(peval=stats.neval_bb)
-    if (failure_check or stats.neval_bb >= options.budget) or \
+    if (failure_check or stats.neval_bb >= options.budget or state.stop_reason != STOP_TYPE.NO_STOP) or \
         (all(abs(search.mesh.get_delta_mesh_size().coordinates[pp]) < options.tol
          for pp in range(search.mesh.n)) or stats.neval_bb >= options.budget
          or search.terminate):
@@ -188,7 +196,7 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
         log.log_msg(
             "Termination criterion hit: the mesh size is below the minimum threshold defined.",
             MSG_TYPE.INFO)
-      if (search.bb_eval >= options.budget or search.terminate):
+      if (stats.neval_bb >= options.budget or search.terminate):
         log.log_msg(
             "Termination criterion hit: evaluation budget is exhausted.",
             MSG_TYPE.INFO)
@@ -197,6 +205,11 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
             "Termination criterion hit (optional): failed to find a \
             successful point in iteration # {iteration}.",
             MSG_TYPE.INFO)
+      if (state.stop_reason != STOP_TYPE.NO_STOP):
+        log.log_msg(
+            f"Termination criterion hit: {state.stop_reason.name}.",
+            MSG_TYPE.INFO)
+
       log.log_msg(
           "-----------------------------------------------------------------\n",
           MSG_TYPE.INFO)

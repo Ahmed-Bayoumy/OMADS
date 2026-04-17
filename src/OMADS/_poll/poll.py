@@ -131,11 +131,20 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
     log.log_msg(
         msg=f"Iteration {poll.iter} completed in {toc - tic:.4f} seconds",
         msg_type=MSG_TYPE.INFO)
+
     status_text = (
         "Full Success" if state.last_success == SUCCESS_TYPES.FS
         else "Partial Success" if state.last_success == SUCCESS_TYPES.PS
         else "Unsuccessful"
     )
+
+    if state.last_success == SUCCESS_TYPES.US or status_text == 'Unsuccessful':
+      stats.nno_successes += 1
+    else:
+      stats.nno_successes = 0
+
+    if stats.nno_successes >= options.budget:
+      state.stop_reason = STOP_TYPE.UNKNOWN_STOP_REASON
 
     msg = (
         f"Iteration {poll.iter}  success status: "
@@ -148,12 +157,12 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
         msg_type=MSG_TYPE.INFO)
 
     failure_check = iteration > 0 and state.stop_reason is not None \
-        and state.stop_reason != STOP_TYPE.UNKNOWN_STOP_REASON and (
+        and state.stop_reason != STOP_TYPE.NO_STOP and (
             state.last_success == SUCCESS_TYPES.US)
     state.last_success = SUCCESS_TYPES.US
     pb = ProgressBar(options, active_barrier)
     pb.display(peval=stats.neval_bb)
-    if (failure_check or stats.neval_bb >= options.budget) or \
+    if (failure_check or stats.neval_bb >= options.budget) or state.stop_reason != STOP_TYPE.NO_STOP or \
         (all([abs(poll.mesh.get_delta_frame_size().coordinates[pp]) < options.tol
          for pp in range(poll.dim)]) or stats.neval_bb >= options.budget or poll.terminate):
       log.log_msg(
@@ -165,7 +174,7 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
         log.log_msg(
             "Termination criterion hit: the mesh size is below the minimum threshold defined.",
             MSG_TYPE.INFO)
-      if (poll.bb_eval >= options.budget or poll.terminate):
+      if (stats.neval_bb >= options.budget or poll.terminate):
         log.log_msg(
             "Termination criterion hit: evaluation budget is exhausted.",
             MSG_TYPE.INFO)
@@ -173,6 +182,10 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
         log.log_msg(
             "Termination criterion hit (optional): failed to find \
             a successful point in iteration # {iteration}.",
+            MSG_TYPE.INFO)
+      if (state.stop_reason != STOP_TYPE.NO_STOP):
+        log.log_msg(
+            f"Termination criterion hit: {state.stop_reason.name}.",
             MSG_TYPE.INFO)
       log.log_msg(
           "---------------------------------------------------------------\n",
@@ -203,7 +216,7 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
     else:
       xsc = CandidatePoint()
     if not xmin_found:
-        xmin = xsc
+      xmin = xsc
   else:
     raise IOError("Internal error: empty active_barrier object!")
 

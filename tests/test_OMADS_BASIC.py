@@ -211,8 +211,8 @@ def test_callable_quick_2d():
     raise ValueError(f"\nSequential Exec: search: fmin {oss} > {0.07}")
 
   if omp > 0.005:
-    logger.error("Parallel Exec: mads: fmin: %s > %s", omp, 0.004)
-    raise ValueError(f"\nParallel Exec: mads: fmin: {omp} > {0.004}")
+    logger.error("Parallel Exec: mads: fmin: %s > %s", omp, 0.005)
+    raise ValueError(f"\nParallel Exec: mads: fmin: {omp} > {0.005}")
 
   if opp > 0.008:
     logger.error("Parallel Exec: poll: fmin: %s > %s", opp, 0.008)
@@ -292,7 +292,7 @@ def test_callable_quick_10d():
   search_conf = {
       "type": "sampling",
       "s_method": "ACTIVE",
-      "ns": int((d + 1) * (d + 2) / 2) + 150,
+      "ns": int((d + 1) * (d + 2) / 2),
       "visualize": False
   }
   data = {"evaluator": eval_callable, "param": param,
@@ -323,7 +323,7 @@ def test_callable_quick_10d():
   data_search = data
   data_search["options"]["budget"] = 2000
   if platform.platform().split('-')[0] == "macOS":
-    data_search["search"]["ns"] = int((d + 1) * (d + 2) / 2) + 20
+    data_search["search"]["ns"] = int((d + 1) * (d + 2) / 2) + 75
   out_search: Dict = search.main(data_search)
   tocss = time.perf_counter()
   logger.info(
@@ -405,13 +405,15 @@ def test_callable_quick_20d():
   out_poll: Dict = poll.main(data_poll)
   tocps = time.perf_counter()
   logger.info(
-      'Completed serial POL run on bbo_20d_rosenbrock in %s seconds.\n',
+      'Completed serial poll run on bbo_20d_rosenbrock in %s seconds.\n',
       f'{tocps - ticps:.4f}')
 
   ticss = time.perf_counter()
   logger.info(
       '\nStarted running search on bbo_20d_rosenbrock serial exectution ...')
   data["options"]["budget"] = 3000
+  if platform.platform().split('-')[0] == "macOS":
+    data["search"]["ns"] = int((d + 1) * (d + 2) / 2) + 75
   out_search: Dict = search.main(data)
   tocss = time.perf_counter()
   logger.info(

@@ -306,6 +306,14 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
           'Unsuccessful'
       )
 
+      if state.last_success == SUCCESS_TYPES.US or status == 'Unsuccessful':
+        stats.nno_successes += 1
+      else:
+        stats.nno_successes = 0
+      
+      if stats.nno_successes >= options.budget:
+        state.stop_reason = STOP_TYPE.UNKNOWN_STOP_REASON
+
       log.log_msg(
           msg=f"Iteration {poll_sampler.iter} success status: {status}",
           msg_type=MSG_TYPE.INFO
@@ -343,6 +351,14 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
           'Partial Success' if state.last_success == SUCCESS_TYPES.PS else
           'Unsuccessful'
       )
+
+      if state.last_success == SUCCESS_TYPES.US or status == 'Unsuccessful':
+        stats.nno_successes += 1
+      else:
+        stats.nno_successes = 0
+      
+      if stats.nno_successes >= options.budget:
+        state.stop_reason = STOP_TYPE.UNKNOWN_STOP_REASON
 
       log.log_msg(
           msg=f"Iteration {search_sampler.iter} success status: {status}",
@@ -396,7 +412,7 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
     state.last_success = SUCCESS_TYPES.US
     pb = ProgressBar(options, active_barrier)
     pb.display(peval=stats.neval_bb)
-    if (pt or st or state.stop_reason == STOP_TYPE.MIN_MESH_REACHED or stats.neval_bb >= options.budget):
+    if (pt or st or state.stop_reason != STOP_TYPE.NO_STOP or stats.neval_bb >= options.budget):
       log.log_msg(
           "\n--------------- Termination of MADS  ---------------", MSG_TYPE.INFO)
       if pt:
@@ -407,12 +423,16 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
         log.log_msg(
             "Termination criterion hit: the mesh size is below the minimum threshold defined.",
             MSG_TYPE.INFO)
-      if search_sampler.bb_eval + poll_sampler.bb_eval >= options.budget:
+      if stats.neval_bb >= options.budget:
         log.log_msg(
             "Termination criterion hit: Evaluation budget is exhausted.",
             MSG_TYPE.INFO)
       log.log_msg(
           "----------------------------------------------------\n", MSG_TYPE.INFO)
+      if (state.stop_reason != STOP_TYPE.NO_STOP):
+        log.log_msg(
+            f"Termination criterion hit: {state.stop_reason.name}.",
+            MSG_TYPE.INFO)
       break
 
     # toc = time.perf_counter()
