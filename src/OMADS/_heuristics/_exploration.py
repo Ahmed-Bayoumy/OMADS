@@ -623,29 +623,20 @@ class EfficientExploration(GenericSamplerBaseData, GenericSamplerBase):
             self._candidate_points_set[k].coordinates[i] = δ[i] * np.floor(
                 (ub[i] - x_center[i]) / δ[i]) + x_center[i]
 
-          # Warnings as defined in Nomad 3
           # snapRandGen = np.random.default_rng(seed=self.seed+self.iter)
           if self._candidate_points_set[k].coordinates[i] < lb[i]:
-            self.log.log_msg(
-              msg=f"Warning: snap_to_bounds: Error snapping {candidate[i]} to lower bound {lb[i]}",
-              msg_type=MSG_TYPE.INFO)
-            self.log.log_msg(
-              msg=f"frameCenter = {x_center[i]}, δ = {δ[i]} : it gave \
-                  {self._candidate_points_set[k]} which is still lower than {lb[i]}",
-              msg_type=MSG_TYPE.INFO)
+            print(f"Warning: snap_to_bounds: Error snapping {candidate[i]} to lower bound {lb[i]}")
+            print(f"frameCenter = {x_center[i]}, δ = {δ[i]} : it gave \
+                  {self._candidate_points_set[k]} which is still lower than {lb[i]}")
             # TODO: Force the snapping?
             # diff = lb[i] - self._candidate_points_set[k].coordinates[i]
             # self._candidate_points_set[k].coordinates[i] = lb[i] + snapRandGen.random() * diff
             stats.noutbound_hits+=1
 
           if self._candidate_points_set[k].coordinates[i] > ub[i]:
-            self.log.log_msg(
-              msg=f"Warning: snap_to_bounds: Error snapping {candidate[i]} to upper bound {ub[i]}",
-              msg_type=MSG_TYPE.INFO)
-            self.log.log_msg(
-              msg=f"frameCenter = {x_center[i]}, δ = {δ[i]} : it gave \
-                  {self._candidate_points_set[k]} which is still higher than {ub[i]}",
-              msg_type=MSG_TYPE.INFO)
+            print(f"Warning: snap_to_bounds: Error snapping {candidate[i]} to upper bound {ub[i]}")
+            print(f"frameCenter = {x_center[i]}, δ = {δ[i]} : it gave \
+                  {self._candidate_points_set[k]} which is still higher than {ub[i]}")
             # TODO: Force the snapping?
             # diff = self._candidate_points_set[k].coordinates[i] - ub[i]
             # self._candidate_points_set[k].coordinates[i] = ub[i] - snapRandGen.random() * diff

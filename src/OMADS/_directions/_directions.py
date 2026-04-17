@@ -512,7 +512,6 @@ class Dirs2n(GenericSamplerBaseData, GenericSamplerBase):
             self.candidate_points_set[k].coordinates[i] = δ[i] * np.floor(
                 (ub[i] - x_center[i]) / δ[i]) + x_center[i]
 
-          # Warnings as defined in Nomad 3
           # snapRandGen = np.random.default_rng(seed=self.seed+self.iter)
           if self.candidate_points_set[k].coordinates[i] < lb[i]:
             print(
@@ -523,7 +522,7 @@ class Dirs2n(GenericSamplerBaseData, GenericSamplerBase):
             # TODO: Force the snapping?
             # diff = lb[i] - self._candidate_points_set[k].coordinates[i]
             # self._candidate_points_set[k].coordinates[i] = lb[i] + snapRandGen.random() * diff
-            stats.noutbound_hits+=1
+            stats.noutbound_hits += 1
           if self.candidate_points_set[k].coordinates[i] > ub[i]:
             print(
                 f"Warning: snap_to_bounds: Error snapping {candidate[i]} to upper bound {ub[i]}")
@@ -532,7 +531,7 @@ class Dirs2n(GenericSamplerBaseData, GenericSamplerBase):
                   {self.candidate_points_set[k]} which is still higher than {ub[i]}")
             # diff = self._candidate_points_set[k].coordinates[i] - ub[i]
             # self._candidate_points_set[k].coordinates[i] = ub[i] - snapRandGen.random() * diff
-            stats.noutbound_hits+=1
+            stats.noutbound_hits += 1
 
     filtered = [x for x in self._candidate_points_set
                 if not hashtable.is_duplicate(x, False)]

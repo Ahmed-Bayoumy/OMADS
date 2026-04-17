@@ -310,7 +310,7 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
         stats.nno_successes += 1
       else:
         stats.nno_successes = 0
-      
+
       if stats.nno_successes >= options.budget:
         state.stop_reason = STOP_TYPE.UNKNOWN_STOP_REASON
 
@@ -356,7 +356,7 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
         stats.nno_successes += 1
       else:
         stats.nno_successes = 0
-      
+
       if stats.nno_successes >= options.budget:
         state.stop_reason = STOP_TYPE.UNKNOWN_STOP_REASON
 
@@ -410,7 +410,7 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
               active_barrier.get_all_points()[i])
         post.output_nd_results(out_p)
     state.last_success = SUCCESS_TYPES.US
-    pb = ProgressBar(options, active_barrier)
+    pb = ProgressBar(options, active_barrier, p_name=param.name)
     pb.display(peval=stats.neval_bb)
     if (pt or st or state.stop_reason != STOP_TYPE.NO_STOP or stats.neval_bb >= options.budget):
       log.log_msg(
@@ -478,10 +478,10 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
     else:
       xsc = CandidatePoint()
     if not xmin_found:
-        xmin = xsc
+      xmin = xsc
   else:
     raise IOError("Internal error: empty active_barrier object!")
-  
+
   if options.save_coordinates:
     post.output_coordinates(out)
   if options.display:

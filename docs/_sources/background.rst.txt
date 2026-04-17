@@ -24,7 +24,7 @@ If the optimization problem is deterministic, then the following checklist will 
 
 .. note::
 
-   OMADS is a simple variant of MADS with a pythonic flavor, but to use more advanced variants, it is recommended to use NOMAD :cite:p:`nomad4paper`. OMADS can also be integrated with the surrogate models library (SLML) published on my GitHub repository :cite:p:`SML_AB`.
+   OMADS 2604 is an advanced variant of MADS with a pythonic flavor :cite:p:`nomad4paper`. OMADS can also be integrated with the surrogate models library (SLML) published on my GitHub repository :cite:p:`SML_AB`.
 
 Introduction
 ============

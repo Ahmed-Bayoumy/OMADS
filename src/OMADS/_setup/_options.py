@@ -75,7 +75,7 @@ class Options:
       anistropic_mesh: bool = True,
       refine_freq: int = 1,
       use_dms_success: bool = False,
-      use_nomad_partial_success: bool = True,
+      use_omads_partial_success: bool = True,
       use_penalty_approach: bool = False,
       noutbound_hits_max: int = 60000,
       use_dom_trigger: bool = True,
@@ -102,7 +102,7 @@ class Options:
     self.anistropic_mesh = anistropic_mesh
     self.refine_freq = refine_freq
     self.use_dms_success = use_dms_success
-    self.use_nomad_partial_success = use_nomad_partial_success
+    self.use_omads_partial_success = use_omads_partial_success
     self.use_penalty_approach = use_penalty_approach
     self.noutbound_hits_max = noutbound_hits_max
     self.use_dom_trigger = use_dom_trigger
