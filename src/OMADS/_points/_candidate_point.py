@@ -950,6 +950,14 @@ class CandidatePoint:
         for key, value in self.__dict__.items()
     }
 
+  def clone(self) -> "CandidatePoint":
+    """Fast shallow copy: a new CandidatePoint wrapping the attribute values
+    captured at this point in time (same aliasing semantics a cache-row
+    round-trip would give, without paying for one)."""
+    other = CandidatePoint.__new__(CandidatePoint)
+    other.__dict__ = dict(self.__dict__)
+    return other
+
   def __dir__(self):
       # Collect instance attributes
     instance_attrs = list(self.__dict__.keys())

@@ -29,12 +29,22 @@ import subprocess
 import logging
 import platform
 import os
+import sys
 import time
-from typing import List, Any, Tuple
+from typing import List, Any, Optional, Tuple
 
 import paramiko
 
 from numpy import inf
+
+# Deep-but-legitimate (non-cyclic) CandidatePoint/Mesh object graphs built up
+# over a long run can exceed Python's default pickling recursion depth when
+# ProcessPoolExecutor serializes work to/from worker processes (observed on
+# long parallel-mode runs, thousands of evaluations in). Raised here at
+# module level -- not just in the main process -- so it also takes effect in
+# freshly spawned worker processes, which re-import this module to
+# reconstruct evaluate_blackbox_parallel before running it.
+sys.setrecursionlimit(max(sys.getrecursionlimit(), 20000))
 from .._post._postprocess import PostMADS, Output
 from .._setup._options import Options
 from .._include import CandidatePoint
@@ -79,6 +89,21 @@ class Evaluator:
     self.directions = directions
     self.mesh = mesh
     self.incumbent = incumbent
+    self._executor: Optional[concurrent.futures.ProcessPoolExecutor] = None
+    self._executor_workers: int = 0
+
+  def __getstate__(self):
+    # executor.submit(self.evaluate_blackbox_parallel, point) pickles the
+    # bound method's `self` to ship it to the worker process; the reusable
+    # ProcessPoolExecutor (and its internal locks/threads) must never be
+    # part of that -- workers only ever call evaluate_blackbox_parallel,
+    # which doesn't touch self._executor, so it's safe to drop here.
+    state = self.__dict__.copy()
+    state["_executor"] = None
+    return state
+
+  def __setstate__(self, state):
+    self.__dict__.update(state)
 
   def run_callable_serial_local(
           self, sampler: GenericSamplerBase, centers: List[int],
@@ -186,6 +211,34 @@ class Evaluator:
       self.candidates[index].status = DESIGN_STATUS.ERROR
     return self.candidates[index]
 
+  def _get_executor(self, workers: int) -> concurrent.futures.ProcessPoolExecutor:
+    """Lazily create the worker pool once and reuse it across iterations.
+
+    Spawning a ProcessPoolExecutor (esp. on Windows, which always uses the
+    'spawn' start method) means re-importing the whole interpreter -- numpy,
+    pandas, scipy, samplersLib, paramiko, etc. -- in every new worker
+    process, which costs hundreds of ms to seconds per process. Recreating
+    the pool on every single poll/search iteration (as the previous `with
+    ProcessPoolExecutor(...) as executor:` block did) turned that startup
+    cost into a per-iteration tax instead of a one-time one; this call the
+    caller shuts down via shutdown_executor() once the run's main loop ends.
+    """
+    if self._executor is not None and self._executor_workers != workers:
+      self._executor.shutdown(wait=True)
+      self._executor = None
+    if self._executor is None:
+      self._executor = concurrent.futures.ProcessPoolExecutor(max_workers=workers)
+      self._executor_workers = workers
+    return self._executor
+
+  def shutdown_executor(self):
+    """Tear down the reusable process pool (call once the run's main loop
+    over poll/search iterations has finished)."""
+    if self._executor is not None:
+      self._executor.shutdown(wait=True)
+      self._executor = None
+      self._executor_workers = 0
+
   def run_callable_parallel_local(  # noqa: C901
           self, sampler: GenericSamplerBase, centers: List[int],
           options: Options, stats: Any, active_barrier: AdaptiveBarrier,
@@ -195,57 +248,56 @@ class Evaluator:
     insertion_flag = []
     insertion_flag = [None] * len(sampler._candidate_points_set)
 
-    with concurrent.futures.ProcessPoolExecutor(max_workers=options.np) as executor:
-      tic = time.perf_counter()
-      future_to_index = {
-          executor.submit(self.evaluate_blackbox_parallel, point): (i, point)
-          for i, point in enumerate(self.candidates)}
-      completed_result = None
-      for future in concurrent.futures.as_completed(future_to_index):
-        time.sleep(0.1)
-        toc = time.perf_counter()
-        index, point = future_to_index[future]
-        stats.neval_bb += 1
-        self.candidates[index] = future.result()
-        sampler.candidate_points_set[index] = self.candidates[index]
-        sampler.candidate_points_set[index].eval_time = toc - tic
-        sampler._candidate_points_set[index].eval_no = stats.neval_bb
-        hashtable.add_to_cache(self.candidates[index])
-        self.incumbent = active_barrier.elements[parent_indices[index]]
+    executor = self._get_executor(options.np)
+    tic = time.perf_counter()
+    future_to_index = {
+        executor.submit(self.evaluate_blackbox_parallel, point): (i, point)
+        for i, point in enumerate(self.candidates)}
+    completed_result = None
+    for future in concurrent.futures.as_completed(future_to_index):
+      toc = time.perf_counter()
+      index, point = future_to_index[future]
+      stats.neval_bb += 1
+      self.candidates[index] = future.result()
+      sampler.candidate_points_set[index] = self.candidates[index]
+      sampler.candidate_points_set[index].eval_time = toc - tic
+      sampler._candidate_points_set[index].eval_no = stats.neval_bb
+      hashtable.add_to_cache(self.candidates[index])
+      self.incumbent = active_barrier.elements[parent_indices[index]]
 
-        if sampler.candidate_points_set[index].is_feasible():
-          insertion_flag[index] = active_barrier.add_feasible(
-              sampler.candidate_points_set[index],
-              sampler.mesh)
-          stats.neval_bb_feasible += 1
-        elif sampler.candidate_points_set[index].status == DESIGN_STATUS.INFEASIBLE:
-          insertion_flag[index] = active_barrier.add_infeasible(
-              sampler.candidate_points_set[index],
-              sampler.mesh)
-          stats.neval_bb_infeasible += 1
+      if sampler.candidate_points_set[index].is_feasible():
+        insertion_flag[index] = active_barrier.add_feasible(
+            sampler.candidate_points_set[index],
+            sampler.mesh)
+        stats.neval_bb_feasible += 1
+      elif sampler.candidate_points_set[index].status == DESIGN_STATUS.INFEASIBLE:
+        insertion_flag[index] = active_barrier.add_infeasible(
+            sampler.candidate_points_set[index],
+            sampler.mesh)
+        stats.neval_bb_infeasible += 1
 
-        active_barrier.parent_indexes[active_barrier.last_index] = parent_indices[index]
-        post.x_incumbent.append(active_barrier.elements[centers[index]])
+      active_barrier.parent_indexes[active_barrier.last_index] = parent_indices[index]
+      post.x_incumbent.append(active_barrier.elements[centers[index]])
 
-        post.bb_eval.append(stats.neval_bb)
-        post.iter.append(sampler._iter)
-        if step_name:
-          post.step_name.append(step_name)
-        else:
-          post.step_name = []
-          post.step_name.append(step_name)
-        post.psize.append(sampler.mesh.get_delta_frame_size().coordinates)
-        if options.opportunistic and sampler.candidate_points_set[index] < self.incumbent:
-          stats.nopportunistic_triggers += 1
-          completed_result = future.result()
-          break
-        if stats.neval_bb == options.budget:
-          completed_result = future.result()
-          break
-      if (completed_result):
-        for f in future_to_index:
-          if not f.done():
-            f.cancel()
+      post.bb_eval.append(stats.neval_bb)
+      post.iter.append(sampler._iter)
+      if step_name:
+        post.step_name.append(step_name)
+      else:
+        post.step_name = []
+        post.step_name.append(step_name)
+      post.psize.append(sampler.mesh.get_delta_frame_size().coordinates)
+      if options.opportunistic and sampler.candidate_points_set[index] < self.incumbent:
+        stats.nopportunistic_triggers += 1
+        completed_result = future.result()
+        break
+      if stats.neval_bb == options.budget:
+        completed_result = future.result()
+        break
+    if (completed_result):
+      for f in future_to_index:
+        if not f.done():
+          f.cancel()
 
     if options.save_coordinates:
       post.coords.append(sampler.candidate_points_set)

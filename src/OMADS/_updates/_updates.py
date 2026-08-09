@@ -66,7 +66,7 @@ def set_frame_centers_and_hvalues(
 
     state.ordered_frame_centers = (
         cmin,
-        0
+        -1
     )
   else:
     out = active_barrier.frame_centers(
@@ -74,11 +74,21 @@ def set_frame_centers_and_hvalues(
     fk_index = out["feasible"]
     uk_index = out["infeasible"]
     # Set primary and secondary frame centers according to trigger conditions.
+    # NOTE: the secondary slot used to fall back to hardcoded index 0 (the
+    # very first ever-evaluated candidate) whenever there was no real
+    # secondary/infeasible center -- always true for unconstrained problems,
+    # since no point is ever infeasible. That silently wasted roughly half
+    # of every iteration's sampling budget re-exploring around the original
+    # baseline point forever, since it never gets updated as better points
+    # are found. -1 is the actual "no center" sentinel used everywhere else
+    # in this codebase (MadsState's own default is (-1, -1), and
+    # search_step/poll_step already guard on `frame_center != -1`), so use
+    # it here too instead of the 0 typo.
     if fk_index == -1:
-      state.ordered_frame_centers = (uk_index, 0)
+      state.ordered_frame_centers = (uk_index, -1)
     else:
       if uk_index == -1:
-        state.ordered_frame_centers = (fk_index, 0)
+        state.ordered_frame_centers = (fk_index, -1)
       else:
         if options.use_dom_trigger:
             # Using extent is slightly more efficient

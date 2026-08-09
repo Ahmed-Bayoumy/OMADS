@@ -576,7 +576,7 @@ class Dirs2n(GenericSamplerBaseData, GenericSamplerBase):
           temp.append(xtry)
     del self.candidate_points_set
     for t in temp:
-      self.candidate_points_set = copy.deepcopy(t)
+      self.candidate_points_set = t.clone()
 
 
 @dataclass

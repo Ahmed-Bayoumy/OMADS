@@ -23,9 +23,8 @@
 # ------------------------------------------------------------------------------------#
 """
 import copy
-from typing import List
+from typing import Dict, List, Optional
 import numpy as np
-import pandas as pd
 
 from .._include import COMPARE_TYPE, INSERTION_FLAG
 from .._points._candidate_point import CandidatePoint
@@ -71,18 +70,25 @@ def parent_indices(
 
 class Elements:
   """
-  Elements to candidates mapper
+  Elements to candidates mapper.
+
+  Backed by a plain, insertion-ordered list of candidates (position i is the
+  integer "index" the rest of the barrier logic already threads around) plus
+  a signature -> position dict for O(1) duplicate checks/updates -- replacing
+  the previous pandas-DataFrame-as-hashtable implementation, which paid for a
+  full index-list rebuild on every insertion and a query-engine round trip on
+  every single-element access.
   """
 
   def __init__(self, capacity: int):
-    self._candidates_table: pd.DataFrame = pd.DataFrame(
-        index=range(capacity),
-        columns=self._get_candidate_class_attr())
+    self._elements: List[Optional[CandidatePoint]] = []
+    self._sig_to_index: Dict[int, int] = {}
+    self._capacity = capacity
     self._last_index = -1
 
-  def __getitem__(self, index: int) -> CandidatePoint:
+  def __getitem__(self, index) -> CandidatePoint:
     if isinstance(index, list) or isinstance(index, np.ndarray):
-      return [self.get_candidate_from_cache_by_index(i) for i in index]
+      return [self.get_candidate_from_cache_by_index(int(i)) for i in index]
     else:
       return self.get_candidate_from_cache_by_index(index)
 
@@ -93,15 +99,19 @@ class Elements:
     self.add_to_candidates_table(x=candidate)
 
   def index(self, x: CandidatePoint):
-    return self._candidates_table.index.get_loc(x.signature)
+    return self._sig_to_index[x.signature]
 
   def get_by_eval_no(self, n: int):
-    df: pd.DataFrame = self._candidates_table[0: self._last_index].query(
-        '_eval_no == @n')
-    return self._set_candidate_attr(df.to_dict())
+    # Matches the previous `_candidates_table[0:self._last_index]` slice:
+    # excludes the most recently inserted element, same as Cache's query
+    # methods (see _points/_cache.py docstring for why).
+    for c in self._elements[:self._last_index]:
+      if c is not None and c._eval_no == n:
+        return c.clone()
+    return None
 
   def get_index_loc_by_signature(self, hash_id: int) -> int:
-    return self._candidates_table.index.get_loc(hash_id)
+    return self._sig_to_index[hash_id]
 
   def __deleteitem__(self, index: int):
     pass
@@ -109,65 +119,70 @@ class Elements:
   def __iter__(self):
     x = self.get_cache_candidate_points()
     return iter(x)
-    # return self._candidates_table.iterrows()
 
   def get_cache_candidate_points(self) -> List[CandidatePoint]:
-    x = []
-    for i, h_id in enumerate(self._candidates_table.index):
-      if i > self._last_index:
-        break
-      index: int = self._candidates_table.index.get_loc(h_id)
-      x.append(self._set_candidate_attr(
-          self._candidates_table.iloc[index].to_dict()))
-    return x
+    return [c.clone() for c in self._elements[:self._last_index + 1]
+            if c is not None]
 
   def get_candidate_from_elements_by_signature(self, hash_id: int):
-    index: int = self._candidates_table.index.get_loc(hash_id)
-    row = self._candidates_table.iloc[index].to_dict()
-    return self._set_candidate_attr(row)
+    index: int = self._sig_to_index[hash_id]
+    return self._elements[index].clone()
 
   def get_candidate_from_cache_by_index(self, index: int):
-    # return self.data_cache.iloc[index]['candidate']
-    row = self._candidates_table.iloc[index].to_dict()
-    return self._set_candidate_attr(row)
+    # Callers (e.g. the progress bar) probe indices across the whole budget
+    # range, not just filled slots; the previous DataFrame, preallocated up
+    # to capacity, tolerated that silently, so mirror the same "not yet
+    # filled" -> None contract here instead of raising IndexError.
+    if index < 0 or index >= len(self._elements):
+      return None
+    c = self._elements[index]
+    return c.clone() if c is not None else None
+
+  def get_raw(self, index: int) -> Optional[CandidatePoint]:
+    """Internal accessor for AdaptiveBarrier's own read-only bookkeeping
+    (dominance comparisons, f/h lookups): returns the stored candidate by
+    reference instead of paying for a clone(). Never mutate the result --
+    external callers (evaluator, search/poll steps, progress bar) must keep
+    using __getitem__/get_candidate_from_cache_by_index, which still clone."""
+    if index < 0 or index >= len(self._elements):
+      return None
+    return self._elements[index]
 
   def add_to_candidates_table(self, x: CandidatePoint):
     if x.signature is None or x.signature != hash(tuple((x._coords))):
       x.signature = hash(tuple((x._coords)))
-    # Safeguard to avoid saving duplivates in the dataframe
-    if x.signature in self._candidates_table.index:
+    # Safeguard to avoid saving duplicates
+    if x.signature in self._sig_to_index:
       self.update_candidate_in_cache(x)
     else:
-      self._last_index += 1
-      new_index = self._candidates_table.index.tolist()
-      new_index[self._last_index] = x.signature
-      self._candidates_table.index = new_index
-      for key, value in vars(x).items():
-        if key in self._candidates_table.columns:
-          self._candidates_table.loc[x.signature, key] = value
+      clone = x.clone()
+      index = len(self._elements)
+      self._elements.append(clone)
+      self._sig_to_index[x.signature] = index
+      self._last_index = index
 
   def add_to_candidates_table_index(self, index: int, x: CandidatePoint):
     if x.signature is None or x.signature != hash(tuple((x._coords))):
       x.signature = hash(tuple((x._coords)))
-    # Safeguard to avoid saving duplivates in the dataframe
-    if x.signature in self._candidates_table.index:
+    # Safeguard to avoid saving duplicates
+    if x.signature in self._sig_to_index:
       self.update_candidate_in_cache(x)
     else:
+      clone = x.clone()
+      if index < len(self._elements):
+        self._elements[index] = clone
+      else:
+        self._elements.extend([None] * (index - len(self._elements)))
+        self._elements.append(clone)
+      self._sig_to_index[x.signature] = index
       self._last_index = index
-      new_index = self._candidates_table.index.tolist()
-      new_index[index] = x.signature
-      self._candidates_table.index = new_index
-      for key, value in vars(x).items():
-        if key in self._candidates_table.columns:
-          self._candidates_table.loc[x.signature, key] = value
 
   def update_candidate_in_cache(self, x: CandidatePoint):
     if x.signature is None or x.signature != hash(tuple((x._coords))):
       x.signature = hash(tuple((x._coords)))
-    if x.signature in self._candidates_table.index:
-      for key, value in vars(x).items():
-        if key in self._candidates_table.columns:
-          self._candidates_table.loc[x.signature, key] = value
+    index = self._sig_to_index.get(x.signature)
+    if index is not None and self._elements[index] is not None:
+      self._elements[index].__dict__.update(x.__dict__)
 
   def _get_candidate_class_attr(self):
     cp: CandidatePoint = CandidatePoint()
@@ -265,15 +280,21 @@ class AdaptiveBarrier:
       raise ValueError("Maximum size of barrier reached: cannot add element")
 
   def get_fk(self) -> np.ndarray[CandidatePoint]:
-    fk_i = np.where(np.array(self.within_fk) == True)[0]  # noqa: E712
+    # within_fk/uk/ik are preallocated to max_size but only the first
+    # last_index+1 entries can ever be True, so bound the scan there instead
+    # of converting the full (often much larger) preallocated list every call.
+    n = self.last_index + 1
+    fk_i = np.where(np.array(self.within_fk[:n]) == True)[0]  # noqa: E712
     return self.elements[fk_i] if len(fk_i) > 0 else np.empty((0,))
 
   def get_ik(self) -> np.ndarray[CandidatePoint]:
-    ik_i = np.where(np.array(self.within_ik) == True)[0]  # noqa: E712
+    n = self.last_index + 1
+    ik_i = np.where(np.array(self.within_ik[:n]) == True)[0]  # noqa: E712
     return self.elements[ik_i] if len(ik_i) > 0 else np.empty((0,))
 
   def get_uk(self) -> np.ndarray[CandidatePoint]:
-    uk_i = np.where(np.array(self.within_uk) == True)[0]  # noqa: E712
+    n = self.last_index + 1
+    uk_i = np.where(np.array(self.within_uk[:n]) == True)[0]  # noqa: E712
     return self.elements[uk_i] if len(uk_i) > 0 else np.empty((0,))
 
   def get_nd_elements(self):
@@ -298,11 +319,15 @@ class AdaptiveBarrier:
       raise ValueError(
           "Trying to insert an infeasible element into the set of feasible points.")
 
-    # Get current elements in fh
-    fh_current_elements = [
-        self.elements[i] for i in range(self.max_size)
-        if self.within_fk[i] and self.elements[i] is not None]
-    nb_elements_in_fh = len(fh_current_elements)
+    # Get current elements in fh (index kept alongside its element so the
+    # dominance loop below doesn't have to re-derive it via parentindices --
+    # that used to recompute an O(n) lookup on *every* iteration, making this
+    # whole method O(n^2) in the number of accumulated feasible points, and
+    # get progressively slower every iteration as the barrier grows).
+    fh_indices = [
+        i for i in range(self.last_index + 1)
+        if self.within_fk[i] and self.elements.get_raw(i) is not None]
+    nb_elements_in_fh = len(fh_indices)
 
     # Empty set case
     if nb_elements_in_fh == 0:
@@ -316,10 +341,8 @@ class AdaptiveBarrier:
     insertion_flag = INSERTION_FLAG.IMPROVES
 
     # Check if v dominates an element of fh
-    for index in range(nb_elements_in_fh):
-      corresponding_index = self.parentindices(
-          self.elements, fh_current_elements)[index]
-      comp_flag = v.__compare__(self.elements[corresponding_index])
+    for corresponding_index in fh_indices:
+      comp_flag = v.__compare__(self.elements.get_raw(corresponding_index))
       if comp_flag == COMPARE_TYPE.DOMINATING:
         self.within_fk[corresponding_index] = False
         insertion_flag = INSERTION_FLAG.DOMINATES
@@ -359,11 +382,12 @@ class AdaptiveBarrier:
       self.meshes[self.last_index] = copy.deepcopy(m)
       return INSERTION_FLAG.REJECTED
 
-    # Get current elements in uk
-    uk_current_elements = [
-        self.elements[i] for i in range(self.max_size)
-        if self.within_uk[i] and self.elements[i] is not None]
-    nb_elements_in_uk = len(uk_current_elements)
+    # Get current elements in uk (see add_feasible for why indices are kept
+    # alongside the filter instead of recovered later via parentindices).
+    uk_indices = [
+        i for i in range(self.last_index + 1)
+        if self.within_uk[i] and self.elements.get_raw(i) is not None]
+    nb_elements_in_uk = len(uk_indices)
     prev_nb_best_inf_pts = sum(
         1 for x in self.within_ik[:self.last_index] if x)
 
@@ -379,10 +403,8 @@ class AdaptiveBarrier:
     insert = True
 
     # Check if v dominates an element of uk
-    for index in range(nb_elements_in_uk):
-      corresponding_index = self.parentindices(
-          self.elements, uk_current_elements)[index]
-      comp_flag = v.__compare__(self.elements[corresponding_index])
+    for corresponding_index in uk_indices:
+      comp_flag = v.__compare__(self.elements.get_raw(corresponding_index))
       if comp_flag == COMPARE_TYPE.DOMINATING:
         self.within_uk[corresponding_index] = False
         self.within_ik[corresponding_index] = False
@@ -422,7 +444,9 @@ class AdaptiveBarrier:
     else:
       # The number of best infeasible points may have been reduced
       # by the insertion into the filter, so this check is needed.
-      if sum(self.within_ik) <= prev_nb_best_inf_pts:
+      # (within_ik is preallocated to max_size; entries past last_index are
+      # always False, so bound the sum instead of scanning the whole array.)
+      if sum(self.within_ik[:self.last_index + 1]) <= prev_nb_best_inf_pts:
         return INSERTION_FLAG.DOMINATES
       else:
         return insertion_best_flag
@@ -452,7 +476,7 @@ class AdaptiveBarrier:
         return COMPARE_TYPE.EQUAL
 
   def _update_ik_set_after_insertion(self):
-    candidate = self.elements[self.last_index]
+    candidate = self.elements.get_raw(self.last_index)
     domination_flags = [False] * self.last_index  # Initialize with False
 
     insert = True
@@ -462,7 +486,7 @@ class AdaptiveBarrier:
     for index, is_in_ik in enumerate(self.within_ik[:self.last_index]):
       if is_in_ik:
         comp_flag = self._private_compare_ik_elements(
-            candidate, self.elements[index])
+            candidate, self.elements.get_raw(index))
         if comp_flag == COMPARE_TYPE.DOMINATING:
           domination_flags[index] = True
           insertion_flag = INSERTION_FLAG.DOMINATES
@@ -487,7 +511,7 @@ class AdaptiveBarrier:
 
     # Get best points based on feasibility
     tmp_best_pts = [
-        self.elements[i] for i in range(self.last_index + 1)
+        self.elements.get_raw(i) for i in range(self.last_index + 1)
         if (self.within_fk[i] if is_feasible else self.within_uk[i])]
 
     if len(tmp_best_pts) == 0:
@@ -509,7 +533,7 @@ class AdaptiveBarrier:
 
     # Mark uk elements that exceed h_max
     for index, is_in_uk in enumerate(self.within_uk[:self.last_index]):
-      if is_in_uk and self.elements[index].h > self.h_max:
+      if is_in_uk and self.elements.get_raw(index).h > self.h_max:
         filter_flags[index] = True
 
     # Remove all uk elements above the threshold
@@ -533,7 +557,7 @@ class AdaptiveBarrier:
         for index_2, is_in_uk_2 in enumerate(self.within_uk[:self.last_index]):
           if is_in_uk_2 and index != index_2:
             comp_flag = self._private_compare_ik_elements(
-                self.elements[index], self.elements[index_2])
+                self.elements.get_raw(index), self.elements.get_raw(index_2))
             if comp_flag == COMPARE_TYPE.DOMINATING:
               self.within_ik[index_2] = False
             elif comp_flag in [COMPARE_TYPE.DOMINATED, COMPARE_TYPE.EQUAL]:
@@ -561,7 +585,7 @@ class AdaptiveBarrier:
         tmp_dist = -float('inf')
         for ind in range(0, self.last_index + 1):
           if self.within_ik[ind]:
-            v = self.elements[ind]
+            v = self.elements.get_raw(ind)
             tmp_dom_distance = min(
                 [sum(elt.f - np.minimum(v.f, elt.f)) for elt in self.get_fk()])
             if v.h <= self.h_max and tmp_dom_distance > tmp_dist:
@@ -573,7 +597,7 @@ class AdaptiveBarrier:
           tmp_dist = float('inf')
           for ind in range(0, self.last_index + 1):
             if self.within_ik[ind]:
-              v = self.elements[ind]
+              v = self.elements.get_raw(ind)
               tmp_dom_distance = min(
                   [sum(v.f - np.minimum(v.f, elt.f)) for elt in self.get_fk()])
               if v.h <= self.h_max and tmp_dom_distance < tmp_dist:
@@ -585,9 +609,9 @@ class AdaptiveBarrier:
         tmp_dist = float('inf')
         for ind in range(0, self.last_index + 1):
           if self.within_ik[ind]:
-            v = self.elements[ind]
+            v = self.elements.get_raw(ind)
             tmp_dom_distance = dom_distance(
-                self.elements[feasible_index].f, v.f)
+                self.elements.get_raw(feasible_index).f, v.f)
             if v.h <= self.h_max and tmp_dom_distance < tmp_dist:
               tmp_ind = ind
               tmp_dist = tmp_dom_distance
@@ -628,8 +652,8 @@ class AdaptiveBarrier:
 
     # Two points in the barrier
     if len(fh_selected_indexes) == 2 and len(fk_indexes) == 2:
-      v1f = self.elements[fh_selected_indexes[0]].f
-      v2f = self.elements[fh_selected_indexes[1]].f
+      v1f = self.elements.get_raw(fh_selected_indexes[0]).f
+      v2f = self.elements.get_raw(fh_selected_indexes[1]).f
       if np.linalg.norm(v1f, np.inf) > np.linalg.norm(v2f, np.inf):
         return fh_selected_indexes[0]
       else:
@@ -640,7 +664,7 @@ class AdaptiveBarrier:
     maximum_gap = -1.0  # negative to deal with the case where two points in fh_selected_indexes
 
     for obj in range(self.dims[1]):
-      fvalues = np.array([(self.elements[ind].f[obj], ind)
+      fvalues = np.array([(self.elements.get_raw(ind).f[obj], ind)
                          for ind in fk_indexes])
       sorted_indices = np.argsort(fvalues[:, 0])
       fvalues = fvalues[sorted_indices]
@@ -710,8 +734,8 @@ class AdaptiveBarrier:
 
     # Two points in the barrier
     if len(ik_selected_indexes) == 2 and len(ik_indexes) == 2:
-      v1f = self.elements[ik_selected_indexes[0]].f
-      v2f = self.elements[ik_selected_indexes[1]].f
+      v1f = self.elements.get_raw(ik_selected_indexes[0]).f
+      v2f = self.elements.get_raw(ik_selected_indexes[1]).f
       if np.linalg.norm(v1f, np.inf) > np.linalg.norm(v2f, np.inf):
         return ik_selected_indexes[0]
       else:
@@ -722,7 +746,7 @@ class AdaptiveBarrier:
     maximum_gap = -1.0  # negative to handle the case where two points in ik_selected_indexes
 
     for obj in range(self.dims[1]):
-      fvalues = np.array([(self.elements[ind].f[obj], ind)
+      fvalues = np.array([(self.elements.get_raw(ind).f[obj], ind)
                          for ind in ik_indexes])
       sorted_indices = np.argsort(fvalues[:, 0])
       fvalues = fvalues[sorted_indices]

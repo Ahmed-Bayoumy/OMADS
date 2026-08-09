@@ -215,6 +215,7 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
           MSG_TYPE.INFO)
       break
     iteration += 1
+  bb_handle.shutdown_executor()
   sys.stderr = _original_stderr
   if search.prob_params.is_pareto and isinstance(
           active_barrier, AdaptiveBarrier):

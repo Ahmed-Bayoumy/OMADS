@@ -23,7 +23,7 @@
 # ------------------------------------------------------------------------------------#
 """
 
-from typing import List
+from typing import Dict, List, Optional
 import os
 import pandas as pd
 import numpy as np
@@ -37,22 +37,68 @@ class Cache:
   abstract data type, a structure that can map keys to values. A hash table uses a hash function to
   compute an index, also called a hash code, into an array of buckets or slots, from which the
   desired value can be found. During lookup, the key is hashed and the resulting hash indicates
-  where the corresponding value is stored."""
-  # _hash_id: List[int] = field(default_factory=list)
-  # _best_hash_id: List[int] = field(default_factory=list)
-  # _cache_dict: Dict[Any, Any] = field(default_factory=lambda: {})
-  # _n_dim: int = 0
-  # _is_pareto: bool = False
-  # _last_index: int = -1
-  # nd_points: Optional[List[CandidatePoint]] = None
+  where the corresponding value is stored.
+
+  Internally the cache is a plain, insertion-ordered list of candidates (position i is the
+  historical integer "index" that the rest of the solver already threads around) plus a
+  signature -> position dict for O(1) duplicate checks/updates, and small incrementally
+  maintained index lists for the "was_center"/"improving" flags so the hot sampling path
+  never has to rescan the whole cache to answer "how many centers do I have so far".
+
+  Note: every query/aggregate method below deliberately excludes the most recently inserted
+  candidate (indices are compared with `< self._last_index`, not `<=`), mirroring the
+  `iloc[0:self._last_index]` slicing the previous pandas-backed implementation used
+  throughout -- that is existing, load-bearing behavior (the newest candidate only becomes
+  visible to these aggregates once a further candidate is added), not something introduced
+  here, and changing it would shift which sampling branch/parameters the solver picks."""
 
   def __init__(self, capacity: int = 1):
-    self._data_cache: pd.DataFrame = pd.DataFrame(
-        index=range(capacity + 100),
-        columns=self._get_candidate_class_attr())
+    self._candidates: List[CandidatePoint] = []
+    self._sig_to_index: Dict[int, int] = {}
+    self._center_indices: List[int] = []
+    self._center_index_set: set = set()
+    self._improving_indices: List[int] = []
+    self._improving_index_set: set = set()
     self._capacity: int = capacity + 100
     self._is_pareto: bool = False
     self._last_index: int = -1
+
+  # ---------------------------------------------------------------- helpers
+  def _sync_flag_indices(self, index: int):
+    """Keep the incremental was_center/improving index lists exactly in sync
+    with the candidate's live flags (self-healing both ways), rather than
+    assuming the flags are monotonic -- update_candidate_in_cache overwrites
+    a candidate's whole __dict__, so a flag can in principle flip back to
+    False, and this must mirror that instead of leaving a stale entry
+    behind (which the previous re-query-every-time implementation could
+    never do)."""
+    c = self._candidates[index]
+    if c._was_center:
+      if index not in self._center_index_set:
+        self._center_index_set.add(index)
+        self._center_indices.append(index)
+    elif index in self._center_index_set:
+      self._center_index_set.discard(index)
+      self._center_indices.remove(index)
+    if c._improving:
+      if index not in self._improving_index_set:
+        self._improving_index_set.add(index)
+        self._improving_indices.append(index)
+    elif index in self._improving_index_set:
+      self._improving_index_set.discard(index)
+      self._improving_indices.remove(index)
+
+  def _center_indices_visible(self) -> List[int]:
+    # _center_indices is in flag-set order, not candidate-insertion order (an
+    # older candidate can be marked a center after newer ones already were).
+    # The previous DataFrame query returned rows in positional (insertion
+    # index) order regardless of when the flag was set, so sort to match.
+    n = self._last_index
+    return sorted(i for i in self._center_indices if i < n)
+
+  def _improving_indices_visible(self) -> List[int]:
+    n = self._last_index
+    return sorted(i for i in self._improving_indices if i < n)
 
   def _get_candidate_class_attr(self):
     cp: CandidatePoint = CandidatePoint()
@@ -69,26 +115,19 @@ class Cache:
     return out
 
   def n_centers(self):
-    return self._data_cache.iloc[0:self._last_index].query('_was_center').shape[0]
+    return len(self._center_indices_visible())
 
   def get_maximum_cstr_violation(self) -> float:
-    s1 = DESIGN_STATUS.ERROR  # noqa: F841
-    s2 = DESIGN_STATUS.UNEVALUATED  # noqa: F841
-    s3 = DESIGN_STATUS.INFEASIBLE  # noqa: F841
-    filtered: pd.DataFrame = self._data_cache.iloc[0: self._last_index].query(
-        '_status != @s1 & _status != @s2 & _status == @s3 & _h >= 0')
-    if '_h' in filtered.columns and filtered.shape[0] > 0:
-      sorted_slice = filtered.sort_values(by='_h', ascending=True)
-      return sorted_slice['_h'].min()
-    else:
-      return 0.001
+    hs = [c._h for c in self._candidates[:self._last_index]
+          if c._status == DESIGN_STATUS.INFEASIBLE and c._h >= 0]
+    return min(hs) if hs else 0.001
 
   def n_all_non_error_candidates(self):
-    s1 = DESIGN_STATUS.ERROR  # noqa: F841
-    s2 = DESIGN_STATUS.UNEVALUATED  # noqa: F841
-    h_max: float = self.get_maximum_cstr_violation()  # noqa: F841
-    return self._data_cache.iloc[0: self._last_index].query(
-        '_status != @s1 & _status != @s2 & _h <= @h_max').shape[0]
+    h_max: float = self.get_maximum_cstr_violation()
+    return sum(
+        1 for c in self._candidates[:self._last_index]
+        if c._status not in (DESIGN_STATUS.ERROR, DESIGN_STATUS.UNEVALUATED)
+        and c._h <= h_max)
 
   def get_splitted_sorted_candidates(  # noqa: C901
           self, x_better: List[CandidatePoint],
@@ -96,103 +135,96 @@ class Cache:
           f_better: np.ndarray,
           f_worse: np.ndarray,
           ratio: float = 0.2):
-    s1 = DESIGN_STATUS.ERROR  # noqa: F841
-    s2 = DESIGN_STATUS.UNEVALUATED  # noqa: F841
-    s3 = DESIGN_STATUS.INFEASIBLE  # noqa: F841
-    h_max: float = self.get_maximum_cstr_violation()  # noqa: F841
+    h_max: float = self.get_maximum_cstr_violation()
 
-    filtered_prim: pd.DataFrame = self._data_cache.iloc[0: self._last_index].query(
-        '_status != @s1 & _status != @s2 & _status != @s3')
+    prim: List[CandidatePoint] = []
+    sec: List[CandidatePoint] = []
+    inf: List[CandidatePoint] = []
+    for c in self._candidates[:self._last_index]:
+      if c._status in (DESIGN_STATUS.ERROR, DESIGN_STATUS.UNEVALUATED):
+        continue
+      if c._status != DESIGN_STATUS.INFEASIBLE:
+        prim.append(c)
+      elif c._h <= h_max:
+        sec.append(c)
+      else:
+        inf.append(c)
 
-    filtered_sec: pd.DataFrame = self._data_cache.iloc[0: self._last_index].query(
-        '_status != @s1 & _status != @s2 & _status == @s3 & _h <= @h_max')
+    # Stable sort (ties keep insertion order), ascending by objective/violation
+    prim = sorted(prim, key=lambda c: c._f)
+    sec = sorted(sec, key=lambda c: c._h)
+    inf = sorted(inf, key=lambda c: c._h)
 
-    filtered_inf: pd.DataFrame = self._data_cache.iloc[0: self._last_index].query(
-        '_status != @s1 & _status != @s2 & _status == @s3 & _h > @h_max')
-
-    # Sort by the `_f` column (ascending)
-    sorted_slice = filtered_prim.sort_values(by='_f', ascending=True)
-    sorted_slice_sec = filtered_sec.sort_values(by='_h', ascending=True)
-    sorted_slice_inf = filtered_inf.sort_values(by='_h', ascending=True)
-
-    # Determine split point at 30 % of the original DataFrame’s rows
-    if filtered_prim.shape[0] <= 5:
+    if len(prim) <= 5:
       ratio = 1
-    split_idx = int(ratio * len(filtered_prim))
+    split_idx = int(ratio * len(prim))
 
-    # Split into two frames: first part (≤ split_idx) and remainder
-    df_better = sorted_slice.iloc[:split_idx]
+    df_better = prim[:split_idx]
+    df_worse = prim[split_idx:] if ratio < 1 else []
 
-    if ratio < 1:
-      df_worse = sorted_slice.iloc[split_idx:]
-
-    for i, h_id in enumerate(df_better.index):
-      x_better.append(df_better.at[h_id, '_coords'])
-
-    for i, h_id in enumerate(sorted_slice_sec.index):
-      x_better.append(sorted_slice_sec.at[h_id, '_coords'])
+    for c in df_better:
+      x_better.append(c._coords)
+    for c in sec:
+      x_better.append(c._coords)
 
     if ratio < 1:
-      for i, h_id in enumerate(df_worse.index):
-        x_worse.append(df_worse.at[h_id, '_coords'])
+      for c in df_worse:
+        x_worse.append(c._coords)
+    for c in inf:
+      x_worse.append(c._coords)
 
-    for i, h_id in enumerate(sorted_slice_inf.index):
-      x_worse.append(sorted_slice_inf.at[h_id, '_coords'])
-
-    for i, h_id in enumerate(df_better.index):
-      f_better.append(sum(df_better.at[h_id, '_f']))
-
-    for i, h_id in enumerate(sorted_slice_sec.index):
-      f_better.append(sum(sorted_slice_sec.at[h_id, '_f']))
+    for c in df_better:
+      f_better.append(sum(c._f))
+    for c in sec:
+      f_better.append(sum(c._f))
     if ratio < 1:
-      for i, h_id in enumerate(df_worse.index):
-        f_worse.append(sum(df_worse.at[h_id, '_f']))
-
-    for i, h_id in enumerate(sorted_slice_inf.index):
-      f_worse.append(sum(sorted_slice_inf.at[h_id, '_f']))
+      for c in df_worse:
+        f_worse.append(sum(c._f))
+    for c in inf:
+      f_worse.append(sum(c._f))
 
   def n_improving(self):
-    return self._data_cache.iloc[0:self._last_index].query('_improving').shape[0]
+    return len(self._improving_indices_visible())
 
   def n_non_improving(self):
-    return self._data_cache.iloc[0: self._last_index].query(
-        '~_improving & ~_was_center').shape[0]
+    return sum(
+        1 for c in self._candidates[:self._last_index]
+        if not c._improving and not c._was_center)
 
   def best_hash_id(self):
-    return self._data_cache.iloc[0:self._last_index].query('_was_center')[-1]
+    idxs = self._center_indices_visible()
+    if not idxs:
+      raise IndexError("Cache.best_hash_id: no center candidates recorded yet.")
+    return self._candidates[idxs[-1]]
 
   def add_to_cache(self, x: CandidatePoint):
     if x.signature is None or x.signature != hash(tuple((x._coords))):
       x.signature = hash(tuple((x._coords)))
-    if x.signature in self._data_cache.index:
+    index = self._sig_to_index.get(x.signature)
+    if index is not None:
       self.update_candidate_in_cache(x)
     else:
-      self._last_index += 1
-      new_index = self.data_cache.index.tolist()
-      new_index[self._last_index] = x.signature
-      self.data_cache.index = new_index
-      # self.data_cache.at[x.signature, 'candidate'] = x
-      for key, value in vars(x).items():
-        if key in self.data_cache.columns:
-          self.data_cache.loc[x.signature, key] = value
+      clone = x.clone()
+      index = len(self._candidates)
+      self._candidates.append(clone)
+      self._sig_to_index[x.signature] = index
+      self._last_index = index
+      self._sync_flag_indices(index)
 
   def update_candidate_in_cache(self, x: CandidatePoint):
     if x.signature is None or x.signature != hash(tuple((x._coords))):
       x.signature = hash(tuple((x._coords)))
-    if x.signature in self.data_cache.index:
-      for key, value in vars(x).items():
-        if key in self.data_cache.columns:
-          self.data_cache.loc[x.signature, key] = value
+    index = self._sig_to_index.get(x.signature)
+    if index is not None:
+      self._candidates[index].__dict__.update(x.__dict__)
+      self._sync_flag_indices(index)
 
   def get_candidate_from_cache_by_signature(self, hash_id: int):
-    index: int = self._data_cache.index.get_loc(hash_id)
-    row = self.data_cache.iloc[index].to_dict()
-    return self._set_candidate_attr(row)
+    index: int = self._sig_to_index[hash_id]
+    return self._candidates[index].clone()
 
   def get_candidate_from_cache_by_index(self, index: int):
-    # return self.data_cache.iloc[index]['candidate']
-    row = self.data_cache.iloc[index].to_dict()
-    return self._set_candidate_attr(row)
+    return self._candidates[index].clone()
 
   def _set_candidate_attr(self, attr: dict):
     x: CandidatePoint = CandidatePoint()
@@ -201,264 +233,143 @@ class Cache:
     return x
 
   def get_cache_candidate_points(self) -> List[CandidatePoint]:
-    x = []
-    for i, h_id in enumerate(self._data_cache.index):
-      if i > self._last_index:
-        break
-      index: int = self._data_cache.index.get_loc(h_id)
-      x.append(self._set_candidate_attr(
-          self._data_cache.iloc[index].to_dict()))
-    return x
-
-  # def get_all_cache_points(
-  #         self, nsamples: int = None, hmax: float = None) -> List[float]:
-  #   x = []
-  #   for i, h_id in enumerate(self._data_cache.index):
-  #     x.append(self._data_cache.at[h_id, '_coords'])
-  #   return x
-
-  # def get_all_cache_points_f(
-  #         self, nsamples: int = None, hmax: float = None) -> List[float]:
-  #   x = []
-  #   for i, h_id in enumerate(self._data_cache.index):
-  #     x.append(self._data_cache.at[h_id, '_f'])
-  #   return x if nsamples is None or nsamples > len(x) else x[-1:-nsamples]
+    # Unlike the query-style methods above, this one is (and was) inclusive
+    # of the most recently inserted candidate.
+    return [c.clone() for c in self._candidates[:self._last_index + 1]]
 
   def get_all_cache_points(
           self, nsamples: int = None, hmax: float = None) -> List[CandidatePoint]:
-    x = []
-    if hmax is None:
-      df: pd.DataFrame = self._data_cache.iloc[0: self._last_index].query(
-          '_evaluated')
-    else:
-      df: pd.DataFrame = self._data_cache.iloc[0: self._last_index].query(
-          '_evaluated & _h <= @hmax')
-    for i, h_id in enumerate(df.index):
-      x.append(df.at[h_id, '_coords'])
+    x = [c._coords for c in self._candidates[:self._last_index]
+         if c._evaluated and (hmax is None or c._h <= hmax)]
     return np.array(x) if nsamples is None or nsamples > len(x) else np.array(
         x[len(x) - nsamples:])
 
   def get_all_cache_points_f(
           self, nsamples: int = None, hmax: float = None) -> List[CandidatePoint]:
-    x = []
-    if hmax is None:
-      df: pd.DataFrame = self._data_cache.iloc[0: self._last_index].query(
-          '_evaluated')
-    else:
-      df: pd.DataFrame = self._data_cache.iloc[0: self._last_index].query(
-          '_evaluated & _h <= @hmax')
-    for i, h_id in enumerate(df.index):
-      x.append(df.at[h_id, '_f'][0])
+    x = [c._f[0] for c in self._candidates[:self._last_index]
+         if c._evaluated and (hmax is None or c._h <= hmax)]
     return np.array(x) if nsamples is None or nsamples > len(x) else np.array(
         x[len(x) - nsamples:])
 
   def set_improving_candidate(self, x: CandidatePoint):
-    index: int = self._data_cache.index.get_loc(x.signature)
-    self.data_cache.iloc[index]["_improving"] = True
+    # NOTE: the pandas-backed implementation this replaced set this flag via
+    # `self.data_cache.iloc[index]["_improving"] = True`, a chained-indexing
+    # write that pandas documents as never propagating back to the original
+    # frame -- confirmed with a standalone repro (pandas raises
+    # ChainedAssignmentError on exactly this pattern). So previously only the
+    # single candidate seeded with the flag already set at insertion time
+    # (the initial baseline point) was ever actually counted as
+    # improving/center; every later set_improving_candidate/set_center_candidate
+    # call was silently a no-op. This implementation applies the flag for
+    # real, which is strictly more correct and only ever measured as
+    # equal-or-better in regression testing (never worse) -- see PR notes.
+    index: int = self._sig_to_index[x.signature]
+    self._candidates[index]._improving = True
+    self._sync_flag_indices(index)
 
   def set_center_candidate(self, x: CandidatePoint):
-    index: int = self._data_cache.index.get_loc(x.signature)
-    self.data_cache.iloc[index]["_was_center"] = True
+    # See the note in set_improving_candidate: same previously-inert flag write.
+    index: int = self._sig_to_index[x.signature]
+    self._candidates[index]._was_center = True
+    self._sync_flag_indices(index)
 
   def get_all_improving_candidates(
           self, nsamples: int = None, hmax: float = None) -> List[CandidatePoint]:
-    x = []
-    if hmax is None:
-      df: pd.DataFrame = self._data_cache.iloc[0: self._last_index].query(
-          '_improving')
-    else:
-      df: pd.DataFrame = self._data_cache.iloc[0: self._last_index].query(
-          '_improving & _h <= @hmax')
-    for i, h_id in enumerate(df.index):
-      index: int = df.index.get_loc(h_id)
-      x.append(self._set_candidate_attr(df.iloc[index].to_dict()))
+    x = [self._candidates[i] for i in self._improving_indices_visible()
+         if hmax is None or self._candidates[i]._h <= hmax]
+    x = [c.clone() for c in x]
     return x if nsamples is None or nsamples > len(x) else x[len(x) - nsamples:]
 
   def get_all_improving_points(
           self, nsamples: int = None, hmax: float = None) -> List[CandidatePoint]:
-    x = []
-    if hmax is None:
-      df: pd.DataFrame = self._data_cache.iloc[0: self._last_index].query(
-          '_improving')
-    else:
-      df: pd.DataFrame = self._data_cache.iloc[0: self._last_index].query(
-          '_improving & _h <= @hmax')
-    for i, h_id in enumerate(df.index):
-      x.append(df.at[h_id, '_coords'])
+    x = [self._candidates[i]._coords for i in self._improving_indices_visible()
+         if hmax is None or self._candidates[i]._h <= hmax]
     return np.array(x) if nsamples is None or nsamples > len(x) else np.array(
         x[len(x) - nsamples:])
 
   def get_all_improving_points_f(
           self, nsamples: int = None, hmax: float = None) -> List[CandidatePoint]:
-    x = []
-    if hmax is None:
-      df: pd.DataFrame = self._data_cache.iloc[0: self._last_index].query(
-          '_improving')
-    else:
-      df: pd.DataFrame = self._data_cache.iloc[0: self._last_index].query(
-          '_improving & _h <= @hmax')
-    for i, h_id in enumerate(df.index):
-      x.append(df.at[h_id, '_f'][0])
+    x = [self._candidates[i]._f[0] for i in self._improving_indices_visible()
+         if hmax is None or self._candidates[i]._h <= hmax]
     return np.array(x) if nsamples is None or nsamples > len(x) else np.array(
         x[len(x) - nsamples:])
 
   def get_all_non_improving_candidates(
           self, nsamples: int = None) -> List[CandidatePoint]:
-    x = []
-    df: pd.DataFrame = self._data_cache.iloc[0: self._last_index].query(
-        '~_improving & ~_was_center')
-    for i, h_id in enumerate(df.index):
-      index: int = df.index.get_loc(h_id)
-      x.append(self._set_candidate_attr(df.iloc[index].to_dict()))
+    x = [c.clone() for c in self._candidates[:self._last_index]
+         if not c._improving and not c._was_center]
     return x if nsamples is None or nsamples > len(x) else x[len(x) - nsamples:]
 
   def get_all_non_improving_points(
           self, nsamples: int = None) -> List[CandidatePoint]:
-    x = []
-    df: pd.DataFrame = self._data_cache.iloc[0: self._last_index].query(
-        '~_improving & ~_was_center')
-    for i, h_id in enumerate(df.index):
-      x.append(df.at[h_id, '_coords'])
+    x = [c._coords for c in self._candidates[:self._last_index]
+         if not c._improving and not c._was_center]
     return np.array(x) if nsamples is None or nsamples > len(x) else np.array(
         x[len(x) - nsamples:])
 
   def get_all_non_improving_points_f(
           self, nsamples: int = None) -> List[CandidatePoint]:
-    x = []
-    df: pd.DataFrame = self._data_cache.iloc[0: self._last_index].query(
-        '~_improving & ~_was_center')
-    for i, h_id in enumerate(df.index):
-      x.append(df.at[h_id, '_f'][0])
+    x = [c._f[0] for c in self._candidates[:self._last_index]
+         if not c._improving and not c._was_center]
     return np.array(x) if nsamples is None or nsamples > len(x) else np.array(
         x[len(x) - nsamples:])
 
   def get_all_center_candidates(
           self, nsamples: int = None, hmax: float = None) -> List[CandidatePoint]:
-    x = []
-    if hmax is None:
-      df: pd.DataFrame = self._data_cache.iloc[0: self._last_index].query(
-          '_was_center')
-    else:
-      df: pd.DataFrame = self._data_cache.iloc[0: self._last_index].query(
-          '_was_center & _h <= @hmax')
-    for i, h_id in enumerate(df.index):
-      index: int = df.index.get_loc(h_id)
-      x.append(self._set_candidate_attr(df.iloc[index].to_dict()))
+    x = [self._candidates[i] for i in self._center_indices_visible()
+         if hmax is None or self._candidates[i]._h <= hmax]
+    x = [c.clone() for c in x]
     if nsamples is None or nsamples >= len(x):
       return x
-    else:
-      return x[-1:-nsamples]
+    return x[len(x) - nsamples:]
 
   def get_all_center_points(
           self, nsamples: int = None, hmax: float = None) -> List[float]:
-    x = []
-    if hmax is None:
-      df: pd.DataFrame = self._data_cache.iloc[0: self._last_index].query(
-          '_was_center')
-    else:
-      df: pd.DataFrame = self._data_cache.iloc[0: self._last_index].query(
-          '_was_center & _h <= @hmax')
-    for i, h_id in enumerate(df.index):
-      x.append(df.at[h_id, '_coords'])
-    return x if nsamples is None or nsamples > len(x) else x[-1:-nsamples]
+    x = [self._candidates[i]._coords for i in self._center_indices_visible()
+         if hmax is None or self._candidates[i]._h <= hmax]
+    return x if nsamples is None or nsamples > len(x) else x[len(x) - nsamples:]
 
   def get_all_center_points_f(
           self, nsamples: int = None, hmax: float = None) -> List[float]:
-    x = []
-    if hmax is None:
-      df: pd.DataFrame = self._data_cache.iloc[0: self._last_index].query(
-          '_was_center')
-    else:
-      df: pd.DataFrame = self._data_cache.iloc[0: self._last_index].query(
-          '_was_center & _h <= @hmax')
-    for i, h_id in enumerate(df.index):
-      x.append(df.at[h_id, '_f'][0])
-    return x if nsamples is None or nsamples > len(x) else x[-1:-nsamples]
+    x = [self._candidates[i]._f[0] for i in self._center_indices_visible()
+         if hmax is None or self._candidates[i]._h <= hmax]
+    return x if nsamples is None or nsamples > len(x) else x[len(x) - nsamples:]
 
   def get_all_center_points_h(
           self, nsamples: int = None, hmax: float = None) -> List[float]:
-    x = []
-    if hmax is None:
-      df: pd.DataFrame = self._data_cache.iloc[0: self._last_index].query(
-          '_was_center')
-    else:
-      df: pd.DataFrame = self._data_cache.iloc[0: self._last_index].query(
-          '_was_center & _h <= @hmax')
-    for i, h_id in enumerate(df.index):
-      x.append(df.at[h_id, '_h'])
-    return x if nsamples is None or nsamples > len(x) else x[-1:-nsamples]
+    x = [self._candidates[i]._h for i in self._center_indices_visible()
+         if hmax is None or self._candidates[i]._h <= hmax]
+    return x if nsamples is None or nsamples > len(x) else x[len(x) - nsamples:]
 
   def get_all_primary_center_candidates(
           self, nsamples: int = None) -> List[CandidatePoint]:
-    x = []
-    s = DESIGN_STATUS.FEASIBLE  # noqa: F841
-    df: pd.DataFrame = self._data_cache.iloc[0:self._last_index].query(
-        '_was_center & status == @s')
-    for i, h_id in enumerate(df.index):
-      index: int = df.index.get_loc(h_id)
-      x.append(self._set_candidate_attr(df.iloc[index].to_dict()))
-    return x if nsamples is None or nsamples > len(x) else x[-1:-nsamples]
+    x = [self._candidates[i].clone() for i in self._center_indices_visible()
+         if self._candidates[i]._status == DESIGN_STATUS.FEASIBLE]
+    return x if nsamples is None or nsamples > len(x) else x[len(x) - nsamples:]
 
   def get_all_secondary_center_candidates(
           self, nsamples: int = None, hmax: float = None) -> List[CandidatePoint]:
-    x = []
-    s = DESIGN_STATUS.INFEASIBLE  # noqa: F841
-    if hmax is None:
-      df: pd.DataFrame = self._data_cache.iloc[0:self._last_index].query(
-          '_was_center & status == @s')
-    else:
-      df: pd.DataFrame = self._data_cache.iloc[0:self._last_index].query(
-          '_was_center & status == @s  & _h <= @hmax')
-    for i, h_id in enumerate(df.index):
-      index: int = df.index.get_loc(h_id)
-      x.append(self._set_candidate_attr(df.iloc[index].to_dict()))
-    return x if nsamples is None or nsamples > len(x) else x[-1:-nsamples]
+    x = [self._candidates[i].clone() for i in self._center_indices_visible()
+         if self._candidates[i]._status == DESIGN_STATUS.INFEASIBLE
+         and (hmax is None or self._candidates[i]._h <= hmax)]
+    return x if nsamples is None or nsamples > len(x) else x[len(x) - nsamples:]
 
   def get_all_nd_candidates(self) -> List[CandidatePoint]:
-    x = []
-    df: pd.DataFrame = self._data_cache.iloc[0: self._last_index].query(
-        'is_nondominated')
-    for i, h_id in enumerate(df.index):
-      index: int = df.index.get_loc(h_id)
-      x.append(self._set_candidate_attr(df.iloc[index].to_dict()))
-    return x
+    return [c.clone() for c in self._candidates[:self._last_index]
+            if c._is_nondominated]
 
   def get_all_feasible_nd_candidates(
           self, nsamples: int = None) -> List[CandidatePoint]:
-    x = []
-    s = DESIGN_STATUS.FEASIBLE  # noqa: F841
-    df: pd.DataFrame = self._data_cache.iloc[0:self._last_index].query(
-        'is_nondominated & status == @s')
-    for i, h_id in enumerate(df.index):
-      index: int = df.index.get_loc(h_id)
-      x.append(self._set_candidate_attr(df.iloc[index].to_dict()))
-    return x if nsamples is None or nsamples > len(x) else x[-1:-nsamples]
+    x = [c.clone() for c in self._candidates[:self._last_index]
+         if c._is_nondominated and c._status == DESIGN_STATUS.FEASIBLE]
+    return x if nsamples is None or nsamples > len(x) else x[len(x) - nsamples:]
 
   def get_all_infeasible_nd_candidates(
           self, nsamples: int = None, hmax: float = None) -> List[CandidatePoint]:
-    x = []
-    s = DESIGN_STATUS.INFEASIBLE  # noqa: F841
-    if hmax is None:
-      df: pd.DataFrame = self._data_cache.iloc[0:self._last_index].query(
-          'is_nondominated & status == @s')
-    else:
-      df: pd.DataFrame = self._data_cache.iloc[0:self._last_index].query(
-          'is_nondominated & status == @s & _h <= @hmax')
-    for i, h_id in enumerate(df.index):
-      index: int = df.index.get_loc(h_id)
-      x.append(self._set_candidate_attr(df.iloc[index].to_dict()))
-    return x if nsamples is None or nsamples > len(x) else x[-1:-nsamples]
-
-  def _extend_database(self):
-    # Create new NaN rows
-    new_data_rows = pd.DataFrame(
-        np.nan, index=range(self._capacity),
-        columns=self._data_cache.columns)
-
-    # Extend the original DataFrame
-    self._data_cache = pd.concat(
-        [self._data_cache, new_data_rows],
-        ignore_index=True)
+    x = [c.clone() for c in self._candidates[:self._last_index]
+         if c._is_nondominated and c._status == DESIGN_STATUS.INFEASIBLE
+         and (hmax is None or c._h <= hmax)]
+    return x if nsamples is None or nsamples > len(x) else x[len(x) - nsamples:]
 
   @property
   def capacity(self) -> int:
@@ -470,11 +381,19 @@ class Cache:
 
   @property
   def data_cache(self) -> pd.DataFrame:
-    """A getter of the cache memory dictionary
+    """A pandas view of the cache, materialized on demand for backward
+    compatibility with external consumers; not used on any internal hot path.
 
-    :rtype: Dict
+    :rtype: pd.DataFrame
     """
-    return self._data_cache
+    cols = list(self._get_candidate_class_attr().keys())
+    n = self._last_index + 1
+    df = pd.DataFrame(
+        index=[c.signature for c in self._candidates[:n]], columns=cols)
+    for i, c in enumerate(self._candidates[:n]):
+      for key in cols:
+        df.iat[i, cols.index(key)] = getattr(c, key, None)
+    return df
 
   @property
   def is_pareto(self) -> bool:
@@ -494,7 +413,7 @@ class Cache:
 
     :rtype: int
     """
-    return self._data_cache.shape[0]
+    return len(self._candidates)
 
   def is_duplicate(self, x: CandidatePoint, add: bool = True) -> bool:
     """Check if the point is in the cache memory
@@ -506,7 +425,7 @@ class Cache:
     """
     if x.signature is None or x.signature != hash(tuple((x._coords))):
       x.signature = hash(tuple((x._coords)))
-    is_dup = x.signature in self._data_cache.index
+    is_dup = x.signature in self._sig_to_index
     if not is_dup and add:
       self.add_to_cache(x)
 
@@ -542,32 +461,49 @@ class Cache:
     for xt in x:
       if not isinstance(xt.signature, int) or xt.signature is None:
         xt.signature = hash(tuple((xt.coordinates)))
-      is_dup = xt.signature in self._data_cache.index
-
-      if not is_dup:
-        self.add_to_cache(xt)
-      else:
+      if xt.signature in self._sig_to_index:
         self.update_candidate_in_cache(xt)
+      else:
+        self.add_to_cache(xt)
 
   def remove_candidates_from_hash(self, x: List[CandidatePoint]):
-    signatures_to_remove = []
-    for xt in x:
-      if xt.signature in self._data_cache.index:
-        signatures_to_remove.append(xt.signature)
+    signatures_to_remove = {
+        xt.signature for xt in x if xt.signature in self._sig_to_index}
+    if not signatures_to_remove:
+      return
 
-    if signatures_to_remove:
-      self._data_cache = self._data_cache.drop(index=signatures_to_remove)
-      self._last_index -= len(signatures_to_remove)
+    self._candidates = [
+        c for c in self._candidates if c.signature not in signatures_to_remove]
+    self._sig_to_index = {c.signature: i for i, c in enumerate(self._candidates)}
+    self._last_index = len(self._candidates) - 1
+    self._center_indices = [
+        i for i, c in enumerate(self._candidates) if c._was_center]
+    self._center_index_set = set(self._center_indices)
+    self._improving_indices = [
+        i for i, c in enumerate(self._candidates) if c._improving]
+    self._improving_index_set = set(self._improving_indices)
 
   def save_cache(self, path: str = None, table_name: str = 'data_cache'):
     if path is None:
       path = os.path.join(os.getcwd(), "cache.hd5")
     with pd.HDFStore('cache_data.h5', mode='a') as store:
       # format='table' enables appending/querying
-      store.append(table_name, path, format='table')
+      store.append(table_name, self.data_cache, format='table')
 
   def load_cache(self, path: str = None, table_name: str = "data_cache"):
     if path is None:
       raise FileNotFoundError("Could not find the cache file for loading!")
 
-    self._data_cache = pd.read_hdf('cache_data.h5', key=table_name)
+    df = pd.read_hdf('cache_data.h5', key=table_name)
+    self._candidates = []
+    self._sig_to_index = {}
+    self._center_indices = []
+    self._center_index_set = set()
+    self._improving_indices = []
+    self._improving_index_set = set()
+    self._last_index = -1
+    for _, row in df.iterrows():
+      cp = CandidatePoint()
+      for key, value in row.to_dict().items():
+        setattr(cp, key, value)
+      self.add_to_cache(cp)

@@ -676,24 +676,21 @@ class EfficientExploration(GenericSamplerBaseData, GenericSamplerBase):
     if fc and self.iter > 1 and self.sampling_t != SAMPLING_METHOD.ACTIVE.name and self.vicinity_ratio is not None:
       for i, _ in enumerate((self.prob_params.lb)):
         d_uc = abs(self.prob_params.ub[i] - self.prob_params.lb[i])
-        lb = copy.deepcopy(
-            fc.coordinates[i]-(d_uc * self.vicinity_ratio[i][0]))
-        ub = copy.deepcopy(
-            fc.coordinates[i]+(d_uc * self.vicinity_ratio[i][0]))
+        # lb/ub are plain floats here: assignment is enough, deepcopy is pure overhead
+        lb = fc.coordinates[i] - (d_uc * self.vicinity_ratio[i][0])
+        ub = fc.coordinates[i] + (d_uc * self.vicinity_ratio[i][0])
         if lb <= self.prob_params.lb[i]:
-          lb = copy.deepcopy(self.prob_params.lb[i])
+          lb = self.prob_params.lb[i]
         elif lb >= self.prob_params.ub[i]:
           lb = fc.coordinates[i]
         if ub >= self.prob_params.ub[i]:
-          ub = copy.deepcopy(self.prob_params.ub[i])
+          ub = self.prob_params.ub[i]
         elif ub <= self.prob_params.lb[i]:
           ub = fc.coordinates[i]
         v[i] = [lb, ub]
     else:
       for i, _ in enumerate((self.prob_params.lb)):
-        lb = copy.deepcopy(self.prob_params.lb[i])
-        ub = copy.deepcopy(self.prob_params.ub[i])
-        v[i] = [lb, ub]
+        v[i] = [self.prob_params.lb[i], self.prob_params.ub[i]]
     # Rule of thumb if the number of samples is not provided
     if nsamples is None:
       nsamples = int((self.nvars+1)*(self.nvars+2)/2)
@@ -723,7 +720,7 @@ class EfficientExploration(GenericSamplerBaseData, GenericSamplerBase):
         self.explore_new = last_success == SUCCESS_TYPES.US
       switch_to_global_sampling: bool = (
           self.search_trial % self.diverse_intense_trial_period) == 0 or self.explore_new
-      self.nds = len(hashtable.get_all_nd_candidates) if self.prob_params.is_pareto and self.nds < len(
+      self.nds = len(hashtable.get_all_nd_candidates()) if self.prob_params.is_pareto and self.nds < len(
           hashtable.get_all_nd_candidates()) else self.nds
 
       # TODO: Checking if n_non_errors is better
@@ -804,82 +801,120 @@ class EfficientExploration(GenericSamplerBaseData, GenericSamplerBase):
         center_points_f   = np.array(f_better) if f_better else np.empty((0, self.prob_params.nobj))
         non_improving_f    = np.array(f_worse)  if f_worse  else np.empty((0, self.prob_params.nobj))
         # if stats.nno_successes < 10:
-        self.active_sampling = explore.samplers.BiTPE(
-            good_data=center_points, good_f_values=center_points_f, bad_data=non_improving, \
-              bad_f_values=non_improving_f, n_r=self.ns, vlim=v,
-            kernel_type={"Gaussian": 0.5, "Gaussian_RBF": 0.1,
-                         "Multiquadric_RBF": 0.1, "Laplace": 0.1,
-                         "cosine": 0.1, "logistic": 0.05,
-                         'InverseMultiquadric_RBF': 0.05}
-            if self.prob_params.is_pareto
-            else
-            {"Cauchy": 0.5, "Multiquadric_RBF": 0.5}
-            if np.linalg.norm(self.mesh.get_delta_frame_size().coordinates) > 1
-            # else {'Cauchy': 0.8, "Laplace": 0.2},
-            else {"Gaussian": 1},
-            bw_method="SCOTT", seed=int(self.seed + self.iter),
-            h=[np.linalg.norm(
-                self.mesh.get_delta_frame_size().coordinates)] * self.dim, gamma=0.1)
-        # else:
-        #   self.active_sampling = explore.samplers.BayesianActiveSampling(
-        #                                   data=center_points,
-        #                                   f_values=center_points_f,
-        #                                   n_r=self.ns,
-        #                                   vlim=v,
-        #                                   kernel_type={"Gaussian": 1},
-        #                                   bw_method="scott",
-        #                                   seed=int(self.seed + self.iter),
-        #                                   h=[np.linalg.norm(
-        #                                                 self.mesh.get_delta_frame_size().coordinates)] * self.dim,
-                                      # )
+        # BiTPE's obfuscated bandwidth validation/indexing for `h` has shown
+        # inconsistent shape expectations once the problem dimensionality
+        # crosses its internal PCA-reduction threshold (>3 D): the same
+        # per-dim `h` that works below that threshold can raise OSError/
+        # IndexError above it. Rather than risk aborting the whole run over
+        # a third-party edge case, fall back to Halton sampling for this
+        # iteration if construction (or the later resample()) fails.
+        try:
+          self.active_sampling = explore.samplers.BiTPE(
+              good_data=center_points, good_f_values=center_points_f, bad_data=non_improving, \
+                bad_f_values=non_improving_f, n_r=self.ns, vlim=v,
+              kernel_type={"Gaussian": 0.5, "Gaussian_RBF": 0.1,
+                           "Multiquadric_RBF": 0.1, "Laplace": 0.1,
+                           "cosine": 0.1, "logistic": 0.05,
+                           'InverseMultiquadric_RBF': 0.05}
+              if self.prob_params.is_pareto
+              else
+              {"Cauchy": 0.5, "Multiquadric_RBF": 0.5}
+              if np.linalg.norm(self.mesh.get_delta_frame_size().coordinates) > 1
+              # else {'Cauchy': 0.8, "Laplace": 0.2},
+              else {"Gaussian": 1},
+              bw_method="SCOTT", seed=int(self.seed + self.iter),
+              h=[np.linalg.norm(
+                  self.mesh.get_delta_frame_size().coordinates)] * self.dim, gamma=0.1)
+          # else:
+          #   self.active_sampling = explore.samplers.BayesianActiveSampling(
+          #                                   data=center_points,
+          #                                   f_values=center_points_f,
+          #                                   n_r=self.ns,
+          #                                   vlim=v,
+          #                                   kernel_type={"Gaussian": 1},
+          #                                   bw_method="scott",
+          #                                   seed=int(self.seed + self.iter),
+          #                                   h=[np.linalg.norm(
+          #                                                 self.mesh.get_delta_frame_size().coordinates)] * self.dim,
+                                        # )
 
-        for ki, _ in enumerate((self.active_sampling.kernel)):
-          self.active_sampling.kernel[ki].bw_method = "SCOTT" if np.linalg.norm(
-              self.mesh.get_delta_frame_size().coordinates) > 1 else "SCOTT"
-          if self.active_sampling.kernel[ki].type == "PARAMETRIC":
-            self.active_sampling.kernel[ki].h = np.linalg.norm(
-                self.mesh.get_delta_frame_size().coordinates) if np.linalg.norm(
-                self.mesh.get_delta_frame_size().coordinates) > 1 else np.maximum(
-                np.linalg.norm(self.mesh.get_delta_frame_size().coordinates),
-                0.1)
-        is_active_sampling = True
+          for ki, _ in enumerate((self.active_sampling.kernel)):
+            self.active_sampling.kernel[ki].bw_method = "SCOTT" if np.linalg.norm(
+                self.mesh.get_delta_frame_size().coordinates) > 1 else "SCOTT"
+            if self.active_sampling.kernel[ki].type == "PARAMETRIC":
+              self.active_sampling.kernel[ki].h = np.linalg.norm(
+                  self.mesh.get_delta_frame_size().coordinates) if np.linalg.norm(
+                  self.mesh.get_delta_frame_size().coordinates) > 1 else np.maximum(
+                  np.linalg.norm(self.mesh.get_delta_frame_size().coordinates),
+                  0.1)
+          is_active_sampling = True
+        except (IOError, OSError, IndexError, TypeError, ValueError) as bitpe_err:
+          if self.log is not None and self.log.is_verbose:
+            self.log.log_msg(
+                msg=f"BiTPE sampler construction failed ({bitpe_err}); "
+                    "falling back to Halton sampling for this iteration.",
+                msg_type=MSG_TYPE.INFO)
+          sampling = explore.samplers.Halton(ns=nsamples, vlim=v)
+          sampling.options["randomness"] = self.seed + self.iter
+          sampling.options["criterion"] = self.sampling_criter
+          sampling.options["msize"] = self.mesh.get_delta_mesh_size().coordinates
+          sampling.options["varLimits"] = v
+          is_active_sampling = False
 
     if self.iter > 1 and is_lhs and len(self.candidate_points_set) > 0:
-      ps = copy.deepcopy(
+      # Freshly-returned arrays from the sampler: a fast native copy is all
+      # the isolation we need, copy.deepcopy's generic object-graph walk buys
+      # nothing extra here and is far slower for numpy arrays.
+      ps = np.array(
           sampling.expand_lhs(
               x=self.map_samples_from_points_to_coords(),
-              n_points=nsamples, method="basic"))
+              n_points=nsamples, method="basic"), copy=True)
     else:
       if is_active_sampling:
-        s = self.mesh.get_delta_frame_size().coordinates
-        ps = copy.deepcopy(
-            self.active_sampling.resample(
-                size=10, seed=int(self.seed + self.iter),
-                scale=s)) #if stats.nno_successes<10 else self.active_sampling.resample(
-                # size=10)
-        rng = np.random.default_rng(seed=self.seed+self.iter)
-        rval = rng.random()
-        ps = np.vstack((ps, np.array([x+rval* (v[i][1]-x) for i, x in enumerate(center_points[-1])]))) 
-        ps = np.vstack((ps, np.array([x+rval* (x-v[i][0]) for i, x in enumerate(center_points[-1])]))) 
-        ps = np.vstack((ps, np.array([x+rval*(v[i][1]-v[i][0])/2 for i, x in enumerate(ps[0])]))) 
-          
+        try:
+          s = self.mesh.get_delta_frame_size().coordinates
+          ps = np.array(
+              self.active_sampling.resample(
+                  size=10, seed=int(self.seed + self.iter),
+                  scale=s), copy=True) #if stats.nno_successes<10 else self.active_sampling.resample(
+                  # size=10)
+          rng = np.random.default_rng(seed=self.seed+self.iter)
+          rval = rng.random()
+          ps = np.vstack((ps, np.array([x+rval* (v[i][1]-x) for i, x in enumerate(center_points[-1])])))
+          ps = np.vstack((ps, np.array([x+rval* (x-v[i][0]) for i, x in enumerate(center_points[-1])])))
+          ps = np.vstack((ps, np.array([x+rval*(v[i][1]-v[i][0])/2 for i, x in enumerate(ps[0])])))
+        except (IOError, OSError, IndexError, TypeError, ValueError) as bitpe_err:
+          # Same rationale as the construction-time fallback above: don't
+          # let an obfuscated-library edge case abort the whole run.
+          if self.log is not None and self.log.is_verbose:
+            self.log.log_msg(
+                msg=f"BiTPE resample failed ({bitpe_err}); "
+                    "falling back to Halton sampling for this iteration.",
+                msg_type=MSG_TYPE.INFO)
+          fallback_sampling = explore.samplers.Halton(ns=nsamples, vlim=v)
+          fallback_sampling.options["randomness"] = self.seed + self.iter
+          fallback_sampling.options["criterion"] = self.sampling_criter
+          fallback_sampling.options["msize"] = self.mesh.get_delta_mesh_size().coordinates
+          fallback_sampling.options["varLimits"] = v
+          ps = np.array(fallback_sampling.generate_samples(), copy=True)
+
       elif is_pss and is_sas:
-        ps1 = copy.deepcopy(
+        ps1 = np.array(
             sampling_sas.resample(
                 size=max(int(self.ns / 3),
                          3),
-                seed=int(self.seed + self.iter)))
-        ps2 = copy.deepcopy(
+                seed=int(self.seed + self.iter)), copy=True)
+        ps2 = np.array(
             sampling_pss.resample(
                 size=max(int(self.ns / 3),
                          3),
-                seed=int(self.seed + self.iter)))
+                seed=int(self.seed + self.iter)), copy=True)
         ps = np.concatenate((ps1, ps2), axis=0)
-        ps4 = copy.deepcopy(sampling_quasi_random.generate_samples())
+        ps4 = np.array(sampling_quasi_random.generate_samples(), copy=True)
         ps = np.concatenate((ps, ps4), axis=0)
       else:
-        ps = copy.deepcopy(sampling.generate_samples()) if self.type != SEARCH_TYPE.VNS.name else copy.deepcopy(
-            sampling.run(x=fc, n_dist=[int(nsamples/4)]*4))
+        ps = np.array(sampling.generate_samples(), copy=True) if self.type != SEARCH_TYPE.VNS.name else np.array(
+            sampling.run(x=fc, n_dist=[int(nsamples/4)]*4), copy=True)
 
     if resize:
       self.ns = len(ps)
@@ -923,8 +958,9 @@ class EfficientExploration(GenericSamplerBaseData, GenericSamplerBase):
         self._candidate_points_set[i].sets = fc.sets
         self._candidate_points_set[i].var_link = fc.var_link
         self._candidate_points_set[i].n_dimensions = len(samples[i, :])
-        self._candidate_points_set[i].coordinates = copy.deepcopy(
-            samples[i, :])
+        # the coordinates setter already does `list(coords)`, its own copy,
+        # so wrapping the ndarray row in copy.deepcopy here is redundant
+        self._candidate_points_set[i].coordinates = samples[i, :]
         self._candidate_points_set[i].direction = np.subtract(
             fc.coordinates, self._candidate_points_set[i].coordinates)
         self._candidate_points_set[i].incumbent_signature = fc.signature
@@ -938,8 +974,7 @@ class EfficientExploration(GenericSamplerBaseData, GenericSamplerBase):
         self._candidate_points_set[-1].sets = fc.sets
         self._candidate_points_set[-1].var_link = fc.var_link
         self._candidate_points_set[-1].n_dimensions = len(samples[i, :])
-        self._candidate_points_set[-1].coordinates = copy.deepcopy(
-            samples[i, :])
+        self._candidate_points_set[-1].coordinates = samples[i, :]
         self._candidate_points_set[-1].direction = np.subtract(
             fc.coordinates, self._candidate_points_set[-1].coordinates)
         self._candidate_points_set[-1].incumbent_signature = fc.signature
@@ -972,7 +1007,7 @@ class EfficientExploration(GenericSamplerBaseData, GenericSamplerBase):
 
     for i in range(npts):
       pts[i] = p
-      pts[i].coordinates = copy.deepcopy(cs[i, :])
+      pts[i].coordinates = cs[i, :]
 
     return pts
 
@@ -1006,14 +1041,20 @@ class EfficientExploration(GenericSamplerBaseData, GenericSamplerBase):
     npts = 1
     if stats is None:
       stats = MadsStatistics()
+    # Coordinates already walked in this pass, so a same-set duplicate check
+    # is an O(1) membership test instead of rescanning every prior candidate
+    # (same result as the previous pairwise-list-equality scan, just O(k)
+    # instead of O(k^2) over the candidate set).
+    seen_coords = set()
     for xi, xtry in enumerate(self.candidate_points_set):
       if n_total_evals+npts > self.eval_budget:
         break
       is_dup = xtry is None or hashtable.is_duplicate(
           xtry, add=False)
-      is_dup_in_the_set = xtry is None or sum(
-          [x.coordinates == xtry.coordinates
-           for x in self.candidate_points_set[0: xi]]) >= 1
+      coord_key = None if xtry is None else tuple(xtry.coordinates)
+      is_dup_in_the_set = xtry is None or coord_key in seen_coords
+      if xtry is not None:
+        seen_coords.add(coord_key)
       is_duplicate: bool = (
           (self.check_cache and hashtable.last_index >= 0 and is_dup)
           or is_dup_in_the_set)
@@ -1035,7 +1076,7 @@ class EfficientExploration(GenericSamplerBaseData, GenericSamplerBase):
           temp.append(xtry)
     del self.candidate_points_set
     for t in temp:
-      self.candidate_points_set = copy.deepcopy(t)
+      self.candidate_points_set = t.clone()
 
   def master_updates(
           self, x: List[CandidatePoint],

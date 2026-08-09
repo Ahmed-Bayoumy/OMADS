@@ -444,6 +444,7 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
     # progress_bar_colored(
     #     options=options, active_barrier=active_barrier, peval=stats.neval_bb)
     iteration += 1
+  bb_handle.shutdown_executor()
   sys.stderr = _original_stderr
   if param.is_pareto:
     rp: Optional[CandidatePoint] = None

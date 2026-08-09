@@ -62,6 +62,10 @@ def poll_cycle(poll: Dirs2n, options: Options, param: Parameters,  # noqa: C901
   generated_during_search_step = []
   # Generate candidate points given each center
   for center in state.ordered_frame_centers:
+    if center == -1:
+      # No real secondary/infeasible center this iteration (see
+      # set_frame_centers_and_hvalues) -- nothing to do here.
+      continue
     generated_candidates_during_step = poll_step(
         poll=poll, options=options, param=param, state=state, stats=stats,
         active_barrier=active_barrier, iteration=iteration,

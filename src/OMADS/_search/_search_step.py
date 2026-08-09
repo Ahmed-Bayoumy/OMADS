@@ -64,6 +64,12 @@ def search_cycle(search: EfficientExploration, options: Options,  # noqa: C901
   generated_during_search_step = []
   # Generate candidate points given each center
   for center in state.ordered_frame_centers:
+    if center == -1:
+      # No real secondary/infeasible center this iteration (see
+      # set_frame_centers_and_hvalues) -- nothing to do here, and indexing
+      # the cache with -1 would otherwise silently pick the *last* cached
+      # candidate via Python's negative-index semantics.
+      continue
     xc = hashtable.get_candidate_from_cache_by_index(center)
     hashtable.set_center_candidate(xc)
     generated_candidates_during_step = search_step(
