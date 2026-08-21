@@ -824,7 +824,7 @@ class EfficientExploration(GenericSamplerBaseData, GenericSamplerBase):
               else {"Gaussian": 1},
               bw_method="SCOTT", seed=int(self.seed + self.iter),
               h=[np.linalg.norm(
-                  self.mesh.get_delta_frame_size().coordinates)] * self.dim, gamma=0.1)
+                  self.mesh.get_delta_frame_size().coordinates)] * self.dim, gamma=0.1, reduction_method="pod", n_reduced_dims=int(self.dim*0.7) if self.dim > 3 else 3)
           # else:
           #   self.active_sampling = explore.samplers.BayesianActiveSampling(
           #                                   data=center_points,
