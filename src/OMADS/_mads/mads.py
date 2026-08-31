@@ -405,9 +405,9 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
       post.output_results(out, False)
       if param.is_pareto:
         post.nd_points = []
-        for i in range(len(active_barrier.get_all_points())):
+        for i in range(len(active_barrier.get_filled_elements())):
           post.nd_points.append(
-              active_barrier.get_all_points()[i])
+              active_barrier.get_filled_elements()[i])
         post.output_nd_results(out_p)
     state.last_success = SUCCESS_TYPES.US
     pb = ProgressBar(options, active_barrier, p_name=param.name)

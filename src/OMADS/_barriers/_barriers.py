@@ -298,7 +298,11 @@ class AdaptiveBarrier:
     return self.elements[uk_i] if len(uk_i) > 0 else np.empty((0,))
 
   def get_nd_elements(self):
-    return self.get_fk().tolist() + self.get_ik().tolist()
+    fk = self.get_fk()
+    ik = self.get_ik()
+    fk_list = fk.tolist() if hasattr(fk, "tolist") else list(fk)
+    ik_list = ik.tolist() if hasattr(ik, "tolist") else list(ik)
+    return fk_list + ik_list
 
   def get_filled_elements(self):
     out = []

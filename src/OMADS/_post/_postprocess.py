@@ -233,7 +233,7 @@ class PostMADS:
             h=self.h_max,
             fobj=p.fobj, rho=p.rho, lambdas=p.lambda_multipliers,
             x=p.coordinates, hmax=self.h_max, step_name="Poll-2n"
-            if self.step_name is None else self.step_name[counter],
+            if not self.step_name or counter >= len(self.step_name) else self.step_name[counter],
             fnames=out.fnames)
         counter += 1
 
