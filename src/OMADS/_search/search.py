@@ -125,11 +125,18 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
     set_frame_centers_and_hvalues(
         state=state, active_barrier=active_barrier, param=param,
         options=options)
-    # 2- Run the search step
+    # 2- Run the search step: the one-point quadratic model search first,
+    # then the sampling search only if the model didn't improve.
     search_cycle(
         search=search, options=options, param=param, state=state, stats=stats,
         active_barrier=active_barrier, iteration=iteration, log=log, post=post,
-        search_vns=search_vn, bb_handle=bb_handle, hashtable=hashtable, out=out)
+        bb_handle=bb_handle, hashtable=hashtable, out=out, model_search=True)
+    if state.last_success == SUCCESS_TYPES.US:
+      search_cycle(
+          search=search, options=options, param=param, state=state,
+          stats=stats, active_barrier=active_barrier, iteration=iteration,
+          log=log, post=post, search_vns=search_vn, bb_handle=bb_handle,
+          hashtable=hashtable, out=out)
     # 3- Updates
     update(sampler=search, state=state, active_barrier=active_barrier,
            stats=stats, options=options, hashtable=hashtable)

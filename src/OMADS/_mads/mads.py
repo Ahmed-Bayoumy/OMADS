@@ -274,8 +274,25 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
         state=state, active_barrier=active_barrier, param=param,
         options=options)
 
+    # Cheap speculative + quadratic model search first, as in NOMAD: at
+    # most two evaluations, and when it improves, this iteration's poll and
+    # sampling search are skipped. A failed model search leaves the mesh alone --
+    # the poll that follows decides refinement.
+    search_cycle(
+        search=search_sampler, options=options, param=param, state=state,
+        stats=stats, active_barrier=active_barrier, iteration=iteration,
+        log=log, post=post, bb_handle=bb_handle, hashtable=hashtable, out=out,
+        model_search=True)
+    model_succeeded = state.last_success != SUCCESS_TYPES.US
+    if model_succeeded:
+      update(sampler=search_sampler, state=state,
+             active_barrier=active_barrier, stats=stats, options=options,
+             hashtable=hashtable)
+      post.h_max = active_barrier.h_max
+      stats.nno_successes = 0
+
     # 2- Run the poll step
-    if not can_search:
+    if not can_search and not model_succeeded:
       log.log_msg(
           f"------- Iteration # {iteration}: Run the poll step -------",
           MSG_TYPE.INFO)
@@ -326,7 +343,7 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
     can_search = (iteration == 1 and ms is not None) or (
         state.last_success == SUCCESS_TYPES.US or state.last_success  # noqa: E712
         == False) and iteration > 1
-    if can_search:
+    if can_search and not model_succeeded:
       log.log_msg(
           f"------- Iteration # {iteration}: Run the search step -------",
           MSG_TYPE.INFO)

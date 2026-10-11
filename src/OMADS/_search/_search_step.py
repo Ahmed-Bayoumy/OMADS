@@ -50,7 +50,8 @@ def search_cycle(search: EfficientExploration, options: Options,  # noqa: C901
                  param: Parameters, state: MadsState, stats: MadsStatistics,
                  active_barrier: AdaptiveBarrier, iteration: int, log: logger,
                  post: PostMADS, bb_handle: Evaluator, out: Output,
-                 hashtable: Cache, search_vns: VNS = None, ms: MultiSource = None):
+                 hashtable: Cache, search_vns: VNS = None, ms: MultiSource = None,
+                 model_search: bool = False):
   # Forget any sets and directions been previously generated
   del search.candidate_points_set
   state.last_success = SUCCESS_TYPES.US
@@ -76,7 +77,7 @@ def search_cycle(search: EfficientExploration, options: Options,  # noqa: C901
         search=search, options=options, param=param, state=state, stats=stats,
         active_barrier=active_barrier, iteration=iteration,
         frame_center=center, log=log, post=post, hashtable=hashtable,
-        search_vns=search_vns)
+        search_vns=search_vns, model_search=model_search)
 
     # Add generated points to the list of candidates
     if generated_candidates_during_step is not None:
@@ -138,8 +139,10 @@ def search_cycle(search: EfficientExploration, options: Options,  # noqa: C901
       x_parent.coordinates = hashtable.get_candidate_from_cache_by_index(
           parent_index_candidates[index]).coordinates
       direction: Point = Point()
-      direction.coordinates = np.array(hashtable.get_candidate_from_cache_by_index(
-          hashtable.last_index).coordinates) - np.array(x_parent.coordinates)
+      # The successful candidate's step, not the last evaluated point's (see
+      # the poll step).
+      direction.coordinates = np.array(candidate.coordinates) - np.array(
+          x_parent.coordinates)
       # TODO: Check whether frame size update can be applied in this loop or at the end of each iteration
       m_index: int = active_barrier.elements.get_index_loc_by_signature(
           candidate.signature)
@@ -186,7 +189,8 @@ def search_step(search: EfficientExploration, options: Options,
                 param: Parameters, state: MadsState, stats: MadsStatistics,
                 active_barrier: AdaptiveBarrier, iteration: int,
                 frame_center: int, log: logger, post: PostMADS, hashtable:
-                Cache, search_vns: VNS = None) -> List[CandidatePoint]:
+                Cache, search_vns: VNS = None,
+                model_search: bool = False) -> List[CandidatePoint]:
   """_summary_
 
   :param poll: The poll step algorithm
@@ -250,18 +254,24 @@ def search_step(search: EfficientExploration, options: Options,
           parent_index).coordinates
 
     generated_candidates_during_step = None
-    search.generate_sample_points(
-        nsamples=int(
-            ((search.dim + 1) / 2) *
-            ((search.dim + 2) / 2))
-        if search.ns is None else search.ns,
-        hashtable=hashtable,
-        active_barrier=active_barrier, ub=param.ub,
-        lb=param.lb, fc=xcp_frame,
-        fci=frame_center, it=iteration,
-        var_type=param.var_type,
-        var_sets=param.var_sets, var_link=None,
-        last_success=state.last_success)
+    if model_search:
+      # Cheap quadratic-model search instead of the sampling search
+      search.generate_quad_model_points(
+          hashtable=hashtable, fc=xcp_frame,
+          x_parent=x_parent.coordinates if parent_index != 0 else None)
+    else:
+      search.generate_sample_points(
+          nsamples=int(
+              ((search.dim + 1) / 2) *
+              ((search.dim + 2) / 2))
+          if search.ns is None else search.ns,
+          hashtable=hashtable,
+          active_barrier=active_barrier, ub=param.ub,
+          lb=param.lb, fc=xcp_frame,
+          fci=frame_center, it=iteration,
+          var_type=param.var_type,
+          var_sets=param.var_sets, var_link=None,
+          last_success=state.last_success)
 
     # poll.candidate_points_set
     if search.candidate_points_set is not None and len(

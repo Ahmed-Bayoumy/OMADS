@@ -49,6 +49,9 @@ class Options:
     :param parallel_mode: A boolean to check whether evaluating the poll set 
     in parallel multiprocessing
     :param np: The number of CPUs
+    :param direction_type: Poll directions: "ORTHO_2N" (2n orthogonal
+      directions) or "ORTHO_N+1" (n of them plus their negative sum, NOMAD's
+      ORTHO N+1 NEG; real variables only, falls back to ORTHO_2N otherwise)
   """
 
   def __init__(
@@ -79,6 +82,7 @@ class Options:
       use_penalty_approach: bool = False,
       noutbound_hits_max: int = 60000,
       use_dom_trigger: bool = True,
+      direction_type: str = "ORTHO_2N",
   ):
     self.seed = seed
     self.budget = budget
@@ -106,3 +110,4 @@ class Options:
     self.use_penalty_approach = use_penalty_approach
     self.noutbound_hits_max = noutbound_hits_max
     self.use_dom_trigger = use_dom_trigger
+    self.direction_type = direction_type

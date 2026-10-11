@@ -23,7 +23,7 @@
 # ------------------------------------------------------------------------------------#
 """
 
-from typing import Dict, List, Optional
+from typing import Dict, List
 import os
 import pandas as pd
 import numpy as np
@@ -357,6 +357,38 @@ class Cache:
   def get_all_nd_candidates(self) -> List[CandidatePoint]:
     return [c.clone() for c in self._candidates[:self._last_index]
             if c._is_nondominated]
+
+  def get_feasible_points_and_f(self) -> "tuple[np.ndarray, np.ndarray]":
+    """Coordinates and (summed) objective of every evaluated feasible point,
+    e.g. as interpolation data for a surrogate model. Unlike most getters
+    here this includes the most recent candidate, which is often the
+    incumbent itself."""
+    rows = [(c._coords, sum(c._f)) for c in self._candidates[:self._last_index + 1]
+            if c._status == DESIGN_STATUS.FEASIBLE]
+    if not rows:
+      return np.empty((0, 0)), np.empty(0)
+    return (np.asarray([r[0] for r in rows], dtype=float),
+            np.asarray([r[1] for r in rows], dtype=float))
+
+  def get_points_f_and_c(
+          self) -> "tuple[np.ndarray, np.ndarray, np.ndarray]":
+    """Coordinates, raw (unpenalized, summed) objective and inequality
+    constraint values of every evaluated feasible or infeasible point with
+    finite outputs, e.g. as regression data for constraint-aware surrogate
+    models."""
+    rows = []
+    for c in self._candidates[:self._last_index + 1]:
+      if c._status not in (DESIGN_STATUS.FEASIBLE, DESIGN_STATUS.INFEASIBLE):
+        continue
+      f = float(np.sum(c._freal))
+      cons = np.ravel(np.asarray(c._c_ineq, dtype=float))
+      if np.isfinite(f) and np.all(np.isfinite(cons)):
+        rows.append((c._coords, f, cons))
+    if not rows or len({len(r[2]) for r in rows}) != 1:
+      return np.empty((0, 0)), np.empty(0), np.empty((0, 0))
+    return (np.asarray([r[0] for r in rows], dtype=float),
+            np.asarray([r[1] for r in rows], dtype=float),
+            np.asarray([r[2] for r in rows], dtype=float))
 
   def get_all_feasible_nd_candidates(
           self, nsamples: int = None) -> List[CandidatePoint]:

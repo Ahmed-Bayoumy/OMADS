@@ -37,6 +37,13 @@ import paramiko
 
 from numpy import inf
 
+from .._post._postprocess import PostMADS, Output
+from .._setup._options import Options
+from .._include import CandidatePoint
+from .._include import DType, DESIGN_STATUS, PassException
+from .._templates._optimizer import GenericSamplerBase
+from .._include import AdaptiveBarrier
+
 # Deep-but-legitimate (non-cyclic) CandidatePoint/Mesh object graphs built up
 # over a long run can exceed Python's default pickling recursion depth when
 # ProcessPoolExecutor serializes work to/from worker processes (observed on
@@ -45,12 +52,6 @@ from numpy import inf
 # freshly spawned worker processes, which re-import this module to
 # reconstruct evaluate_blackbox_parallel before running it.
 sys.setrecursionlimit(max(sys.getrecursionlimit(), 20000))
-from .._post._postprocess import PostMADS, Output
-from .._setup._options import Options
-from .._include import CandidatePoint
-from .._include import DType, DESIGN_STATUS, PassException
-from .._templates._optimizer import GenericSamplerBase
-from .._include import AdaptiveBarrier
 
 
 class Evaluator:

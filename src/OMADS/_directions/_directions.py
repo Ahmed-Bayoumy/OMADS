@@ -194,6 +194,18 @@ class Dirs2n(GenericSamplerBaseData, GenericSamplerBase):
   @iter.setter
   def iter(self, other: int):
     self._iter = other
+    # `rng` (below) lazily seeds itself from `self.seed + self.iter * 123`,
+    # but only the first time it's read, then caches the generator forever.
+    # Without invalidating that cache here, every poll step for the rest of
+    # the run keeps drawing from the single first-iteration stream instead of
+    # the per-iteration seed the formula is clearly meant to produce, so the
+    # direction sequence for a given iteration ends up depending on how many
+    # prior calls happened to consume random draws before it (e.g. how many
+    # frame centers got polled that iteration) rather than being reproducible
+    # per iteration -- this was observed to cause wildly different (and
+    # sometimes much worse) convergence for the exact same seed whenever
+    # unrelated code changed how often `iter` gets bumped.
+    self._rng = None
 
   @property
   def candidate_points_set(self):
@@ -283,7 +295,8 @@ class Dirs2n(GenericSamplerBaseData, GenericSamplerBase):
     return self.rng.standard_normal(self._n).astype(dtype=self._dtype.dtype)
 
   def create_housholder(self, is_rich: bool, domain: List[int] = None,  # noqa: C901
-                        is_one_dir: bool = False) -> np.ndarray:
+                        is_one_dir: bool = False,
+                        n_plus_1: bool = False) -> np.ndarray:
     """Create householder matrix
 
     :param is_rich:  A flag that indicates if the rich direction option is enabled
@@ -318,6 +331,9 @@ class Dirs2n(GenericSamplerBaseData, GenericSamplerBase):
       hhm = np.eye(self.dim, dtype=self._dtype.dtype)
     hhm = np.dot(hhm, np.diag(
         (np.abs(hhm, dtype=self._dtype.dtype)).max(1) ** (-1)))
+    if n_plus_1 and not is_one_dir and all(
+            t in (VAR_TYPE.REAL, VAR_TYPE.REAL.name) for t in domain):
+      return self._ortho_n_plus_1(hhm)
     # Rounding( and transpose)
     tmp = np.multiply(self.mesh.get_rho(), hhm, dtype=self._dtype.dtype)
     hhm = np.transpose(
@@ -347,12 +363,35 @@ class Dirs2n(GenericSamplerBaseData, GenericSamplerBase):
 
     return hhm
 
+  def _ortho_n_plus_1(self, hhm: np.ndarray) -> np.ndarray:
+    """ORTHO N+1 NEG poll set (Audet, Ianni, Le Digabel & Tribes 2014):
+    the n mesh-rounded orthogonal directions plus the negative of their
+    sum rescaled to the frame -- a positive spanning set of n+1 instead of
+    2n directions.
+
+    `hhm` is the normalized Householder matrix (rows are directions). The
+    basis is rounded exactly like the 2n set; the extra direction is
+    built from the *rounded* basis so it stays its negative sum (rounding
+    it after normalizing would zero its negative entries when rho = 1).
+    """
+    rho = np.asarray(self.mesh.get_rho(), dtype=self._dtype.dtype)
+    delta = np.asarray(self.mesh.get_delta_mesh_size().coordinates,
+                       dtype=self._dtype.dtype)
+    basis = np.ceil(np.multiply(rho, hhm, dtype=self._dtype.dtype))
+    neg = -basis.sum(axis=0)
+    if not np.any(neg):
+      dirs = np.vstack((basis, -basis))
+    else:
+      dirs = np.vstack((basis, np.round(neg * (rho / np.max(np.abs(neg))))))
+    return np.dot(np.multiply(delta, dirs, dtype=self._dtype.dtype),
+                  self.scaling)
+
   def create_poll_set(
           self, ub: List[float],
           lb: List[float], fc: CandidatePoint, fci: int,
           it: int, var_type: List, var_sets: Dict, var_link: List[str],
           c_types: List[BARRIER_TYPES] = None,
-          rich_direction: bool = True):
+          rich_direction: bool = True, direction_type: str = "ORTHO_2N"):
     """Create the poll directions
 
     :param hhm: Householder matrix
@@ -368,7 +407,8 @@ class Dirs2n(GenericSamplerBaseData, GenericSamplerBase):
     del self.poll_dirs
     hhm = self.create_housholder(
         rich_direction,
-        domain=self.prob_params.var_type)
+        domain=self.prob_params.var_type,
+        n_plus_1=direction_type == "ORTHO_N+1")
     temp = np.add(
         hhm, np.array(
             fc.coordinates).T,

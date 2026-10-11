@@ -514,6 +514,25 @@ class Gmesh(Mesh):
   def isMult(self, v1, v2) -> bool:
     return (v1 % v2) <= self.dtype.zero
 
+  def _max_frame_size(self, i: int) -> float:
+    """Frame size spanning variable i's whole range, in the scaled units
+    the frame lives in (poll steps are frame * (ub - lb) / scaling), or inf
+    when the range or the scaling is not finite."""
+    scaling = self._pb_params.scaling
+    s_i = scaling[i] if isinstance(scaling, (list, tuple, np.ndarray)) \
+        else scaling
+    try:
+      s_i = float(s_i)
+    except (TypeError, ValueError):
+      return np.inf
+    try:
+      span = float(self._pb_params.ub[i]) - float(self._pb_params.lb[i])
+    except (TypeError, ValueError, IndexError):
+      return np.inf
+    if not (np.isfinite(s_i) and s_i > 0. and np.isfinite(span)):
+      return np.inf
+    return s_i
+
   def enlarge_delta_frame_size(self, direction: Point = None) -> bool:
     """Enlarge the frame size based on the direction vector and anisotropy factor"""
     if isinstance(direction, np.ndarray):
@@ -530,6 +549,12 @@ class Gmesh(Mesh):
 
     for i in range(self._n):
       frame_size_i_changed = False
+      # A frame already spanning the variable's whole range is never
+      # enlarged: without anisotropy every success enlarges every coordinate,
+      # and over a long run the frame used to overflow (1e300 and beyond),
+      # sending poll and model-search points to inf/NaN.
+      if self.get_delta_frame_size(i=i) >= self._max_frame_size(i):
+        continue
       if (not self._anisotropic_mesh or
           abs(direction[i]) / self.get_delta_mesh_size(i=i) / self.get_rho(i=i) > self._anisotropy_factor or
           (self._granularity[i] == 0 and self._frame_size_exp[i] < self._init_frame_size_exp[i] and

@@ -23,6 +23,7 @@
 # ------------------------------------------------------------------------------------#
 """
 import copy
+import inspect
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Any
 import random
@@ -32,6 +33,7 @@ import samplersLib as explore
 from .._include import Cache
 
 import numpy as np
+from scipy.optimize import minimize
 
 from .._include import BARRIER_TYPES, DType, VAR_TYPE, \
     SUCCESS_TYPES, DESIGN_STATUS, \
@@ -44,6 +46,21 @@ from .._directions._directions import Dirs2n
 from .._setup._parameters import Parameters
 from .._templates._optimizer import GenericSamplerBase, GenericSamplerBaseData
 from .._analytics._metadata import MadsStatistics
+
+
+def _bitpe_supports_reduction() -> bool:
+  """Whether the installed samplersLib's BiTPE takes `reduction_method` /
+  `n_reduced_dims`. Released samplersLib (<= 2604.0) does not: passing them
+  raised a TypeError that BiTPE's construction fallback silently turned into
+  trust-region Halton sampling at every search step."""
+  try:
+    params = inspect.signature(explore.samplers.BiTPE.__init__).parameters
+  except (TypeError, ValueError):
+    return False
+  return "reduction_method" in params and "n_reduced_dims" in params
+
+
+_BITPE_REDUCES = _bitpe_supports_reduction()
 
 
 @dataclass(slots=True)
@@ -334,6 +351,440 @@ class EfficientExploration(GenericSamplerBaseData, GenericSamplerBase):
     self.nvars = None
     self.ns = 0
     self.psize = None
+    # --- BiTPE confidence/stance policy state (see _bitpe_readiness,
+    # _exploitation_stance, _update_bitpe_trust below) -----------------
+    self.last_success_trial: int = 0
+    self._last_bitpe_coords: Optional[np.ndarray] = None
+    self._bitpe_recent_hits: List[bool] = []
+
+  def _bitpe_readiness(
+          self, n_good: int, n_bad: int, good_f: np.ndarray,
+          bad_f: np.ndarray, n_d_eff: int) -> "tuple[bool, str]":
+    """Confidence gate: is there enough *separable* data for BiTPE's
+    good/bad KDE split to mean anything, for the dimensionality it will
+    actually fit in (`n_d_eff` is the post-reduction dimension, not the
+    raw problem dimension)?
+
+    Two independent checks, both must pass:
+    - sample sufficiency scaled to `n_d_eff` (a flat "5 points" threshold
+      is fine at 2D but meaningless once BiTPE is fitting a 7-14D KDE);
+    - class separation: "good" only means something if the good/bad
+      f-value buckets are actually distinguishable, else the density
+      ratio BiTPE resamples from is noise, not signal.
+    """
+    min_pts = max(5, 3 * max(n_d_eff, 1))
+    if n_good < min_pts or n_bad < 2:
+      return False, f"insufficient data ({n_good} good pts, need >= {min_pts})"
+    all_f = np.concatenate([np.ravel(good_f), np.ravel(bad_f)])
+    spread = float(np.std(all_f))
+    if spread <= 0:
+      return False, "no spread in objective values yet"
+    gap = float(np.median(bad_f) - np.median(good_f))
+    if gap < 0.05 * spread:
+      return False, f"good/bad not separable (gap={gap:.3g}, spread={spread:.3g})"
+    return True, "confident"
+
+  def _exploitation_stance(self, last_success: SUCCESS_TYPES) -> str:
+    """Aggressive-local vs conservative-global exploitation stance, from
+    two signals that are already tracked nearby: how coarse the mesh
+    still is, and how long it's been since the last actual improvement
+    (stagnation). Aggressive narrows in on the current incumbent;
+    conservative widens the net instead of continuing to dig in a spot
+    that has stopped paying off.
+    """
+    if last_success != SUCCESS_TYPES.US:
+      self.last_success_trial = self.search_trial
+    stagnation = self.search_trial - self.last_success_trial
+    mesh_coarse = np.linalg.norm(
+        self.mesh.get_delta_frame_size().coordinates) > 1
+    if mesh_coarse or stagnation >= self.diverse_intense_trial_period:
+      return "conservative"
+    return "aggressive"
+
+  def _update_bitpe_trust(
+          self, center_points: np.ndarray, window: int = 20,
+          min_samples: int = 10) -> float:
+    """Rolling track record for BiTPE's *previous* proposal: of the points
+    it drew last time this ran, what fraction ended up in the current
+    "good" bucket once evaluated? This is a track-record signal on top of
+    (not instead of) `_bitpe_readiness` -- the data can look separable and
+    sufficient while BiTPE's actual picks keep missing, e.g. right after a
+    kernel/bandwidth mismatch for the current mesh scale.
+
+    This only *tunes* how BiTPE gets used (kernel width, alongside
+    `_exploitation_stance`) -- deliberately not a hard on/off gate.
+    `_bitpe_readiness` alone decides whether BiTPE runs at all; if low
+    trust also veto'd BiTPE outright, a single unlucky round would starve
+    the model of the very data it needs to earn trust back, since it
+    would never run again to refresh `_last_bitpe_coords`.
+
+    Each previous proposal is checked exactly once (against whatever
+    "good" bucket exists the next time this is called), not on every
+    subsequent call -- the top-30% "good" bucket is relative and shrinks
+    as more points accumulate, so re-checking the same stale coordinates
+    against an ever-tightening bar would silently decay trust toward zero
+    regardless of how good those points actually were when proposed.
+
+    Returns 1.0 (fully trusted) until there are at least `min_samples` of
+    real history to judge -- an untested or barely-tested model isn't
+    distrusted, just unproven.
+    """
+    if self._last_bitpe_coords is not None and len(self._last_bitpe_coords) > 0:
+      good_set = {tuple(np.round(row, 12)) for row in center_points} \
+          if len(center_points) > 0 else set()
+      hits = [tuple(np.round(row, 12)) in good_set
+              for row in self._last_bitpe_coords]
+      self._bitpe_recent_hits.extend(hits)
+      self._bitpe_recent_hits = self._bitpe_recent_hits[-window:]
+    self._last_bitpe_coords = None
+    if len(self._bitpe_recent_hits) < min_samples:
+      return 1.0
+    return sum(self._bitpe_recent_hits) / len(self._bitpe_recent_hits)
+
+  def _trust_region(
+          self, fc: CandidatePoint, v: np.ndarray,
+          factor: float = 2.0, min_size: float = 0.
+  ) -> "tuple[np.ndarray, np.ndarray]":
+    """Trust region centred on the incumbent `fc` (TuRBO-style, Eriksson et
+    al. 2019), sized from the MADS frame so it grows/shrinks with the same
+    success/failure logic the poll already uses -- no separate radius
+    bookkeeping. The frame size lives in scaled units; `self.scaling`
+    ((ub - lb) / scaling, set by the preprocessor) converts it to the
+    original units the samplers work in, exactly as the poll directions do.
+
+    `min_size` (scaled units, like the frame) lets a caller keep the region
+    larger than the frame, e.g. a model-search radius adapted by a ratio
+    test.
+
+    Returns the box clipped to the global bounds `v`, and the unclipped
+    per-variable half-widths (used as the distance metric / bandwidth).
+    """
+    frame = np.asarray(
+        self.mesh.get_delta_frame_size().coordinates, dtype=float).ravel()
+    scaling = np.ravel(np.asarray(
+        getattr(self, "scaling", np.ones_like(frame)), dtype=float))
+    radius = np.maximum(np.maximum(factor * frame, min_size) * scaling,
+                        np.finfo(float).eps)
+    x = np.asarray(fc.coordinates, dtype=float)
+    box = np.column_stack([np.maximum(x - radius, v[:, 0]),
+                           np.minimum(x + radius, v[:, 1])])
+    return box, radius
+
+  def _local_split(
+          self, x_better: List, f_better: List, x_worse: List,
+          f_worse: List, fc: CandidatePoint, radius: np.ndarray,
+          n_d_eff: int, gamma: float = 0.3) -> "tuple[np.ndarray, ...]":
+    """Good/bad split restricted to the incumbent's neighbourhood.
+
+    The global top-30% split spans most of the box early on (and in 10D+
+    stays that way for the whole budget), so BiTPE's base points -- drawn
+    from the good set -- never concentrate near the incumbent, whatever
+    `scale` is passed. Instead keep the k points nearest `fc` (inf-norm in
+    trust-region units) and split those, with k sized so the good share
+    meets `_bitpe_readiness`'s minimum. The cache's rank order (feasible
+    by f, then infeasible by h) is preserved, so the split stays
+    constraint-aware.
+    """
+    xs = list(x_better) + list(x_worse)
+    if not xs:
+      empty = np.empty((0, self._n))
+      return empty, np.empty(0), empty, np.empty(0)
+    X = np.asarray(xs, dtype=float)
+    F = np.ravel(np.asarray(list(f_better) + list(f_worse), dtype=float))
+    dist = np.max(np.abs(X - np.asarray(fc.coordinates, dtype=float)) / radius,
+                  axis=1)
+    min_good = max(5, 3 * max(n_d_eff, 1))
+    k = min(len(X), max(int(np.ceil(min_good / gamma)), 2 * (self.dim + 1)))
+    idx = np.sort(np.argsort(dist, kind="stable")[:k])
+    n_good = max(int(np.ceil(gamma * len(idx))), 1)
+    good, bad = idx[:n_good], idx[n_good:]
+    return X[good], F[good], X[bad], F[bad]
+
+  def generate_quad_model_points(
+          self, hashtable: Cache, fc: CandidatePoint,
+          x_parent: Optional[List[float]] = None):
+    """NOMAD-style cheap search, meant to run first every iteration (at
+    most two evaluations):
+
+    - speculative search: right after a success (`x_parent` is the point
+      the incumbent was generated from), repeat that successful step once
+      more from the incumbent;
+    - quadratic model search (see `_quad_model_point`).
+
+    Single-objective only. With constraints (`constraints_type` set), the
+    constraints are modelled too and the frame center may be infeasible
+    (see `_constrained_quad_model_point`); otherwise the incumbent must be
+    feasible. Leaves the candidate set empty when there is nothing worth
+    evaluating.
+    """
+    self._candidate_points_set = []
+    constrained = bool(self.prob_params.constraints_type)
+    if self.prob_params.is_pareto or fc is None or fc.status not in (
+            (DESIGN_STATUS.FEASIBLE, DESIGN_STATUS.INFEASIBLE) if constrained
+            else (DESIGN_STATUS.FEASIBLE,)):
+      return
+    v = np.column_stack([np.asarray(self.prob_params.lb, dtype=float),
+                         np.asarray(self.prob_params.ub, dtype=float)])
+    xk = np.asarray(fc.coordinates, dtype=float)
+    points = []
+    if x_parent is not None:
+      step = xk - np.asarray(x_parent, dtype=float)
+      if np.any(step != 0):
+        points.append(np.clip(xk + step, v[:, 0], v[:, 1]))
+    x_model = self._constrained_quad_model_point(hashtable, fc, v) \
+        if constrained else self._quad_model_point(hashtable, fc, v)
+    if x_model is not None:
+      points.append(x_model)
+    if points:
+      self.map_samples_from_coords_to_points(np.asarray(points), fc=fc)
+
+  def _quad_model_point(  # noqa: C901
+          self, hashtable: Cache, fc: CandidatePoint, v: np.ndarray,
+          ridge: float = 1e-3) -> Optional[np.ndarray]:
+    """Quadratic model search (Conn & Le Digabel 2013; NOMAD's default
+    search step): fit a quadratic to feasible cached points around the
+    incumbent and return the model's minimizer over the trust region, or
+    None when the model can't be built or predicts no decrease.
+
+    Ridge-regularized regression on the quadratic terms (MFN-like when
+    points are scarce), convexified before minimizing.
+    """
+    X, F = hashtable.get_feasible_points_and_f()
+    n = self.dim
+    if len(X) < n + 2:
+      return
+    tr_v, radius = self._trust_region(fc, v)
+    xk = np.asarray(fc.coordinates, dtype=float)
+    S = (X - xk) / radius
+    dist = np.max(np.abs(S), axis=1)
+    # Regression set: nearest points within twice the trust region, up to
+    # twice what a fully determined quadratic needs -- exact interpolation
+    # of poll points (which lie on near-orthogonal lines) identifies the
+    # cross terms poorly.
+    n_quad = (n + 1) * (n + 2) // 2
+    near = np.argsort(dist, kind="stable")
+    near = near[dist[near] <= 2.0][:2 * n_quad]
+    if len(near) < n + 2:
+      return
+    S, F = S[near], F[near]
+    fk = float(np.min(F))
+    f_scale = max(float(np.max(np.abs(F - fk))), 1e-12)
+    y = (F - fk) / f_scale
+    fit = self._fit_quad(S, y, ridge)
+    if fit is None:
+      return
+    g, H = fit[1], self._convexify(fit[2])
+
+    # Minimize over the trust region, which is [-1, 1] per variable in
+    # these scaled coordinates, intersected with the global bounds.
+    lo = (tr_v[:, 0] - xk) / radius
+    hi = (tr_v[:, 1] - xk) / radius
+    s_best = S[np.argmin(y)]
+
+    def model(s):
+      return float(g @ s + 0.5 * s @ H @ s), g + H @ s
+
+    best_s, best_m = None, model(np.zeros(n))[0]
+    for s0 in (np.zeros(n), np.clip(s_best, lo, hi)):
+      res = minimize(model, s0, jac=True, method="L-BFGS-B",
+                     bounds=list(zip(lo, hi)))
+      if res.fun < best_m - 1e-12:
+        best_s, best_m = res.x, res.fun
+    if best_s is None:
+      return
+    return np.clip(xk + best_s * radius, v[:, 0], v[:, 1])
+
+  # Constraint-aware quadratic model search: ridge on the quadratic terms,
+  # eigenvalue floor (relative to the largest) of the convexified objective
+  # Hessian, and the regression set (points within `_model_reg_dist` trust
+  # region radii, at most `_model_reg_mult` times a full quadratic's size).
+  _model_ridge: float = 1e-3
+  _model_eig_floor: float = 1e-3
+  _model_reg_dist: float = 2.0
+  _model_reg_mult: int = 2
+
+  @staticmethod
+  def _fit_quad(S: np.ndarray, y: np.ndarray, ridge: float = 1e-3
+                ) -> "Optional[tuple[float, np.ndarray, np.ndarray]]":
+    """Quadratic regression y ~ c + g.s + s.H.s/2 in scaled coordinates,
+    or None when it fails. Ridge penalty on the quadratic terms only: with
+    few points this behaves like a minimum-Frobenius-norm model, with many
+    it is a lightly regularized regression."""
+    n = S.shape[1]
+    iu = np.triu_indices(n, k=1)
+    M_L = np.hstack([np.ones((len(S), 1)), S])
+    M_Q = np.hstack([0.5 * S ** 2, S[:, iu[0]] * S[:, iu[1]]])
+    n_q = M_Q.shape[1]
+    A = np.vstack([np.hstack([M_L, M_Q]),
+                   np.hstack([np.zeros((n_q, n + 1)),
+                              np.sqrt(ridge) * np.eye(n_q)])])
+    try:
+      coef = np.linalg.lstsq(A, np.concatenate([y, np.zeros(n_q)]),
+                             rcond=None)[0]
+    except np.linalg.LinAlgError:
+      return None
+    if not np.all(np.isfinite(coef)):
+      return None
+    c_Q = coef[n + 1:]
+    H = np.diag(c_Q[:n])
+    H[iu] = c_Q[n:]
+    H[(iu[1], iu[0])] = c_Q[n:]
+    return float(coef[0]), coef[1:n + 1], H
+
+  @staticmethod
+  def _convexify(H: np.ndarray, floor: float = 1e-3) -> np.ndarray:
+    """Saddle-free Hessian (|eigenvalues|, floored at `floor` times the
+    largest): an indefinite model always sends its minimizer to a corner of
+    the box; this turns it into a damped Newton step instead."""
+    w, V = np.linalg.eigh(H)
+    w = np.maximum(np.abs(w), floor * max(float(np.max(np.abs(w))), 1e-12))
+    return (V * w) @ V.T
+
+  def _constrained_quad_model_point(  # noqa: C901
+          self, hashtable: Cache, fc: CandidatePoint, v: np.ndarray,
+          ridge: Optional[float] = None) -> Optional[np.ndarray]:
+    """Constraint-aware quadratic model search (NOMAD's QUAD_MODEL_SEARCH
+    with constraints): fit quadratics to the objective and to each
+    inequality constraint around the frame center, then return
+
+    - the minimizer of the objective model subject to the constraint models
+      (c_i <= 0) over the trust region, when it predicts a decrease from the
+      frame center (or a feasible point when the frame center is not);
+    - otherwise, for an infeasible frame center, the minimizer of the
+      predicted violation sum(max(c_i, 0)^2) when it predicts a reduction.
+
+    Without constraint models, the f-model minimizer nearly always falls on
+    the infeasible side of an active constraint, leaving only the poll to
+    crawl along it.
+    """
+    X, F, C = hashtable.get_points_f_and_c()
+    n = self.dim
+    self._update_model_radius(X, F, C)
+    if len(X) < n + 2 or C.shape[1] == 0:
+      return
+    tr_v, radius = self._trust_region(fc, v, min_size=self._model_radius)
+    if not np.all(np.isfinite(radius)):
+      return
+    xk = np.asarray(fc.coordinates, dtype=float)
+    S = (X - xk) / radius
+    dist = np.max(np.abs(S), axis=1)
+    n_quad = (n + 1) * (n + 2) // 2
+    near = np.argsort(dist, kind="stable")
+    near = near[dist[near] <= self._model_reg_dist][:self._model_reg_mult * n_quad]
+    if len(near) < n + 2:
+      return
+    S, F, C = S[near], F[near], C[near]
+
+    fk = float(np.min(F))
+    f_scale = max(float(np.max(np.abs(F - fk))), 1e-12)
+    if ridge is None:
+      ridge = self._model_ridge
+    fit = self._fit_quad(S, (F - fk) / f_scale, ridge)
+    if fit is None:
+      return
+    g, H = fit[1], self._convexify(fit[2], self._model_eig_floor)
+    # Constraint models keep their curvature (no convexification) and their
+    # zero level; each is scaled by its magnitude on the regression set.
+    c_models = []
+    for i in range(C.shape[1]):
+      c_scale = max(float(np.max(np.abs(C[:, i]))), 1e-12)
+      fit_c = self._fit_quad(S, C[:, i] / c_scale, ridge)
+      if fit_c is None:
+        return
+      c_models.append(fit_c)
+
+    def m_f(s):
+      return float(g @ s + 0.5 * s @ H @ s), g + H @ s
+
+    def m_c(s):
+      return np.array([c0 + gc @ s + 0.5 * s @ Hc @ s
+                       for c0, gc, Hc in c_models])
+
+    def jac_c(s):
+      return np.array([gc + Hc @ s for _, gc, Hc in c_models])
+
+    def m_h(s):
+      viol = np.maximum(m_c(s), 0.)
+      return float(viol @ viol), 2. * viol @ jac_c(s)
+
+    lo = (tr_v[:, 0] - xk) / radius
+    hi = (tr_v[:, 1] - xk) / radius
+    bounds = list(zip(lo, hi))
+    s0 = np.zeros(n)
+    starts = [s0]
+    feasible_rows = np.all(C <= 0., axis=1)
+    if np.any(feasible_rows):
+      starts.append(np.clip(S[feasible_rows][np.argmin(F[feasible_rows])],
+                            lo, hi))
+    fc_feasible = fc.status == DESIGN_STATUS.FEASIBLE
+    best_s, best_m = None, m_f(s0)[0] if fc_feasible else np.inf
+    # The model minimizer sits on the boundary of an active constraint, so
+    # projecting it on the mesh makes it infeasible about half the time.
+    # Aim inside by twice the worst-case change of each constraint model
+    # over half a mesh step.
+    scaling = np.ravel(np.asarray(
+        getattr(self, "scaling", np.ones(n)), dtype=float))
+    half_mesh_s = 0.5 * np.ravel(np.asarray(
+        self.mesh.get_delta_mesh_size().coordinates, dtype=float)) \
+        * scaling / radius
+    margin = 2. * np.abs(jac_c(s0)) @ half_mesh_s
+    cons = [{"type": "ineq", "fun": lambda s: -m_c(s) - margin,
+             "jac": lambda s: -jac_c(s)}]
+    for start in starts:
+      try:
+        res = minimize(m_f, start, jac=True, method="SLSQP", bounds=bounds,
+                       constraints=cons, options={"maxiter": 100})
+      except (ValueError, np.linalg.LinAlgError):
+        continue
+      if np.all(np.isfinite(res.x)) and np.all(m_c(res.x) <= 1e-9) and \
+              res.fun < best_m - 1e-12:
+        best_s, best_m = res.x, res.fun
+    if best_s is None and not fc_feasible:
+      h0 = m_h(s0)[0]
+      res = minimize(m_h, s0, jac=True, method="L-BFGS-B", bounds=bounds)
+      if np.all(np.isfinite(res.x)) and res.fun < h0 - 1e-12:
+        best_s = res.x
+    if best_s is None:
+      return
+    x_model = np.clip(xk + best_s * radius, v[:, 0], v[:, 1])
+    if fc_feasible:
+      self._last_model_step = (
+          x_model, float(np.sum(fc.fobj)), -best_m * f_scale,
+          float(np.max(radius / scaling)),
+          bool(np.max(np.abs(best_s)) >= 0.9), radius)
+    return x_model
+
+  # Model-search radius (scaled units) kept on top of the frame-sized trust
+  # region, and the last model step awaiting its ratio test.
+  _model_radius: float = 0.
+  _last_model_step: Optional[tuple] = None
+
+  def _update_model_radius(self, X: np.ndarray, F: np.ndarray,
+                           C: np.ndarray):
+    """Classic trust-region ratio test on the previous constraint-aware
+    model step: actual over predicted decrease of f. A well-predicted step
+    that reached the edge of the region doubles the model radius, a poorly
+    predicted (or infeasible) one halves it.
+
+    The frame shrinks whenever the poll fails, which along the long, flat
+    valleys of ill-conditioned problems is most of the time; tying the
+    model region to the frame alone then caps model steps far below the
+    distance left to the optimum.
+    """
+    last, self._last_model_step = self._last_model_step, None
+    if last is None or len(X) == 0:
+      return
+    x_prop, f_old, pred, r_used, at_edge, radius = last
+    # The evaluated point is the proposal projected on the mesh.
+    dev = np.max(np.abs(X - x_prop) / radius, axis=1)
+    i = int(np.argmin(dev))
+    if dev[i] > 1e-2 or pred <= 0.:
+      return
+    ratio = (f_old - F[i]) / pred if np.all(C[i] <= 0.) else -np.inf
+    if ratio >= 0.75 and at_edge:
+      self._model_radius = 2. * r_used
+    elif ratio < 0.1:
+      self._model_radius = 0.5 * min(self._model_radius, r_used)
 
   def generate_candidate_points(self):
     pass
@@ -695,6 +1146,7 @@ class EfficientExploration(GenericSamplerBaseData, GenericSamplerBase):
     if nsamples is None:
       nsamples = int((self.nvars+1)*(self.nvars+2)/2)
     is_lhs = False
+    sampling = None
     self.ns = nsamples
     resize = False
     clipping = True
@@ -737,50 +1189,15 @@ class EfficientExploration(GenericSamplerBaseData, GenericSamplerBase):
         sampling.options["msize"] = self.mesh.get_delta_mesh_size().coordinates
         sampling.options["varLimits"] = v
         self.explore_new = False
-      elif switch_to_global_sampling and hashtable.n_centers() > 100:
-        # max_iter = 10000
-        initial_temp = max(1000-self.search_trial, 100)
-        cooling_rate = 0.95
-        sampling_sas = explore.samplers.TunableSA(
-            data=np.array(hashtable.get_all_center_candidates(nsamples=hashtable.n_centers())),
-            y=np.array(
-                [xnd.fobj + [xnd.h]
-                 if self.prob_params.is_pareto else xnd.f + [xnd.h]
-                 for xnd in hashtable.get_all_center_candidates(
-                     nsamples=hashtable.n_centers())]),
-            x_inc=fc.coordinates, it=self.iter, vlim=v, seed=self.seed +
-            self.iter, max_iter=10000, initial_temp=initial_temp,
-            cooling_rate=cooling_rate)
-        sampling_pss = explore.samplers.TunablePSS(
-            data=np.array(hashtable.get_all_center_candidates(
-                nsamples=hashtable.n_centers())),
-            y=np.array(
-                [xnd.fobj + [xnd.h]
-                 if self.prob_params.is_pareto else xnd.f + [xnd.h]
-                 for xnd in hashtable.get_all_center_candidates(
-                     nsamples=hashtable.n_centers())]),
-            x_inc=fc.coordinates, it=self.iter, vlim=v,
-            inertia_weight=max(
-                0.9 -
-                (0.5 * self.search_trial / self.diverse_intense_trial_period),
-                0),
-            social_weight=max(
-                0.1 +
-                (0.1 * self.search_trial / self.diverse_intense_trial_period),
-                1),
-            cognitive_weight=max(
-                0.1 +
-                (0.1 * self.search_trial / self.diverse_intense_trial_period),
-                1),
-            seed=self.seed + self.iter, num_particles=max(
-                int(self.ns / 3),
-                3),
-            max_iter=100)
-        sampling_quasi_random = explore.samplers.LHS(
-            ns=max(int(self.ns/3), 3), vlim=v)
-        is_sas = True
-        is_pss = True
       else:
+        # Enough data exists to try something smarter than pure space-
+        # filling. Which "something" -- BiTPE's local density-guided
+        # sampling, the TunableSA/TunablePSS global diversifiers, or a
+        # plain Halton fallback -- is decided below by the good/bad
+        # split's own statistical confidence (_bitpe_readiness), BiTPE's
+        # recent track record (_update_bitpe_trust), and the current
+        # exploitation stance (_exploitation_stance), rather than the flat
+        # trial-count/period checks this replaced.
         if hashtable.is_pareto:
           nsamples = len(hashtable.get_all_nd_candidates()) if self.prob_params.is_pareto and self.nds >= len(
               hashtable.get_all_nd_candidates()) else hashtable.n_centers()  # len(self.hashtable.nd_points)
@@ -790,78 +1207,161 @@ class EfficientExploration(GenericSamplerBaseData, GenericSamplerBase):
         f_better   = []
         f_worse    = []
 
-        hashtable.get_splitted_sorted_candidates(x_better, 
-                                                 x_worse, 
-                                                 f_better, 
-                                                 f_worse, 
+        hashtable.get_splitted_sorted_candidates(x_better,
+                                                 x_worse,
+                                                 f_better,
+                                                 f_worse,
                                                  ratio=0.3)
-        
-        center_points   = np.array(x_better) if x_better else np.empty((0, self._n))
-        non_improving    = np.array(x_worse)  if x_worse  else np.empty((0, self._n))
-        center_points_f   = np.array(f_better) if f_better else np.empty((0, self.prob_params.nobj))
-        non_improving_f    = np.array(f_worse)  if f_worse  else np.empty((0, self.prob_params.nobj))
-        # if stats.nno_successes < 10:
-        # BiTPE's obfuscated bandwidth validation/indexing for `h` has shown
-        # inconsistent shape expectations once the problem dimensionality
-        # crosses its internal PCA-reduction threshold (>3 D): the same
-        # per-dim `h` that works below that threshold can raise OSError/
-        # IndexError above it. Rather than risk aborting the whole run over
-        # a third-party edge case, fall back to Halton sampling for this
-        # iteration if construction (or the later resample()) fails.
-        try:
-          self.active_sampling = explore.samplers.BiTPE(
-              good_data=center_points, good_f_values=center_points_f, bad_data=non_improving, \
-                bad_f_values=non_improving_f, n_r=self.ns, vlim=v,
-              kernel_type={"Gaussian": 0.5, "Gaussian_RBF": 0.1,
-                           "Multiquadric_RBF": 0.1, "Laplace": 0.1,
-                           "cosine": 0.1, "logistic": 0.05,
-                           'InverseMultiquadric_RBF': 0.05}
-              if self.prob_params.is_pareto
-              else
-              {"Cauchy": 0.5, "Multiquadric_RBF": 0.5}
-              if np.linalg.norm(self.mesh.get_delta_frame_size().coordinates) > 1
-              # else {'Cauchy': 0.8, "Laplace": 0.2},
-              else {"Gaussian": 1},
-              bw_method="SCOTT", seed=int(self.seed + self.iter),
-              h=[np.linalg.norm(
-                  self.mesh.get_delta_frame_size().coordinates)] * self.dim, gamma=0.1, reduction_method="pod", n_reduced_dims=int(self.dim*0.7) if self.dim > 3 else 3)
-          # else:
-          #   self.active_sampling = explore.samplers.BayesianActiveSampling(
-          #                                   data=center_points,
-          #                                   f_values=center_points_f,
-          #                                   n_r=self.ns,
-          #                                   vlim=v,
-          #                                   kernel_type={"Gaussian": 1},
-          #                                   bw_method="scott",
-          #                                   seed=int(self.seed + self.iter),
-          #                                   h=[np.linalg.norm(
-          #                                                 self.mesh.get_delta_frame_size().coordinates)] * self.dim,
-                                        # )
 
-          for ki, _ in enumerate((self.active_sampling.kernel)):
-            self.active_sampling.kernel[ki].bw_method = "SCOTT" if np.linalg.norm(
-                self.mesh.get_delta_frame_size().coordinates) > 1 else "SCOTT"
-            if self.active_sampling.kernel[ki].type == "PARAMETRIC":
-              self.active_sampling.kernel[ki].h = np.linalg.norm(
-                  self.mesh.get_delta_frame_size().coordinates) if np.linalg.norm(
-                  self.mesh.get_delta_frame_size().coordinates) > 1 else np.maximum(
-                  np.linalg.norm(self.mesh.get_delta_frame_size().coordinates),
-                  0.1)
-          is_active_sampling = True
-        except (IOError, OSError, IndexError, TypeError, ValueError) as bitpe_err:
-          if self.log is not None and self.log.is_verbose:
-            self.log.log_msg(
-                msg=f"BiTPE sampler construction failed ({bitpe_err}); "
-                    "falling back to Halton sampling for this iteration.",
-                msg_type=MSG_TYPE.INFO)
-          sampling = explore.samplers.Halton(ns=nsamples, vlim=v)
+        n_reduced_dims = int(self.dim*0.7) if self.dim > 3 else 3
+        n_d_eff = min(self.dim, n_reduced_dims) if _BITPE_REDUCES else self.dim
+        # BiTPE works inside a trust region around the incumbent, on the
+        # incumbent's neighbourhood only (see _trust_region/_local_split).
+        tr_v, tr_radius = self._trust_region(fc, v)
+        center_points, center_points_f, non_improving, non_improving_f = \
+            self._local_split(x_better, f_better, x_worse, f_worse, fc,
+                              tr_radius, n_d_eff)
+
+        bitpe_ready, bitpe_reason = self._bitpe_readiness(
+            len(center_points), len(non_improving),
+            center_points_f, non_improving_f, n_d_eff)
+        stance = self._exploitation_stance(last_success)
+        bitpe_trust = self._update_bitpe_trust(center_points)
+        # _bitpe_readiness alone gates BiTPE on/off; low trust widens the
+        # kernel instead of vetoing BiTPE outright (see _update_bitpe_trust
+        # for why a hard veto here would be a feedback deadlock).
+        use_bitpe = bitpe_ready
+        use_wide_kernel = stance == "conservative" or self.dim > 15 or bitpe_trust < 0.5
+        if self.log is not None and self.log.is_verbose:
+          self.log.log_msg(
+              msg=f"BiTPE policy: ready={bitpe_ready} ({bitpe_reason}), "
+                  f"trust={bitpe_trust:.2f}, stance={stance}, "
+                  f"use_bitpe={use_bitpe}",
+              msg_type=MSG_TYPE.INFO)
+
+        if not use_bitpe and switch_to_global_sampling and hashtable.n_centers() > 100:
+          # Not enough confidence/trust in BiTPE's local model right now --
+          # widen the net with the global TunableSA/TunablePSS diversifiers
+          # instead of forcing a possibly-noisy local model.
+          # max_iter = 10000
+          initial_temp = max(1000-self.search_trial, 100)
+          cooling_rate = 0.95
+          sampling_sas = explore.samplers.TunableSA(
+              data=np.array(hashtable.get_all_center_points(nsamples=hashtable.n_centers())),
+              y=np.array(
+                  [xnd.fobj + [xnd.h]
+                   if self.prob_params.is_pareto else xnd.f + [xnd.h]
+                   for xnd in hashtable.get_all_center_candidates(
+                       nsamples=hashtable.n_centers())]),
+              x_inc=fc.coordinates, it=self.iter, vlim=v, seed=self.seed +
+              self.iter, max_iter=10000, initial_temp=initial_temp,
+              cooling_rate=cooling_rate)
+          sampling_pss = explore.samplers.TunablePSS(
+              data=np.array(hashtable.get_all_center_points(
+                  nsamples=hashtable.n_centers())),
+              y=np.array(
+                  [xnd.fobj + [xnd.h]
+                   if self.prob_params.is_pareto else xnd.f + [xnd.h]
+                   for xnd in hashtable.get_all_center_candidates(
+                       nsamples=hashtable.n_centers())]),
+              x_inc=fc.coordinates, it=self.iter, vlim=v,
+              inertia_weight=max(
+                  0.9 -
+                  (0.5 * self.search_trial / self.diverse_intense_trial_period),
+                  0),
+              social_weight=max(
+                  0.1 +
+                  (0.1 * self.search_trial / self.diverse_intense_trial_period),
+                  1),
+              cognitive_weight=max(
+                  0.1 +
+                  (0.1 * self.search_trial / self.diverse_intense_trial_period),
+                  1),
+              seed=self.seed + self.iter, num_particles=max(
+                  int(self.ns / 3),
+                  3),
+              max_iter=100)
+          sampling_quasi_random = explore.samplers.LHS(
+              ns=max(int(self.ns/3), 3), vlim=v)
+          is_sas = True
+          is_pss = True
+        elif not use_bitpe:
+          # Not ready/trusted for BiTPE, and not eligible (or not due) for
+          # the global diversifiers either -- fall back to plain
+          # space-filling of the trust region rather than force a
+          # low-confidence local model.
+          sampling = explore.samplers.Halton(ns=nsamples, vlim=tr_v)
           sampling.options["randomness"] = self.seed + self.iter
           sampling.options["criterion"] = self.sampling_criter
           sampling.options["msize"] = self.mesh.get_delta_mesh_size().coordinates
-          sampling.options["varLimits"] = v
-          is_active_sampling = False
+          sampling.options["varLimits"] = tr_v
+        else:
+          # BiTPE's good/bad split is both statistically confident
+          # (_bitpe_readiness) and, per its recent track record, worth
+          # trusting (_update_bitpe_trust). Kernel width still follows the
+          # exploitation stance: narrow/Gaussian to dig in locally,
+          # wider Cauchy/Multiquadric-RBF to keep exploring broadly once
+          # stagnating or the mesh is still coarse, or once the space is
+          # large enough (>15D) that a narrow kernel would barely cover it.
+          # BiTPE's obfuscated bandwidth validation/indexing for `h` has
+          # shown inconsistent shape expectations once the problem
+          # dimensionality crosses its internal reduction threshold: the
+          # same per-dim `h` that works below that threshold can raise
+          # OSError/IndexError above it. Rather than risk aborting the
+          # whole run over a third-party edge case, fall back to Halton
+          # sampling for this iteration if construction (or the later
+          # resample()) fails.
+          # `vlim=tr_v` keeps candidates inside the trust region: BiTPE
+          # clips to it directly in full space, and on back-projection
+          # when the space is POD-reduced. BiTPE draws base points with
+          # probability proportional to their *position* in `good_data`,
+          # so pass the good set best-last to favour the best points.
+          try:
+            self.active_sampling = explore.samplers.BiTPE(
+                good_data=center_points[::-1], good_f_values=center_points_f[::-1],
+                bad_data=non_improving, bad_f_values=non_improving_f,
+                n_r=self.ns, vlim=tr_v,
+                kernel_type={"Gaussian": 0.5, "Gaussian_RBF": 0.1,
+                             "Multiquadric_RBF": 0.1, "Laplace": 0.1,
+                             "cosine": 0.1, "logistic": 0.05,
+                             'InverseMultiquadric_RBF': 0.05}
+                if self.prob_params.is_pareto
+                else
+                {"Cauchy": 0.5, "Multiquadric_RBF": 0.5}
+                if use_wide_kernel
+                else {"Gaussian": 1},
+                bw_method="SCOTT", seed=int(self.seed + self.iter),
+                h=tr_radius.tolist(), gamma=0.1,
+                **(dict(reduction_method="pca", n_reduced_dims=n_reduced_dims)
+                   if _BITPE_REDUCES else {}))
 
-    if self.iter > 1 and is_lhs and len(self.candidate_points_set) > 0:
+            for ki, _ in enumerate((self.active_sampling.kernel)):
+              self.active_sampling.kernel[ki].bw_method = "SCOTT"
+              if self.active_sampling.kernel[ki].type == "PARAMETRIC":
+                self.active_sampling.kernel[ki].h = float(np.mean(tr_radius))
+            is_active_sampling = True
+          except (IOError, OSError, IndexError, TypeError, ValueError) as bitpe_err:
+            if self.log is not None and self.log.is_verbose:
+              self.log.log_msg(
+                  msg=f"BiTPE sampler construction failed ({bitpe_err}); "
+                      "falling back to Halton sampling for this iteration.",
+                  msg_type=MSG_TYPE.INFO)
+            sampling = explore.samplers.Halton(ns=nsamples, vlim=tr_v)
+            sampling.options["randomness"] = self.seed + self.iter
+            sampling.options["criterion"] = self.sampling_criter
+            sampling.options["msize"] = self.mesh.get_delta_mesh_size().coordinates
+            sampling.options["varLimits"] = tr_v
+            is_active_sampling = False
+
+    # A single-sample LHS has nothing to space-fill, and samplersLib's ExactSE
+    # optimizer (the default criterion, also used inside expand_lhs) loops
+    # forever with fewer than two free rows in releases up to 2604.0.
+    single_lhs = isinstance(sampling, explore.samplers.LHS) and nsamples < 2
+    if single_lhs and sampling.options.get("criterion") in (None, "ExactSE"):
+      sampling.options["criterion"] = "maximin"
+
+    if self.iter > 1 and is_lhs and not single_lhs and \
+            len(self.candidate_points_set) > 0:
       # Freshly-returned arrays from the sampler: a fast native copy is all
       # the isolation we need, copy.deepcopy's generic object-graph walk buys
       # nothing extra here and is far slower for numpy arrays.
@@ -872,17 +1372,24 @@ class EfficientExploration(GenericSamplerBaseData, GenericSamplerBase):
     else:
       if is_active_sampling:
         try:
-          s = self.mesh.get_delta_frame_size().coordinates
+          # No extra scaling (`scale=1.0`): the kernels' bandwidths are already
+          # tuned on trust-region-local data, so they carry the local length
+          # scale. Passed explicitly because released samplersLib (<= 2604.0)
+          # requires it; leaving it out raised a TypeError that the fallback
+          # below silently turned into Halton sampling.
           ps = np.array(
               self.active_sampling.resample(
-                  size=10, seed=int(self.seed + self.iter),
-                  scale=s), copy=True) #if stats.nno_successes<10 else self.active_sampling.resample(
-                  # size=10)
+                  size=10, seed=int(self.seed + self.iter), scale=1.0),
+              copy=True)
+          # Plus a few cheap line probes from the incumbent toward the
+          # trust-region faces (these used to aim at the global bounds,
+          # from the *worst* good point).
           rng = np.random.default_rng(seed=self.seed+self.iter)
           rval = rng.random()
-          ps = np.vstack((ps, np.array([x+rval* (v[i][1]-x) for i, x in enumerate(center_points[-1])])))
-          ps = np.vstack((ps, np.array([x+rval* (x-v[i][0]) for i, x in enumerate(center_points[-1])])))
-          ps = np.vstack((ps, np.array([x+rval*(v[i][1]-v[i][0])/2 for i, x in enumerate(ps[0])])))
+          x_inc = np.asarray(fc.coordinates, dtype=float)
+          ps = np.vstack((ps, x_inc + rval * (tr_v[:, 1] - x_inc)))
+          ps = np.vstack((ps, x_inc - rval * (x_inc - tr_v[:, 0])))
+          ps = np.vstack((ps, np.clip(ps[0] + rval * tr_radius, tr_v[:, 0], tr_v[:, 1])))
         except (IOError, OSError, IndexError, TypeError, ValueError) as bitpe_err:
           # Same rationale as the construction-time fallback above: don't
           # let an obfuscated-library edge case abort the whole run.
@@ -891,11 +1398,11 @@ class EfficientExploration(GenericSamplerBaseData, GenericSamplerBase):
                 msg=f"BiTPE resample failed ({bitpe_err}); "
                     "falling back to Halton sampling for this iteration.",
                 msg_type=MSG_TYPE.INFO)
-          fallback_sampling = explore.samplers.Halton(ns=nsamples, vlim=v)
+          fallback_sampling = explore.samplers.Halton(ns=nsamples, vlim=tr_v)
           fallback_sampling.options["randomness"] = self.seed + self.iter
           fallback_sampling.options["criterion"] = self.sampling_criter
           fallback_sampling.options["msize"] = self.mesh.get_delta_mesh_size().coordinates
-          fallback_sampling.options["varLimits"] = v
+          fallback_sampling.options["varLimits"] = tr_v
           ps = np.array(fallback_sampling.generate_samples(), copy=True)
 
       elif is_pss and is_sas:
@@ -925,6 +1432,14 @@ class EfficientExploration(GenericSamplerBaseData, GenericSamplerBase):
           samples=ps[len(ps)-self.ns:], fc=fc)
     else:
       self.map_samples_from_coords_to_points(ps, fc=fc)
+
+    if is_active_sampling:
+      # Remember what BiTPE actually proposed (post mesh-projection/bounds
+      # clipping -- matching what will actually get evaluated and cached)
+      # so the *next* call's _update_bitpe_trust can check how many of
+      # these landed in the "good" bucket once evaluated.
+      self._last_bitpe_coords = np.array(
+          [c.coordinates for c in self._candidate_points_set])
 
   def project_coords_to_mesh(self, x: List[float], ref: List[float] = None):
     pref = Point(self.mesh.n)
