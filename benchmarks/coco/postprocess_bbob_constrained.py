@@ -2,7 +2,7 @@
 
 Usage (from ``exdata/``, so that the folder names become the legend labels):
 
-  python ../benchmarks/coco/postprocess_bbob_constrained.py ../ppdata/out OMADS-hybrid OMADS-BiTPE
+  python ../benchmarks/coco/postprocess_bbob_constrained.py ../ppdata/out OMADS-A OMADS-B OMADS-Halton
 
 Keep the output folder path short: cocopp's file paths exceed the Windows
 260-character limit when it is nested deeply.
@@ -10,9 +10,10 @@ Keep the output folder path short: cocopp's file paths exceed the Windows
 import sys
 import matplotlib
 matplotlib.use("Agg")
+import cocopp
+
 matplotlib.rcParams["savefig.bbox"] = "tight"   # keep legends outside the axes in the figure
 matplotlib.rcParams["savefig.pad_inches"] = 0.05
-import cocopp
 
 out_dir, algs = sys.argv[1], sys.argv[2:]
 refs = ["bbob-constrained/2022/COBYLA_Dufosse.tgz",
