@@ -732,7 +732,8 @@ unsuccessful poll; <code class="docutils literal notranslate"><span class="pre">
 </table>
 </div>
 <p>With the <code class="docutils literal notranslate"><span class="pre">ACTIVE</span></code> search, each model-based search step evaluates up to <span class="math notranslate nohighlight">\(n_s\)</span> BiTPE
-proposals plus three line probes; with <code class="docutils literal notranslate"><span class="pre">&quot;opportunistic&quot;:</span> <span class="pre">True</span></code> the evaluation of a poll or
+proposals plus three line probes (the runner sets <code class="docutils literal notranslate"><span class="pre">search[&quot;batch&quot;]</span></code> to <span class="math notranslate nohighlight">\(n_s\)</span>;
+OMADS’ default is 10); with <code class="docutils literal notranslate"><span class="pre">&quot;opportunistic&quot;:</span> <span class="pre">True</span></code> the evaluation of a poll or
 search set stops at its first improvement.</p>
 <p>The reference algorithms are the 2022 entries of the COCO data archive: COBYLA and AL1-CMA-ES
 (Dufossé), fmincon (Hellwig) and random search. These were run with much larger budgets, up to

@@ -386,7 +386,7 @@ between strategies from the data it has gathered so far.
         \STATE{stance $\gets$ conservative if the frame is still coarse or the search stagnates, aggressive otherwise}
         \STATE{trust $\gets$ the fraction of the last BiTPE proposals that landed in the good set}
         \IF{ready}
-            \STATE{$S^{k} \gets n_{s}$ BiTPE samples in $T^{k}$ (narrow Gaussian kernel, or wide Cauchy and multiquadric kernels if conservative, $n > 15$ or trust $< 0.5$)}
+            \STATE{$S^{k} \gets n_{b}$ BiTPE samples in $T^{k}$ (narrow Gaussian kernel, or wide Cauchy and multiquadric kernels if conservative, $n > 15$ or trust $< 0.5$)}
             \STATE{add three line probes from $x^{k}$ towards the faces of $T^{k}$}
         \ELSIF{the search is due to diversify and more than 100 centres are cached}
             \STATE{$S^{k} \gets$ simulated annealing, particle swarm and Latin hypercube samples in $[\ell, u]$}
@@ -403,8 +403,8 @@ between strategies from the data it has gathered so far.
 BiTPE (bi-population tree-structured Parzen estimation, from samplersLib) resamples from the
 density ratio between kernel density estimates of the good and the bad points, in the spirit
 of TPE and of trust-region Bayesian optimization :cite:p:`eriksson2019turbo`. Each
-model-based step proposes :math:`n_s` points, the number of samples configured in
-``search["ns"]`` (capped by the remaining budget), plus three line probes. Readiness alone
+model-based step proposes :math:`n_b` points, set by ``search["batch"]`` (10 by default,
+capped by the remaining budget), plus three line probes. Readiness alone
 decides whether BiTPE runs; a low trust only widens its kernels, so one unlucky round cannot
 starve it of the data it needs to recover. When the installed samplersLib supports it, BiTPE
 works in a reduced space of :math:`n_{\text{eff}} = \max\{3, \lfloor 0.7n \rfloor\}`

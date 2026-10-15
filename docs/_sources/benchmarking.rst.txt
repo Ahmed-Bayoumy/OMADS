@@ -197,7 +197,8 @@ poll.
        :numref:`T-coco-summary` only.
 
 With the ``ACTIVE`` search, each model-based search step evaluates up to :math:`n_s` BiTPE
-proposals plus three line probes; with ``"opportunistic": True`` the evaluation of a poll or
+proposals plus three line probes (the runner sets ``search["batch"]`` to :math:`n_s`;
+OMADS' default is 10); with ``"opportunistic": True`` the evaluation of a poll or
 search set stops at its first improvement.
 
 The reference algorithms are the 2022 entries of the COCO data archive: COBYLA and AL1-CMA-ES

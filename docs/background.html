@@ -966,7 +966,7 @@ between strategies from the data it has gathered so far.</p>
      \STATE{stance $\gets$ conservative if the frame is still coarse or the search stagnates, aggressive otherwise}
      \STATE{trust $\gets$ the fraction of the last BiTPE proposals that landed in the good set}
      \IF{ready}
-         \STATE{$S^{k} \gets n_{s}$ BiTPE samples in $T^{k}$ (narrow Gaussian kernel, or wide Cauchy and multiquadric kernels if conservative, $n &gt; 15$ or trust $&lt; 0.5$)}
+         \STATE{$S^{k} \gets n_{b}$ BiTPE samples in $T^{k}$ (narrow Gaussian kernel, or wide Cauchy and multiquadric kernels if conservative, $n &gt; 15$ or trust $&lt; 0.5$)}
          \STATE{add three line probes from $x^{k}$ towards the faces of $T^{k}$}
      \ELSIF{the search is due to diversify and more than 100 centres are cached}
          \STATE{$S^{k} \gets$ simulated annealing, particle swarm and Latin hypercube samples in $[\ell, u]$}
@@ -982,8 +982,8 @@ between strategies from the data it has gathered so far.</p>
         </pre></div></div><p>BiTPE (bi-population tree-structured Parzen estimation, from samplersLib) resamples from the
 density ratio between kernel density estimates of the good and the bad points, in the spirit
 of TPE and of trust-region Bayesian optimization <span class="bibtex-citation" id="id6">[<a class="reference internal" href="references.html#id9" title="David Eriksson, Michael Pearce, Jacob Gardner, Ryan D. Turner, and Matthias Poloczek. Scalable global optimization via local Bayesian optimization. In Advances in Neural Information Processing Systems, volume 32. 2019.">Eriksson <em>et al.</em>, 2019</a>]</span>. Each
-model-based step proposes <span class="math notranslate nohighlight">\(n_s\)</span> points, the number of samples configured in
-<code class="docutils literal notranslate"><span class="pre">search[&quot;ns&quot;]</span></code> (capped by the remaining budget), plus three line probes. Readiness alone
+model-based step proposes <span class="math notranslate nohighlight">\(n_b\)</span> points, set by <code class="docutils literal notranslate"><span class="pre">search[&quot;batch&quot;]</span></code> (10 by default,
+capped by the remaining budget), plus three line probes. Readiness alone
 decides whether BiTPE runs; a low trust only widens its kernels, so one unlucky round cannot
 starve it of the data it needs to recover. When the installed samplersLib supports it, BiTPE
 works in a reduced space of <span class="math notranslate nohighlight">\(n_{\text{eff}} = \max\{3, \lfloor 0.7n \rfloor\}\)</span>

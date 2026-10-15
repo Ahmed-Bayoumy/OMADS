@@ -350,6 +350,8 @@ class EfficientExploration(GenericSamplerBaseData, GenericSamplerBase):
     self.diverse_intense_trial_period = 2
     self.nvars = None
     self.ns = 0
+    # BiTPE proposals per ACTIVE search step (search["batch"]; None: 10)
+    self.tpe_batch: Optional[int] = None
     self.psize = None
     # --- BiTPE confidence/stance policy state (see _bitpe_readiness,
     # _exploitation_stance, _update_bitpe_trust below) -----------------
@@ -1377,12 +1379,13 @@ class EfficientExploration(GenericSamplerBaseData, GenericSamplerBase):
           # scale. Passed explicitly because released samplersLib (<= 2604.0)
           # requires it; leaving it out raised a TypeError that the fallback
           # below silently turned into Halton sampling.
-          # The batch is the configured number of samples (`search["ns"]`,
-          # capped by the remaining budget above).
+          # Batch of BiTPE proposals: search["batch"] (at most the
+          # samples left in the budget), or 10 when it is not set.
+          batch = 10 if self.tpe_batch is None else \
+              max(min(int(self.tpe_batch), int(self.ns)), 1)
           ps = np.array(
               self.active_sampling.resample(
-                  size=max(int(self.ns), 1), seed=int(self.seed + self.iter),
-                  scale=1.0),
+                  size=batch, seed=int(self.seed + self.iter), scale=1.0),
               copy=True)
           # Plus a few cheap line probes from the incumbent toward the
           # trust-region faces (these used to aim at the global bounds,
@@ -1669,6 +1672,8 @@ class search_sampling:
   :param weights: Level weights of the full-factorial sampler
   :param type: "VNS" for the variable neighbourhood search, any other value
     for the sampling search
+  :param batch: Number of BiTPE proposals per ACTIVE search step, capped by
+    the remaining budget (None: 10)
   """
   s_method: str = SAMPLING_METHOD.LH.name
   ns: int = 3
@@ -1676,3 +1681,4 @@ class search_sampling:
   criterion: Optional[str] = None
   weights: Optional[List[float]] = None
   type: str = SEARCH_TYPE.SAMPLING.name
+  batch: Optional[int] = None

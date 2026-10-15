@@ -829,6 +829,8 @@
     <span class="bp">self</span><span class="o">.</span><span class="n">diverse_intense_trial_period</span> <span class="o">=</span> <span class="mi">2</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">nvars</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">ns</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="c1"># BiTPE proposals per ACTIVE search step (search["batch"]; None: 10)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">tpe_batch</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">psize</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="c1"># --- BiTPE confidence/stance policy state (see _bitpe_readiness,</span>
     <span class="c1"># _exploitation_stance, _update_bitpe_trust below) -----------------</span>
@@ -1876,12 +1878,13 @@
           <span class="c1"># scale. Passed explicitly because released samplersLib (&lt;= 2604.0)</span>
           <span class="c1"># requires it; leaving it out raised a TypeError that the fallback</span>
           <span class="c1"># below silently turned into Halton sampling.</span>
-          <span class="c1"># The batch is the configured number of samples (`search["ns"]`,</span>
-          <span class="c1"># capped by the remaining budget above).</span>
+          <span class="c1"># Batch of BiTPE proposals: search["batch"] (at most the</span>
+          <span class="c1"># samples left in the budget), or 10 when it is not set.</span>
+          <span class="n">batch</span> <span class="o">=</span> <span class="mi">10</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tpe_batch</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> \
+              <span class="nb">max</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tpe_batch</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ns</span><span class="p">)),</span> <span class="mi">1</span><span class="p">)</span>
           <span class="n">ps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
               <span class="bp">self</span><span class="o">.</span><span class="n">active_sampling</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span>
-                  <span class="n">size</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ns</span><span class="p">),</span> <span class="mi">1</span><span class="p">),</span> <span class="n">seed</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">seed</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">iter</span><span class="p">),</span>
-                  <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span><span class="p">),</span>
+                  <span class="n">size</span><span class="o">=</span><span class="n">batch</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">seed</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">iter</span><span class="p">),</span> <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span><span class="p">),</span>
               <span class="n">copy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
           <span class="c1"># Plus a few cheap line probes from the incumbent toward the</span>
           <span class="c1"># trust-region faces (these used to aim at the global bounds,</span>
@@ -2178,13 +2181,16 @@
 <span class="sd">  :param weights: Level weights of the full-factorial sampler</span>
 <span class="sd">  :param type: "VNS" for the variable neighbourhood search, any other value</span>
 <span class="sd">    for the sampling search</span>
+<span class="sd">  :param batch: Number of BiTPE proposals per ACTIVE search step, capped by</span>
+<span class="sd">    the remaining budget (None: 10)</span>
 <span class="sd">  """</span>
   <span class="n">s_method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">SAMPLING_METHOD</span><span class="o">.</span><span class="n">LH</span><span class="o">.</span><span class="n">name</span>
   <span class="n">ns</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span>
   <span class="n">visualize</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
   <span class="n">criterion</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
   <span class="n">weights</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
-  <span class="nb">type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">SEARCH_TYPE</span><span class="o">.</span><span class="n">SAMPLING</span><span class="o">.</span><span class="n">name</span></div>
+  <span class="nb">type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">SEARCH_TYPE</span><span class="o">.</span><span class="n">SAMPLING</span><span class="o">.</span><span class="n">name</span>
+  <span class="n">batch</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span></div>
 
 </pre></div>
 

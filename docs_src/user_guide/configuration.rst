@@ -325,6 +325,10 @@ Multi-objective and barrier
    * - ``ns``
      - ``3``
      - Samples per search step. ``None`` uses :math:`(n+1)(n+2)/4`.
+   * - ``batch``
+     - ``None``
+     - ``ACTIVE`` only: number of BiTPE proposals per model-based search step, at most the
+       evaluations left in the budget. ``None`` draws 10.
    * - ``criterion``
      - ``None``
      - Space-filling criterion of the Latin hypercube sampler (for example ``"maximin"``).

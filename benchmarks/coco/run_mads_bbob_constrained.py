@@ -136,6 +136,9 @@ def build_omads_input(problem, x0, budget: int, seed: int,
           "type": args.search_type,
           "s_method": args.s_method,
           "ns": search_samples(problem, args),
+          # The published ACTIVE configurations draw ns BiTPE proposals per
+          # search step (OMADS' default is 10).
+          "batch": search_samples(problem, args),
           "visualize": False,
       },
   }
