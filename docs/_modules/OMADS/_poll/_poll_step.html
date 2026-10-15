@@ -1,0 +1,795 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" data-theme="light">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OMADS._poll._poll_step &#8212; OMADS 2610</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/proof.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/pseudocode@latest/build/pseudocode.min.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=2ebac5eb" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../../_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
+
+    <script src="../../../_static/documentation_options.js?v=c14009a4"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=fd10adb8"></script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pseudocode@latest/build/pseudocode.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/OMADS/_poll/_poll_step';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="2610" />
+  
+    
+    <script src="../../../_static/searchtools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <script src="../../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="light">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+    
+    <img src="../../../_static/OMADS_logo.png" class="logo__image only-light" alt="OMADS 2610 - Home"/>
+    <img src="../../../_static/OMADS_logo.png" class="logo__image only-dark pst-js-only" alt="OMADS 2610 - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../getting_started.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../background.html">
+    Background
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../benchmarking.html">
+    Benchmarking
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide/configuration.html">
+    Configuration reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide/outputs.html">
+    Outputs
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../../references.html">
+    References
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/Ahmed-Bayoumy/OMADS" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../getting_started.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../background.html">
+    Background
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../benchmarking.html">
+    Benchmarking
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide/configuration.html">
+    Configuration reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide/outputs.html">
+    Outputs
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../references.html">
+    References
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/Ahmed-Bayoumy/OMADS" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">OMADS._poll._poll_step</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for OMADS._poll._poll_step</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""</span>
+<span class="sd"># ------------------------------------------------------------------------------------#</span>
+<span class="sd">#  Mesh Adaptive Direct Search - (MADS)                                               #</span>
+<span class="sd">#                                                                                     #</span>
+<span class="sd">#  Author: Ahmed H. Bayoumy                                                           #</span>
+<span class="sd">#  email: ahmed.bayoumy@mail.mcgill.ca                                                #</span>
+<span class="sd">#                                                                                     #</span>
+<span class="sd">#  This program is free software: you can redistribute it and/or modify it under the  #</span>
+<span class="sd">#  terms of the BSD 3-Clause License as published by the Free Software   #</span>
+<span class="sd">#  Foundation, either version 3 of the License, or (at your option) any later         #</span>
+<span class="sd">#  version.                                                                           #</span>
+<span class="sd">#                                                                                     #</span>
+<span class="sd">#  This program is distributed in the hope that it will be useful, but WITHOUT ANY    #</span>
+<span class="sd">#  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A    #</span>
+<span class="sd">#  PARTICULAR PURPOSE.  See the BSD 3-Clause License for more details.   #</span>
+<span class="sd">#                                                                                     #</span>
+<span class="sd">#  You should have received a copy of the BSD 3-Clause License along     #</span>
+<span class="sd">#  with this program. If not, see &lt;https://opensource.org/license/bsd-3-clause/&gt;.     #</span>
+<span class="sd">#                                                                                     #</span>
+<span class="sd">#  You can find information on OMADS at                                               #</span>
+<span class="sd">#  https://github.com/Ahmed-Bayoumy/OMADS                                             #</span>
+<span class="sd">#  Copyright (C) 2026  Ahmed H. Bayoumy                                               #</span>
+<span class="sd"># ------------------------------------------------------------------------------------#</span>
+<span class="sd">"""</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.._include</span><span class="w"> </span><span class="kn">import</span> <span class="n">Evaluator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.._multisource._multisource</span><span class="w"> </span><span class="kn">import</span> <span class="n">MultiSource</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.._include</span><span class="w"> </span><span class="kn">import</span> <span class="n">Point</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.._include</span><span class="w"> </span><span class="kn">import</span> <span class="n">INSERTION_FLAG</span><span class="p">,</span> <span class="n">STOP_TYPE</span><span class="p">,</span> <span class="n">SUCCESS_TYPES</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.._include</span><span class="w"> </span><span class="kn">import</span> <span class="n">AdaptiveBarrier</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.._include</span><span class="w"> </span><span class="kn">import</span> <span class="n">CandidatePoint</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.._include</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.._include</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dirs2n</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.._include</span><span class="w"> </span><span class="kn">import</span> <span class="n">Parameters</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.._include</span><span class="w"> </span><span class="kn">import</span> <span class="n">Options</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.._include</span><span class="w"> </span><span class="kn">import</span> <span class="n">PostMADS</span><span class="p">,</span> <span class="n">Output</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.._metrics._success</span><span class="w"> </span><span class="kn">import</span> <span class="n">compute_success</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.._include</span><span class="w"> </span><span class="kn">import</span> <span class="n">MadsState</span><span class="p">,</span> <span class="n">MadsStatistics</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.._include</span><span class="w"> </span><span class="kn">import</span> <span class="n">Cache</span>
+
+
+<div class="viewcode-block" id="poll_cycle">
+<a class="viewcode-back" href="../../../api/components.html#OMADS._poll._poll_step.poll_cycle">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">poll_cycle</span><span class="p">(</span><span class="n">poll</span><span class="p">:</span> <span class="n">Dirs2n</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="n">Options</span><span class="p">,</span> <span class="n">param</span><span class="p">:</span> <span class="n">Parameters</span><span class="p">,</span>  <span class="c1"># noqa: C901</span>
+               <span class="n">state</span><span class="p">:</span> <span class="n">MadsState</span><span class="p">,</span> <span class="n">stats</span><span class="p">:</span> <span class="n">MadsStatistics</span><span class="p">,</span>
+               <span class="n">active_barrier</span><span class="p">:</span> <span class="n">AdaptiveBarrier</span><span class="p">,</span> <span class="n">iteration</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">log</span><span class="p">:</span> <span class="n">logger</span><span class="p">,</span>
+               <span class="n">post</span><span class="p">:</span> <span class="n">PostMADS</span><span class="p">,</span> <span class="n">bb_handle</span><span class="p">:</span> <span class="n">Evaluator</span><span class="p">,</span> <span class="n">out</span><span class="p">:</span> <span class="n">Output</span><span class="p">,</span>
+               <span class="n">hashtable</span><span class="p">:</span> <span class="n">Cache</span><span class="p">,</span> <span class="n">ms</span><span class="p">:</span> <span class="n">MultiSource</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+  <span class="c1"># Forget any sets and directions been previously generated</span>
+  <span class="k">del</span> <span class="n">poll</span><span class="o">.</span><span class="n">candidate_points_set</span>
+  <span class="k">del</span> <span class="n">poll</span><span class="o">.</span><span class="n">poll_dirs</span>
+
+  <span class="k">if</span> <span class="n">post</span><span class="o">.</span><span class="n">step_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">post</span><span class="o">.</span><span class="n">step_name</span> <span class="o">=</span> <span class="p">[]</span>
+  <span class="c1"># tic = time.perf_counter()</span>
+  <span class="n">candidates</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">CandidatePoint</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+  <span class="n">generated_candidates_during_step</span> <span class="o">=</span> <span class="p">[]</span>
+  <span class="n">parent_index_candidates</span> <span class="o">=</span> <span class="p">[]</span>
+  <span class="n">generated_during_search_step</span> <span class="o">=</span> <span class="p">[]</span>
+  <span class="c1"># Generate candidate points given each center</span>
+  <span class="k">for</span> <span class="n">center</span> <span class="ow">in</span> <span class="n">state</span><span class="o">.</span><span class="n">ordered_frame_centers</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">center</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+      <span class="c1"># No real secondary/infeasible center this iteration (see</span>
+      <span class="c1"># set_frame_centers_and_hvalues) -- nothing to do here.</span>
+      <span class="k">continue</span>
+    <span class="n">generated_candidates_during_step</span> <span class="o">=</span> <span class="n">poll_step</span><span class="p">(</span>
+        <span class="n">poll</span><span class="o">=</span><span class="n">poll</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">,</span> <span class="n">param</span><span class="o">=</span><span class="n">param</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span> <span class="n">stats</span><span class="o">=</span><span class="n">stats</span><span class="p">,</span>
+        <span class="n">active_barrier</span><span class="o">=</span><span class="n">active_barrier</span><span class="p">,</span> <span class="n">iteration</span><span class="o">=</span><span class="n">iteration</span><span class="p">,</span>
+        <span class="n">frame_center</span><span class="o">=</span><span class="n">center</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="n">log</span><span class="p">,</span> <span class="n">post</span><span class="o">=</span><span class="n">post</span><span class="p">,</span> <span class="n">hashtable</span><span class="o">=</span><span class="n">hashtable</span><span class="p">)</span>
+
+    <span class="c1"># Add generated points to the list of candidates</span>
+    <span class="k">if</span> <span class="n">generated_candidates_during_step</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+      <span class="n">candidates</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">generated_candidates_during_step</span><span class="p">)</span>
+      <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">generated_candidates_during_step</span><span class="p">)):</span>
+        <span class="n">parent_index_candidates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">center</span><span class="p">)</span>
+        <span class="n">generated_during_search_step</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+
+  <span class="c1"># Evaluate the generated candidate points</span>
+  <span class="n">poll</span><span class="o">.</span><span class="n">_candidate_points_set</span> <span class="o">=</span> <span class="p">[]</span>
+  <span class="k">for</span> <span class="n">ci</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">candidates</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">hashtable</span><span class="o">.</span><span class="n">last_index</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">&lt;</span> <span class="n">options</span><span class="o">.</span><span class="n">budget</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">hashtable</span><span class="o">.</span><span class="n">is_duplicate</span><span class="p">(</span>
+            <span class="n">c</span><span class="p">,</span> <span class="n">add</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">hashtable</span><span class="o">.</span><span class="n">is_duplicate_in_set</span><span class="p">(</span>
+            <span class="n">c</span><span class="p">,</span> <span class="n">poll</span><span class="o">.</span><span class="n">_candidate_points_set</span><span class="p">):</span>
+      <span class="n">poll</span><span class="o">.</span><span class="n">candidate_points_set</span> <span class="o">=</span> <span class="n">c</span>
+  <span class="k">del</span> <span class="n">candidates</span>
+  <span class="n">candidates</span> <span class="o">=</span> <span class="n">poll</span><span class="o">.</span><span class="n">_candidate_points_set</span>
+  <span class="k">if</span> <span class="n">ms</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">options</span><span class="o">.</span><span class="n">parallel_mode</span><span class="p">:</span>
+      <span class="n">insertion_flag</span><span class="p">,</span> <span class="n">post</span> <span class="o">=</span> <span class="n">bb_handle</span><span class="o">.</span><span class="n">run_callable_serial_local</span><span class="p">(</span>
+          <span class="n">sampler</span><span class="o">=</span><span class="n">poll</span><span class="p">,</span> <span class="n">centers</span><span class="o">=</span><span class="n">parent_index_candidates</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">,</span>
+          <span class="n">stats</span><span class="o">=</span><span class="n">stats</span><span class="p">,</span> <span class="n">active_barrier</span><span class="o">=</span><span class="n">active_barrier</span><span class="p">,</span> <span class="n">post</span><span class="o">=</span><span class="n">post</span><span class="p">,</span>
+          <span class="n">step_name</span><span class="o">=</span><span class="s1">'Poll_2n'</span><span class="p">,</span> <span class="n">parent_indices</span><span class="o">=</span><span class="n">parent_index_candidates</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">out</span><span class="p">,</span>
+          <span class="n">hashtable</span><span class="o">=</span><span class="n">hashtable</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+      <span class="c1"># COMPLETED: Review and make it consistent with the serial evaluator</span>
+      <span class="n">poll</span><span class="o">.</span><span class="n">point_index</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+      <span class="c1"># """ Parallel evaluation for points in the samples set """</span>
+      <span class="n">insertion_flag</span><span class="p">,</span> <span class="n">post</span> <span class="o">=</span> <span class="n">bb_handle</span><span class="o">.</span><span class="n">run_callable_parallel_local</span><span class="p">(</span>
+          <span class="n">sampler</span><span class="o">=</span><span class="n">poll</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">,</span> <span class="n">stats</span><span class="o">=</span><span class="n">stats</span><span class="p">,</span>
+          <span class="n">active_barrier</span><span class="o">=</span><span class="n">active_barrier</span><span class="p">,</span> <span class="n">post</span><span class="o">=</span><span class="n">post</span><span class="p">,</span> <span class="n">step_name</span><span class="o">=</span><span class="s1">'Poll_2n'</span><span class="p">,</span>
+          <span class="n">parent_indices</span><span class="o">=</span><span class="n">parent_index_candidates</span><span class="p">,</span> <span class="n">hashtable</span><span class="o">=</span><span class="n">hashtable</span><span class="p">,</span>
+          <span class="n">centers</span><span class="o">=</span><span class="n">parent_index_candidates</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">out</span><span class="p">)</span>
+  <span class="k">else</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">iteration</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+      <span class="n">ms</span><span class="o">.</span><span class="n">initialize_multisource_manager</span><span class="p">(</span>
+          <span class="n">sampler</span><span class="o">=</span><span class="n">poll</span><span class="p">,</span> <span class="n">centers</span><span class="o">=</span><span class="n">parent_index_candidates</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">,</span>
+          <span class="n">stats</span><span class="o">=</span><span class="n">stats</span><span class="p">,</span> <span class="n">active_barrier</span><span class="o">=</span><span class="n">active_barrier</span><span class="p">,</span> <span class="n">post</span><span class="o">=</span><span class="n">post</span><span class="p">,</span>
+          <span class="n">step_name</span><span class="o">=</span><span class="s1">'Poll_2n'</span><span class="p">,</span> <span class="n">parent_indices</span><span class="o">=</span><span class="n">parent_index_candidates</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">out</span><span class="p">,</span>
+          <span class="n">hashtable</span><span class="o">=</span><span class="n">hashtable</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="n">log</span><span class="p">)</span>
+    <span class="n">insertion_flag</span><span class="p">,</span> <span class="n">post</span> <span class="o">=</span> <span class="n">ms</span><span class="o">.</span><span class="n">ms_serial_evaluation</span><span class="p">(</span>
+        <span class="n">sampler</span><span class="o">=</span><span class="n">poll</span><span class="p">,</span> <span class="n">centers</span><span class="o">=</span><span class="n">parent_index_candidates</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">,</span>
+        <span class="n">stats</span><span class="o">=</span><span class="n">stats</span><span class="p">,</span> <span class="n">active_barrier</span><span class="o">=</span><span class="n">active_barrier</span><span class="p">,</span> <span class="n">post</span><span class="o">=</span><span class="n">post</span><span class="p">,</span>
+        <span class="n">step_name</span><span class="o">=</span><span class="s1">'Poll'</span><span class="p">,</span> <span class="n">parent_indices</span><span class="o">=</span><span class="n">parent_index_candidates</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">out</span><span class="p">,</span>
+        <span class="n">hashtable</span><span class="o">=</span><span class="n">hashtable</span><span class="p">)</span>
+
+  <span class="c1"># COMPLETED: Add a new logic to evaluate suceess criteria and update insertion flags accordingly</span>
+
+  <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">candidate</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">candidates</span><span class="p">):</span>
+    <span class="n">success_flag</span> <span class="o">=</span> <span class="n">SUCCESS_TYPES</span><span class="o">.</span><span class="n">US</span> <span class="k">if</span> <span class="n">insertion_flag</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">insertion_flag</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">compute_success</span><span class="p">(</span>
+        <span class="n">active_barrier</span><span class="o">=</span><span class="n">active_barrier</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">,</span> <span class="n">insertion_flag</span><span class="o">=</span><span class="n">insertion_flag</span><span class="p">[</span><span class="n">index</span><span class="p">],</span> <span class="n">v</span><span class="o">=</span><span class="n">candidate</span><span class="p">)</span>
+    <span class="c1"># Update mesh; slightly different from the article for better performance</span>
+    <span class="k">if</span> <span class="n">insertion_flag</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">insertion_flag</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span>
+            <span class="n">INSERTION_FLAG</span><span class="o">.</span><span class="n">DOMINATES</span><span class="p">,</span> <span class="n">INSERTION_FLAG</span><span class="o">.</span><span class="n">EXTENDS</span><span class="p">]:</span>
+      <span class="n">x_parent</span><span class="p">:</span> <span class="n">Point</span> <span class="o">=</span> <span class="n">Point</span><span class="p">()</span>
+      <span class="n">x_parent</span><span class="o">.</span><span class="n">coordinates</span> <span class="o">=</span> <span class="n">hashtable</span><span class="o">.</span><span class="n">get_candidate_from_cache_by_index</span><span class="p">(</span>
+          <span class="n">parent_index_candidates</span><span class="p">[</span><span class="n">index</span><span class="p">])</span><span class="o">.</span><span class="n">coordinates</span>
+      <span class="n">direction</span><span class="p">:</span> <span class="n">Point</span> <span class="o">=</span> <span class="n">Point</span><span class="p">()</span>
+      <span class="c1"># The successful candidate's step, not the last evaluated point's: with</span>
+      <span class="c1"># a non-opportunistic poll those differ, and an anisotropic mesh would</span>
+      <span class="c1"># enlarge the frame along the wrong coordinates.</span>
+      <span class="n">direction</span><span class="o">.</span><span class="n">coordinates</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">candidate</span><span class="o">.</span><span class="n">coordinates</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+          <span class="n">x_parent</span><span class="o">.</span><span class="n">coordinates</span><span class="p">)</span>
+      <span class="n">m_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">active_barrier</span><span class="o">.</span><span class="n">elements</span><span class="o">.</span><span class="n">get_index_loc_by_signature</span><span class="p">(</span>
+          <span class="n">candidate</span><span class="o">.</span><span class="n">signature</span><span class="p">)</span>
+      <span class="n">active_barrier</span><span class="o">.</span><span class="n">meshes</span><span class="p">[</span><span class="n">m_index</span><span class="p">]</span><span class="o">.</span><span class="n">enlarge_delta_frame_size</span><span class="p">(</span>
+          <span class="n">direction</span><span class="o">=</span><span class="n">direction</span><span class="p">)</span>
+      <span class="n">post</span><span class="o">.</span><span class="n">xmin</span> <span class="o">=</span> <span class="n">active_barrier</span><span class="o">.</span><span class="n">elements</span><span class="o">.</span><span class="n">get_candidate_from_elements_by_signature</span><span class="p">(</span>
+          <span class="n">candidate</span><span class="o">.</span><span class="n">signature</span><span class="p">)</span>
+      <span class="n">hashtable</span><span class="o">.</span><span class="n">set_improving_candidate</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">candidate</span><span class="p">)</span>
+
+    <span class="c1"># Update success flag</span>
+    <span class="k">if</span> <span class="n">success_flag</span><span class="o">.</span><span class="n">value</span> <span class="o">&gt;</span> <span class="p">(</span>
+            <span class="n">state</span><span class="o">.</span><span class="n">last_success</span><span class="o">.</span><span class="n">value</span>
+            <span class="k">if</span>
+            <span class="nb">isinstance</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">last_success</span><span class="p">,</span> <span class="n">SUCCESS_TYPES</span><span class="p">)</span> <span class="k">else</span>
+            <span class="n">SUCCESS_TYPES</span><span class="p">[</span><span class="n">state</span><span class="o">.</span><span class="n">last_success</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">):</span>
+
+      <span class="n">state</span><span class="o">.</span><span class="n">last_success</span> <span class="o">=</span> <span class="n">success_flag</span>
+      <span class="n">poll</span><span class="o">.</span><span class="n">n_successes</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="c1"># Detect potential stopping reasons</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">poll</span><span class="o">.</span><span class="n">bb_eval</span> <span class="o">&gt;=</span> <span class="n">options</span><span class="o">.</span><span class="n">budget</span><span class="p">):</span>
+      <span class="n">state</span><span class="o">.</span><span class="n">stop_reason</span> <span class="o">=</span> <span class="n">STOP_TYPE</span><span class="o">.</span><span class="n">MAX_BB_EVAL_REACHED</span>
+      <span class="k">return</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">poll</span><span class="o">.</span><span class="n">bb_eval</span> <span class="o">&gt;=</span> <span class="n">options</span><span class="o">.</span><span class="n">noutbound_hits_max</span><span class="p">):</span>
+      <span class="n">state</span><span class="o">.</span><span class="n">stop_reason</span> <span class="o">=</span> <span class="n">STOP_TYPE</span><span class="o">.</span><span class="n">MAX_BB_OUTBOUND_REACHED</span>
+      <span class="k">return</span>
+
+    <span class="c1"># Detect feasibility in case we are in phase one</span>
+    <span class="k">if</span> <span class="n">state</span><span class="o">.</span><span class="n">is_phase_one</span> <span class="ow">and</span> <span class="n">insertion_flag</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+      <span class="k">if</span> <span class="n">active_barrier</span><span class="o">.</span><span class="n">elements</span><span class="p">[</span><span class="n">active_barrier</span><span class="o">.</span><span class="n">last_index</span><span class="p">]</span><span class="o">.</span><span class="n">h</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">state</span><span class="o">.</span><span class="n">stop_reason</span> <span class="o">=</span> <span class="n">STOP_TYPE</span><span class="o">.</span><span class="n">STOP_IF_FEASIBLE</span>
+        <span class="k">return</span>
+
+    <span class="c1"># Trigger opportunistic strategy only when an iteration is considered as a full success</span>
+    <span class="k">if</span> <span class="n">success_flag</span><span class="o">.</span><span class="n">value</span> <span class="o">&gt;</span> <span class="n">SUCCESS_TYPES</span><span class="o">.</span><span class="n">PS</span><span class="o">.</span><span class="n">value</span> <span class="ow">and</span> <span class="n">options</span><span class="o">.</span><span class="n">opportunistic</span><span class="p">:</span>
+      <span class="n">stats</span><span class="o">.</span><span class="n">nopportunistic_triggers</span> <span class="o">+=</span> <span class="mi">1</span>
+      <span class="k">break</span></div>
+
+
+  <span class="c1"># toc = time.perf_counter()</span>
+
+
+<div class="viewcode-block" id="poll_step">
+<a class="viewcode-back" href="../../../api/components.html#OMADS._poll._poll_step.poll_step">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">poll_step</span><span class="p">(</span>
+        <span class="n">poll</span><span class="p">:</span> <span class="n">Dirs2n</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="n">Options</span><span class="p">,</span> <span class="n">param</span><span class="p">:</span> <span class="n">Parameters</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">MadsState</span><span class="p">,</span>
+        <span class="n">stats</span><span class="p">:</span> <span class="n">MadsStatistics</span><span class="p">,</span> <span class="n">active_barrier</span><span class="p">:</span> <span class="n">AdaptiveBarrier</span><span class="p">,</span> <span class="n">iteration</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">frame_center</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">log</span><span class="p">:</span> <span class="n">logger</span><span class="p">,</span> <span class="n">post</span><span class="p">:</span> <span class="n">PostMADS</span><span class="p">,</span> <span class="n">hashtable</span><span class="p">:</span> <span class="n">Cache</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">CandidatePoint</span><span class="p">]:</span>
+<span class="w">  </span><span class="sd">"""_summary_</span>
+
+<span class="sd">  :param poll: The poll step algorithm</span>
+<span class="sd">  :type poll: Dirs2n</span>
+<span class="sd">  :param options: The directions class object</span>
+<span class="sd">  :type options: Options</span>
+<span class="sd">  :param param: Algorithmic options</span>
+<span class="sd">  :type param: Parameters</span>
+<span class="sd">  :param state: Algorithmic parameters</span>
+<span class="sd">  :type state: MadsState</span>
+<span class="sd">  :param stats: Success status</span>
+<span class="sd">  :type stats: MadsStatistics</span>
+<span class="sd">  :param active_barrier: Statistics and metadata class object</span>
+<span class="sd">  :type active_barrier: BarrierMO</span>
+<span class="sd">  :param iteration: The active barrier class object</span>
+<span class="sd">  :type iteration: int</span>
+<span class="sd">  :param xmin: iteration number</span>
+<span class="sd">  :type xmin: CandidatePoint</span>
+<span class="sd">  :param log: current incumbent candidate</span>
+<span class="sd">  :type log: logger</span>
+<span class="sd">  :param post: updated log</span>
+<span class="sd">  :type post: PostMADS</span>
+<span class="sd">  :return: Updated incumbent candidate</span>
+<span class="sd">  :rtype: CandidatePoint</span>
+<span class="sd">  """</span>
+
+  <span class="n">poll</span><span class="o">.</span><span class="n">prob_params</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
+
+  <span class="c1"># Set mesh</span>
+  <span class="k">if</span> <span class="n">state</span><span class="o">.</span><span class="n">fk_frame_center</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+    <span class="n">mk</span> <span class="o">=</span> <span class="n">active_barrier</span><span class="o">.</span><span class="n">meshes</span><span class="p">[</span><span class="n">state</span><span class="o">.</span><span class="n">ordered_frame_centers</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+  <span class="k">else</span><span class="p">:</span>
+    <span class="n">mk</span> <span class="o">=</span> <span class="n">active_barrier</span><span class="o">.</span><span class="n">meshes</span><span class="p">[</span><span class="n">state</span><span class="o">.</span><span class="n">fk_frame_center</span><span class="p">]</span>
+
+  <span class="n">post</span><span class="o">.</span><span class="n">mesh</span> <span class="o">=</span> <span class="n">mk</span>
+
+  <span class="c1"># Check the mesh size with the min mesh threshold</span>
+  <span class="k">if</span> <span class="nb">all</span><span class="p">(</span>
+      <span class="p">[</span><span class="n">mk</span><span class="o">.</span><span class="n">get_delta_frame_size</span><span class="p">()</span><span class="o">.</span><span class="n">coordinates</span><span class="p">[</span><span class="n">pp</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">options</span><span class="o">.</span><span class="n">tol</span>
+       <span class="k">for</span> <span class="n">pp</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">poll</span><span class="o">.</span><span class="n">n</span><span class="p">)]):</span>
+    <span class="n">state</span><span class="o">.</span><span class="n">stop_reason</span> <span class="o">=</span> <span class="n">STOP_TYPE</span><span class="o">.</span><span class="n">MIN_MESH_REACHED</span>
+    <span class="k">return</span>
+
+  <span class="c1"># Assign the mesh to the poll instant and constraints relaxation parameters from the current state instant</span>
+  <span class="n">poll</span><span class="o">.</span><span class="n">mesh</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">mk</span><span class="p">)</span>
+  <span class="n">poll</span><span class="o">.</span><span class="n">constraints_rp</span><span class="o">.</span><span class="n">hmax</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">h_max</span>
+  <span class="n">poll</span><span class="o">.</span><span class="n">constraints_handler</span><span class="o">.</span><span class="n">hmax</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">h_max</span>
+
+  <span class="c1"># poll.active_barrier = copy.deepcopy(active_barrier)</span>
+  <span class="n">poll</span><span class="o">.</span><span class="n">success</span> <span class="o">=</span> <span class="n">SUCCESS_TYPES</span><span class="o">.</span><span class="n">US</span>
+
+  <span class="k">if</span> <span class="n">frame_center</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+    <span class="n">xcp_frame</span><span class="p">:</span> <span class="n">CandidatePoint</span> <span class="o">=</span> <span class="n">hashtable</span><span class="o">.</span><span class="n">get_candidate_from_cache_by_index</span><span class="p">(</span>
+        <span class="n">frame_center</span><span class="p">)</span>
+    <span class="n">x_frame</span><span class="p">:</span> <span class="n">Point</span> <span class="o">=</span> <span class="n">Point</span><span class="p">()</span>
+    <span class="n">x_frame</span><span class="o">.</span><span class="n">coordinates</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">xcp_frame</span><span class="o">.</span><span class="n">coordinates</span><span class="p">)</span>
+    <span class="n">parent_index</span> <span class="o">=</span> <span class="n">active_barrier</span><span class="o">.</span><span class="n">parent_indexes</span><span class="p">[</span><span class="n">frame_center</span><span class="p">]</span>
+    <span class="n">x_parent</span><span class="p">:</span> <span class="n">Point</span> <span class="o">=</span> <span class="n">Point</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">parent_index</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+      <span class="n">x_parent</span><span class="o">.</span><span class="n">coordinates</span> <span class="o">=</span> <span class="n">hashtable</span><span class="o">.</span><span class="n">get_candidate_from_cache_by_index</span><span class="p">(</span>
+          <span class="n">parent_index</span><span class="p">)</span><span class="o">.</span><span class="n">coordinates</span>
+
+    <span class="n">generated_candidates_during_step</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">poll</span><span class="o">.</span><span class="n">create_poll_set</span><span class="p">(</span>
+        <span class="n">ub</span><span class="o">=</span><span class="n">param</span><span class="o">.</span><span class="n">ub</span><span class="p">,</span> <span class="n">lb</span><span class="o">=</span><span class="n">param</span><span class="o">.</span><span class="n">lb</span><span class="p">,</span> <span class="n">fc</span><span class="o">=</span><span class="n">xcp_frame</span><span class="p">,</span> <span class="n">fci</span><span class="o">=</span><span class="n">frame_center</span><span class="p">,</span> <span class="n">it</span><span class="o">=</span><span class="n">iteration</span><span class="p">,</span>
+        <span class="n">var_type</span><span class="o">=</span><span class="n">param</span><span class="o">.</span><span class="n">var_type</span><span class="p">,</span> <span class="n">var_sets</span><span class="o">=</span><span class="n">param</span><span class="o">.</span><span class="n">var_sets</span><span class="p">,</span> <span class="n">var_link</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">rich_direction</span><span class="o">=</span><span class="n">options</span><span class="o">.</span><span class="n">rich_direction</span><span class="p">,</span> <span class="n">c_types</span><span class="o">=</span><span class="n">param</span><span class="o">.</span><span class="n">constraints_type</span><span class="p">,</span>
+        <span class="n">direction_type</span><span class="o">=</span><span class="n">options</span><span class="o">.</span><span class="n">direction_type</span><span class="p">)</span>
+
+    <span class="c1"># poll.candidate_points_set</span>
+    <span class="k">if</span> <span class="n">poll</span><span class="o">.</span><span class="n">candidate_points_set</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span>
+            <span class="n">poll</span><span class="o">.</span><span class="n">candidate_points_set</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+      <span class="n">poll</span><span class="o">.</span><span class="n">project_on_mesh_and_snap_to_bounds</span><span class="p">(</span>
+          <span class="n">m</span><span class="o">=</span><span class="n">mk</span><span class="p">,</span> <span class="n">x_center</span><span class="o">=</span><span class="n">active_barrier</span><span class="o">.</span><span class="n">elements</span><span class="p">[</span><span class="n">frame_center</span><span class="p">]</span><span class="o">.</span><span class="n">coordinates</span><span class="p">,</span>
+          <span class="n">lb</span><span class="o">=</span><span class="n">param</span><span class="o">.</span><span class="n">lb</span><span class="p">,</span> <span class="n">ub</span><span class="o">=</span><span class="n">param</span><span class="o">.</span><span class="n">ub</span><span class="p">,</span> <span class="n">hashtable</span><span class="o">=</span><span class="n">hashtable</span><span class="p">,</span> <span class="n">stats</span><span class="o">=</span><span class="n">stats</span><span class="p">)</span>
+
+      <span class="n">peval</span> <span class="o">=</span> <span class="n">poll</span><span class="o">.</span><span class="n">bb_eval</span>
+      <span class="n">poll</span><span class="o">.</span><span class="n">omit_duplicates</span><span class="p">(</span><span class="n">peval</span><span class="p">,</span> <span class="n">stats</span><span class="p">,</span> <span class="n">hashtable</span><span class="o">=</span><span class="n">hashtable</span><span class="p">)</span>
+
+    <span class="n">generated_candidates_during_step</span> <span class="o">=</span> <span class="n">poll</span><span class="o">.</span><span class="n">candidate_points_set</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">stats</span><span class="o">.</span><span class="n">noutbound_hits</span> <span class="o">&gt;</span> <span class="n">poll</span><span class="o">.</span><span class="n">eval_budget</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">generated_candidates_during_step</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+      <span class="n">state</span><span class="o">.</span><span class="n">stop_reason</span> <span class="o">=</span> <span class="n">STOP_TYPE</span><span class="o">.</span><span class="n">MAX_BB_OUTBOUND_REACHED</span>
+
+  <span class="k">return</span> <span class="n">generated_candidates_during_step</span></div>
+
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2022-2026, Ahmed H. Bayoumy.
+      <br/>
+    
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

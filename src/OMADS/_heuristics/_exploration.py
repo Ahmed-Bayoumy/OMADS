@@ -1377,9 +1377,12 @@ class EfficientExploration(GenericSamplerBaseData, GenericSamplerBase):
           # scale. Passed explicitly because released samplersLib (<= 2604.0)
           # requires it; leaving it out raised a TypeError that the fallback
           # below silently turned into Halton sampling.
+          # The batch is the configured number of samples (`search["ns"]`,
+          # capped by the remaining budget above).
           ps = np.array(
               self.active_sampling.resample(
-                  size=10, seed=int(self.seed + self.iter), scale=1.0),
+                  size=max(int(self.ns), 1), seed=int(self.seed + self.iter),
+                  scale=1.0),
               copy=True)
           # Plus a few cheap line probes from the incumbent toward the
           # trust-region faces (these used to aim at the global bounds,
@@ -1656,6 +1659,17 @@ class EfficientExploration(GenericSamplerBaseData, GenericSamplerBase):
 
 @dataclass(slots=True)
 class search_sampling:
+  """Options of the search step (the ``search`` section of the input).
+
+  :param s_method: Sampling method: "ACTIVE", "LH", "RS", "HALTON" or
+    "FULLFACTORIAL"
+  :param ns: Number of samples per search step (None: (n+1)(n+2)/4)
+  :param visualize: Reserved
+  :param criterion: Space-filling criterion of the Latin hypercube sampler
+  :param weights: Level weights of the full-factorial sampler
+  :param type: "VNS" for the variable neighbourhood search, any other value
+    for the sampling search
+  """
   s_method: str = SAMPLING_METHOD.LH.name
   ns: int = 3
   visualize: bool = False

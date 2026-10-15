@@ -44,8 +44,8 @@ class CandidatePoint:
     :param _c_ineq: Inequality constraints
     :param _c_eq: Equality constraints
     :param _h: Aggregated constraints; active set
-    :param _signature: hash signature; facilitate looking for duplicates 
-    and storing coordinates, hash signature, in the cache memory
+    :param _signature: hash signature; facilitate looking for duplicates
+      and storing coordinates, hash signature, in the cache memory
     :param _dtype:  numpy double data type precision
   """
 
@@ -232,7 +232,7 @@ class CandidatePoint:
     """Check whether constraints violation function passes the extreme violation margin threshold
 
     :return: Whether passed an extreme barrier
-    :rtype: booleane_
+    :rtype: bool
     """
     return self._is_eb_passed
 

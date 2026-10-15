@@ -37,8 +37,8 @@ class Point:
     :param _n: # Dimension of the point
     :param _coords: Coordinates of the point
     :param _defined: Coordinates definition boolean
-    :param _signature: hash signature; facilitate looking for duplicates and 
-    storing coordinates, hash signature, in the cache memory
+    :param _signature: hash signature; facilitate looking for duplicates and
+      storing coordinates, hash signature, in the cache memory
     :param _dtype:  numpy double data type precision
   """
   # Dimension of the point

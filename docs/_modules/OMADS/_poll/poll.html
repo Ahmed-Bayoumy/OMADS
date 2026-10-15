@@ -1,0 +1,886 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" data-theme="light">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OMADS._poll.poll &#8212; OMADS 2610</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/proof.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/pseudocode@latest/build/pseudocode.min.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=2ebac5eb" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../../_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
+
+    <script src="../../../_static/documentation_options.js?v=c14009a4"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=fd10adb8"></script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pseudocode@latest/build/pseudocode.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/OMADS/_poll/poll';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="2610" />
+  
+    
+    <script src="../../../_static/searchtools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <script src="../../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="light">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+    
+    <img src="../../../_static/OMADS_logo.png" class="logo__image only-light" alt="OMADS 2610 - Home"/>
+    <img src="../../../_static/OMADS_logo.png" class="logo__image only-dark pst-js-only" alt="OMADS 2610 - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../getting_started.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../background.html">
+    Background
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../benchmarking.html">
+    Benchmarking
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide/configuration.html">
+    Configuration reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide/outputs.html">
+    Outputs
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../../references.html">
+    References
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/Ahmed-Bayoumy/OMADS" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../getting_started.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../background.html">
+    Background
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../benchmarking.html">
+    Benchmarking
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide/configuration.html">
+    Configuration reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide/outputs.html">
+    Outputs
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../references.html">
+    References
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/Ahmed-Bayoumy/OMADS" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">OMADS._poll.poll</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for OMADS._poll.poll</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""</span>
+<span class="sd"># ------------------------------------------------------------------------------------#</span>
+<span class="sd">#  Mesh Adaptive Direct Search - (MADS)                                               #</span>
+<span class="sd">#                                                                                     #</span>
+<span class="sd">#  Author: Ahmed H. Bayoumy                                                           #</span>
+<span class="sd">#  email: ahmed.bayoumy@mail.mcgill.ca                                                #</span>
+<span class="sd">#                                                                                     #</span>
+<span class="sd">#  This program is free software: you can redistribute it and/or modify it under the  #</span>
+<span class="sd">#  terms of the BSD 3-Clause License as published by the Free Software   #</span>
+<span class="sd">#  Foundation, either version 3 of the License, or (at your option) any later         #</span>
+<span class="sd">#  version.                                                                           #</span>
+<span class="sd">#                                                                                     #</span>
+<span class="sd">#  This program is distributed in the hope that it will be useful, but WITHOUT ANY    #</span>
+<span class="sd">#  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A    #</span>
+<span class="sd">#  PARTICULAR PURPOSE.  See the BSD 3-Clause License for more details.   #</span>
+<span class="sd">#                                                                                     #</span>
+<span class="sd">#  You should have received a copy of the BSD 3-Clause License along     #</span>
+<span class="sd">#  with this program. If not, see &lt;https://opensource.org/license/bsd-3-clause/&gt;.     #</span>
+<span class="sd">#                                                                                     #</span>
+<span class="sd">#  You can find information on OMADS at                                               #</span>
+<span class="sd">#  https://github.com/Ahmed-Bayoumy/OMADS                                             #</span>
+<span class="sd">#  Copyright (C) 2026  Ahmed H. Bayoumy                                               #</span>
+<span class="sd"># ------------------------------------------------------------------------------------#</span>
+<span class="sd">"""</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">multiprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">freeze_support</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.._include</span><span class="w"> </span><span class="kn">import</span> <span class="n">MSG_TYPE</span><span class="p">,</span> <span class="n">SAMPLER_TYPE</span><span class="p">,</span> <span class="n">STOP_TYPE</span><span class="p">,</span> <span class="n">SUCCESS_TYPES</span><span class="p">,</span> <span class="n">VAR_TYPE</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.._include</span><span class="w"> </span><span class="kn">import</span> <span class="n">Point</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.._include</span><span class="w"> </span><span class="kn">import</span> <span class="n">validator</span><span class="p">,</span> <span class="n">logger</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.._include</span><span class="w"> </span><span class="kn">import</span> <span class="n">CandidatePoint</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.._include</span><span class="w"> </span><span class="kn">import</span> <span class="n">Metrics</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.._include</span><span class="w"> </span><span class="kn">import</span> <span class="n">MadsState</span><span class="p">,</span> <span class="n">MadsStatistics</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">._poll_step</span><span class="w"> </span><span class="kn">import</span> <span class="n">poll_cycle</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.._include</span><span class="w"> </span><span class="kn">import</span> <span class="n">set_frame_centers_and_hvalues</span><span class="p">,</span> <span class="n">update</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.._include</span><span class="w"> </span><span class="kn">import</span> <span class="n">preprocess</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.._include</span><span class="w"> </span><span class="kn">import</span> <span class="n">ProgressBar</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.._include</span><span class="w"> </span><span class="kn">import</span> <span class="n">WarningSuppressor</span>
+<span class="n">np</span><span class="o">.</span><span class="n">set_printoptions</span><span class="p">(</span><span class="n">legacy</span><span class="o">=</span><span class="s1">'1.21'</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="main">
+<a class="viewcode-back" href="../../../api/solvers.html#OMADS._poll.poll.main">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>  <span class="c1"># noqa: C901</span>
+<span class="w">  </span><span class="sd">"""Run MADS with the poll step only (no search step).</span>
+
+<span class="sd">  Each iteration selects the frame centres from the adaptive barrier, polls</span>
+<span class="sd">  around them with orthogonal Householder directions (``ORTHO_2N`` or</span>
+<span class="sd">  ``ORTHO_N+1``) and updates the mesh and the barrier threshold. This solver</span>
+<span class="sd">  also supports Pareto studies (``param["is_pareto"]``) and writing the poll</span>
+<span class="sd">  trajectory (``options["save_coordinates"]``).</span>
+
+<span class="sd">  :param args: ``args[0]`` is the problem, either a dictionary with the</span>
+<span class="sd">    ``evaluator``, ``param`` and ``options`` sections or the path to a JSON</span>
+<span class="sd">    file holding them. An optional ``args[3]`` overrides the random seed.</span>
+<span class="sd">  :raises IOError: if the barrier is empty at the end of the run.</span>
+<span class="sd">  :return: ``(output, poll_sampler)`` where ``output`` is the results</span>
+<span class="sd">    dictionary (see :func:`OMADS._mads.mads.main`), with the extra keys</span>
+<span class="sd">    ``Secondary fmin`` and ``Secondary hmin`` for the best infeasible point.</span>
+<span class="sd">  :rtype: tuple</span>
+<span class="sd">  """</span>
+  <span class="c1"># """ Validate and parse the parameters file """</span>
+  <span class="n">validate</span> <span class="o">=</span> <span class="n">validator</span><span class="p">()</span>
+  <span class="n">data</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="n">validate</span><span class="o">.</span><span class="n">check_input_file</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">)</span>
+
+  <span class="c1"># Install the wrapper</span>
+  <span class="c1"># 1. Suppress Python warnings</span>
+  <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">"ignore"</span><span class="p">)</span>
+
+  <span class="c1"># 2. Wrap stderr for any other warning‑style output</span>
+  <span class="n">_original_stderr</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span>
+  <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span> <span class="o">=</span> <span class="n">WarningSuppressor</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+
+  <span class="k">del</span> <span class="n">validate</span>
+  <span class="n">total_time</span> <span class="o">=</span> <span class="mi">0</span>
+
+  <span class="c1"># """ Initialize the log file """</span>
+  <span class="n">log</span> <span class="o">=</span> <span class="n">logger</span><span class="p">()</span>
+  <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">"param"</span><span class="p">][</span><span class="s2">"post_dir"</span><span class="p">]):</span>
+    <span class="k">try</span><span class="p">:</span>
+      <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">"param"</span><span class="p">][</span><span class="s2">"post_dir"</span><span class="p">])</span>
+    <span class="k">except</span> <span class="ne">Warning</span><span class="p">:</span>
+      <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">"param"</span><span class="p">][</span><span class="s2">"post_dir"</span><span class="p">],</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+  <span class="n">log</span><span class="o">.</span><span class="n">initialize</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">"param"</span><span class="p">][</span><span class="s2">"post_dir"</span><span class="p">]</span> <span class="o">+</span> <span class="s2">"/OMADS.log"</span><span class="p">)</span>
+
+  <span class="c1"># """ Run preprocessor for the setup of</span>
+  <span class="c1">#  the optimization problem and for the initialization</span>
+  <span class="c1"># of optimization process """</span>
+  <span class="n">state</span> <span class="o">=</span> <span class="n">MadsState</span><span class="p">()</span>
+  <span class="n">stats</span> <span class="o">=</span> <span class="n">MadsStatistics</span><span class="p">()</span>
+  <span class="n">pre</span> <span class="o">=</span> <span class="n">preprocess</span><span class="p">(</span>
+      <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="n">log</span><span class="p">,</span> <span class="n">sampler_t</span><span class="o">=</span><span class="n">SAMPLER_TYPE</span><span class="o">.</span><span class="n">POLL</span><span class="p">)</span>
+  <span class="n">iteration</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">poll</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">param</span><span class="p">,</span> <span class="n">post</span><span class="p">,</span> <span class="n">out</span><span class="p">,</span> <span class="n">active_barrier</span><span class="p">,</span> \
+      <span class="n">out_p</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">stats</span><span class="p">,</span> <span class="n">bb_handle</span><span class="p">,</span> <span class="n">hashtable</span><span class="p">,</span> <span class="n">ms</span> <span class="o">=</span> <span class="n">pre</span><span class="o">.</span><span class="n">initialize_from_dict</span><span class="p">()</span>
+  <span class="k">del</span> <span class="n">pre</span>
+  <span class="n">out</span><span class="o">.</span><span class="n">step_name</span> <span class="o">=</span> <span class="s2">"Poll"</span>
+  <span class="k">if</span> <span class="n">out_p</span><span class="p">:</span>
+    <span class="n">out_p</span><span class="o">.</span><span class="n">step_name</span> <span class="o">=</span> <span class="s2">"Poll_ND"</span>
+
+  <span class="c1"># """ Set the random seed for results reproducibility """</span>
+  <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">4</span><span class="p">:</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">options</span><span class="o">.</span><span class="n">seed</span><span class="p">)</span>
+  <span class="k">else</span><span class="p">:</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">3</span><span class="p">]))</span>
+
+  <span class="n">out</span><span class="o">.</span><span class="n">step_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Poll: </span><span class="si">{</span><span class="n">poll</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">"</span>
+
+  <span class="n">log</span><span class="o">.</span><span class="n">log_msg</span><span class="p">(</span>
+      <span class="n">msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">"---------------- Run the Poll step (</span><span class="si">{</span><span class="n">poll</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">) ----------------"</span><span class="p">,</span>
+      <span class="n">msg_type</span><span class="o">=</span><span class="n">MSG_TYPE</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+
+  <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+    <span class="c1"># """ Start the count down for calculating the runtime indicator """</span>
+    <span class="n">tic</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+    <span class="k">del</span> <span class="n">poll</span><span class="o">.</span><span class="n">candidate_points_set</span>
+    <span class="k">del</span> <span class="n">poll</span><span class="o">.</span><span class="n">poll_dirs</span>
+
+    <span class="c1"># 1- Select incumbents (prim. and sec.)</span>
+    <span class="n">set_frame_centers_and_hvalues</span><span class="p">(</span>
+        <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span> <span class="n">active_barrier</span><span class="o">=</span><span class="n">active_barrier</span><span class="p">,</span> <span class="n">param</span><span class="o">=</span><span class="n">param</span><span class="p">,</span>
+        <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">)</span>
+    <span class="c1"># 2- Run the poll step</span>
+    <span class="n">poll_cycle</span><span class="p">(</span>
+        <span class="n">poll</span><span class="o">=</span><span class="n">poll</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">,</span> <span class="n">param</span><span class="o">=</span><span class="n">param</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span> <span class="n">stats</span><span class="o">=</span><span class="n">stats</span><span class="p">,</span>
+        <span class="n">active_barrier</span><span class="o">=</span><span class="n">active_barrier</span><span class="p">,</span> <span class="n">iteration</span><span class="o">=</span><span class="n">iteration</span><span class="p">,</span>
+        <span class="n">log</span><span class="o">=</span><span class="n">log</span><span class="p">,</span> <span class="n">post</span><span class="o">=</span><span class="n">post</span><span class="p">,</span> <span class="n">bb_handle</span><span class="o">=</span><span class="n">bb_handle</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">out</span><span class="p">,</span> <span class="n">hashtable</span><span class="o">=</span><span class="n">hashtable</span><span class="p">)</span>
+    <span class="c1"># 3- Updates</span>
+    <span class="n">update</span><span class="p">(</span><span class="n">sampler</span><span class="o">=</span><span class="n">poll</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span> <span class="n">active_barrier</span><span class="o">=</span><span class="n">active_barrier</span><span class="p">,</span>
+           <span class="n">stats</span><span class="o">=</span><span class="n">stats</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">,</span> <span class="n">hashtable</span><span class="o">=</span><span class="n">hashtable</span><span class="p">)</span>
+
+    <span class="n">toc</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+
+    <span class="n">total_time</span> <span class="o">+=</span> <span class="n">toc</span> <span class="o">-</span> <span class="n">tic</span>
+
+    <span class="c1"># 4- Generate output files</span>
+
+    <span class="n">log</span><span class="o">.</span><span class="n">log_msg</span><span class="p">(</span>
+        <span class="n">msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">"Iteration </span><span class="si">{</span><span class="n">poll</span><span class="o">.</span><span class="n">iter</span><span class="si">}</span><span class="s2"> completed in </span><span class="si">{</span><span class="n">toc</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">tic</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> seconds"</span><span class="p">,</span>
+        <span class="n">msg_type</span><span class="o">=</span><span class="n">MSG_TYPE</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+
+    <span class="n">status_text</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">"Full Success"</span> <span class="k">if</span> <span class="n">state</span><span class="o">.</span><span class="n">last_success</span> <span class="o">==</span> <span class="n">SUCCESS_TYPES</span><span class="o">.</span><span class="n">FS</span>
+        <span class="k">else</span> <span class="s2">"Partial Success"</span> <span class="k">if</span> <span class="n">state</span><span class="o">.</span><span class="n">last_success</span> <span class="o">==</span> <span class="n">SUCCESS_TYPES</span><span class="o">.</span><span class="n">PS</span>
+        <span class="k">else</span> <span class="s2">"Unsuccessful"</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">state</span><span class="o">.</span><span class="n">last_success</span> <span class="o">==</span> <span class="n">SUCCESS_TYPES</span><span class="o">.</span><span class="n">US</span> <span class="ow">or</span> <span class="n">status_text</span> <span class="o">==</span> <span class="s1">'Unsuccessful'</span><span class="p">:</span>
+      <span class="n">stats</span><span class="o">.</span><span class="n">nno_successes</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="n">stats</span><span class="o">.</span><span class="n">nno_successes</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">if</span> <span class="n">stats</span><span class="o">.</span><span class="n">nno_successes</span> <span class="o">&gt;=</span> <span class="n">options</span><span class="o">.</span><span class="n">budget</span><span class="p">:</span>
+      <span class="n">state</span><span class="o">.</span><span class="n">stop_reason</span> <span class="o">=</span> <span class="n">STOP_TYPE</span><span class="o">.</span><span class="n">UNKNOWN_STOP_REASON</span>
+
+    <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="sa">f</span><span class="s2">"Iteration </span><span class="si">{</span><span class="n">poll</span><span class="o">.</span><span class="n">iter</span><span class="si">}</span><span class="s2">  success status: "</span>
+        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">status_text</span><span class="si">}</span><span class="s2">"</span>
+    <span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">log_msg</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="n">msg</span><span class="p">,</span> <span class="n">msg_type</span><span class="o">=</span><span class="n">MSG_TYPE</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+    <span class="n">post</span><span class="o">.</span><span class="n">h_max</span> <span class="o">=</span> <span class="n">active_barrier</span><span class="o">.</span><span class="n">h_max</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">log_msg</span><span class="p">(</span>
+        <span class="n">msg</span><span class="o">=</span><span class="n">post</span><span class="p">,</span>
+        <span class="n">msg_type</span><span class="o">=</span><span class="n">MSG_TYPE</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+
+    <span class="n">failure_check</span> <span class="o">=</span> <span class="n">iteration</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">state</span><span class="o">.</span><span class="n">stop_reason</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> \
+        <span class="ow">and</span> <span class="n">state</span><span class="o">.</span><span class="n">stop_reason</span> <span class="o">!=</span> <span class="n">STOP_TYPE</span><span class="o">.</span><span class="n">NO_STOP</span> <span class="ow">and</span> <span class="p">(</span>
+            <span class="n">state</span><span class="o">.</span><span class="n">last_success</span> <span class="o">==</span> <span class="n">SUCCESS_TYPES</span><span class="o">.</span><span class="n">US</span><span class="p">)</span>
+    <span class="n">state</span><span class="o">.</span><span class="n">last_success</span> <span class="o">=</span> <span class="n">SUCCESS_TYPES</span><span class="o">.</span><span class="n">US</span>
+    <span class="n">pb</span> <span class="o">=</span> <span class="n">ProgressBar</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="n">active_barrier</span><span class="p">,</span> <span class="n">p_name</span><span class="o">=</span><span class="n">param</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+    <span class="n">pb</span><span class="o">.</span><span class="n">display</span><span class="p">(</span><span class="n">peval</span><span class="o">=</span><span class="n">stats</span><span class="o">.</span><span class="n">neval_bb</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">failure_check</span> <span class="ow">or</span> <span class="n">stats</span><span class="o">.</span><span class="n">neval_bb</span> <span class="o">&gt;=</span> <span class="n">options</span><span class="o">.</span><span class="n">budget</span><span class="p">)</span> <span class="ow">or</span> <span class="n">state</span><span class="o">.</span><span class="n">stop_reason</span> <span class="o">!=</span> <span class="n">STOP_TYPE</span><span class="o">.</span><span class="n">NO_STOP</span> <span class="ow">or</span> \
+        <span class="p">(</span><span class="nb">all</span><span class="p">([</span><span class="nb">abs</span><span class="p">(</span><span class="n">poll</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">get_delta_frame_size</span><span class="p">()</span><span class="o">.</span><span class="n">coordinates</span><span class="p">[</span><span class="n">pp</span><span class="p">])</span> <span class="o">&lt;</span> <span class="n">options</span><span class="o">.</span><span class="n">tol</span>
+         <span class="k">for</span> <span class="n">pp</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">poll</span><span class="o">.</span><span class="n">dim</span><span class="p">)])</span> <span class="ow">or</span> <span class="n">stats</span><span class="o">.</span><span class="n">neval_bb</span> <span class="o">&gt;=</span> <span class="n">options</span><span class="o">.</span><span class="n">budget</span> <span class="ow">or</span> <span class="n">poll</span><span class="o">.</span><span class="n">terminate</span><span class="p">):</span>
+      <span class="n">log</span><span class="o">.</span><span class="n">log_msg</span><span class="p">(</span>
+          <span class="s2">"</span><span class="se">\n</span><span class="s2">--------------- Termination of the poll step  ---------------"</span><span class="p">,</span>
+          <span class="n">MSG_TYPE</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+      <span class="k">if</span> <span class="nb">all</span><span class="p">(</span>
+              <span class="nb">abs</span><span class="p">(</span><span class="n">poll</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">get_delta_frame_size</span><span class="p">()</span><span class="o">.</span><span class="n">coordinates</span><span class="p">[</span><span class="n">pp</span><span class="p">])</span> <span class="o">&lt;</span> <span class="n">options</span><span class="o">.</span><span class="n">tol</span>
+              <span class="k">for</span> <span class="n">pp</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">poll</span><span class="o">.</span><span class="n">dim</span><span class="p">)):</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">log_msg</span><span class="p">(</span>
+            <span class="s2">"Termination criterion hit: the mesh size is below the minimum threshold defined."</span><span class="p">,</span>
+            <span class="n">MSG_TYPE</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+      <span class="k">if</span> <span class="p">(</span><span class="n">stats</span><span class="o">.</span><span class="n">neval_bb</span> <span class="o">&gt;=</span> <span class="n">options</span><span class="o">.</span><span class="n">budget</span> <span class="ow">or</span> <span class="n">poll</span><span class="o">.</span><span class="n">terminate</span><span class="p">):</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">log_msg</span><span class="p">(</span>
+            <span class="s2">"Termination criterion hit: evaluation budget is exhausted."</span><span class="p">,</span>
+            <span class="n">MSG_TYPE</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+      <span class="k">if</span> <span class="n">failure_check</span><span class="p">:</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">log_msg</span><span class="p">(</span>
+            <span class="s2">"Termination criterion hit (optional): failed to find </span><span class="se">\</span>
+<span class="s2">            a successful point in iteration # </span><span class="si">{iteration}</span><span class="s2">."</span><span class="p">,</span>
+            <span class="n">MSG_TYPE</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+      <span class="k">if</span> <span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">stop_reason</span> <span class="o">!=</span> <span class="n">STOP_TYPE</span><span class="o">.</span><span class="n">NO_STOP</span><span class="p">):</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">log_msg</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"Termination criterion hit: </span><span class="si">{</span><span class="n">state</span><span class="o">.</span><span class="n">stop_reason</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">."</span><span class="p">,</span>
+            <span class="n">MSG_TYPE</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+      <span class="n">log</span><span class="o">.</span><span class="n">log_msg</span><span class="p">(</span>
+          <span class="s2">"---------------------------------------------------------------</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span>
+          <span class="n">MSG_TYPE</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+      <span class="k">break</span>
+    <span class="n">iteration</span> <span class="o">+=</span> <span class="mi">1</span>
+  <span class="n">bb_handle</span><span class="o">.</span><span class="n">shutdown_executor</span><span class="p">()</span>
+  <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span> <span class="o">=</span> <span class="n">_original_stderr</span>
+  <span class="n">toc</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+  <span class="k">if</span> <span class="n">poll</span><span class="o">.</span><span class="n">prob_params</span><span class="o">.</span><span class="n">is_pareto</span><span class="p">:</span>
+    <span class="n">rp</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CandidatePoint</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">param</span><span class="o">.</span><span class="n">ref_point</span><span class="p">:</span>
+      <span class="n">rp</span> <span class="o">=</span> <span class="n">Point</span><span class="p">()</span>
+      <span class="n">rp</span><span class="o">.</span><span class="n">coordinates</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">ref_point</span>
+    <span class="n">perf_m</span> <span class="o">=</span> <span class="n">Metrics</span><span class="p">(</span>
+        <span class="n">nd_solutions</span><span class="o">=</span><span class="n">active_barrier</span><span class="o">.</span><span class="n">get_filled_elements</span><span class="p">(</span>
+        <span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">param</span><span class="o">.</span><span class="n">is_pareto</span> <span class="k">else</span> <span class="n">active_barrier</span><span class="o">.</span><span class="n">get_nd_elements</span><span class="p">(),</span>
+        <span class="n">nobj</span><span class="o">=</span><span class="n">active_barrier</span><span class="o">.</span><span class="n">dims</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">ref_point</span><span class="o">=</span><span class="n">rp</span><span class="p">)</span>
+    <span class="n">hv</span> <span class="o">=</span> <span class="n">perf_m</span><span class="o">.</span><span class="n">hypervolume</span><span class="p">()</span>
+
+  <span class="n">xmin_found</span> <span class="o">=</span> <span class="kc">False</span>
+  <span class="k">if</span> <span class="n">active_barrier</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">active_barrier</span><span class="o">.</span><span class="n">get_fk</span><span class="p">())</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+      <span class="n">xmin</span><span class="p">:</span> <span class="n">CandidatePoint</span> <span class="o">=</span> <span class="n">active_barrier</span><span class="o">.</span><span class="n">get_fk</span><span class="p">()[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+      <span class="n">xmin_found</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">active_barrier</span><span class="o">.</span><span class="n">within_uk</span><span class="p">):</span>
+      <span class="n">xsc</span><span class="p">:</span> <span class="n">CandidatePoint</span> <span class="o">=</span> <span class="n">active_barrier</span><span class="o">.</span><span class="n">get_uk</span><span class="p">()[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="n">xsc</span> <span class="o">=</span> <span class="n">CandidatePoint</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">xmin_found</span><span class="p">:</span>
+      <span class="n">xmin</span> <span class="o">=</span> <span class="n">xsc</span>
+  <span class="k">else</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">"Internal error: empty active_barrier object!"</span><span class="p">)</span>
+
+  <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">display</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">" end of orthogonal MADS "</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">log</span><span class="p">:</span>
+      <span class="n">log</span><span class="o">.</span><span class="n">log_msg</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">" end of orthogonal MADS "</span><span class="p">,</span> <span class="n">msg_type</span><span class="o">=</span><span class="n">MSG_TYPE</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span>
+        <span class="s2">" Final objective value: "</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">xmin</span><span class="o">.</span><span class="n">f</span><span class="p">)</span> <span class="o">+</span> <span class="s2">", hmin= "</span> <span class="o">+</span>
+        <span class="nb">str</span><span class="p">(</span><span class="n">xmin</span><span class="o">.</span><span class="n">h</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">log</span><span class="p">:</span>
+      <span class="n">log</span><span class="o">.</span><span class="n">log_msg</span><span class="p">(</span>
+          <span class="n">msg</span><span class="o">=</span><span class="s2">" Final objective value: "</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">xmin</span><span class="o">.</span><span class="n">f</span><span class="p">)</span> <span class="o">+</span> <span class="s2">", hmin= "</span> <span class="o">+</span>
+          <span class="nb">str</span><span class="p">(</span><span class="n">xmin</span><span class="o">.</span><span class="n">h</span><span class="p">),</span>
+          <span class="n">msg_type</span><span class="o">=</span><span class="n">MSG_TYPE</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">log</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">str</span><span class="p">):</span>
+      <span class="n">log</span><span class="o">.</span><span class="n">log_msg</span><span class="p">(</span>
+          <span class="n">msg</span><span class="o">=</span><span class="s2">" end of orthogonal MADS running"</span> <span class="o">+</span> <span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span>
+          <span class="s2">" in the internal BM suite."</span><span class="p">,</span> <span class="n">msg_type</span><span class="o">=</span><span class="n">MSG_TYPE</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+
+  <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">save_coordinates</span><span class="p">:</span>
+    <span class="n">post</span><span class="o">.</span><span class="n">output_coordinates</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+
+  <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">save_results</span><span class="p">:</span>
+    <span class="n">post</span><span class="o">.</span><span class="n">nd_points</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">out</span><span class="o">.</span><span class="n">h_max</span> <span class="o">=</span> <span class="n">active_barrier</span><span class="o">.</span><span class="n">h_max</span>
+    <span class="n">post</span><span class="o">.</span><span class="n">output_results</span><span class="p">(</span><span class="n">out</span><span class="o">=</span><span class="n">out</span><span class="p">,</span> <span class="n">all_res</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">param</span><span class="o">.</span><span class="n">is_pareto</span><span class="p">:</span>
+      <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">active_barrier</span><span class="o">.</span><span class="n">get_filled_elements</span><span class="p">())):</span>
+        <span class="n">post</span><span class="o">.</span><span class="n">nd_points</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">active_barrier</span><span class="o">.</span><span class="n">get_filled_elements</span><span class="p">()[</span><span class="n">i</span><span class="p">])</span>
+      <span class="n">post</span><span class="o">.</span><span class="n">output_nd_results</span><span class="p">(</span><span class="n">out_p</span><span class="p">)</span>
+
+  <span class="k">if</span> <span class="n">log</span><span class="p">:</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">log_msg</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">"</span><span class="se">\n</span><span class="s2">---Run Summary---"</span><span class="p">,</span> <span class="n">msg_type</span><span class="o">=</span><span class="n">MSG_TYPE</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">log_msg</span><span class="p">(</span>
+        <span class="n">msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">" Run completed in </span><span class="si">{</span><span class="n">total_time</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> seconds"</span><span class="p">,</span>
+        <span class="n">msg_type</span><span class="o">=</span><span class="n">MSG_TYPE</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">log_msg</span><span class="p">(</span>
+        <span class="n">msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">" Random numbers generator's seed </span><span class="si">{</span><span class="n">options</span><span class="o">.</span><span class="n">seed</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="n">msg_type</span><span class="o">=</span><span class="n">MSG_TYPE</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">log_msg</span><span class="p">(</span>
+        <span class="n">msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">" Primary xmin = </span><span class="si">{</span><span class="n">xmin</span><span class="o">.</span><span class="n">coordinates</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">msg_type</span><span class="o">=</span><span class="n">MSG_TYPE</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">log_msg</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">" Primary hmin = </span><span class="si">{</span><span class="n">xmin</span><span class="o">.</span><span class="n">h</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">msg_type</span><span class="o">=</span><span class="n">MSG_TYPE</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">log_msg</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">" Primary fmin = </span><span class="si">{</span><span class="n">xmin</span><span class="o">.</span><span class="n">fobj</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">msg_type</span><span class="o">=</span><span class="n">MSG_TYPE</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">xsc</span><span class="o">.</span><span class="n">evaluated</span><span class="p">:</span>
+      <span class="n">log</span><span class="o">.</span><span class="n">log_msg</span><span class="p">(</span>
+          <span class="n">msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">" Secondary xmin = </span><span class="si">{</span><span class="n">xsc</span><span class="o">.</span><span class="n">coordinates</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">msg_type</span><span class="o">=</span><span class="n">MSG_TYPE</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+      <span class="n">log</span><span class="o">.</span><span class="n">log_msg</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">" Secondary hmin = </span><span class="si">{</span><span class="n">xsc</span><span class="o">.</span><span class="n">h</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">msg_type</span><span class="o">=</span><span class="n">MSG_TYPE</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+      <span class="n">log</span><span class="o">.</span><span class="n">log_msg</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">" Secondary fmin = </span><span class="si">{</span><span class="n">xsc</span><span class="o">.</span><span class="n">fobj</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">msg_type</span><span class="o">=</span><span class="n">MSG_TYPE</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">log_msg</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">" #bb_eval =  </span><span class="si">{</span><span class="n">poll</span><span class="o">.</span><span class="n">bb_eval</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">msg_type</span><span class="o">=</span><span class="n">MSG_TYPE</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">log_msg</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">" #iteration =  </span><span class="si">{</span><span class="n">iteration</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">msg_type</span><span class="o">=</span><span class="n">MSG_TYPE</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">log_msg</span><span class="p">(</span>
+        <span class="n">msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">"  nb_success = </span><span class="si">{</span><span class="n">poll</span><span class="o">.</span><span class="n">nb_success</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">msg_type</span><span class="o">=</span><span class="n">MSG_TYPE</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">log_msg</span><span class="p">(</span>
+        <span class="n">msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">" psize = </span><span class="si">{</span><span class="n">poll</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">get_delta_frame_size</span><span class="p">()</span><span class="o">.</span><span class="n">coordinates</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="n">msg_type</span><span class="o">=</span><span class="n">MSG_TYPE</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">log_msg</span><span class="p">(</span>
+        <span class="n">msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">" psize_success = </span><span class="si">{</span><span class="n">active_barrier</span><span class="o">.</span><span class="n">meshes</span><span class="p">[</span><span class="n">state</span><span class="o">.</span><span class="n">ordered_frame_centers</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">get_delta_frame_size</span><span class="p">()</span><span class="o">.</span><span class="n">coordinates</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="n">msg_type</span><span class="o">=</span><span class="n">MSG_TYPE</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+
+  <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">display</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2"> ---Run Summary---"</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">" Run completed in </span><span class="si">{</span><span class="n">total_time</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> seconds"</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">" Random numbers generator's seed </span><span class="si">{</span><span class="n">options</span><span class="o">.</span><span class="n">seed</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">" Primary xmin ="</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">xmin</span><span class="o">.</span><span class="n">coordinates</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">" Primary hmin = "</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">xmin</span><span class="o">.</span><span class="n">h</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">" Primary fmin = "</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">xmin</span><span class="o">.</span><span class="n">fobj</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">xsc</span><span class="o">.</span><span class="n">evaluated</span><span class="p">:</span>
+      <span class="nb">print</span><span class="p">(</span><span class="s2">" Secondary xmin ="</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">xsc</span><span class="o">.</span><span class="n">coordinates</span><span class="p">))</span>
+      <span class="nb">print</span><span class="p">(</span><span class="s2">" Secondary hmin = "</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">xsc</span><span class="o">.</span><span class="n">h</span><span class="p">))</span>
+      <span class="nb">print</span><span class="p">(</span><span class="s2">" Secondary fmin = "</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">xsc</span><span class="o">.</span><span class="n">fobj</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">" #bb_eval = "</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">poll</span><span class="o">.</span><span class="n">bb_eval</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">" #iteration = "</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">iteration</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">" nb_success = "</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">poll</span><span class="o">.</span><span class="n">nb_success</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">" psize = "</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">poll</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">get_delta_frame_size</span><span class="p">()</span><span class="o">.</span><span class="n">coordinates</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span>
+        <span class="s2">" psize_success = "</span> <span class="o">+</span>
+        <span class="nb">str</span><span class="p">(</span><span class="n">active_barrier</span><span class="o">.</span><span class="n">meshes</span><span class="p">[</span><span class="n">state</span><span class="o">.</span><span class="n">ordered_frame_centers</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">get_delta_frame_size</span><span class="p">()</span><span class="o">.</span><span class="n">coordinates</span><span class="p">))</span>
+
+  <span class="n">xmin</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">xmin</span><span class="p">)</span>
+  <span class="c1"># """ Evaluation of the blackbox; get output responses """</span>
+  <span class="k">if</span> <span class="n">xmin</span><span class="o">.</span><span class="n">sets</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">xmin</span><span class="o">.</span><span class="n">sets</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+    <span class="n">p</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">xmin</span><span class="o">.</span><span class="n">var_type</span><span class="p">):</span>
+      <span class="k">if</span> <span class="p">(</span><span class="n">xmin</span><span class="o">.</span><span class="n">var_type</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="n">VAR_TYPE</span><span class="o">.</span><span class="n">DISCRETE</span> <span class="ow">or</span>
+              <span class="n">xmin</span><span class="o">.</span><span class="n">var_type</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="n">VAR_TYPE</span><span class="o">.</span><span class="n">CATEGORICAL</span><span class="p">)</span> <span class="ow">and</span> <span class="n">xmin</span><span class="o">.</span><span class="n">var_link</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">xmin</span><span class="o">.</span><span class="n">sets</span><span class="p">[</span><span class="n">xmin</span><span class="o">.</span><span class="n">var_link</span><span class="p">[</span><span class="n">i</span><span class="p">]][</span><span class="nb">int</span><span class="p">(</span><span class="n">xmin</span><span class="o">.</span><span class="n">coordinates</span><span class="p">[</span><span class="n">i</span><span class="p">])])</span>
+      <span class="k">else</span><span class="p">:</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">xmin</span><span class="o">.</span><span class="n">coordinates</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+  <span class="k">else</span><span class="p">:</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">xmin</span><span class="o">.</span><span class="n">coordinates</span>
+  <span class="n">output</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"xmin"</span><span class="p">:</span> <span class="n">p</span><span class="p">,</span>
+                            <span class="s2">"fmin"</span><span class="p">:</span> <span class="n">xmin</span><span class="o">.</span><span class="n">f</span><span class="p">,</span>
+                            <span class="s2">"hmin"</span><span class="p">:</span> <span class="n">xmin</span><span class="o">.</span><span class="n">h</span><span class="p">,</span>
+                            <span class="s2">"Secondary fmin"</span><span class="p">:</span> <span class="n">xsc</span><span class="o">.</span><span class="n">f</span><span class="p">,</span>
+                            <span class="s2">"Secondary hmin"</span><span class="p">:</span> <span class="n">xsc</span><span class="o">.</span><span class="n">h</span><span class="p">,</span>
+                            <span class="s2">"nbb_evals"</span><span class="p">:</span> <span class="n">poll</span><span class="o">.</span><span class="n">bb_eval</span><span class="p">,</span>
+                            <span class="s2">"niterations"</span><span class="p">:</span> <span class="n">iteration</span><span class="p">,</span>
+                            <span class="s2">"nb_success"</span><span class="p">:</span> <span class="n">poll</span><span class="o">.</span><span class="n">nb_success</span><span class="p">,</span>
+                            <span class="s2">"psize"</span><span class="p">:</span>
+                            <span class="n">active_barrier</span><span class="o">.</span><span class="n">meshes</span><span class="p">[</span><span class="n">state</span><span class="o">.</span><span class="n">ordered_frame_centers</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">get_delta_frame_size</span><span class="p">(</span>
+                            <span class="p">)</span><span class="o">.</span><span class="n">coordinates</span><span class="p">,</span>
+                            <span class="s2">"psuccess"</span><span class="p">:</span>
+                            <span class="n">active_barrier</span><span class="o">.</span><span class="n">meshes</span><span class="p">[</span><span class="n">state</span><span class="o">.</span><span class="n">ordered_frame_centers</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">get_delta_frame_size</span><span class="p">(</span>
+                            <span class="p">)</span><span class="o">.</span><span class="n">coordinates</span><span class="p">,</span>
+                            <span class="c1"># "pmax": poll.mesh.psize_max,</span>
+                            <span class="s2">"msize"</span><span class="p">:</span> <span class="n">poll</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">get_delta_mesh_size</span><span class="p">()</span><span class="o">.</span><span class="n">coordinates</span><span class="p">,</span>
+                            <span class="s2">"HV"</span><span class="p">:</span> <span class="n">hv</span> <span class="k">if</span> <span class="n">param</span><span class="o">.</span><span class="n">is_pareto</span> <span class="k">else</span> <span class="s2">"NA"</span><span class="p">}</span>
+
+  <span class="k">return</span> <span class="n">output</span><span class="p">,</span> <span class="n">poll</span></div>
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>
+  <span class="n">freeze_support</span><span class="p">()</span>
+  <span class="n">p_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="s2">""</span><span class="p">)</span>
+
+<span class="w">  </span><span class="sd">""" Check if an input argument is provided"""</span>
+  <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+    <span class="n">p_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">main</span><span class="p">(</span><span class="n">p_file</span><span class="p">)</span>
+
+  <span class="k">if</span> <span class="p">(</span><span class="n">p_file</span> <span class="o">!=</span> <span class="s2">""</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">p_file</span><span class="p">)):</span>
+    <span class="n">main</span><span class="p">(</span><span class="n">p_file</span><span class="p">)</span>
+
+  <span class="k">if</span> <span class="n">p_file</span> <span class="o">==</span> <span class="s2">""</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span>
+        <span class="s2">"Undefined input args."</span>
+        <span class="s2">" Please specify an appropriate input (parameters) jason file"</span><span class="p">)</span>
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2022-2026, Ahmed H. Bayoumy.
+      <br/>
+    
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

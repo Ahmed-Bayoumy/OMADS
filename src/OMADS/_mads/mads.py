@@ -185,7 +185,28 @@ class MADS:
 
 
 def main(*args) -> Dict[str, Any]:  # noqa: C901
-  """ MADS main algorithm """
+  """Run the full MADS algorithm: model search, poll and sampling search.
+
+  Each iteration selects the frame centres from the adaptive barrier, runs a
+  cheap speculative and quadratic-model search (at most two evaluations),
+  then the poll step unless the previous sampling search succeeded, and the
+  sampling search after an unsuccessful poll.
+
+  :param args: ``args[0]`` is the problem, either a dictionary with the
+    ``evaluator``, ``param``, ``options`` and ``search`` sections or the path
+    to a JSON file holding them. An optional ``args[3]`` overrides the random
+    seed.
+  :return: ``(output, poll_sampler, search_sampler)`` where ``output`` is a
+    dictionary with the keys ``xmin``, ``fmin``, ``hmin``, ``nbb_evals``,
+    ``niterations``, ``nb_success``, ``psize``, ``psuccess``, ``msize`` and
+    ``HV`` (hypervolume, ``"NA"`` for single-objective problems).
+  :rtype: tuple
+
+  Example::
+
+    from OMADS import mads
+    out, poll_step, search_step = mads.main(data)
+  """
 
   # """ Validate and parse the parameters file """
   validate = validator()
@@ -261,6 +282,7 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
         search_vn.dist)
     search_sampler.ns = sum(search_vn.ns_dist)
   can_search = False if ms is None else True
+  failed_polls = 0
   while True:
     # """ Run search step (Optional) """
     # COMPLETED: This rule cannot be generalized -- needs further invistigation
@@ -292,7 +314,8 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
       stats.nno_successes = 0
 
     # 2- Run the poll step
-    if not can_search and not model_succeeded:
+    poll_ran = not can_search and not model_succeeded
+    if poll_ran:
       log.log_msg(
           f"------- Iteration # {iteration}: Run the poll step -------",
           MSG_TYPE.INFO)
@@ -325,8 +348,10 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
 
       if state.last_success == SUCCESS_TYPES.US or status == 'Unsuccessful':
         stats.nno_successes += 1
+        failed_polls += 1
       else:
         stats.nno_successes = 0
+        failed_polls = 0
 
       if stats.nno_successes >= options.budget:
         state.stop_reason = STOP_TYPE.UNKNOWN_STOP_REASON
@@ -343,6 +368,10 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
     can_search = (iteration == 1 and ms is not None) or (
         state.last_success == SUCCESS_TYPES.US or state.last_success  # noqa: E712
         == False) and iteration > 1
+    # After a failed poll, run the sampling search only every
+    # `search_every`-th consecutive failure (a successful search still repeats).
+    if can_search and poll_ran and failed_polls % max(options.search_every, 1) != 0:
+      can_search = False
     if can_search and not model_succeeded:
       log.log_msg(
           f"------- Iteration # {iteration}: Run the search step -------",

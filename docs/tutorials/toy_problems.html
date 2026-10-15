@@ -1,0 +1,786 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" data-theme="light">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Toy problems &#8212; OMADS 2610</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/proof.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/pseudocode@latest/build/pseudocode.min.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=2ebac5eb" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
+
+    <script src="../_static/documentation_options.js?v=c14009a4"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=fd10adb8"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pseudocode@latest/build/pseudocode.js"></script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'tutorials/toy_problems';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Constrained optimization" href="constrained.html" />
+    <link rel="prev" title="Tutorials" href="index.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="2610" />
+  
+    
+    <script src="../_static/searchtools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="light">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+    
+    <img src="../_static/OMADS_logo.png" class="logo__image only-light" alt="OMADS 2610 - Home"/>
+    <img src="../_static/OMADS_logo.png" class="logo__image only-dark pst-js-only" alt="OMADS 2610 - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting_started.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../background.html">
+    Background
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../benchmarking.html">
+    Benchmarking
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/configuration.html">
+    Configuration reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/outputs.html">
+    Outputs
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../references.html">
+    References
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/Ahmed-Bayoumy/OMADS" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting_started.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../background.html">
+    Background
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../benchmarking.html">
+    Benchmarking
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/configuration.html">
+    Configuration reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/outputs.html">
+    Outputs
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../references.html">
+    References
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/Ahmed-Bayoumy/OMADS" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Toy problems</a></li>
+<li class="toctree-l1"><a class="reference internal" href="constrained.html">Constrained optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="multiobjective.html">Multi-objective optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="blackbox.html">Blackbox evaluation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="postprocessing.html">Results post-processing</a></li>
+</ul>
+</div>
+</nav></div>
+        <div class="sidebar-primary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#d-rosenbrock">2D Rosenbrock</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#d-alpine">2D Alpine</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#d-ackley-3">2D Ackley 3</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#d-eggholder">2D Eggholder</a></li>
+</ul>
+  </nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Tutorials</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Toy problems</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="toy-problems">
+<h1>Toy problems<a class="headerlink" href="#toy-problems" title="Link to this heading">#</a></h1>
+<p>The following subsections show how to use OMADS on selected 2D test functions.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>The videos below show the poll trajectory, frame size and mesh coarseness during an
+optimization. They were recorded with an earlier release of OMADS, so the path differs
+from what the current version takes, but the mechanics are the same.</p>
+</div>
+<section id="d-rosenbrock">
+<h2>2D Rosenbrock<a class="headerlink" href="#d-rosenbrock" title="Link to this heading">#</a></h2>
+<div class="math notranslate nohighlight">
+\[f(x_{1}, x_{2})=(1-x_{1})^{2}+100(x_{2}-x_{1}^{2})^{2}.\]</div>
+<p>The Rosenbrock function has curved contours, and its global minimum
+<span class="math notranslate nohighlight">\(f(1, 1) = 0\)</span> lies in a parabolic, banana-shaped valley. Many algorithms find the
+valley easily but struggle to reach the minimum, because the function values in the valley
+barely change.</p>
+<p>The script below solves it with each of the three OMADS solvers:</p>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-number">Listing 7 </span><span class="caption-text">rosenbrock.py</span><a class="headerlink" href="#id1" title="Link to this code">#</a></div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">"""2D Rosenbrock with the three OMADS solvers."""</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">OMADS</span><span class="w"> </span><span class="kn">import</span> <span class="n">mads</span><span class="p">,</span> <span class="n">poll</span><span class="p">,</span> <span class="n">search</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">rosenbrock</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+  <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+  <span class="n">f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mf">100.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">**</span> <span class="mf">2.0</span><span class="p">)</span> <span class="o">**</span> <span class="mf">2.0</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">x</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">**</span> <span class="mf">2.0</span><span class="p">)</span>
+  <span class="k">return</span> <span class="p">[</span><span class="n">f</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+
+
+<span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"evaluator"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"blackbox"</span><span class="p">:</span> <span class="n">rosenbrock</span><span class="p">},</span>
+    <span class="s2">"param"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"rosen"</span><span class="p">,</span>
+        <span class="s2">"baseline"</span><span class="p">:</span> <span class="p">[</span><span class="o">-</span><span class="mf">2.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.0</span><span class="p">],</span>
+        <span class="s2">"lb"</span><span class="p">:</span> <span class="p">[</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">],</span>
+        <span class="s2">"ub"</span><span class="p">:</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">],</span>
+        <span class="s2">"var_names"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"x1"</span><span class="p">,</span> <span class="s2">"x2"</span><span class="p">],</span>
+        <span class="s2">"scaling"</span><span class="p">:</span> <span class="p">[</span><span class="mf">15.0</span><span class="p">,</span> <span class="mf">15.0</span><span class="p">],</span>
+        <span class="s2">"post_dir"</span><span class="p">:</span> <span class="s2">"./post"</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="s2">"options"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"seed"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">"budget"</span><span class="p">:</span> <span class="mi">1000</span><span class="p">,</span> <span class="s2">"tol"</span><span class="p">:</span> <span class="mf">1e-9</span><span class="p">,</span>
+        <span class="s2">"check_cache"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"store_cache"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"rich_direction"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="s2">"search"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"sampling"</span><span class="p">,</span> <span class="s2">"s_method"</span><span class="p">:</span> <span class="s2">"ACTIVE"</span><span class="p">,</span> <span class="s2">"ns"</span><span class="p">:</span> <span class="mi">10</span><span class="p">},</span>
+<span class="p">}</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>
+  <span class="k">for</span> <span class="n">solver</span> <span class="ow">in</span> <span class="p">(</span><span class="n">mads</span><span class="p">,</span> <span class="n">poll</span><span class="p">,</span> <span class="n">search</span><span class="p">):</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">main</span><span class="p">(</span><span class="n">data</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">solver</span><span class="o">.</span><span class="vm">__name__</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">'.'</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">&gt;6</span><span class="si">}</span><span class="s2">: xmin = </span><span class="si">{</span><span class="n">out</span><span class="p">[</span><span class="s1">'xmin'</span><span class="p">]</span><span class="si">}</span><span class="s2">, "</span>
+          <span class="sa">f</span><span class="s2">"fmin = </span><span class="si">{</span><span class="n">out</span><span class="p">[</span><span class="s1">'fmin'</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">.3e</span><span class="si">}</span><span class="s2">, iterations = </span><span class="si">{</span><span class="n">out</span><span class="p">[</span><span class="s1">'niterations'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>  mads: xmin = [1.0, 1.0], fmin = 0.000e+00, iterations = 21
+  poll: xmin = [0.9390255808830261, 0.8823902606964111], fmin = 3.756e-03, iterations = 253
+search: xmin = [-0.602294921875, 0.409423828125], fmin = 2.785e+00, iterations = 169
+</pre></div>
+</div>
+<p>Full MADS reaches the exact minimum in 223 evaluations. Its quadratic model search makes
+large, well-aimed steps along the valley. The poll alone crawls along the valley with
+orthogonal steps and is still on its way when the 1000-evaluation budget runs out, and the
+sampling search alone is an exploration tool, not a local solver. Use <code class="docutils literal notranslate"><span class="pre">mads</span></code> unless you
+have a reason not to.</p>
+<div  class="sphinx-contrib-video-container align-left"><video autoplay="True" controls="True" height="400" preload="auto" width="650"><source src="../_images/RB.mp4" type="video/mp4"></video></div></section>
+<section id="d-alpine">
+<h2>2D Alpine<a class="headerlink" href="#d-alpine" title="Link to this heading">#</a></h2>
+<div class="math notranslate nohighlight">
+\[f({\bf x})= \sum_{i=1}^{d} |x_{i} \sin(x_{i})+0.1x_{i}|.\]</div>
+<p>The Alpine function is non-smooth, which can stop gradient-based algorithms from reaching
+the global minimum. Its design space is non-smooth, non-convex, separable and multimodal,
+and it has several global minima with <span class="math notranslate nohighlight">\(f = 0\)</span>, for example at the origin and near
+<span class="math notranslate nohighlight">\(x_i \approx 6.18\)</span>.</p>
+<div class="literal-block-wrapper docutils container" id="id2">
+<div class="code-block-caption"><span class="caption-number">Listing 8 </span><span class="caption-text">alpine.py</span><a class="headerlink" href="#id2" title="Link to this code">#</a></div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">"""2D Alpine function (non-smooth, multimodal)."""</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">OMADS</span><span class="w"> </span><span class="kn">import</span> <span class="n">mads</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">alpine</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+  <span class="n">f</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">xi</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">xi</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="n">xi</span><span class="p">)</span> <span class="k">for</span> <span class="n">xi</span> <span class="ow">in</span> <span class="n">x</span><span class="p">)</span>
+  <span class="k">return</span> <span class="p">[</span><span class="n">f</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+
+
+<span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"evaluator"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"blackbox"</span><span class="p">:</span> <span class="n">alpine</span><span class="p">},</span>
+    <span class="s2">"param"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"name"</span><span class="p">:</span> <span class="s2">"alpine"</span><span class="p">,</span> <span class="s2">"baseline"</span><span class="p">:</span> <span class="p">[</span><span class="mf">5.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">],</span> <span class="s2">"lb"</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+              <span class="s2">"ub"</span><span class="p">:</span> <span class="p">[</span><span class="mf">10.0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">],</span> <span class="s2">"scaling"</span><span class="p">:</span> <span class="p">[</span><span class="mf">10.0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">],</span> <span class="s2">"post_dir"</span><span class="p">:</span> <span class="s2">"./post"</span><span class="p">},</span>
+    <span class="s2">"options"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"seed"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">"budget"</span><span class="p">:</span> <span class="mi">1000</span><span class="p">,</span> <span class="s2">"tol"</span><span class="p">:</span> <span class="mf">1e-9</span><span class="p">,</span>
+                <span class="s2">"check_cache"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"store_cache"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"rich_direction"</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+    <span class="s2">"search"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"sampling"</span><span class="p">,</span> <span class="s2">"s_method"</span><span class="p">:</span> <span class="s2">"ACTIVE"</span><span class="p">,</span> <span class="s2">"ns"</span><span class="p">:</span> <span class="mi">10</span><span class="p">},</span>
+<span class="p">}</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>
+  <span class="n">out</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span> <span class="o">=</span> <span class="n">mads</span><span class="o">.</span><span class="n">main</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+  <span class="nb">print</span><span class="p">(</span><span class="s2">"xmin ="</span><span class="p">,</span> <span class="n">out</span><span class="p">[</span><span class="s2">"xmin"</span><span class="p">])</span>
+  <span class="nb">print</span><span class="p">(</span><span class="s2">"fmin ="</span><span class="p">,</span> <span class="n">out</span><span class="p">[</span><span class="s2">"fmin"</span><span class="p">],</span> <span class="s2">"after"</span><span class="p">,</span> <span class="n">out</span><span class="p">[</span><span class="s2">"nbb_evals"</span><span class="p">],</span> <span class="s2">"evaluations"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>xmin = [6.183017810806632, 6.183017225936055]
+fmin = [4.5235426833212244e-06] after 270 evaluations
+</pre></div>
+</div>
+<div  class="sphinx-contrib-video-container align-left"><video autoplay="True" controls="True" height="400" preload="auto" width="650"><source src="../_images/Alpine.mp4" type="video/mp4"></video></div></section>
+<section id="d-ackley-3">
+<h2>2D Ackley 3<a class="headerlink" href="#d-ackley-3" title="Link to this heading">#</a></h2>
+<p>Ackley 3 combines a large funnel with a bumpy exponential term, which can trap
+hill-climbing algorithms in one of its many sub-optimal solutions:</p>
+<div class="math notranslate nohighlight">
+\[f(x_{1}, x_{2})= -200\, e^{-0.2 \sqrt{x^{2}_{1} + x^{2}_{2}}} + 5\, e^{\cos(3x_{1})+\sin(3x_{2})}.\]</div>
+<p>Its design space is non-convex, non-separable and multimodal. The global minimum is
+<span class="math notranslate nohighlight">\(f \approx -186.4112\)</span> near <span class="math notranslate nohighlight">\((0, \pm 0.0068)\)</span>.</p>
+<div class="literal-block-wrapper docutils container" id="id3">
+<div class="code-block-caption"><span class="caption-number">Listing 9 </span><span class="caption-text">ackley3.py</span><a class="headerlink" href="#id3" title="Link to this code">#</a></div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">"""2D Ackley 3 function."""</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">OMADS</span><span class="w"> </span><span class="kn">import</span> <span class="n">mads</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">ackley3</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+  <span class="n">f</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">200.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
+       <span class="o">+</span> <span class="mf">5.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mf">3.0</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mf">3.0</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])))</span>
+  <span class="k">return</span> <span class="p">[</span><span class="n">f</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+
+
+<span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"evaluator"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"blackbox"</span><span class="p">:</span> <span class="n">ackley3</span><span class="p">},</span>
+    <span class="s2">"param"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"name"</span><span class="p">:</span> <span class="s2">"ackley3"</span><span class="p">,</span> <span class="s2">"baseline"</span><span class="p">:</span> <span class="p">[</span><span class="mf">5.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">],</span> <span class="s2">"lb"</span><span class="p">:</span> <span class="p">[</span><span class="o">-</span><span class="mf">32.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">32.0</span><span class="p">],</span>
+              <span class="s2">"ub"</span><span class="p">:</span> <span class="p">[</span><span class="mf">32.0</span><span class="p">,</span> <span class="mf">32.0</span><span class="p">],</span> <span class="s2">"scaling"</span><span class="p">:</span> <span class="p">[</span><span class="mf">64.0</span><span class="p">,</span> <span class="mf">64.0</span><span class="p">],</span> <span class="s2">"post_dir"</span><span class="p">:</span> <span class="s2">"./post"</span><span class="p">},</span>
+    <span class="s2">"options"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"seed"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">"budget"</span><span class="p">:</span> <span class="mi">1000</span><span class="p">,</span> <span class="s2">"tol"</span><span class="p">:</span> <span class="mf">1e-9</span><span class="p">,</span>
+                <span class="s2">"check_cache"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"store_cache"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"rich_direction"</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+    <span class="s2">"search"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"sampling"</span><span class="p">,</span> <span class="s2">"s_method"</span><span class="p">:</span> <span class="s2">"ACTIVE"</span><span class="p">,</span> <span class="s2">"ns"</span><span class="p">:</span> <span class="mi">10</span><span class="p">},</span>
+<span class="p">}</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>
+  <span class="n">out</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span> <span class="o">=</span> <span class="n">mads</span><span class="o">.</span><span class="n">main</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+  <span class="nb">print</span><span class="p">(</span><span class="s2">"xmin ="</span><span class="p">,</span> <span class="n">out</span><span class="p">[</span><span class="s2">"xmin"</span><span class="p">])</span>
+  <span class="nb">print</span><span class="p">(</span><span class="s2">"fmin ="</span><span class="p">,</span> <span class="n">out</span><span class="p">[</span><span class="s2">"fmin"</span><span class="p">],</span> <span class="s2">"after"</span><span class="p">,</span> <span class="n">out</span><span class="p">[</span><span class="s2">"nbb_evals"</span><span class="p">],</span> <span class="s2">"evaluations"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>xmin = [4.852190613746643e-06, -0.006760597229003906]
+fmin = [-186.41121263368007] after 253 evaluations
+</pre></div>
+</div>
+<div  class="sphinx-contrib-video-container align-left"><video autoplay="True" controls="True" height="400" preload="auto" width="650"><source src="../_images/Ackley3.mp4" type="video/mp4"></video></div></section>
+<section id="d-eggholder">
+<h2>2D Eggholder<a class="headerlink" href="#d-eggholder" title="Link to this heading">#</a></h2>
+<p>The Eggholder function is a classic benchmark for global optimizers. Its many deep, irregular
+basins make the single global minimum, <span class="math notranslate nohighlight">\(f(512, 404.2319) \approx -959.6407\)</span>, hard
+to find:</p>
+<div class="math notranslate nohighlight">
+\[f(x_{1}, x_{2})= -(x_{2}+47)\sin\left(\sqrt{\left|\tfrac{x_{1}}{2}+x_{2}+47\right|}\right)-x_{1}\sin\left(\sqrt{|x_{1}-(x_{2}+47)|}\right).\]</div>
+<p>This example runs MADS twice, with the default <code class="docutils literal notranslate"><span class="pre">ACTIVE</span></code> search and with a space-filling
+Latin hypercube search of 30 points per step:</p>
+<div class="literal-block-wrapper docutils container" id="id4">
+<div class="code-block-caption"><span class="caption-number">Listing 10 </span><span class="caption-text">eggholder.py</span><a class="headerlink" href="#id4" title="Link to this code">#</a></div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">"""2D Eggholder function: compare an ACTIVE and a Latin hypercube search."""</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">OMADS</span><span class="w"> </span><span class="kn">import</span> <span class="n">mads</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">eggholder</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+  <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">x</span>
+  <span class="n">f</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">b</span> <span class="o">+</span> <span class="mf">47.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">a</span> <span class="o">/</span> <span class="mf">2.0</span> <span class="o">+</span> <span class="p">(</span><span class="n">b</span> <span class="o">+</span> <span class="mf">47.0</span><span class="p">))))</span>
+       <span class="o">-</span> <span class="n">a</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">a</span> <span class="o">-</span> <span class="p">(</span><span class="n">b</span> <span class="o">+</span> <span class="mf">47.0</span><span class="p">)))))</span>
+  <span class="k">return</span> <span class="p">[</span><span class="n">f</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+
+
+<span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"evaluator"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"blackbox"</span><span class="p">:</span> <span class="n">eggholder</span><span class="p">},</span>
+    <span class="s2">"param"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"name"</span><span class="p">:</span> <span class="s2">"eggholder"</span><span class="p">,</span> <span class="s2">"baseline"</span><span class="p">:</span> <span class="p">[</span><span class="mf">50.0</span><span class="p">,</span> <span class="mf">280.0</span><span class="p">],</span>
+              <span class="s2">"lb"</span><span class="p">:</span> <span class="p">[</span><span class="o">-</span><span class="mf">512.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">512.0</span><span class="p">],</span> <span class="s2">"ub"</span><span class="p">:</span> <span class="p">[</span><span class="mf">512.0</span><span class="p">,</span> <span class="mf">512.0</span><span class="p">],</span>
+              <span class="s2">"scaling"</span><span class="p">:</span> <span class="p">[</span><span class="mf">1024.0</span><span class="p">,</span> <span class="mf">1024.0</span><span class="p">],</span> <span class="s2">"post_dir"</span><span class="p">:</span> <span class="s2">"./post"</span><span class="p">},</span>
+    <span class="s2">"options"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"seed"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">"budget"</span><span class="p">:</span> <span class="mi">2000</span><span class="p">,</span> <span class="s2">"tol"</span><span class="p">:</span> <span class="mf">1e-9</span><span class="p">,</span>
+                <span class="s2">"check_cache"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"store_cache"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"rich_direction"</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+    <span class="s2">"search"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"sampling"</span><span class="p">,</span> <span class="s2">"s_method"</span><span class="p">:</span> <span class="s2">"ACTIVE"</span><span class="p">,</span> <span class="s2">"ns"</span><span class="p">:</span> <span class="mi">10</span><span class="p">},</span>
+<span class="p">}</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>
+  <span class="n">out</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span> <span class="o">=</span> <span class="n">mads</span><span class="o">.</span><span class="n">main</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+  <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"ACTIVE search: fmin = </span><span class="si">{</span><span class="n">out</span><span class="p">[</span><span class="s1">'fmin'</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> at </span><span class="si">{</span><span class="n">out</span><span class="p">[</span><span class="s1">'xmin'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+  <span class="n">lhs</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+  <span class="n">lhs</span><span class="p">[</span><span class="s2">"search"</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"sampling"</span><span class="p">,</span> <span class="s2">"s_method"</span><span class="p">:</span> <span class="s2">"LH"</span><span class="p">,</span> <span class="s2">"ns"</span><span class="p">:</span> <span class="mi">30</span><span class="p">}</span>
+  <span class="n">out</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span> <span class="o">=</span> <span class="n">mads</span><span class="o">.</span><span class="n">main</span><span class="p">(</span><span class="n">lhs</span><span class="p">)</span>
+  <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"LH search:     fmin = </span><span class="si">{</span><span class="n">out</span><span class="p">[</span><span class="s1">'fmin'</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> at </span><span class="si">{</span><span class="n">out</span><span class="p">[</span><span class="s1">'xmin'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>ACTIVE search: fmin = -493.9605 at [150.2320980578661, 301.3137746155262]
+LH search:     fmin = -959.6407 at [512.0, 404.2317980080843]
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">ACTIVE</span></code> search concentrates on the neighbourhood of the incumbent, which is efficient
+on most problems but converges here to a local basin. The Latin hypercube search keeps
+sampling the whole box, lands in the right basin and the poll finishes the job on the bound
+<span class="math notranslate nohighlight">\(x_1 = 512\)</span>.</p>
+<div class="admonition-choosing-the-search-for-multimodal-functions admonition">
+<p class="admonition-title">Choosing the search for multimodal functions</p>
+<p>On strongly multimodal functions, try <code class="docutils literal notranslate"><span class="pre">&quot;s_method&quot;:</span> <span class="pre">&quot;LH&quot;</span></code> with <code class="docutils literal notranslate"><span class="pre">ns</span></code> between
+<span class="math notranslate nohighlight">\(5n\)</span> and <span class="math notranslate nohighlight">\(20n\)</span>, try several seeds, or start from several points by giving
+<code class="docutils literal notranslate"><span class="pre">baseline</span></code> as a list of points.</p>
+</div>
+<div  class="sphinx-contrib-video-container align-left"><video autoplay="True" controls="True" height="400" preload="auto" width="650"><source src="../_images/EggHolder.mp4" type="video/mp4"></video></div></section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="index.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Tutorials</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="constrained.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Constrained optimization</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2022-2026, Ahmed H. Bayoumy.
+      <br/>
+    
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

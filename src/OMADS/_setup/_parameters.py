@@ -37,15 +37,42 @@ from .._points._point import Point
 class Parameters:
   """ Variables and algorithmic parameters 
 
-    :param baseline: Baseline design point (initial point ``x0``)
+    :param baseline: Baseline design point (initial point ``x0``), or a list
+      of starting points
     :param lb: The variables lower bound
     :param ub: The variables upper bound
     :param var_names: The variables name
-    :param scaling: Scaling factor (can be defined as a list 
-    (assigning a factor for each variable) or a scalar value 
-    that will be applied on all variables)
-    :param post_dir: The location and name of the post directory 
-    where the output results file will live in (if any)
+    :param fun_names: The objective names (one per objective)
+    :param scaling: Scaling factor (can be defined as a list
+      (assigning a factor for each variable) or a scalar value
+      that will be applied on all variables). Poll steps are expressed in
+      units of ``(ub - lb) / scaling``
+    :param post_dir: The location and name of the post directory
+      where the output results file will live in (if any)
+    :param var_type: Variable types: "R" (real), "I" (integer), "D_<set>"
+      (discrete), "C_<set>" (categorical), "O" (ordinal) or "B" (binary)
+    :param var_sets: Named value lists used by discrete and categorical
+      variables
+    :param constants: Constant parameters passed to the blackbox callable
+    :param constraints_type: Barrier type of each constraint: "PB"
+      (progressive) or "EB" (extreme); "PEB" and "RB" behave like "PB"
+    :param h_max: Initial barrier threshold
+    :param rho: Trigger of the infeasible frame centre and penalty parameter
+    :param lambda_multipliers: Initial Lagrange multipliers of the penalty
+    :param name: Run name, used to name the output files
+    :param mesh_type: "ORTHO" (orthogonal mesh) or "GMESH" (granular mesh)
+    :param granularity: GMESH: per-variable granularity (0 for continuous)
+    :param min_mesh_size: GMESH: minimum mesh size per variable
+    :param min_frame_size: GMESH: minimum frame size per variable
+    :param initial_mesh_size: GMESH: initial mesh size per variable
+    :param initial_frame_size: GMESH: initial frame size per variable
+    :param is_pareto: Run a Pareto (multi-objective) study
+    :param nobj: Number of objectives
+    :param ref_point: Reference point of the hypervolume indicator
+    :param lhs_search_initialization: Use (n+1)(n+2) Latin hypercube samples
+      at the first search step
+    :param w_min: Frame-size ratio (``10**-w_min``) below which a feasible
+      point is not selected as frame centre
   """
 
   def __init__(  # noqa: C901

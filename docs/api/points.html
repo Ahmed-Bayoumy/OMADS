@@ -1,0 +1,1210 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" data-theme="light">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Points and cache &#8212; OMADS 2610</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/proof.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/pseudocode@latest/build/pseudocode.min.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=2ebac5eb" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
+
+    <script src="../_static/documentation_options.js?v=c14009a4"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=fd10adb8"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pseudocode@latest/build/pseudocode.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'api/points';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Results and metrics" href="results.html" />
+    <link rel="prev" title="Algorithm components" href="components.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="2610" />
+  
+    
+    <script src="../_static/searchtools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="light">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+    
+    <img src="../_static/OMADS_logo.png" class="logo__image only-light" alt="OMADS 2610 - Home"/>
+    <img src="../_static/OMADS_logo.png" class="logo__image only-dark pst-js-only" alt="OMADS 2610 - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting_started.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../background.html">
+    Background
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../benchmarking.html">
+    Benchmarking
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/configuration.html">
+    Configuration reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/outputs.html">
+    Outputs
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" current active">
+  <a class="nav-link dropdown-item nav-internal" href="index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../references.html">
+    References
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/Ahmed-Bayoumy/OMADS" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting_started.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../background.html">
+    Background
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../benchmarking.html">
+    Benchmarking
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/configuration.html">
+    Configuration reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/outputs.html">
+    Outputs
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../references.html">
+    References
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/Ahmed-Bayoumy/OMADS" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="solvers.html">Solvers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="components.html">Algorithm components</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Points and cache</a></li>
+<li class="toctree-l1"><a class="reference internal" href="results.html">Results and metrics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="constants.html">Constants and enumerations</a></li>
+</ul>
+</div>
+</nav></div>
+        <div class="sidebar-primary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._points._point.Point"><code class="docutils literal notranslate"><span class="pre">Point</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._points._candidate_point.CandidatePoint"><code class="docutils literal notranslate"><span class="pre">CandidatePoint</span></code></a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._points._candidate_point.CandidatePoint.incumbent_signature"><code class="docutils literal notranslate"><span class="pre">CandidatePoint.incumbent_signature</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._points._candidate_point.CandidatePoint.fs"><code class="docutils literal notranslate"><span class="pre">CandidatePoint.fs</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._points._candidate_point.CandidatePoint.direction"><code class="docutils literal notranslate"><span class="pre">CandidatePoint.direction</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._points._candidate_point.CandidatePoint.hzero"><code class="docutils literal notranslate"><span class="pre">CandidatePoint.hzero</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._points._candidate_point.CandidatePoint.h_max"><code class="docutils literal notranslate"><span class="pre">CandidatePoint.h_max</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._points._candidate_point.CandidatePoint.rho"><code class="docutils literal notranslate"><span class="pre">CandidatePoint.rho</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._points._candidate_point.CandidatePoint.lambda_multipliers"><code class="docutils literal notranslate"><span class="pre">CandidatePoint.lambda_multipliers</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._points._candidate_point.CandidatePoint.var_link"><code class="docutils literal notranslate"><span class="pre">CandidatePoint.var_link</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._points._candidate_point.CandidatePoint.status"><code class="docutils literal notranslate"><span class="pre">CandidatePoint.status</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._points._candidate_point.CandidatePoint.is_extreme_barrier_passed"><code class="docutils literal notranslate"><span class="pre">CandidatePoint.is_extreme_barrier_passed</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._points._candidate_point.CandidatePoint.var_type"><code class="docutils literal notranslate"><span class="pre">CandidatePoint.var_type</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._points._candidate_point.CandidatePoint.constraints_type"><code class="docutils literal notranslate"><span class="pre">CandidatePoint.constraints_type</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._points._candidate_point.CandidatePoint.sets"><code class="docutils literal notranslate"><span class="pre">CandidatePoint.sets</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._points._candidate_point.CandidatePoint.dtype"><code class="docutils literal notranslate"><span class="pre">CandidatePoint.dtype</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._points._candidate_point.CandidatePoint.evaluated"><code class="docutils literal notranslate"><span class="pre">CandidatePoint.evaluated</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._points._candidate_point.CandidatePoint.signature"><code class="docutils literal notranslate"><span class="pre">CandidatePoint.signature</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._points._candidate_point.CandidatePoint.n_dimensions"><code class="docutils literal notranslate"><span class="pre">CandidatePoint.n_dimensions</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._points._candidate_point.CandidatePoint.coordinates"><code class="docutils literal notranslate"><span class="pre">CandidatePoint.coordinates</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._points._candidate_point.CandidatePoint.defined"><code class="docutils literal notranslate"><span class="pre">CandidatePoint.defined</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._points._candidate_point.CandidatePoint.is_any_defined"><code class="docutils literal notranslate"><span class="pre">CandidatePoint.is_any_defined()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._points._candidate_point.CandidatePoint.f"><code class="docutils literal notranslate"><span class="pre">CandidatePoint.f</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._points._candidate_point.CandidatePoint.fobj"><code class="docutils literal notranslate"><span class="pre">CandidatePoint.fobj</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._points._candidate_point.CandidatePoint.hmin"><code class="docutils literal notranslate"><span class="pre">CandidatePoint.hmin</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._points._candidate_point.CandidatePoint.c_ineq"><code class="docutils literal notranslate"><span class="pre">CandidatePoint.c_ineq</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._points._candidate_point.CandidatePoint.c_eq"><code class="docutils literal notranslate"><span class="pre">CandidatePoint.c_eq</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._points._candidate_point.CandidatePoint.h"><code class="docutils literal notranslate"><span class="pre">CandidatePoint.h</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._points._candidate_point.CandidatePoint.reset"><code class="docutils literal notranslate"><span class="pre">CandidatePoint.reset()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._points._candidate_point.CandidatePoint.print_info"><code class="docutils literal notranslate"><span class="pre">CandidatePoint.print_info()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._points._candidate_point.CandidatePoint.is_feasible"><code class="docutils literal notranslate"><span class="pre">CandidatePoint.is_feasible()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._points._candidate_point.CandidatePoint.clone"><code class="docutils literal notranslate"><span class="pre">CandidatePoint.clone()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._points._cache.Cache"><code class="docutils literal notranslate"><span class="pre">Cache</span></code></a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._points._cache.Cache.get_feasible_points_and_f"><code class="docutils literal notranslate"><span class="pre">Cache.get_feasible_points_and_f()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._points._cache.Cache.get_points_f_and_c"><code class="docutils literal notranslate"><span class="pre">Cache.get_points_f_and_c()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._points._cache.Cache.data_cache"><code class="docutils literal notranslate"><span class="pre">Cache.data_cache</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._points._cache.Cache.size"><code class="docutils literal notranslate"><span class="pre">Cache.size</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._points._cache.Cache.is_duplicate"><code class="docutils literal notranslate"><span class="pre">Cache.is_duplicate()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._points._cache.Cache.is_duplicate_in_set"><code class="docutils literal notranslate"><span class="pre">Cache.is_duplicate_in_set()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._points._cache.Cache.update"><code class="docutils literal notranslate"><span class="pre">Cache.update()</span></code></a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">API reference</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Points and cache</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="points-and-cache">
+<h1>Points and cache<a class="headerlink" href="#points-and-cache" title="Link to this heading">#</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="OMADS._points._point.Point">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">OMADS._points._point.</span></span><span class="sig-name descname"><span class="pre">Point</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;OMADS._utils._globals.DType</span> <span class="pre">object&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/OMADS/_points/_point.html#Point"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMADS._points._point.Point" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A class for the poll point</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_n</strong> – # Dimension of the point</p></li>
+<li><p><strong>_coords</strong> – Coordinates of the point</p></li>
+<li><p><strong>_defined</strong> – Coordinates definition boolean</p></li>
+<li><p><strong>_signature</strong> – hash signature; facilitate looking for duplicates and
+storing coordinates, hash signature, in the cache memory</p></li>
+<li><p><strong>_dtype</strong> – numpy double data type precision</p></li>
+<li><p><strong>n</strong> (<em>int</em>)</p></li>
+<li><p><strong>dtype</strong> (<a class="reference internal" href="constants.html#OMADS._utils._globals.DType" title="OMADS._utils._globals.DType"><em>DType</em></a><em> | </em><em>None</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="OMADS._points._candidate_point.CandidatePoint">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">OMADS._points._candidate_point.</span></span><span class="sig-name descname"><span class="pre">CandidatePoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_fc_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_coords</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_defined</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_evaluated</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_f</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_freal</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_c_ineq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_c_eq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_h</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">inf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_signature</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_var_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_sets</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_var_link</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_status</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">DESIGN_STATUS.UNEVALUATED</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_constraints_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_is_eb_passed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_lambda</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_rho</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_hmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_hmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">inf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_eval_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Current</span> <span class="pre">run'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Simulation'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_hzero</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_direction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_fs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_eval_no</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_incumbent_signature</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_improving</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cpb</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_mapped_coords</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_is_nondominated</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_was_center</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/OMADS/_points/_candidate_point.html#CandidatePoint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMADS._points._candidate_point.CandidatePoint" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A class for the poll point</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_n</strong> (<em>int</em>) – # Dimension of the point</p></li>
+<li><p><strong>_coords</strong> (<em>List</em><em>[</em><em>float</em><em>] </em><em>| </em><em>None</em>) – Coordinates of the point</p></li>
+<li><p><strong>_defined</strong> (<em>List</em><em>[</em><em>bool</em><em>] </em><em>| </em><em>None</em>) – Coordinates definition boolean</p></li>
+<li><p><strong>_evaluated</strong> (<em>bool</em>) – Evaluation boolean</p></li>
+<li><p><strong>_f</strong> (<em>List</em><em>[</em><em>float</em><em>] </em><em>| </em><em>None</em>) – Objective function</p></li>
+<li><p><strong>_freal</strong> (<em>List</em><em>[</em><em>float</em><em>] </em><em>| </em><em>None</em>) – Realistic target value of the objective function</p></li>
+<li><p><strong>_c_ineq</strong> (<em>List</em><em>[</em><em>float</em><em>] </em><em>| </em><em>None</em>) – Inequality constraints</p></li>
+<li><p><strong>_c_eq</strong> (<em>List</em><em>[</em><em>float</em><em>] </em><em>| </em><em>None</em>) – Equality constraints</p></li>
+<li><p><strong>_h</strong> (<em>float</em>) – Aggregated constraints; active set</p></li>
+<li><p><strong>_signature</strong> (<em>int</em>) – hash signature; facilitate looking for duplicates
+and storing coordinates, hash signature, in the cache memory</p></li>
+<li><p><strong>_dtype</strong> (<a class="reference internal" href="constants.html#OMADS._utils._globals.DType" title="OMADS._utils._globals.DType"><em>DType</em></a><em> | </em><em>None</em>) – numpy double data type precision</p></li>
+<li><p><strong>_fc_index</strong> (<em>int</em><em> | </em><em>None</em>)</p></li>
+<li><p><strong>_var_type</strong> (<em>List</em><em>[</em><em>int</em><em>] </em><em>| </em><em>None</em>)</p></li>
+<li><p><strong>_sets</strong> (<em>Dict</em><em> | </em><em>None</em>)</p></li>
+<li><p><strong>_var_link</strong> (<em>List</em><em>[</em><em>str</em><em>] </em><em>| </em><em>None</em>)</p></li>
+<li><p><strong>_status</strong> (<a class="reference internal" href="constants.html#OMADS._utils._globals.DESIGN_STATUS" title="OMADS._utils._globals.DESIGN_STATUS"><em>DESIGN_STATUS</em></a>)</p></li>
+<li><p><strong>_constraints_type</strong> (<em>List</em><em>[</em><a class="reference internal" href="constants.html#OMADS._utils._globals.BARRIER_TYPES" title="OMADS._utils._globals.BARRIER_TYPES"><em>BARRIER_TYPES</em></a><em>] </em><em>| </em><em>None</em>)</p></li>
+<li><p><strong>_is_eb_passed</strong> (<em>bool</em>)</p></li>
+<li><p><strong>_lambda</strong> (<em>List</em><em>[</em><em>float</em><em>] </em><em>| </em><em>None</em>)</p></li>
+<li><p><strong>_rho</strong> (<em>float</em>)</p></li>
+<li><p><strong>_hmax</strong> (<em>float</em>)</p></li>
+<li><p><strong>_hmin</strong> (<em>float</em>)</p></li>
+<li><p><strong>_eval_time</strong> (<em>float</em>)</p></li>
+<li><p><strong>_source</strong> (<em>str</em>)</p></li>
+<li><p><strong>_model</strong> (<em>str</em>)</p></li>
+<li><p><strong>_hzero</strong> (<em>float</em><em> | </em><em>None</em>)</p></li>
+<li><p><strong>_direction</strong> (<em>List</em><em>[</em><em>Any</em><em>] </em><em>| </em><em>None</em>)</p></li>
+<li><p><strong>_fs</strong> (<em>List</em><em>[</em><em>Any</em><em>] </em><em>| </em><em>None</em>)</p></li>
+<li><p><strong>_eval_no</strong> (<em>int</em>)</p></li>
+<li><p><strong>_incumbent_signature</strong> (<em>int</em><em> | </em><em>None</em>)</p></li>
+<li><p><strong>_improving</strong> (<em>bool</em>)</p></li>
+<li><p><strong>_cpb</strong> (<em>List</em><em>[</em><em>float</em><em>] </em><em>| </em><em>None</em>)</p></li>
+<li><p><strong>_mapped_coords</strong> (<em>List</em><em>[</em><em>Any</em><em>] </em><em>| </em><em>None</em>)</p></li>
+<li><p><strong>_is_nondominated</strong> (<em>bool</em>)</p></li>
+<li><p><strong>_was_center</strong> (<em>bool</em>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="OMADS._points._candidate_point.CandidatePoint.incumbent_signature">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">incumbent_signature</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><a class="headerlink" href="#OMADS._points._candidate_point.CandidatePoint.incumbent_signature" title="Link to this definition">#</a></dt>
+<dd><p>The hash ID of the incumbent candidate solution used to generate the current point</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Incumbent hash ID</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="OMADS._points._candidate_point.CandidatePoint.fs">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">fs</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#OMADS._points._candidate_point.CandidatePoint.fs" title="Link to this definition">#</a></dt>
+<dd><p>Point coordinates on the functions space</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Functions Point</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#OMADS._points._point.Point" title="OMADS._points._point.Point">Point</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="OMADS._points._candidate_point.CandidatePoint.direction">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">direction</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#OMADS._points._candidate_point.CandidatePoint.direction" title="Link to this definition">#</a></dt>
+<dd><p>Point instant of the direction from the incumbent to the current point</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Direction Point</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#OMADS._points._point.Point" title="OMADS._points._point.Point">Point</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="OMADS._points._candidate_point.CandidatePoint.hzero">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">hzero</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></span><a class="headerlink" href="#OMADS._points._candidate_point.CandidatePoint.hzero" title="Link to this definition">#</a></dt>
+<dd><p>Violation margin</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>_description_</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>_type_</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="OMADS._points._candidate_point.CandidatePoint.h_max">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">h_max</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></span><a class="headerlink" href="#OMADS._points._candidate_point.CandidatePoint.h_max" title="Link to this definition">#</a></dt>
+<dd><p>Maximum constraints violation</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The maximum value of the evaluated constraints violation function</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="OMADS._points._candidate_point.CandidatePoint.rho">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">rho</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></span><a class="headerlink" href="#OMADS._points._candidate_point.CandidatePoint.rho" title="Link to this definition">#</a></dt>
+<dd><p>Mesh density</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>mesh parameter</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="OMADS._points._candidate_point.CandidatePoint.lambda_multipliers">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">lambda_multipliers</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#OMADS._points._candidate_point.CandidatePoint.lambda_multipliers" title="Link to this definition">#</a></dt>
+<dd><p>Multipliers values</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>LMs values</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>List[float]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="OMADS._points._candidate_point.CandidatePoint.var_link">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">var_link</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#OMADS._points._candidate_point.CandidatePoint.var_link" title="Link to this definition">#</a></dt>
+<dd><p>Linked sets or components to the variables configuration</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List of component names</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>List[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="OMADS._points._candidate_point.CandidatePoint.status">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">status</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="constants.html#OMADS._utils._globals.DESIGN_STATUS" title="OMADS._utils._globals.DESIGN_STATUS"><span class="pre">DESIGN_STATUS</span></a></span><a class="headerlink" href="#OMADS._points._candidate_point.CandidatePoint.status" title="Link to this definition">#</a></dt>
+<dd><p>Returns the design status of the current candidate solution</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Design status (feasible, infeasible, error, or pending)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="constants.html#OMADS._utils._globals.DESIGN_STATUS" title="OMADS._utils._globals.DESIGN_STATUS">DESIGN_STATUS</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="OMADS._points._candidate_point.CandidatePoint.is_extreme_barrier_passed">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">is_extreme_barrier_passed</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></span><a class="headerlink" href="#OMADS._points._candidate_point.CandidatePoint.is_extreme_barrier_passed" title="Link to this definition">#</a></dt>
+<dd><p>Check whether constraints violation function passes the extreme violation margin threshold</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Whether passed an extreme barrier</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="OMADS._points._candidate_point.CandidatePoint.var_type">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">var_type</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#OMADS._points._candidate_point.CandidatePoint.var_type" title="Link to this definition">#</a></dt>
+<dd><p>List of variables type</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List of variables type</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>List[int]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="OMADS._points._candidate_point.CandidatePoint.constraints_type">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">constraints_type</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="constants.html#OMADS._utils._globals.BARRIER_TYPES" title="OMADS._utils._globals.BARRIER_TYPES"><span class="pre">BARRIER_TYPES</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#OMADS._points._candidate_point.CandidatePoint.constraints_type" title="Link to this definition">#</a></dt>
+<dd><p>List of constraints barrier type</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List of constraints barrier type</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>List[<a class="reference internal" href="constants.html#OMADS._utils._globals.BARRIER_TYPES" title="OMADS._utils._globals.BARRIER_TYPES">BARRIER_TYPES</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="OMADS._points._candidate_point.CandidatePoint.sets">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">sets</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span></span><a class="headerlink" href="#OMADS._points._candidate_point.CandidatePoint.sets" title="Link to this definition">#</a></dt>
+<dd><p>Dictionary of the discrete sets used in design configurations
+associated with the current candidate solution</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dictionary of the discrete sets</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="OMADS._points._candidate_point.CandidatePoint.dtype">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">dtype</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="constants.html#OMADS._utils._globals.DType" title="OMADS._utils._globals.DType"><span class="pre">DType</span></a></span><a class="headerlink" href="#OMADS._points._candidate_point.CandidatePoint.dtype" title="Link to this definition">#</a></dt>
+<dd><p>Numerical precision type</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Numerical precision type</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="constants.html#OMADS._utils._globals.DType" title="OMADS._utils._globals.DType">DType</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="OMADS._points._candidate_point.CandidatePoint.evaluated">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">evaluated</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></span><a class="headerlink" href="#OMADS._points._candidate_point.CandidatePoint.evaluated" title="Link to this definition">#</a></dt>
+<dd><p>Check whther the current point has been evaluated</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Check whther the current point has been evaluated</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>boolean</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="OMADS._points._candidate_point.CandidatePoint.signature">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">signature</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><a class="headerlink" href="#OMADS._points._candidate_point.CandidatePoint.signature" title="Link to this definition">#</a></dt>
+<dd><p>Hash ID of the current candidate solution</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Hash ID of the current candidate solution</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="OMADS._points._candidate_point.CandidatePoint.n_dimensions">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">n_dimensions</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><a class="headerlink" href="#OMADS._points._candidate_point.CandidatePoint.n_dimensions" title="Link to this definition">#</a></dt>
+<dd><p>Number of dimensions</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Number of design variables</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="OMADS._points._candidate_point.CandidatePoint.coordinates">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">coordinates</span></span><a class="headerlink" href="#OMADS._points._candidate_point.CandidatePoint.coordinates" title="Link to this definition">#</a></dt>
+<dd><p>Get the coordinates of the point.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="OMADS._points._candidate_point.CandidatePoint.defined">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">defined</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#OMADS._points._candidate_point.CandidatePoint.defined" title="Link to this definition">#</a></dt>
+<dd><p>Set of booleans that verify that the point is well defined</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Set of booleans that verify that the point is well defined</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>List[bool]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="OMADS._points._candidate_point.CandidatePoint.is_any_defined">
+<span class="sig-name descname"><span class="pre">is_any_defined</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/OMADS/_points/_candidate_point.html#CandidatePoint.is_any_defined"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMADS._points._candidate_point.CandidatePoint.is_any_defined" title="Link to this definition">#</a></dt>
+<dd><p>Check if at least one coordinate is defined.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="OMADS._points._candidate_point.CandidatePoint.f">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">f</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#OMADS._points._candidate_point.CandidatePoint.f" title="Link to this definition">#</a></dt>
+<dd><p>List of objective functions values</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List of objective functions values</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>List[float]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="OMADS._points._candidate_point.CandidatePoint.fobj">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">fobj</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#OMADS._points._candidate_point.CandidatePoint.fobj" title="Link to this definition">#</a></dt>
+<dd><p>List of objective functions values</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List of evaluated objective functions</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>List[float]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="OMADS._points._candidate_point.CandidatePoint.hmin">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">hmin</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></span><a class="headerlink" href="#OMADS._points._candidate_point.CandidatePoint.hmin" title="Link to this definition">#</a></dt>
+<dd><p>Minimum constraints violation</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>min constraints violation</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="OMADS._points._candidate_point.CandidatePoint.c_ineq">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">c_ineq</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#OMADS._points._candidate_point.CandidatePoint.c_ineq" title="Link to this definition">#</a></dt>
+<dd><p>List of inequality constraints</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List of values of inequality constraints</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>List[float]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="OMADS._points._candidate_point.CandidatePoint.c_eq">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">c_eq</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#OMADS._points._candidate_point.CandidatePoint.c_eq" title="Link to this definition">#</a></dt>
+<dd><p>List of equality constraints</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List of values for evaluated list of constraints</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>List[float]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="OMADS._points._candidate_point.CandidatePoint.h">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">h</span></span><a class="headerlink" href="#OMADS._points._candidate_point.CandidatePoint.h" title="Link to this definition">#</a></dt>
+<dd><p>Constrains violation function</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The value of the constraints violation function</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="OMADS._points._candidate_point.CandidatePoint.reset">
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/OMADS/_points/_candidate_point.html#CandidatePoint.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMADS._points._candidate_point.CandidatePoint.reset" title="Link to this definition">#</a></dt>
+<dd><p>Sets all coordinates to d.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n</strong> (<em>int</em>)</p></li>
+<li><p><strong>d</strong> (<em>float</em><em> | </em><em>None</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="OMADS._points._candidate_point.CandidatePoint.print_info">
+<span class="sig-name descname"><span class="pre">print_info</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/OMADS/_points/_candidate_point.html#CandidatePoint.print_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMADS._points._candidate_point.CandidatePoint.print_info" title="Link to this definition">#</a></dt>
+<dd><p>Prints detailed information about the candidate.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="OMADS._points._candidate_point.CandidatePoint.is_feasible">
+<span class="sig-name descname"><span class="pre">is_feasible</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/OMADS/_points/_candidate_point.html#CandidatePoint.is_feasible"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMADS._points._candidate_point.CandidatePoint.is_feasible" title="Link to this definition">#</a></dt>
+<dd><p>Check if the candidate is feasible.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="OMADS._points._candidate_point.CandidatePoint.clone">
+<span class="sig-name descname"><span class="pre">clone</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/OMADS/_points/_candidate_point.html#CandidatePoint.clone"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMADS._points._candidate_point.CandidatePoint.clone" title="Link to this definition">#</a></dt>
+<dd><p>Fast shallow copy: a new CandidatePoint wrapping the attribute values
+captured at this point in time (same aliasing semantics a cache-row
+round-trip would give, without paying for one).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#OMADS._points._candidate_point.CandidatePoint" title="OMADS._points._candidate_point.CandidatePoint"><em>CandidatePoint</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="OMADS._points._cache.Cache">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">OMADS._points._cache.</span></span><span class="sig-name descname"><span class="pre">Cache</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">capacity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/OMADS/_points/_cache.html#Cache"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMADS._points._cache.Cache" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>In computing, a hash table (hash map) is a data structure that implements an associative array
+abstract data type, a structure that can map keys to values. A hash table uses a hash function to
+compute an index, also called a hash code, into an array of buckets or slots, from which the
+desired value can be found. During lookup, the key is hashed and the resulting hash indicates
+where the corresponding value is stored.</p>
+<p>Internally the cache is a plain, insertion-ordered list of candidates (position i is the
+historical integer “index” that the rest of the solver already threads around) plus a
+signature -&gt; position dict for O(1) duplicate checks/updates, and small incrementally
+maintained index lists for the “was_center”/”improving” flags so the hot sampling path
+never has to rescan the whole cache to answer “how many centers do I have so far”.</p>
+<p>Note: every query/aggregate method below deliberately excludes the most recently inserted
+candidate (indices are compared with <cite>&lt; self._last_index</cite>, not <cite>&lt;=</cite>), mirroring the
+<cite>iloc[0:self._last_index]</cite> slicing the previous pandas-backed implementation used
+throughout – that is existing, load-bearing behavior (the newest candidate only becomes
+visible to these aggregates once a further candidate is added), not something introduced
+here, and changing it would shift which sampling branch/parameters the solver picks.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>capacity</strong> (<em>int</em>)</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="OMADS._points._cache.Cache.get_feasible_points_and_f">
+<span class="sig-name descname"><span class="pre">get_feasible_points_and_f</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/OMADS/_points/_cache.html#Cache.get_feasible_points_and_f"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMADS._points._cache.Cache.get_feasible_points_and_f" title="Link to this definition">#</a></dt>
+<dd><p>Coordinates and (summed) objective of every evaluated feasible point,
+e.g. as interpolation data for a surrogate model. Unlike most getters
+here this includes the most recent candidate, which is often the
+incumbent itself.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple[<em>ndarray</em>, <em>ndarray</em>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="OMADS._points._cache.Cache.get_points_f_and_c">
+<span class="sig-name descname"><span class="pre">get_points_f_and_c</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/OMADS/_points/_cache.html#Cache.get_points_f_and_c"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMADS._points._cache.Cache.get_points_f_and_c" title="Link to this definition">#</a></dt>
+<dd><p>Coordinates, raw (unpenalized, summed) objective and inequality
+constraint values of every evaluated feasible or infeasible point with
+finite outputs, e.g. as regression data for constraint-aware surrogate
+models.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple[<em>ndarray</em>, <em>ndarray</em>, <em>ndarray</em>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="OMADS._points._cache.Cache.data_cache">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">data_cache</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">DataFrame</span></span><a class="headerlink" href="#OMADS._points._cache.Cache.data_cache" title="Link to this definition">#</a></dt>
+<dd><p>A pandas view of the cache, materialized on demand for backward
+compatibility with external consumers; not used on any internal hot path.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="OMADS._points._cache.Cache.size">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">size</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><a class="headerlink" href="#OMADS._points._cache.Cache.size" title="Link to this definition">#</a></dt>
+<dd><p>A getter of the size of the hash ID list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="OMADS._points._cache.Cache.is_duplicate">
+<span class="sig-name descname"><span class="pre">is_duplicate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/OMADS/_points/_cache.html#Cache.is_duplicate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMADS._points._cache.Cache.is_duplicate" title="Link to this definition">#</a></dt>
+<dd><p>Check if the point is in the cache memory</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference internal" href="#OMADS._points._point.Point" title="OMADS._points._point.Point"><em>Point</em></a>) – Design point</p></li>
+<li><p><strong>add</strong> (<em>bool</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A boolean flag indicate whether the point exist in the cache memory</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="OMADS._points._cache.Cache.is_duplicate_in_set">
+<span class="sig-name descname"><span class="pre">is_duplicate_in_set</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_pool</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/OMADS/_points/_cache.html#Cache.is_duplicate_in_set"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMADS._points._cache.Cache.is_duplicate_in_set" title="Link to this definition">#</a></dt>
+<dd><p>Check if the point is in the cache memory</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference internal" href="#OMADS._points._point.Point" title="OMADS._points._point.Point"><em>Point</em></a>) – Design point</p></li>
+<li><p><strong>xp</strong> (<a class="reference internal" href="#OMADS._points._candidate_point.CandidatePoint" title="OMADS._points._candidate_point.CandidatePoint"><em>CandidatePoint</em></a>)</p></li>
+<li><p><strong>x_pool</strong> (<em>List</em><em>[</em><a class="reference internal" href="#OMADS._points._candidate_point.CandidatePoint" title="OMADS._points._candidate_point.CandidatePoint"><em>CandidatePoint</em></a><em>]</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A boolean flag indicate whether the point exist in the cache memory</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="OMADS._points._cache.Cache.update">
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/OMADS/_points/_cache.html#Cache.update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMADS._points._cache.Cache.update" title="Link to this definition">#</a></dt>
+<dd><p>Update the cache points with evaluated design criteria</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>List</em><em>[</em><a class="reference internal" href="#OMADS._points._candidate_point.CandidatePoint" title="OMADS._points._candidate_point.CandidatePoint"><em>CandidatePoint</em></a><em>]</em>) – _description_</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="components.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Algorithm components</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="results.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Results and metrics</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2022-2026, Ahmed H. Bayoumy.
+      <br/>
+    
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

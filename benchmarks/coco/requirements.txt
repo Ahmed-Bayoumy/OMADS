@@ -1,0 +1,6 @@
+# Requirements of the COCO bbob-constrained benchmark, in addition to OMADS
+# itself (pip install -e . from the repository root):
+#   pip install -r benchmarks/coco/requirements.txt
+coco-experiment>=2.8.2
+cocopp>=2.9.0
+matplotlib>=3.10

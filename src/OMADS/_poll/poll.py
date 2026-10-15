@@ -47,11 +47,22 @@ np.set_printoptions(legacy='1.21')
 
 
 def main(*args) -> Dict[str, Any]:  # noqa: C901
-  """MADS: Poll step main algorithm
+  """Run MADS with the poll step only (no search step).
 
-  :raises IOError: Exceptions
-  :return: output dictionary
-  :rtype: Dict[str, Any]
+  Each iteration selects the frame centres from the adaptive barrier, polls
+  around them with orthogonal Householder directions (``ORTHO_2N`` or
+  ``ORTHO_N+1``) and updates the mesh and the barrier threshold. This solver
+  also supports Pareto studies (``param["is_pareto"]``) and writing the poll
+  trajectory (``options["save_coordinates"]``).
+
+  :param args: ``args[0]`` is the problem, either a dictionary with the
+    ``evaluator``, ``param`` and ``options`` sections or the path to a JSON
+    file holding them. An optional ``args[3]`` overrides the random seed.
+  :raises IOError: if the barrier is empty at the end of the run.
+  :return: ``(output, poll_sampler)`` where ``output`` is the results
+    dictionary (see :func:`OMADS._mads.mads.main`), with the extra keys
+    ``Secondary fmin`` and ``Secondary hmin`` for the best infeasible point.
+  :rtype: tuple
   """
   # """ Validate and parse the parameters file """
   validate = validator()

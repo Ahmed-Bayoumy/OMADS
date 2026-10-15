@@ -50,7 +50,21 @@ np.set_printoptions(legacy='1.21')
 
 
 def main(*args) -> Dict[str, Any]:  # noqa: C901
-  """ MADS: Search step main algorithm """
+  """Run MADS with the sampling search step only (no poll step).
+
+  Each iteration draws ``search["ns"]`` points with the sampler selected by
+  ``search["type"]`` and ``search["s_method"]`` (``ACTIVE``, ``LH``, ``RS``,
+  ``HALTON``, ``FULLFACTORIAL`` or ``VNS``), projects them on the mesh,
+  evaluates them and updates the mesh and the barrier threshold.
+
+  :param args: ``args[0]`` is the problem, either a dictionary with the
+    ``evaluator``, ``param``, ``options`` and ``search`` sections or the path
+    to a JSON file holding them. An optional ``args[3]`` overrides the random
+    seed.
+  :return: ``(output, search_sampler)`` where ``output`` is the results
+    dictionary (see :func:`OMADS._mads.mads.main`).
+  :rtype: tuple
+  """
 
   # """ Validate and parse the parameters file """
   validate = validator()

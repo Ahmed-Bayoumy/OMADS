@@ -1,0 +1,1083 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" data-theme="light">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OMADS._points._cache &#8212; OMADS 2610</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/proof.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/pseudocode@latest/build/pseudocode.min.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=2ebac5eb" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../../_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
+
+    <script src="../../../_static/documentation_options.js?v=c14009a4"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=fd10adb8"></script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pseudocode@latest/build/pseudocode.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/OMADS/_points/_cache';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="2610" />
+  
+    
+    <script src="../../../_static/searchtools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <script src="../../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="light">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+    
+    <img src="../../../_static/OMADS_logo.png" class="logo__image only-light" alt="OMADS 2610 - Home"/>
+    <img src="../../../_static/OMADS_logo.png" class="logo__image only-dark pst-js-only" alt="OMADS 2610 - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../getting_started.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../background.html">
+    Background
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../benchmarking.html">
+    Benchmarking
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide/configuration.html">
+    Configuration reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide/outputs.html">
+    Outputs
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../../references.html">
+    References
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/Ahmed-Bayoumy/OMADS" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../getting_started.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../background.html">
+    Background
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../benchmarking.html">
+    Benchmarking
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide/configuration.html">
+    Configuration reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide/outputs.html">
+    Outputs
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../references.html">
+    References
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/Ahmed-Bayoumy/OMADS" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">OMADS._points._cache</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for OMADS._points._cache</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""</span>
+<span class="sd"># ------------------------------------------------------------------------------------#</span>
+<span class="sd">#  Mesh Adaptive Direct Search - (MADS)                                               #</span>
+<span class="sd">#                                                                                     #</span>
+<span class="sd">#  Author: Ahmed H. Bayoumy                                                           #</span>
+<span class="sd">#  email: ahmed.bayoumy@mail.mcgill.ca                                                #</span>
+<span class="sd">#                                                                                     #</span>
+<span class="sd">#  This program is free software: you can redistribute it and/or modify it under the  #</span>
+<span class="sd">#  terms of the BSD 3-Clause License as published by the Free Software   #</span>
+<span class="sd">#  Foundation, either version 3 of the License, or (at your option) any later         #</span>
+<span class="sd">#  version.                                                                           #</span>
+<span class="sd">#                                                                                     #</span>
+<span class="sd">#  This program is distributed in the hope that it will be useful, but WITHOUT ANY    #</span>
+<span class="sd">#  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A    #</span>
+<span class="sd">#  PARTICULAR PURPOSE.  See the BSD 3-Clause License for more details.   #</span>
+<span class="sd">#                                                                                     #</span>
+<span class="sd">#  You should have received a copy of the BSD 3-Clause License along     #</span>
+<span class="sd">#  with this program. If not, see &lt;https://opensource.org/license/bsd-3-clause/&gt;.     #</span>
+<span class="sd">#                                                                                     #</span>
+<span class="sd">#  You can find information on OMADS at                                               #</span>
+<span class="sd">#  https://github.com/Ahmed-Bayoumy/OMADS                                             #</span>
+<span class="sd">#  Copyright (C) 2026  Ahmed H. Bayoumy                                               #</span>
+<span class="sd"># ------------------------------------------------------------------------------------#</span>
+<span class="sd">"""</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.._include</span><span class="w"> </span><span class="kn">import</span> <span class="n">DESIGN_STATUS</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._candidate_point</span><span class="w"> </span><span class="kn">import</span> <span class="n">CandidatePoint</span>
+
+
+<div class="viewcode-block" id="Cache">
+<a class="viewcode-back" href="../../../api/points.html#OMADS._points._cache.Cache">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Cache</span><span class="p">:</span>
+<span class="w">  </span><span class="sd">""" In computing, a hash table (hash map) is a data structure that implements an associative array</span>
+<span class="sd">  abstract data type, a structure that can map keys to values. A hash table uses a hash function to</span>
+<span class="sd">  compute an index, also called a hash code, into an array of buckets or slots, from which the</span>
+<span class="sd">  desired value can be found. During lookup, the key is hashed and the resulting hash indicates</span>
+<span class="sd">  where the corresponding value is stored.</span>
+
+<span class="sd">  Internally the cache is a plain, insertion-ordered list of candidates (position i is the</span>
+<span class="sd">  historical integer "index" that the rest of the solver already threads around) plus a</span>
+<span class="sd">  signature -&gt; position dict for O(1) duplicate checks/updates, and small incrementally</span>
+<span class="sd">  maintained index lists for the "was_center"/"improving" flags so the hot sampling path</span>
+<span class="sd">  never has to rescan the whole cache to answer "how many centers do I have so far".</span>
+
+<span class="sd">  Note: every query/aggregate method below deliberately excludes the most recently inserted</span>
+<span class="sd">  candidate (indices are compared with `&lt; self._last_index`, not `&lt;=`), mirroring the</span>
+<span class="sd">  `iloc[0:self._last_index]` slicing the previous pandas-backed implementation used</span>
+<span class="sd">  throughout -- that is existing, load-bearing behavior (the newest candidate only becomes</span>
+<span class="sd">  visible to these aggregates once a further candidate is added), not something introduced</span>
+<span class="sd">  here, and changing it would shift which sampling branch/parameters the solver picks."""</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">capacity</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_candidates</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">CandidatePoint</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_sig_to_index</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_center_indices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_center_index_set</span><span class="p">:</span> <span class="nb">set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_improving_indices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_improving_index_set</span><span class="p">:</span> <span class="nb">set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_capacity</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">capacity</span> <span class="o">+</span> <span class="mi">100</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_is_pareto</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_last_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+
+  <span class="c1"># ---------------------------------------------------------------- helpers</span>
+  <span class="k">def</span><span class="w"> </span><span class="nf">_sync_flag_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Keep the incremental was_center/improving index lists exactly in sync</span>
+<span class="sd">    with the candidate's live flags (self-healing both ways), rather than</span>
+<span class="sd">    assuming the flags are monotonic -- update_candidate_in_cache overwrites</span>
+<span class="sd">    a candidate's whole __dict__, so a flag can in principle flip back to</span>
+<span class="sd">    False, and this must mirror that instead of leaving a stale entry</span>
+<span class="sd">    behind (which the previous re-query-every-time implementation could</span>
+<span class="sd">    never do)."""</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_candidates</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">_was_center</span><span class="p">:</span>
+      <span class="k">if</span> <span class="n">index</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_center_index_set</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_center_index_set</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_center_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">index</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_center_index_set</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_center_index_set</span><span class="o">.</span><span class="n">discard</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_center_indices</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">_improving</span><span class="p">:</span>
+      <span class="k">if</span> <span class="n">index</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_improving_index_set</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_improving_index_set</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_improving_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">index</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_improving_index_set</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_improving_index_set</span><span class="o">.</span><span class="n">discard</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_improving_indices</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">_center_indices_visible</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+    <span class="c1"># _center_indices is in flag-set order, not candidate-insertion order (an</span>
+    <span class="c1"># older candidate can be marked a center after newer ones already were).</span>
+    <span class="c1"># The previous DataFrame query returned rows in positional (insertion</span>
+    <span class="c1"># index) order regardless of when the flag was set, so sort to match.</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_index</span>
+    <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_center_indices</span> <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">)</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">_improving_indices_visible</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_index</span>
+    <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_improving_indices</span> <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">)</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">_get_candidate_class_attr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">cp</span><span class="p">:</span> <span class="n">CandidatePoint</span> <span class="o">=</span> <span class="n">CandidatePoint</span><span class="p">()</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">attr</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">cp</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span> <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">cp</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">attr</span><span class="o">.</span><span class="n">title</span><span class="p">()</span> <span class="ow">and</span> <span class="n">attr</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">'_'</span><span class="p">)</span> <span class="ow">and</span>
+        <span class="ow">not</span> <span class="n">attr</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">'__'</span><span class="p">)</span> <span class="ow">and</span>
+        <span class="ow">not</span>
+        <span class="nb">callable</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">cp</span><span class="p">,</span> <span class="n">attr</span><span class="p">))</span> <span class="ow">and</span>
+        <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">cp</span><span class="p">),</span>
+                               <span class="n">attr</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+                       <span class="nb">property</span><span class="p">)}</span>
+    <span class="k">del</span> <span class="n">cp</span>
+    <span class="k">return</span> <span class="n">out</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">n_centers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_center_indices_visible</span><span class="p">())</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">get_maximum_cstr_violation</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="n">hs</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">_h</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_candidates</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">_last_index</span><span class="p">]</span>
+          <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">_status</span> <span class="o">==</span> <span class="n">DESIGN_STATUS</span><span class="o">.</span><span class="n">INFEASIBLE</span> <span class="ow">and</span> <span class="n">c</span><span class="o">.</span><span class="n">_h</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="k">return</span> <span class="nb">min</span><span class="p">(</span><span class="n">hs</span><span class="p">)</span> <span class="k">if</span> <span class="n">hs</span> <span class="k">else</span> <span class="mf">0.001</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">n_all_non_error_candidates</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">h_max</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_maximum_cstr_violation</span><span class="p">()</span>
+    <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span>
+        <span class="mi">1</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_candidates</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">_last_index</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">_status</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="n">DESIGN_STATUS</span><span class="o">.</span><span class="n">ERROR</span><span class="p">,</span> <span class="n">DESIGN_STATUS</span><span class="o">.</span><span class="n">UNEVALUATED</span><span class="p">)</span>
+        <span class="ow">and</span> <span class="n">c</span><span class="o">.</span><span class="n">_h</span> <span class="o">&lt;=</span> <span class="n">h_max</span><span class="p">)</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">get_splitted_sorted_candidates</span><span class="p">(</span>  <span class="c1"># noqa: C901</span>
+          <span class="bp">self</span><span class="p">,</span> <span class="n">x_better</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">CandidatePoint</span><span class="p">],</span>
+          <span class="n">x_worse</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">CandidatePoint</span><span class="p">],</span>
+          <span class="n">f_better</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+          <span class="n">f_worse</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+          <span class="n">ratio</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">):</span>
+    <span class="n">h_max</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_maximum_cstr_violation</span><span class="p">()</span>
+
+    <span class="n">prim</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">CandidatePoint</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">sec</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">CandidatePoint</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">inf</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">CandidatePoint</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_candidates</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">_last_index</span><span class="p">]:</span>
+      <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">_status</span> <span class="ow">in</span> <span class="p">(</span><span class="n">DESIGN_STATUS</span><span class="o">.</span><span class="n">ERROR</span><span class="p">,</span> <span class="n">DESIGN_STATUS</span><span class="o">.</span><span class="n">UNEVALUATED</span><span class="p">):</span>
+        <span class="k">continue</span>
+      <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">_status</span> <span class="o">!=</span> <span class="n">DESIGN_STATUS</span><span class="o">.</span><span class="n">INFEASIBLE</span><span class="p">:</span>
+        <span class="n">prim</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+      <span class="k">elif</span> <span class="n">c</span><span class="o">.</span><span class="n">_h</span> <span class="o">&lt;=</span> <span class="n">h_max</span><span class="p">:</span>
+        <span class="n">sec</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+      <span class="k">else</span><span class="p">:</span>
+        <span class="n">inf</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+
+    <span class="c1"># Stable sort (ties keep insertion order), ascending by objective/violation</span>
+    <span class="n">prim</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">prim</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n">c</span><span class="o">.</span><span class="n">_f</span><span class="p">)</span>
+    <span class="n">sec</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">sec</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n">c</span><span class="o">.</span><span class="n">_h</span><span class="p">)</span>
+    <span class="n">inf</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">inf</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n">c</span><span class="o">.</span><span class="n">_h</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">prim</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">5</span><span class="p">:</span>
+      <span class="n">ratio</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">split_idx</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ratio</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">prim</span><span class="p">))</span>
+
+    <span class="n">df_better</span> <span class="o">=</span> <span class="n">prim</span><span class="p">[:</span><span class="n">split_idx</span><span class="p">]</span>
+    <span class="n">df_worse</span> <span class="o">=</span> <span class="n">prim</span><span class="p">[</span><span class="n">split_idx</span><span class="p">:]</span> <span class="k">if</span> <span class="n">ratio</span> <span class="o">&lt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">df_better</span><span class="p">:</span>
+      <span class="n">x_better</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">_coords</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">sec</span><span class="p">:</span>
+      <span class="n">x_better</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">_coords</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">ratio</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+      <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">df_worse</span><span class="p">:</span>
+        <span class="n">x_worse</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">_coords</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">inf</span><span class="p">:</span>
+      <span class="n">x_worse</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">_coords</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">df_better</span><span class="p">:</span>
+      <span class="n">f_better</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">_f</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">sec</span><span class="p">:</span>
+      <span class="n">f_better</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">_f</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">ratio</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+      <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">df_worse</span><span class="p">:</span>
+        <span class="n">f_worse</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">_f</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">inf</span><span class="p">:</span>
+      <span class="n">f_worse</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">_f</span><span class="p">))</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">n_improving</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_improving_indices_visible</span><span class="p">())</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">n_non_improving</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span>
+        <span class="mi">1</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_candidates</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">_last_index</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">c</span><span class="o">.</span><span class="n">_improving</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">c</span><span class="o">.</span><span class="n">_was_center</span><span class="p">)</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">best_hash_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">idxs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_center_indices_visible</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">idxs</span><span class="p">:</span>
+      <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s2">"Cache.best_hash_id: no center candidates recorded yet."</span><span class="p">)</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_candidates</span><span class="p">[</span><span class="n">idxs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">add_to_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">CandidatePoint</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">signature</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">x</span><span class="o">.</span><span class="n">signature</span> <span class="o">!=</span> <span class="nb">hash</span><span class="p">(</span><span class="nb">tuple</span><span class="p">((</span><span class="n">x</span><span class="o">.</span><span class="n">_coords</span><span class="p">))):</span>
+      <span class="n">x</span><span class="o">.</span><span class="n">signature</span> <span class="o">=</span> <span class="nb">hash</span><span class="p">(</span><span class="nb">tuple</span><span class="p">((</span><span class="n">x</span><span class="o">.</span><span class="n">_coords</span><span class="p">)))</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sig_to_index</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">signature</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">index</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">update_candidate_in_cache</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="n">clone</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+      <span class="n">index</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_candidates</span><span class="p">)</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_candidates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">clone</span><span class="p">)</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_sig_to_index</span><span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">signature</span><span class="p">]</span> <span class="o">=</span> <span class="n">index</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_last_index</span> <span class="o">=</span> <span class="n">index</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_sync_flag_indices</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">update_candidate_in_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">CandidatePoint</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">signature</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">x</span><span class="o">.</span><span class="n">signature</span> <span class="o">!=</span> <span class="nb">hash</span><span class="p">(</span><span class="nb">tuple</span><span class="p">((</span><span class="n">x</span><span class="o">.</span><span class="n">_coords</span><span class="p">))):</span>
+      <span class="n">x</span><span class="o">.</span><span class="n">signature</span> <span class="o">=</span> <span class="nb">hash</span><span class="p">(</span><span class="nb">tuple</span><span class="p">((</span><span class="n">x</span><span class="o">.</span><span class="n">_coords</span><span class="p">)))</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sig_to_index</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">signature</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">index</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_candidates</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_sync_flag_indices</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">get_candidate_from_cache_by_signature</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hash_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+    <span class="n">index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sig_to_index</span><span class="p">[</span><span class="n">hash_id</span><span class="p">]</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_candidates</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">get_candidate_from_cache_by_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_candidates</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">_set_candidate_attr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+    <span class="n">x</span><span class="p">:</span> <span class="n">CandidatePoint</span> <span class="o">=</span> <span class="n">CandidatePoint</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">attr</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+      <span class="nb">setattr</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">x</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">get_cache_candidate_points</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">CandidatePoint</span><span class="p">]:</span>
+    <span class="c1"># Unlike the query-style methods above, this one is (and was) inclusive</span>
+    <span class="c1"># of the most recently inserted candidate.</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_candidates</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">_last_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]]</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">get_all_cache_points</span><span class="p">(</span>
+          <span class="bp">self</span><span class="p">,</span> <span class="n">nsamples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">hmax</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">CandidatePoint</span><span class="p">]:</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">_coords</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_candidates</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">_last_index</span><span class="p">]</span>
+         <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">_evaluated</span> <span class="ow">and</span> <span class="p">(</span><span class="n">hmax</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">c</span><span class="o">.</span><span class="n">_h</span> <span class="o">&lt;=</span> <span class="n">hmax</span><span class="p">)]</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">if</span> <span class="n">nsamples</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">nsamples</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+        <span class="n">x</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="n">nsamples</span><span class="p">:])</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">get_all_cache_points_f</span><span class="p">(</span>
+          <span class="bp">self</span><span class="p">,</span> <span class="n">nsamples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">hmax</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">CandidatePoint</span><span class="p">]:</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">_f</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_candidates</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">_last_index</span><span class="p">]</span>
+         <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">_evaluated</span> <span class="ow">and</span> <span class="p">(</span><span class="n">hmax</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">c</span><span class="o">.</span><span class="n">_h</span> <span class="o">&lt;=</span> <span class="n">hmax</span><span class="p">)]</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">if</span> <span class="n">nsamples</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">nsamples</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+        <span class="n">x</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="n">nsamples</span><span class="p">:])</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">set_improving_candidate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">CandidatePoint</span><span class="p">):</span>
+    <span class="c1"># NOTE: the pandas-backed implementation this replaced set this flag via</span>
+    <span class="c1"># `self.data_cache.iloc[index]["_improving"] = True`, a chained-indexing</span>
+    <span class="c1"># write that pandas documents as never propagating back to the original</span>
+    <span class="c1"># frame -- confirmed with a standalone repro (pandas raises</span>
+    <span class="c1"># ChainedAssignmentError on exactly this pattern). So previously only the</span>
+    <span class="c1"># single candidate seeded with the flag already set at insertion time</span>
+    <span class="c1"># (the initial baseline point) was ever actually counted as</span>
+    <span class="c1"># improving/center; every later set_improving_candidate/set_center_candidate</span>
+    <span class="c1"># call was silently a no-op. This implementation applies the flag for</span>
+    <span class="c1"># real, which is strictly more correct and only ever measured as</span>
+    <span class="c1"># equal-or-better in regression testing (never worse) -- see PR notes.</span>
+    <span class="n">index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sig_to_index</span><span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">signature</span><span class="p">]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_candidates</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">_improving</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_sync_flag_indices</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">set_center_candidate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">CandidatePoint</span><span class="p">):</span>
+    <span class="c1"># See the note in set_improving_candidate: same previously-inert flag write.</span>
+    <span class="n">index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sig_to_index</span><span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">signature</span><span class="p">]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_candidates</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">_was_center</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_sync_flag_indices</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">get_all_improving_candidates</span><span class="p">(</span>
+          <span class="bp">self</span><span class="p">,</span> <span class="n">nsamples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">hmax</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">CandidatePoint</span><span class="p">]:</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_candidates</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_improving_indices_visible</span><span class="p">()</span>
+         <span class="k">if</span> <span class="n">hmax</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_candidates</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">_h</span> <span class="o">&lt;=</span> <span class="n">hmax</span><span class="p">]</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">x</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">x</span> <span class="k">if</span> <span class="n">nsamples</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">nsamples</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">else</span> <span class="n">x</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="n">nsamples</span><span class="p">:]</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">get_all_improving_points</span><span class="p">(</span>
+          <span class="bp">self</span><span class="p">,</span> <span class="n">nsamples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">hmax</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">CandidatePoint</span><span class="p">]:</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_candidates</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">_coords</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_improving_indices_visible</span><span class="p">()</span>
+         <span class="k">if</span> <span class="n">hmax</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_candidates</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">_h</span> <span class="o">&lt;=</span> <span class="n">hmax</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">if</span> <span class="n">nsamples</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">nsamples</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+        <span class="n">x</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="n">nsamples</span><span class="p">:])</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">get_all_improving_points_f</span><span class="p">(</span>
+          <span class="bp">self</span><span class="p">,</span> <span class="n">nsamples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">hmax</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">CandidatePoint</span><span class="p">]:</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_candidates</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">_f</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_improving_indices_visible</span><span class="p">()</span>
+         <span class="k">if</span> <span class="n">hmax</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_candidates</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">_h</span> <span class="o">&lt;=</span> <span class="n">hmax</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">if</span> <span class="n">nsamples</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">nsamples</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+        <span class="n">x</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="n">nsamples</span><span class="p">:])</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">get_all_non_improving_candidates</span><span class="p">(</span>
+          <span class="bp">self</span><span class="p">,</span> <span class="n">nsamples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">CandidatePoint</span><span class="p">]:</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_candidates</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">_last_index</span><span class="p">]</span>
+         <span class="k">if</span> <span class="ow">not</span> <span class="n">c</span><span class="o">.</span><span class="n">_improving</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">c</span><span class="o">.</span><span class="n">_was_center</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">x</span> <span class="k">if</span> <span class="n">nsamples</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">nsamples</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">else</span> <span class="n">x</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="n">nsamples</span><span class="p">:]</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">get_all_non_improving_points</span><span class="p">(</span>
+          <span class="bp">self</span><span class="p">,</span> <span class="n">nsamples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">CandidatePoint</span><span class="p">]:</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">_coords</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_candidates</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">_last_index</span><span class="p">]</span>
+         <span class="k">if</span> <span class="ow">not</span> <span class="n">c</span><span class="o">.</span><span class="n">_improving</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">c</span><span class="o">.</span><span class="n">_was_center</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">if</span> <span class="n">nsamples</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">nsamples</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+        <span class="n">x</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="n">nsamples</span><span class="p">:])</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">get_all_non_improving_points_f</span><span class="p">(</span>
+          <span class="bp">self</span><span class="p">,</span> <span class="n">nsamples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">CandidatePoint</span><span class="p">]:</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">_f</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_candidates</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">_last_index</span><span class="p">]</span>
+         <span class="k">if</span> <span class="ow">not</span> <span class="n">c</span><span class="o">.</span><span class="n">_improving</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">c</span><span class="o">.</span><span class="n">_was_center</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">if</span> <span class="n">nsamples</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">nsamples</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+        <span class="n">x</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="n">nsamples</span><span class="p">:])</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">get_all_center_candidates</span><span class="p">(</span>
+          <span class="bp">self</span><span class="p">,</span> <span class="n">nsamples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">hmax</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">CandidatePoint</span><span class="p">]:</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_candidates</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_center_indices_visible</span><span class="p">()</span>
+         <span class="k">if</span> <span class="n">hmax</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_candidates</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">_h</span> <span class="o">&lt;=</span> <span class="n">hmax</span><span class="p">]</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">x</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">nsamples</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">nsamples</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+      <span class="k">return</span> <span class="n">x</span>
+    <span class="k">return</span> <span class="n">x</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="n">nsamples</span><span class="p">:]</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">get_all_center_points</span><span class="p">(</span>
+          <span class="bp">self</span><span class="p">,</span> <span class="n">nsamples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">hmax</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_candidates</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">_coords</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_center_indices_visible</span><span class="p">()</span>
+         <span class="k">if</span> <span class="n">hmax</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_candidates</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">_h</span> <span class="o">&lt;=</span> <span class="n">hmax</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">x</span> <span class="k">if</span> <span class="n">nsamples</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">nsamples</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">else</span> <span class="n">x</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="n">nsamples</span><span class="p">:]</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">get_all_center_points_f</span><span class="p">(</span>
+          <span class="bp">self</span><span class="p">,</span> <span class="n">nsamples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">hmax</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_candidates</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">_f</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_center_indices_visible</span><span class="p">()</span>
+         <span class="k">if</span> <span class="n">hmax</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_candidates</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">_h</span> <span class="o">&lt;=</span> <span class="n">hmax</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">x</span> <span class="k">if</span> <span class="n">nsamples</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">nsamples</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">else</span> <span class="n">x</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="n">nsamples</span><span class="p">:]</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">get_all_center_points_h</span><span class="p">(</span>
+          <span class="bp">self</span><span class="p">,</span> <span class="n">nsamples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">hmax</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_candidates</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">_h</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_center_indices_visible</span><span class="p">()</span>
+         <span class="k">if</span> <span class="n">hmax</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_candidates</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">_h</span> <span class="o">&lt;=</span> <span class="n">hmax</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">x</span> <span class="k">if</span> <span class="n">nsamples</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">nsamples</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">else</span> <span class="n">x</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="n">nsamples</span><span class="p">:]</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">get_all_primary_center_candidates</span><span class="p">(</span>
+          <span class="bp">self</span><span class="p">,</span> <span class="n">nsamples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">CandidatePoint</span><span class="p">]:</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_candidates</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_center_indices_visible</span><span class="p">()</span>
+         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_candidates</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">_status</span> <span class="o">==</span> <span class="n">DESIGN_STATUS</span><span class="o">.</span><span class="n">FEASIBLE</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">x</span> <span class="k">if</span> <span class="n">nsamples</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">nsamples</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">else</span> <span class="n">x</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="n">nsamples</span><span class="p">:]</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">get_all_secondary_center_candidates</span><span class="p">(</span>
+          <span class="bp">self</span><span class="p">,</span> <span class="n">nsamples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">hmax</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">CandidatePoint</span><span class="p">]:</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_candidates</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_center_indices_visible</span><span class="p">()</span>
+         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_candidates</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">_status</span> <span class="o">==</span> <span class="n">DESIGN_STATUS</span><span class="o">.</span><span class="n">INFEASIBLE</span>
+         <span class="ow">and</span> <span class="p">(</span><span class="n">hmax</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_candidates</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">_h</span> <span class="o">&lt;=</span> <span class="n">hmax</span><span class="p">)]</span>
+    <span class="k">return</span> <span class="n">x</span> <span class="k">if</span> <span class="n">nsamples</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">nsamples</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">else</span> <span class="n">x</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="n">nsamples</span><span class="p">:]</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">get_all_nd_candidates</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">CandidatePoint</span><span class="p">]:</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_candidates</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">_last_index</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">_is_nondominated</span><span class="p">]</span>
+
+<div class="viewcode-block" id="Cache.get_feasible_points_and_f">
+<a class="viewcode-back" href="../../../api/points.html#OMADS._points._cache.Cache.get_feasible_points_and_f">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">get_feasible_points_and_f</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"tuple[np.ndarray, np.ndarray]"</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Coordinates and (summed) objective of every evaluated feasible point,</span>
+<span class="sd">    e.g. as interpolation data for a surrogate model. Unlike most getters</span>
+<span class="sd">    here this includes the most recent candidate, which is often the</span>
+<span class="sd">    incumbent itself."""</span>
+    <span class="n">rows</span> <span class="o">=</span> <span class="p">[(</span><span class="n">c</span><span class="o">.</span><span class="n">_coords</span><span class="p">,</span> <span class="nb">sum</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">_f</span><span class="p">))</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_candidates</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">_last_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">_status</span> <span class="o">==</span> <span class="n">DESIGN_STATUS</span><span class="o">.</span><span class="n">FEASIBLE</span><span class="p">]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">rows</span><span class="p">:</span>
+      <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="Cache.get_points_f_and_c">
+<a class="viewcode-back" href="../../../api/points.html#OMADS._points._cache.Cache.get_points_f_and_c">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">get_points_f_and_c</span><span class="p">(</span>
+          <span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"tuple[np.ndarray, np.ndarray, np.ndarray]"</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Coordinates, raw (unpenalized, summed) objective and inequality</span>
+<span class="sd">    constraint values of every evaluated feasible or infeasible point with</span>
+<span class="sd">    finite outputs, e.g. as regression data for constraint-aware surrogate</span>
+<span class="sd">    models."""</span>
+    <span class="n">rows</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_candidates</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">_last_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]:</span>
+      <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">_status</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="n">DESIGN_STATUS</span><span class="o">.</span><span class="n">FEASIBLE</span><span class="p">,</span> <span class="n">DESIGN_STATUS</span><span class="o">.</span><span class="n">INFEASIBLE</span><span class="p">):</span>
+        <span class="k">continue</span>
+      <span class="n">f</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">_freal</span><span class="p">))</span>
+      <span class="n">cons</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">_c_ineq</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">))</span>
+      <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">cons</span><span class="p">)):</span>
+        <span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">c</span><span class="o">.</span><span class="n">_coords</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">cons</span><span class="p">))</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">rows</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">({</span><span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">})</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+      <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">r</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">))</span></div>
+
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">get_all_feasible_nd_candidates</span><span class="p">(</span>
+          <span class="bp">self</span><span class="p">,</span> <span class="n">nsamples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">CandidatePoint</span><span class="p">]:</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_candidates</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">_last_index</span><span class="p">]</span>
+         <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">_is_nondominated</span> <span class="ow">and</span> <span class="n">c</span><span class="o">.</span><span class="n">_status</span> <span class="o">==</span> <span class="n">DESIGN_STATUS</span><span class="o">.</span><span class="n">FEASIBLE</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">x</span> <span class="k">if</span> <span class="n">nsamples</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">nsamples</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">else</span> <span class="n">x</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="n">nsamples</span><span class="p">:]</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">get_all_infeasible_nd_candidates</span><span class="p">(</span>
+          <span class="bp">self</span><span class="p">,</span> <span class="n">nsamples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">hmax</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">CandidatePoint</span><span class="p">]:</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_candidates</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">_last_index</span><span class="p">]</span>
+         <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">_is_nondominated</span> <span class="ow">and</span> <span class="n">c</span><span class="o">.</span><span class="n">_status</span> <span class="o">==</span> <span class="n">DESIGN_STATUS</span><span class="o">.</span><span class="n">INFEASIBLE</span>
+         <span class="ow">and</span> <span class="p">(</span><span class="n">hmax</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">c</span><span class="o">.</span><span class="n">_h</span> <span class="o">&lt;=</span> <span class="n">hmax</span><span class="p">)]</span>
+    <span class="k">return</span> <span class="n">x</span> <span class="k">if</span> <span class="n">nsamples</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">nsamples</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">else</span> <span class="n">x</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="n">nsamples</span><span class="p">:]</span>
+
+  <span class="nd">@property</span>
+  <span class="k">def</span><span class="w"> </span><span class="nf">capacity</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_capacity</span>
+
+  <span class="nd">@capacity</span><span class="o">.</span><span class="n">setter</span>
+  <span class="k">def</span><span class="w"> </span><span class="nf">capacity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_capacity</span> <span class="o">=</span> <span class="n">value</span>
+
+  <span class="nd">@property</span>
+  <span class="k">def</span><span class="w"> </span><span class="nf">data_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""A pandas view of the cache, materialized on demand for backward</span>
+<span class="sd">    compatibility with external consumers; not used on any internal hot path.</span>
+
+<span class="sd">    :rtype: pd.DataFrame</span>
+<span class="sd">    """</span>
+    <span class="n">cols</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_candidate_class_attr</span><span class="p">()</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_index</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+        <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">signature</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_candidates</span><span class="p">[:</span><span class="n">n</span><span class="p">]],</span> <span class="n">columns</span><span class="o">=</span><span class="n">cols</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_candidates</span><span class="p">[:</span><span class="n">n</span><span class="p">]):</span>
+      <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">cols</span><span class="p">:</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">iat</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">cols</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">key</span><span class="p">)]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">df</span>
+
+  <span class="nd">@property</span>
+  <span class="k">def</span><span class="w"> </span><span class="nf">is_pareto</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_pareto</span>
+
+  <span class="nd">@property</span>
+  <span class="k">def</span><span class="w"> </span><span class="nf">last_index</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_index</span>
+
+  <span class="nd">@last_index</span><span class="o">.</span><span class="n">setter</span>
+  <span class="k">def</span><span class="w"> </span><span class="nf">last_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_last_index</span> <span class="o">=</span> <span class="n">value</span>
+
+  <span class="nd">@property</span>
+  <span class="k">def</span><span class="w"> </span><span class="nf">size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""A getter of the size of the hash ID list</span>
+
+<span class="sd">    :rtype: int</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_candidates</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Cache.is_duplicate">
+<a class="viewcode-back" href="../../../api/points.html#OMADS._points._cache.Cache.is_duplicate">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">is_duplicate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">CandidatePoint</span><span class="p">,</span> <span class="n">add</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Check if the point is in the cache memory</span>
+
+<span class="sd">    :param x: Design point</span>
+<span class="sd">    :type x: Point</span>
+<span class="sd">    :return: A boolean flag indicate whether the point exist in the cache memory</span>
+<span class="sd">    :rtype: bool</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">signature</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">x</span><span class="o">.</span><span class="n">signature</span> <span class="o">!=</span> <span class="nb">hash</span><span class="p">(</span><span class="nb">tuple</span><span class="p">((</span><span class="n">x</span><span class="o">.</span><span class="n">_coords</span><span class="p">))):</span>
+      <span class="n">x</span><span class="o">.</span><span class="n">signature</span> <span class="o">=</span> <span class="nb">hash</span><span class="p">(</span><span class="nb">tuple</span><span class="p">((</span><span class="n">x</span><span class="o">.</span><span class="n">_coords</span><span class="p">)))</span>
+    <span class="n">is_dup</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">signature</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sig_to_index</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">is_dup</span> <span class="ow">and</span> <span class="n">add</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">add_to_cache</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">is_dup</span></div>
+
+
+<div class="viewcode-block" id="Cache.is_duplicate_in_set">
+<a class="viewcode-back" href="../../../api/points.html#OMADS._points._cache.Cache.is_duplicate_in_set">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">is_duplicate_in_set</span><span class="p">(</span>
+          <span class="bp">self</span><span class="p">,</span> <span class="n">xp</span><span class="p">:</span> <span class="n">CandidatePoint</span><span class="p">,</span> <span class="n">x_pool</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">CandidatePoint</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Check if the point is in the cache memory</span>
+
+<span class="sd">    :param x: Design point</span>
+<span class="sd">    :type x: Point</span>
+<span class="sd">    :return: A boolean flag indicate whether the point exist in the cache memory</span>
+<span class="sd">    :rtype: bool</span>
+<span class="sd">    """</span>
+    <span class="n">is_dup</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="n">xp</span><span class="o">.</span><span class="n">signature</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">xp</span><span class="o">.</span><span class="n">signature</span> <span class="o">!=</span> <span class="nb">hash</span><span class="p">(</span><span class="nb">tuple</span><span class="p">((</span><span class="n">xp</span><span class="o">.</span><span class="n">_coords</span><span class="p">))):</span>
+      <span class="n">xp</span><span class="o">.</span><span class="n">signature</span> <span class="o">=</span> <span class="nb">hash</span><span class="p">(</span><span class="nb">tuple</span><span class="p">((</span><span class="n">xp</span><span class="o">.</span><span class="n">_coords</span><span class="p">)))</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">x_pool</span><span class="p">):</span>
+      <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">signature</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">x</span><span class="o">.</span><span class="n">signature</span> <span class="o">!=</span> <span class="nb">hash</span><span class="p">(</span><span class="nb">tuple</span><span class="p">((</span><span class="n">x</span><span class="o">.</span><span class="n">_coords</span><span class="p">))):</span>
+        <span class="n">x</span><span class="o">.</span><span class="n">signature</span> <span class="o">=</span> <span class="nb">hash</span><span class="p">(</span><span class="nb">tuple</span><span class="p">((</span><span class="n">x</span><span class="o">.</span><span class="n">_coords</span><span class="p">)))</span>
+      <span class="k">if</span> <span class="n">xp</span><span class="o">.</span><span class="n">signature</span> <span class="o">==</span> <span class="n">x</span><span class="o">.</span><span class="n">signature</span><span class="p">:</span>
+        <span class="n">is_dup</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">break</span>
+
+    <span class="k">return</span> <span class="n">is_dup</span></div>
+
+
+<div class="viewcode-block" id="Cache.update">
+<a class="viewcode-back" href="../../../api/points.html#OMADS._points._cache.Cache.update">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">CandidatePoint</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">"""Update the cache points with evaluated design criteria</span>
+
+<span class="sd">    :param x: _description_</span>
+<span class="sd">    :type x: List[CandidatePoint]</span>
+<span class="sd">    """</span>
+    <span class="k">for</span> <span class="n">xt</span> <span class="ow">in</span> <span class="n">x</span><span class="p">:</span>
+      <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">xt</span><span class="o">.</span><span class="n">signature</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="n">xt</span><span class="o">.</span><span class="n">signature</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">xt</span><span class="o">.</span><span class="n">signature</span> <span class="o">=</span> <span class="nb">hash</span><span class="p">(</span><span class="nb">tuple</span><span class="p">((</span><span class="n">xt</span><span class="o">.</span><span class="n">coordinates</span><span class="p">)))</span>
+      <span class="k">if</span> <span class="n">xt</span><span class="o">.</span><span class="n">signature</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sig_to_index</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_candidate_in_cache</span><span class="p">(</span><span class="n">xt</span><span class="p">)</span>
+      <span class="k">else</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_to_cache</span><span class="p">(</span><span class="n">xt</span><span class="p">)</span></div>
+
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">remove_candidates_from_hash</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">CandidatePoint</span><span class="p">]):</span>
+    <span class="n">signatures_to_remove</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">xt</span><span class="o">.</span><span class="n">signature</span> <span class="k">for</span> <span class="n">xt</span> <span class="ow">in</span> <span class="n">x</span> <span class="k">if</span> <span class="n">xt</span><span class="o">.</span><span class="n">signature</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sig_to_index</span><span class="p">}</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">signatures_to_remove</span><span class="p">:</span>
+      <span class="k">return</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">_candidates</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_candidates</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">signature</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">signatures_to_remove</span><span class="p">]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_sig_to_index</span> <span class="o">=</span> <span class="p">{</span><span class="n">c</span><span class="o">.</span><span class="n">signature</span><span class="p">:</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_candidates</span><span class="p">)}</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_last_index</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_candidates</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_center_indices</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_candidates</span><span class="p">)</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">_was_center</span><span class="p">]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_center_index_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_center_indices</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_improving_indices</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_candidates</span><span class="p">)</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">_improving</span><span class="p">]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_improving_index_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_improving_indices</span><span class="p">)</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">save_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">table_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">'data_cache'</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+      <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="s2">"cache.hd5"</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">pd</span><span class="o">.</span><span class="n">HDFStore</span><span class="p">(</span><span class="s1">'cache_data.h5'</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">'a'</span><span class="p">)</span> <span class="k">as</span> <span class="n">store</span><span class="p">:</span>
+      <span class="c1"># format='table' enables appending/querying</span>
+      <span class="n">store</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">table_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_cache</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">'table'</span><span class="p">)</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">load_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">table_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"data_cache"</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+      <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="s2">"Could not find the cache file for loading!"</span><span class="p">)</span>
+
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_hdf</span><span class="p">(</span><span class="s1">'cache_data.h5'</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">table_name</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_candidates</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_sig_to_index</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_center_indices</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_center_index_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_improving_indices</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_improving_index_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_last_index</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+      <span class="n">cp</span> <span class="o">=</span> <span class="n">CandidatePoint</span><span class="p">()</span>
+      <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">row</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="n">cp</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">add_to_cache</span><span class="p">(</span><span class="n">cp</span><span class="p">)</span></div>
+
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2022-2026, Ahmed H. Bayoumy.
+      <br/>
+    
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

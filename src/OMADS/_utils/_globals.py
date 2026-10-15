@@ -39,8 +39,8 @@ class PassException(Exception):
 class DType:
   """A numpy data type delegator for decimal precision control
 
-    :param prec: Default precision option can be set to "high", 
-    "medium" or "low" precision resolution, defaults to "medium"
+    :param prec: Default precision option can be set to "high",
+      "medium" or "low" precision resolution, defaults to "medium"
     :type prec: str, optional
     :param dtype: Numpy double data type precision, defaults to np.float64
     :type dtype: np.dtype, optional
