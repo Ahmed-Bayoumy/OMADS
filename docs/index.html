@@ -470,9 +470,9 @@ X = \{x \in \mathbb{R}^n : \ell \le x \le u\},\]</div>
 <p>where the objective <span class="math notranslate nohighlight">\(f\)</span> (scalar- or vector-valued) and the constraints <span class="math notranslate nohighlight">\(c_j\)</span> are
 available only through evaluation: no derivatives are provided, and the functions may be
 non-smooth, noisy, expensive, or undefined at some points. MADS is a direct search method
-with a convergence analysis based on the Clarke nonsmooth calculus. OMADS follows many of the
-algorithmic choices of NOMAD 4 <span class="bibtex-citation" id="id2">[<a class="reference internal" href="references.html#id10" title="Charles Audet, Sébastien Le Digabel, Viviane Rochon Montplaisir, and Christophe Tribes. Algorithm 1027: NOMAD version 4: nonlinear optimization with the MADS algorithm. ACM Transactions on Mathematical Software, 48(3):35:1–35:22, 2022. doi:10.1145/3544489.">Audet <em>et al.</em>, 2022</a>]</span> and adds a density-guided sampling
-search.</p>
+with a convergence analysis based on the Clarke nonsmooth calculus. OMADS combines it with
+a progressive barrier, a granular mesh, a quadratic-model search and a density-guided
+sampling search.</p>
 </section>
 <section id="main-features">
 <h2>Main features<a class="headerlink" href="#main-features" title="Link to this heading">#</a></h2>
@@ -480,13 +480,13 @@ search.</p>
 <li><p>Three solvers sharing one input format: the complete algorithm (<code class="docutils literal notranslate"><span class="pre">mads</span></code>), the poll step
 alone (<code class="docutils literal notranslate"><span class="pre">poll</span></code>), and the search step alone (<code class="docutils literal notranslate"><span class="pre">search</span></code>).</p></li>
 <li><p>Orthogonal poll directions derived from Householder matrices, with <span class="math notranslate nohighlight">\(2n\)</span>
-(<code class="docutils literal notranslate"><span class="pre">ORTHO_2N</span></code>) or <span class="math notranslate nohighlight">\(n+1\)</span> (<code class="docutils literal notranslate"><span class="pre">ORTHO_N+1</span></code>) directions <span class="bibtex-citation" id="id3">[<a class="reference internal" href="references.html#id5" title="Charles Audet, Andrea Ianni, Sébastien Le Digabel, and Christophe Tribes. Reducing the number of function evaluations in mesh adaptive direct search algorithms. SIAM Journal on Optimization, 24(2):621–642, 2014. doi:10.1137/120895056.">Audet <em>et al.</em>, 2014</a>]</span>.</p></li>
+(<code class="docutils literal notranslate"><span class="pre">ORTHO_2N</span></code>) or <span class="math notranslate nohighlight">\(n+1\)</span> (<code class="docutils literal notranslate"><span class="pre">ORTHO_N+1</span></code>) directions <span class="bibtex-citation" id="id2">[<a class="reference internal" href="references.html#id5" title="Charles Audet, Andrea Ianni, Sébastien Le Digabel, and Christophe Tribes. Reducing the number of function evaluations in mesh adaptive direct search algorithms. SIAM Journal on Optimization, 24(2):621–642, 2014. doi:10.1137/120895056.">Audet <em>et al.</em>, 2014</a>]</span>.</p></li>
 <li><p>The classical orthogonal mesh and the anisotropic granular mesh
-<span class="bibtex-citation" id="id4">[<a class="reference internal" href="references.html#id6" title="Charles Audet, Sébastien Le Digabel, and Christophe Tribes. The mesh adaptive direct search algorithm for granular and discrete variables. SIAM Journal on Optimization, 29(2):1164–1189, 2019. doi:10.1137/18M1175872.">Audet <em>et al.</em>, 2019</a>]</span>.</p></li>
+<span class="bibtex-citation" id="id3">[<a class="reference internal" href="references.html#id6" title="Charles Audet, Sébastien Le Digabel, and Christophe Tribes. The mesh adaptive direct search algorithm for granular and discrete variables. SIAM Journal on Optimization, 29(2):1164–1189, 2019. doi:10.1137/18M1175872.">Audet <em>et al.</em>, 2019</a>]</span>.</p></li>
 <li><p>Constraint handling by the progressive barrier and the extreme barrier
-<span class="bibtex-citation" id="id5">[<a class="reference internal" href="references.html#id3" title="Charles Audet and Jr. Dennis, John E. A progressive barrier for derivative-free nonlinear programming. SIAM Journal on Optimization, 20(1):445–472, 2009. doi:10.1137/070692662.">Audet and Dennis, 2009</a>]</span>, with primary and secondary frame centres.</p></li>
+<span class="bibtex-citation" id="id4">[<a class="reference internal" href="references.html#id3" title="Charles Audet and Jr. Dennis, John E. A progressive barrier for derivative-free nonlinear programming. SIAM Journal on Optimization, 20(1):445–472, 2009. doi:10.1137/070692662.">Audet and Dennis, 2009</a>]</span>, with primary and secondary frame centres.</p></li>
 <li><p>A speculative step and a constraint-aware quadratic model search at every iteration
-<span class="bibtex-citation" id="id6">[<a class="reference internal" href="references.html#id7" title="Andrew R. Conn and Sébastien Le Digabel. Use of quadratic models with mesh-adaptive direct search for constrained black box optimization. Optimization Methods and Software, 28(1):139–158, 2013. doi:10.1080/10556788.2011.623162.">Conn and Le Digabel, 2013</a>]</span>.</p></li>
+<span class="bibtex-citation" id="id5">[<a class="reference internal" href="references.html#id7" title="Andrew R. Conn and Sébastien Le Digabel. Use of quadratic models with mesh-adaptive direct search for constrained black box optimization. Optimization Methods and Software, 28(1):139–158, 2013. doi:10.1080/10556788.2011.623162.">Conn and Le Digabel, 2013</a>]</span>.</p></li>
 <li><p>An adaptive sampling search based on a bi-population tree-structured Parzen estimator
 (BiTPE), with Halton, Latin hypercube, simulated annealing and particle swarm alternatives.</p></li>
 <li><p>Multi-objective (Pareto) studies assessed by the hypervolume indicator.</p></li>
@@ -526,8 +526,7 @@ random seeds.</p></li>
 <dt><a class="reference internal" href="background.html"><span class="doc">Background</span></a></dt><dd><p>Definitions, convergence-related concepts and the algorithms implemented in OMADS, given
 as pseudocode.</p>
 </dd>
-<dt><a class="reference internal" href="benchmarking.html"><span class="doc">Benchmarking</span></a></dt><dd><p>The regression suite, reference values against NOMAD 4, and the COCO
-<code class="docutils literal notranslate"><span class="pre">bbob-constrained</span></code> experiment.</p>
+<dt><a class="reference internal" href="benchmarking.html"><span class="doc">Benchmarking</span></a></dt><dd><p>The regression suite and the COCO <code class="docutils literal notranslate"><span class="pre">bbob-constrained</span></code> experiment.</p>
 </dd>
 <dt><a class="reference internal" href="tutorials/index.html"><span class="doc">Tutorials</span></a></dt><dd><p>Worked examples: test functions, constrained and multi-objective problems, external
 simulators, parallel evaluation and post-processing.</p>

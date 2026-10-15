@@ -495,11 +495,11 @@ design of experiments, a surrogate or model optimization, a global heuristic). T
 the mandatory <strong>poll step</strong>, a local exploration where poll directions spin around the
 incumbent solution on the discretized frame, and the blackbox is evaluated at the resulting
 poll points.</p>
-<figure class="align-center" id="id12">
+<figure class="align-center" id="id11">
 <span id="f1"></span><a class="reference internal image-reference" href="_images/mesh2.png"><img alt="_images/mesh2.png" src="_images/mesh2.png" width="700" />
 </a>
 <figcaption>
-<p><span class="caption-number">Figure 1 </span><span class="caption-text">OMADS flow chart.</span><a class="headerlink" href="#id12" title="Link to this image">#</a></p>
+<p><span class="caption-number">Figure 1 </span><span class="caption-text">OMADS flow chart.</span><a class="headerlink" href="#id11" title="Link to this image">#</a></p>
 </figcaption>
 </figure>
 <section id="when-to-use-omads">
@@ -522,16 +522,15 @@ or granular variables.</p></li>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>OMADS 2610 is a Pythonic implementation of MADS that adopts many algorithmic
-choices of NOMAD 4 <span class="bibtex-citation" id="id2">[<a class="reference internal" href="references.html#id10" title="Charles Audet, Sébastien Le Digabel, Viviane Rochon Montplaisir, and Christophe Tribes. Algorithm 1027: NOMAD version 4: nonlinear optimization with the MADS algorithm. ACM Transactions on Mathematical Software, 48(3):35:1–35:22, 2022. doi:10.1145/3544489.">Audet <em>et al.</em>, 2022</a>]</span>: the progressive barrier, the granular mesh,
-ORTHO N+1 poll directions and a quadratic-model search, on top of OMADS’ own
-density-guided sampling search.</p>
+<p>OMADS 2610 is a Pythonic implementation of MADS with a progressive barrier, a granular
+mesh, ORTHO N+1 poll directions, a quadratic-model search and a density-guided sampling
+search.</p>
 </div>
 </section>
 <section id="introduction">
 <h2>Introduction<a class="headerlink" href="#introduction" title="Link to this heading">#</a></h2>
 <p>In this section, we present the MADS algorithm. We begin with the definitions of the mesh and
-the frame from <span class="bibtex-citation" id="id3">[<a class="reference internal" href="references.html#id2" title="Charles Audet and Jr. Dennis, John E. Mesh adaptive direct search algorithms for constrained optimization. SIAM Journal on Optimization, 17(1):188–217, 2006. doi:10.1137/040603371.">Audet and Dennis, 2006</a>, <a class="reference internal" href="references.html#id4" title="Charles Audet and Warren Hare. Derivative-Free and Blackbox Optimization. Springer Series in Operations Research and Financial Engineering. Springer, 2017. doi:10.1007/978-3-319-68913-5.">Audet and Hare, 2017</a>]</span>.</p>
+the frame from <span class="bibtex-citation" id="id2">[<a class="reference internal" href="references.html#id2" title="Charles Audet and Jr. Dennis, John E. Mesh adaptive direct search algorithms for constrained optimization. SIAM Journal on Optimization, 17(1):188–217, 2006. doi:10.1137/040603371.">Audet and Dennis, 2006</a>, <a class="reference internal" href="references.html#id4" title="Charles Audet and Warren Hare. Derivative-Free and Blackbox Optimization. Springer Series in Operations Research and Financial Engineering. Springer, 2017. doi:10.1007/978-3-319-68913-5.">Audet and Hare, 2017</a>]</span>.</p>
 <div class="proof definition admonition" id="def-mesh">
 <p class="admonition-title"><span class="caption-number">Definition 1 </span> (Mesh)</p>
 <section class="definition-content" id="proof-content">
@@ -565,11 +564,11 @@ The frame of extent <span class="math notranslate nohighlight">\(\Delta^{k}\)</s
 mesh size shrinks faster than the frame size (<span class="math notranslate nohighlight">\(\delta^{k} = \min\{\Delta^{k},
 (\Delta^{k})^2\}\)</span>), the set of directions that can be chosen keeps growing, which allows an
 asymptotically dense set of poll directions; see <a class="reference internal" href="#f2"><span class="std std-numref">Figure 2</span></a>.</p>
-<figure class="align-center" id="id13">
+<figure class="align-center" id="id12">
 <span id="f2"></span><a class="reference internal image-reference" href="_images/mesh.png"><img alt="_images/mesh.png" src="_images/mesh.png" width="400" />
 </a>
 <figcaption>
-<p><span class="caption-number">Figure 2 </span><span class="caption-text">Mesh and poll updates.</span><a class="headerlink" href="#id13" title="Link to this image">#</a></p>
+<p><span class="caption-number">Figure 2 </span><span class="caption-text">Mesh and poll updates.</span><a class="headerlink" href="#id12" title="Link to this image">#</a></p>
 </figcaption>
 </figure>
 <p>Constraints are handled through the constraint violation function</p>
@@ -586,7 +585,7 @@ barrier as a candidate centre). A point is <strong>feasible</strong> when <span 
 implemented in OMADS. The three public entry points run different subsets of it:
 <code class="docutils literal notranslate"><span class="pre">mads.main</span></code> runs the whole algorithm, <code class="docutils literal notranslate"><span class="pre">poll.main</span></code> runs the Update, Poll and Terminate
 procedures only, and <code class="docutils literal notranslate"><span class="pre">search.main</span></code> replaces the poll with the sampling search.</p>
-<div class="pseudocode" id="id14">
+<div class="pseudocode" id="id13">
 <span id="a1"></span><div class="pseudocode-content">
 <pre id="1" style="display:none;">
              \begin{algorithm}
@@ -715,8 +714,8 @@ sizes adapt per centre, which matters for multi-objective problems.</p>
 <p>After the poll or search, <code class="docutils literal notranslate"><span class="pre">update</span></code> applies the success logic: on an unsuccessful iteration
 it refines the frame of the feasible centre and lowers <span class="math notranslate nohighlight">\(h_{\max}\)</span>; on a partial
 success it lowers <span class="math notranslate nohighlight">\(h_{\max}\)</span> below the infeasible centre’s violation.</p>
-<div class="literal-block-wrapper docutils container" id="id15">
-<div class="code-block-caption"><span class="caption-number">Listing 3 </span><span class="caption-text">The update step (<code class="docutils literal notranslate"><span class="pre">OMADS/_updates/_updates.py</span></code>)</span><a class="headerlink" href="#id15" title="Link to this code">#</a></div>
+<div class="literal-block-wrapper docutils container" id="id14">
+<div class="code-block-caption"><span class="caption-number">Listing 3 </span><span class="caption-text">The update step (<code class="docutils literal notranslate"><span class="pre">OMADS/_updates/_updates.py</span></code>)</span><a class="headerlink" href="#id14" title="Link to this code">#</a></div>
 <div class="dropdown highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="n">sampler</span><span class="p">:</span> <span class="n">GenericSamplerBase</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">MadsState</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="n">Options</span><span class="p">,</span>  <span class="c1"># noqa: C901</span>
            <span class="n">active_barrier</span><span class="p">:</span> <span class="n">AdaptiveBarrier</span><span class="p">,</span> <span class="n">stats</span><span class="p">:</span> <span class="n">MadsStatistics</span><span class="p">,</span>
            <span class="n">hashtable</span><span class="p">:</span> <span class="n">Cache</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
@@ -839,7 +838,7 @@ success it lowers <span class="math notranslate nohighlight">\(h_{\max}\)</span>
 </pre></div>
 </div>
 </div>
-<div class="pseudocode" id="id16">
+<div class="pseudocode" id="id15">
 <span id="a3"></span><div class="pseudocode-content">
 <pre id="2" style="display:none;">
              \begin{algorithm}
@@ -877,10 +876,10 @@ success it lowers <span class="math notranslate nohighlight">\(h_{\max}\)</span>
  \end{algorithm}
         </pre></div></div><p>The infeasible centre is chosen first when it is “far enough” from the feasible front
 (controlled by <code class="docutils literal notranslate"><span class="pre">param[&quot;rho&quot;]</span></code> and <code class="docutils literal notranslate"><span class="pre">options[&quot;use_dom_trigger&quot;]</span></code>); this is how the
-progressive barrier <span class="bibtex-citation" id="id4">[<a class="reference internal" href="references.html#id3" title="Charles Audet and Jr. Dennis, John E. A progressive barrier for derivative-free nonlinear programming. SIAM Journal on Optimization, 20(1):445–472, 2009. doi:10.1137/070692662.">Audet and Dennis, 2009</a>]</span> lets OMADS approach the feasible region
+progressive barrier <span class="bibtex-citation" id="id3">[<a class="reference internal" href="references.html#id3" title="Charles Audet and Jr. Dennis, John E. A progressive barrier for derivative-free nonlinear programming. SIAM Journal on Optimization, 20(1):445–472, 2009. doi:10.1137/070692662.">Audet and Dennis, 2009</a>]</span> lets OMADS approach the feasible region
 from outside. For single-objective problems <span class="math notranslate nohighlight">\(F^{k}\)</span> holds the best feasible point
 only, so <span class="math notranslate nohighlight">\(x^{k}_{F}\)</span> is simply the incumbent. Dominance comparisons follow
-<span class="bibtex-citation" id="id5">Jaszkiewicz and Lust [<a class="reference internal" href="references.html#id11" title="Andrzej Jaszkiewicz and Thibaut Lust. ND-tree-based update: a fast algorithm for the dynamic nondominance problem. IEEE Transactions on Evolutionary Computation, 22(5):778–791, 2018. doi:10.1109/TEVC.2018.2799684.">2018</a>]</span>.</p>
+<span class="bibtex-citation" id="id4">Jaszkiewicz and Lust [<a class="reference internal" href="references.html#id11" title="Andrzej Jaszkiewicz and Thibaut Lust. ND-tree-based update: a fast algorithm for the dynamic nondominance problem. IEEE Transactions on Evolutionary Computation, 22(5):778–791, 2018. doi:10.1109/TEVC.2018.2799684.">2018</a>]</span>.</p>
 </section>
 <section id="search-step">
 <h3>Search step<a class="headerlink" href="#search-step" title="Link to this heading">#</a></h3>
@@ -890,9 +889,9 @@ mesh. In <code class="docutils literal notranslate"><span class="pre">mads.main<
 (<a class="reference internal" href="#a5"><span class="std std-numref">Algorithm 3</span></a>). Right after a success, a <em>speculative</em> point repeats the last successful step.
 Then a quadratic model of the objective, and of each constraint when there are any, is fitted
 to cached points around the frame centre and minimized inside a trust region
-<span class="bibtex-citation" id="id6">[<a class="reference internal" href="references.html#id7" title="Andrew R. Conn and Sébastien Le Digabel. Use of quadratic models with mesh-adaptive direct search for constrained black box optimization. Optimization Methods and Software, 28(1):139–158, 2013. doi:10.1080/10556788.2011.623162.">Conn and Le Digabel, 2013</a>]</span>. When the model search succeeds, the poll and sampling search are
+<span class="bibtex-citation" id="id5">[<a class="reference internal" href="references.html#id7" title="Andrew R. Conn and Sébastien Le Digabel. Use of quadratic models with mesh-adaptive direct search for constrained black box optimization. Optimization Methods and Software, 28(1):139–158, 2013. doi:10.1080/10556788.2011.623162.">Conn and Le Digabel, 2013</a>]</span>. When the model search succeeds, the poll and sampling search are
 skipped for that iteration.</p>
-<div class="pseudocode" id="id17">
+<div class="pseudocode" id="id16">
 <span id="a5"></span><div class="pseudocode-content">
 <pre id="3" style="display:none;">
              \begin{algorithm}
@@ -946,7 +945,7 @@ only.</p>
 the classic samplers (<code class="docutils literal notranslate"><span class="pre">LH</span></code>, <code class="docutils literal notranslate"><span class="pre">RS</span></code>, <code class="docutils literal notranslate"><span class="pre">HALTON</span></code>, <code class="docutils literal notranslate"><span class="pre">FULLFACTORIAL</span></code>) it draws <code class="docutils literal notranslate"><span class="pre">ns</span></code> points
 in the whole box (or in a neighbourhood of the incumbent). With <code class="docutils literal notranslate"><span class="pre">ACTIVE</span></code>, OMADS chooses
 between strategies from the data it has gathered so far.</p>
-<div class="pseudocode" id="id18">
+<div class="pseudocode" id="id17">
 <span id="a6"></span><div class="pseudocode-content">
 <pre id="4" style="display:none;">
              \begin{algorithm}
@@ -982,7 +981,7 @@ between strategies from the data it has gathered so far.</p>
  \end{algorithm}
         </pre></div></div><p>BiTPE (bi-population tree-structured Parzen estimation, from samplersLib) resamples from the
 density ratio between kernel density estimates of the good and the bad points, in the spirit
-of TPE and of trust-region Bayesian optimization <span class="bibtex-citation" id="id7">[<a class="reference internal" href="references.html#id9" title="David Eriksson, Michael Pearce, Jacob Gardner, Ryan D. Turner, and Matthias Poloczek. Scalable global optimization via local Bayesian optimization. In Advances in Neural Information Processing Systems, volume 32. 2019.">Eriksson <em>et al.</em>, 2019</a>]</span>. Each
+of TPE and of trust-region Bayesian optimization <span class="bibtex-citation" id="id6">[<a class="reference internal" href="references.html#id9" title="David Eriksson, Michael Pearce, Jacob Gardner, Ryan D. Turner, and Matthias Poloczek. Scalable global optimization via local Bayesian optimization. In Advances in Neural Information Processing Systems, volume 32. 2019.">Eriksson <em>et al.</em>, 2019</a>]</span>. Each
 model-based step proposes <span class="math notranslate nohighlight">\(n_s\)</span> points, the number of samples configured in
 <code class="docutils literal notranslate"><span class="pre">search[&quot;ns&quot;]</span></code> (capped by the remaining budget), plus three line probes. Readiness alone
 decides whether BiTPE runs; a low trust only widens its kernels, so one unlucky round cannot
@@ -995,7 +994,7 @@ the incumbent from Gaussian, gamma, exponential, Poisson and binomial distributi
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
 <p>The search step can also be driven by surrogate models; see StatLML and RAF
-<span class="bibtex-citation" id="id8">[<a class="reference internal" href="references.html#id13" title="Ahmed H. Bayoumy. StatLML: statistical machine learning library. 2022. URL: https://github.com/Ahmed-Bayoumy/SLML.">Bayoumy, 2022</a>, <a class="reference internal" href="references.html#id14" title="Ahmed H. Bayoumy. RAF: relative adequacy framework. 2022. URL: https://github.com/Ahmed-Bayoumy/RAF.">Bayoumy, 2022</a>]</span>.</p>
+<span class="bibtex-citation" id="id7">[<a class="reference internal" href="references.html#id13" title="Ahmed H. Bayoumy. StatLML: statistical machine learning library. 2022. URL: https://github.com/Ahmed-Bayoumy/SLML.">Bayoumy, 2022</a>, <a class="reference internal" href="references.html#id14" title="Ahmed H. Bayoumy. RAF: relative adequacy framework. 2022. URL: https://github.com/Ahmed-Bayoumy/RAF.">Bayoumy, 2022</a>]</span>.</p>
 </div>
 </section>
 <section id="poll-step">
@@ -1030,8 +1029,8 @@ associated with <span class="math notranslate nohighlight">\(v\)</span> is <span
 Householder matrix. Then for any nonzero <span class="math notranslate nohighlight">\(\gamma\)</span>, <span class="math notranslate nohighlight">\(\gamma\,[H \;\; -H]\)</span> forms a
 maximal positive basis of <span class="math notranslate nohighlight">\(\mathbb{R}^{n}\)</span>. Keeping only <span class="math notranslate nohighlight">\(H\)</span> and the negative
 sum of its (rounded) columns gives a minimal positive basis of <span class="math notranslate nohighlight">\(n+1\)</span> directions
-<span class="bibtex-citation" id="id9">[<a class="reference internal" href="references.html#id5" title="Charles Audet, Andrea Ianni, Sébastien Le Digabel, and Christophe Tribes. Reducing the number of function evaluations in mesh adaptive direct search algorithms. SIAM Journal on Optimization, 24(2):621–642, 2014. doi:10.1137/120895056.">Audet <em>et al.</em>, 2014</a>]</span>.</p>
-<div class="pseudocode" id="id19">
+<span class="bibtex-citation" id="id8">[<a class="reference internal" href="references.html#id5" title="Charles Audet, Andrea Ianni, Sébastien Le Digabel, and Christophe Tribes. Reducing the number of function evaluations in mesh adaptive direct search algorithms. SIAM Journal on Optimization, 24(2):621–642, 2014. doi:10.1137/120895056.">Audet <em>et al.</em>, 2014</a>]</span>.</p>
+<div class="pseudocode" id="id18">
 <span id="a2"></span><div class="pseudocode-content">
 <pre id="5" style="display:none;">
              \begin{algorithm}
@@ -1066,8 +1065,8 @@ sum of its (rounded) columns gives a minimal positive basis of <span class="math
 builds the scaled, rounded direction matrix, <code class="docutils literal notranslate"><span class="pre">_ortho_n_plus_1</span></code> builds the
 <span class="math notranslate nohighlight">\(n+1\)</span> set (<code class="docutils literal notranslate"><span class="pre">options[&quot;direction_type&quot;]</span> <span class="pre">=</span> <span class="pre">&quot;ORTHO_N+1&quot;</span></code>, real variables only) and
 <code class="docutils literal notranslate"><span class="pre">create_poll_set</span></code> turns the directions into candidate points.</p>
-<div class="literal-block-wrapper docutils container" id="id20">
-<div class="code-block-caption"><span class="caption-number">Listing 4 </span><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">Dirs2n.create_housholder</span></code> (<code class="docutils literal notranslate"><span class="pre">OMADS/_directions/_directions.py</span></code>)</span><a class="headerlink" href="#id20" title="Link to this code">#</a></div>
+<div class="literal-block-wrapper docutils container" id="id19">
+<div class="code-block-caption"><span class="caption-number">Listing 4 </span><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">Dirs2n.create_housholder</span></code> (<code class="docutils literal notranslate"><span class="pre">OMADS/_directions/_directions.py</span></code>)</span><a class="headerlink" href="#id19" title="Link to this code">#</a></div>
 <div class="dropdown highlight-python notranslate"><div class="highlight"><pre><span></span>  <span class="k">def</span><span class="w"> </span><span class="nf">create_housholder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">is_rich</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">domain</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>  <span class="c1"># noqa: C901</span>
                         <span class="n">is_one_dir</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                         <span class="n">n_plus_1</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
@@ -1139,8 +1138,8 @@ builds the scaled, rounded direction matrix, <code class="docutils literal notra
 </pre></div>
 </div>
 </div>
-<div class="literal-block-wrapper docutils container" id="id21">
-<div class="code-block-caption"><span class="caption-number">Listing 5 </span><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">Dirs2n._ortho_n_plus_1</span></code></span><a class="headerlink" href="#id21" title="Link to this code">#</a></div>
+<div class="literal-block-wrapper docutils container" id="id20">
+<div class="code-block-caption"><span class="caption-number">Listing 5 </span><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">Dirs2n._ortho_n_plus_1</span></code></span><a class="headerlink" href="#id20" title="Link to this code">#</a></div>
 <div class="dropdown highlight-python notranslate"><div class="highlight"><pre><span></span>  <span class="k">def</span><span class="w"> </span><span class="nf">_ortho_n_plus_1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hhm</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""ORTHO N+1 NEG poll set (Audet, Ianni, Le Digabel &amp; Tribes 2014):</span>
 <span class="sd">    the n mesh-rounded orthogonal directions plus the negative of their</span>
@@ -1166,8 +1165,8 @@ builds the scaled, rounded direction matrix, <code class="docutils literal notra
 </pre></div>
 </div>
 </div>
-<div class="literal-block-wrapper docutils container" id="id22">
-<div class="code-block-caption"><span class="caption-number">Listing 6 </span><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">Dirs2n.create_poll_set</span></code></span><a class="headerlink" href="#id22" title="Link to this code">#</a></div>
+<div class="literal-block-wrapper docutils container" id="id21">
+<div class="code-block-caption"><span class="caption-number">Listing 6 </span><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">Dirs2n.create_poll_set</span></code></span><a class="headerlink" href="#id21" title="Link to this code">#</a></div>
 <div class="dropdown highlight-python notranslate"><div class="highlight"><pre><span></span>  <span class="k">def</span><span class="w"> </span><span class="nf">create_poll_set</span><span class="p">(</span>
           <span class="bp">self</span><span class="p">,</span> <span class="n">ub</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
           <span class="n">lb</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">fc</span><span class="p">:</span> <span class="n">CandidatePoint</span><span class="p">,</span> <span class="n">fci</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -1233,14 +1232,14 @@ builds the scaled, rounded direction matrix, <code class="docutils literal notra
 </div>
 </div>
 <p><a class="reference internal" href="#f3"><span class="std std-numref">Figure 3</span></a> shows the dense directions on the same frame size.</p>
-<figure class="align-center" id="id23">
+<figure class="align-center" id="id22">
 <span id="f3"></span><a class="reference internal image-reference" href="_images/poll_anim.gif"><img alt="_images/poll_anim.gif" src="_images/poll_anim.gif" width="700" />
 </a>
 <figcaption>
-<p><span class="caption-number">Figure 3 </span><span class="caption-text">Poll set of dense directions.</span><a class="headerlink" href="#id23" title="Link to this image">#</a></p>
+<p><span class="caption-number">Figure 3 </span><span class="caption-text">Poll set of dense directions.</span><a class="headerlink" href="#id22" title="Link to this image">#</a></p>
 </figcaption>
 </figure>
-<p>We recommend <span class="bibtex-citation" id="id10">[<a class="reference internal" href="references.html#id4" title="Charles Audet and Warren Hare. Derivative-Free and Blackbox Optimization. Springer Series in Operations Research and Financial Engineering. Springer, 2017. doi:10.1007/978-3-319-68913-5.">Audet and Hare, 2017</a>]</span> for the proofs showing that the columns of the
+<p>We recommend <span class="bibtex-citation" id="id9">[<a class="reference internal" href="references.html#id4" title="Charles Audet and Warren Hare. Derivative-Free and Blackbox Optimization. Springer Series in Operations Research and Financial Engineering. Springer, 2017. doi:10.1007/978-3-319-68913-5.">Audet and Hare, 2017</a>]</span> for the proofs showing that the columns of the
 associated Householder matrices are asymptotically dense, given a dense set of directions on
 the unit sphere <span class="math notranslate nohighlight">\(S\)</span>.</p>
 </section>
@@ -1258,7 +1257,7 @@ the unit sphere <span class="math notranslate nohighlight">\(S\)</span>.</p>
 \qquad
 \delta^{k+1}_i = \min\{\Delta^{k+1}_i, (\Delta^{k+1}_i)^2\}.\end{split}\]</div>
 <p><strong>Granular mesh</strong> (<code class="docutils literal notranslate"><span class="pre">GMESH</span></code>). <code class="docutils literal notranslate"><span class="pre">Gmesh</span></code> implements the granular, anisotropic mesh of
-<span class="bibtex-citation" id="id11">Audet <em>et al.</em> [<a class="reference internal" href="references.html#id6" title="Charles Audet, Sébastien Le Digabel, and Christophe Tribes. The mesh adaptive direct search algorithm for granular and discrete variables. SIAM Journal on Optimization, 29(2):1164–1189, 2019. doi:10.1137/18M1175872.">2019</a>]</span>. Each frame size is <span class="math notranslate nohighlight">\(\Delta_i = a_i \times 10^{b_i}\)</span> with
+<span class="bibtex-citation" id="id10">Audet <em>et al.</em> [<a class="reference internal" href="references.html#id6" title="Charles Audet, Sébastien Le Digabel, and Christophe Tribes. The mesh adaptive direct search algorithm for granular and discrete variables. SIAM Journal on Optimization, 29(2):1164–1189, 2019. doi:10.1137/18M1175872.">2019</a>]</span>. Each frame size is <span class="math notranslate nohighlight">\(\Delta_i = a_i \times 10^{b_i}\)</span> with
 mantissa <span class="math notranslate nohighlight">\(a_i \in \{1, 2, 5\}\)</span>, and may be a multiple of a granularity <span class="math notranslate nohighlight">\(g_i\)</span>
 (<code class="docutils literal notranslate"><span class="pre">param[&quot;granularity&quot;]</span></code>). The update rules are given in <a class="reference internal" href="#a4"><span class="std std-numref">Algorithm 6</span></a>:</p>
 <ul class="simple">
@@ -1269,7 +1268,7 @@ coordinates where the successful step was large relative to the mesh,
 <span class="math notranslate nohighlight">\(|d_i| / (\delta_i \rho_i) &gt;\)</span> <code class="docutils literal notranslate"><span class="pre">options[&quot;anisotropy_factor&quot;]</span></code> (when
 <code class="docutils literal notranslate"><span class="pre">options[&quot;anistropic_mesh&quot;]</span></code> is true), and never beyond the variable range.</p></li>
 </ul>
-<div class="pseudocode" id="id24">
+<div class="pseudocode" id="id23">
 <span id="a4"></span><div class="pseudocode-content">
 <pre id="6" style="display:none;">
              \begin{algorithm}

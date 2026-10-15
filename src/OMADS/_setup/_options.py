@@ -68,8 +68,8 @@ class Options:
     :param use_dom_trigger: Choose the primary frame centre with the
       dominance-distance trigger of the progressive barrier
     :param direction_type: Poll directions: "ORTHO_2N" (2n orthogonal
-      directions) or "ORTHO_N+1" (n of them plus their negative sum, NOMAD's
-      ORTHO N+1 NEG; real variables only, falls back to ORTHO_2N otherwise)
+      directions) or "ORTHO_N+1" (n of them plus their negative sum; real
+      variables only, falls back to ORTHO_2N otherwise)
     :param search_every: In ``mads``, run the sampling search only after every
       ``search_every``-th consecutive unsuccessful poll (1: after every one)
   """

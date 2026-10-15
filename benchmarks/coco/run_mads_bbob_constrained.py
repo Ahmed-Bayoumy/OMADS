@@ -196,7 +196,7 @@ def parse_args() -> argparse.Namespace:
                       " short of COCO's 1e-8 final target)")
   parser.add_argument("--mesh-type", default="GMESH",
                       choices=["GMESH", "ORTHO"],
-                      help="GMESH (default) is NOMAD's anisotropic granular"
+                      help="GMESH (default) is the anisotropic granular"
                       " mesh: the frame grows only along successful"
                       " directions, which keeps MADS moving along the flat"
                       " valleys of the ill-conditioned functions")

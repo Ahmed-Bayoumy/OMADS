@@ -19,11 +19,47 @@ Documentation, tutorials and algorithms: [ahmed-bayoumy.github.io/OMADS](https:/
 
 ---
 
+## Why OMADS
+
+**Optimize what you can only run.** Your simulation, CAD pipeline or legacy code gives you a
+number, not a gradient: it may be noisy, non-smooth, slow, or crash at some inputs. OMADS
+optimizes it directly from `pip install` and a ten-line Python dictionary, with no
+derivatives, no surrogate to train and no solver to compile.
+
+- **Built on a convergence theory, not a heuristic.** OMADS implements Mesh Adaptive Direct
+  Search (MADS), whose iterates converge, under standard assumptions and from any starting
+  point, to points satisfying Clarke stationarity conditions.
+- **Strong where evaluations are scarce.** On the 54 constrained problems of the COCO
+  `bbob-constrained` suite in 2D, the published benchmark configuration solves about
+  **98% of the (function, target) pairs within 100 × n evaluations**, ahead of fmincon
+  (92%), and close to COBYLA and AL1-CMA-ES, which were run with up to 10⁷ × n evaluations.
+- **Constraints the way engineers have them.** Relaxable constraints are steered towards
+  feasibility with a progressive barrier; points that violate hard constraints (where the
+  code cannot even run) are rejected; failed evaluations are discarded and the search
+  carries on.
+- **One input, many problems.** The same dictionary or JSON file handles constrained and
+  unconstrained, single- and multi-objective (Pareto) problems, serial or parallel
+  evaluation, and any Python callable, including wrappers around external programs.
+- **Results you can check.** Every published benchmark is reproducible with a single command
+  (`python benchmarks/coco/reproduce_results.py`), and a regression suite runs on Linux,
+  Windows and macOS in continuous integration.
+
+<p align="center">
+  <img width="560" alt="Runtime distributions on COCO bbob-constrained in 2D: OMADS against COBYLA, AL1-CMA-ES, fmincon and random search" src="https://ahmed-bayoumy.github.io/OMADS/_images/ecdf_02D.svg">
+</p>
+
+*Fraction of (function, target) pairs solved versus evaluations per variable, over the 54
+COCO `bbob-constrained` functions in 2D. `OMADS-A` is the published benchmark configuration
+(`OMADS-B` and `OMADS-Hal` are two alternatives); OMADS used at most 100 × n evaluations
+(more on the axis, since COCO also counts constraint evaluations), the reference algorithms
+up to 10⁷ × n. Details in the
+[benchmarking documentation](https://ahmed-bayoumy.github.io/OMADS/benchmarking.html).*
+
 ## Features
 
 - Three solvers with one input format: full MADS (`mads`), poll only (`poll`) and search only (`search`)
 - Orthogonal Householder poll directions, `2n` (`ORTHO_2N`) or `n+1` (`ORTHO_N+1`)
-- Orthogonal mesh or NOMAD's anisotropic granular mesh (`GMESH`)
+- Orthogonal mesh or anisotropic granular mesh (`GMESH`)
 - Progressive (`PB`) and extreme (`EB`) barriers for constraints
 - A cheap speculative step plus a constraint-aware quadratic model search at every iteration
 - An `ACTIVE` sampling search (BiTPE density-ratio sampling with Halton, LHS, simulated annealing and particle swarm fallbacks)
@@ -99,7 +135,7 @@ The figures below show fronts found on test problems from the literature.
 ## Benchmarking
 
 - `pytest tests` runs the regression suite (Rosenbrock in 2, 10 and 20 dimensions, constrained
-  and geometric-programming problems), with targets set against NOMAD 4.
+  and geometric-programming problems), with a target value for each solver.
 - `benchmarks/coco/run_mads_bbob_constrained.py` runs OMADS on the COCO `bbob-constrained` suite.
 
 See the [benchmarking page](https://ahmed-bayoumy.github.io/OMADS/benchmarking.html).

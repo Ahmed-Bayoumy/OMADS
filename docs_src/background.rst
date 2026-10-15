@@ -39,10 +39,9 @@ is a good choice from a computational-cost point of view.
 
 .. note::
 
-   OMADS 2610 is a Pythonic implementation of MADS that adopts many algorithmic
-   choices of NOMAD 4 :cite:p:`nomad4paper`: the progressive barrier, the granular mesh,
-   ORTHO N+1 poll directions and a quadratic-model search, on top of OMADS' own
-   density-guided sampling search.
+   OMADS 2610 is a Pythonic implementation of MADS with a progressive barrier, a granular
+   mesh, ORTHO N+1 poll directions, a quadratic-model search and a density-guided sampling
+   search.
 
 Introduction
 ============

@@ -10,48 +10,40 @@ Regression suite
 ``tests/test_OMADS_BASIC.py`` runs on Linux, Windows and macOS in continuous integration.
 Every solver must reach a target value within a fixed budget. For the 10D and 20D
 Rosenbrock problems, the target is the **median over three seeds** (single-seed results
-swing too much with the random direction stream). Targets are set to 1.25 times the median
-reached by NOMAD 4 on the same problem, start point and budget.
+swing too much with the random direction stream).
 
 .. list-table::
    :header-rows: 1
-   :widths: 30 12 14 22 22
+   :widths: 36 10 16 38
 
    * - Problem
      - :math:`n`
      - Budget
      - Solver: target
-     - NOMAD 4 reference
    * - Rosenbrock, :math:`x^0 = (-2.5, \dots)`
      - 2
      - 3500
      - mads ≤ 0.005, poll ≤ 0.008, search ≤ 0.07
-     - :math:`f^* = 0`
    * - Thin constrained band (2 PB constraints)
      - 2
      - 2000
      - mads ≤ 0.0989
-     - best known 0.0989
    * - Rosenbrock (ORTHO N+1)
      - 10
      - 4000 / 3000
      - mads ≤ 9.7, poll ≤ 8, search ≤ 7.3
-     - 7.74 (MADS), 5.84 (poll only)
    * - Rosenbrock (ORTHO N+1)
      - 20
      - 5000
      - mads ≤ 20.5, poll ≤ 20, search ≤ 24.3
-     - 16.4 (MADS), 19.4 (poll only)
    * - Geometric programming (6 PB constraints)
      - 10
      - 10000
      - poll ≤ 25.5 (median)
-     - between 15 and 25
    * - Sellar, IDF formulation (GMESH)
      - 4
      - 150
      - runs to completion
-     -
 
 The 2D Rosenbrock test also runs every solver in parallel mode (``np = 4``) and checks the
 same targets.
@@ -155,7 +147,7 @@ HTML report under ``ppdata/``. Large runs can be split over several processes wi
      - Stop evaluating a poll or search set at its first improvement.
    * - ``--mesh-type``
      - ``GMESH``
-     - ``GMESH`` (NOMAD's anisotropic granular mesh) or ``ORTHO``.
+     - ``GMESH`` (anisotropic granular mesh) or ``ORTHO``.
    * - ``--anisotropy-factor``
      - ``0.05``
      - GMESH anisotropy factor.

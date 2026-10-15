@@ -492,22 +492,19 @@ every commit, and the COCO <code class="docutils literal notranslate"><span clas
 <p><code class="docutils literal notranslate"><span class="pre">tests/test_OMADS_BASIC.py</span></code> runs on Linux, Windows and macOS in continuous integration.
 Every solver must reach a target value within a fixed budget. For the 10D and 20D
 Rosenbrock problems, the target is the <strong>median over three seeds</strong> (single-seed results
-swing too much with the random direction stream). Targets are set to 1.25 times the median
-reached by NOMAD 4 on the same problem, start point and budget.</p>
+swing too much with the random direction stream).</p>
 <div class="pst-scrollable-table-container"><table class="table">
 <colgroup>
-<col style="width: 30.0%" />
-<col style="width: 12.0%" />
-<col style="width: 14.0%" />
-<col style="width: 22.0%" />
-<col style="width: 22.0%" />
+<col style="width: 36.0%" />
+<col style="width: 10.0%" />
+<col style="width: 16.0%" />
+<col style="width: 38.0%" />
 </colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Problem</p></th>
 <th class="head"><p><span class="math notranslate nohighlight">\(n\)</span></p></th>
 <th class="head"><p>Budget</p></th>
 <th class="head"><p>Solver: target</p></th>
-<th class="head"><p>NOMAD 4 reference</p></th>
 </tr>
 </thead>
 <tbody>
@@ -515,37 +512,31 @@ reached by NOMAD 4 on the same problem, start point and budget.</p>
 <td><p>2</p></td>
 <td><p>3500</p></td>
 <td><p>mads ≤ 0.005, poll ≤ 0.008, search ≤ 0.07</p></td>
-<td><p><span class="math notranslate nohighlight">\(f^* = 0\)</span></p></td>
 </tr>
 <tr class="row-odd"><td><p>Thin constrained band (2 PB constraints)</p></td>
 <td><p>2</p></td>
 <td><p>2000</p></td>
 <td><p>mads ≤ 0.0989</p></td>
-<td><p>best known 0.0989</p></td>
 </tr>
 <tr class="row-even"><td><p>Rosenbrock (ORTHO N+1)</p></td>
 <td><p>10</p></td>
 <td><p>4000 / 3000</p></td>
 <td><p>mads ≤ 9.7, poll ≤ 8, search ≤ 7.3</p></td>
-<td><p>7.74 (MADS), 5.84 (poll only)</p></td>
 </tr>
 <tr class="row-odd"><td><p>Rosenbrock (ORTHO N+1)</p></td>
 <td><p>20</p></td>
 <td><p>5000</p></td>
 <td><p>mads ≤ 20.5, poll ≤ 20, search ≤ 24.3</p></td>
-<td><p>16.4 (MADS), 19.4 (poll only)</p></td>
 </tr>
 <tr class="row-even"><td><p>Geometric programming (6 PB constraints)</p></td>
 <td><p>10</p></td>
 <td><p>10000</p></td>
 <td><p>poll ≤ 25.5 (median)</p></td>
-<td><p>between 15 and 25</p></td>
 </tr>
 <tr class="row-odd"><td><p>Sellar, IDF formulation (GMESH)</p></td>
 <td><p>4</p></td>
 <td><p>150</p></td>
 <td><p>runs to completion</p></td>
-<td></td>
 </tr>
 </tbody>
 </table>
@@ -675,7 +666,7 @@ f43 to f54: an integer, <code class="docutils literal notranslate"><span class="
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--mesh-type</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">GMESH</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">GMESH</span></code> (NOMAD’s anisotropic granular mesh) or <code class="docutils literal notranslate"><span class="pre">ORTHO</span></code>.</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">GMESH</span></code> (anisotropic granular mesh) or <code class="docutils literal notranslate"><span class="pre">ORTHO</span></code>.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--anisotropy-factor</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">0.05</span></code></p></td>

@@ -21,9 +21,9 @@ OMADS is a Python implementation of the Mesh Adaptive Direct Search (MADS) algor
 where the objective :math:`f` (scalar- or vector-valued) and the constraints :math:`c_j` are
 available only through evaluation: no derivatives are provided, and the functions may be
 non-smooth, noisy, expensive, or undefined at some points. MADS is a direct search method
-with a convergence analysis based on the Clarke nonsmooth calculus. OMADS follows many of the
-algorithmic choices of NOMAD 4 :cite:p:`nomad4paper` and adds a density-guided sampling
-search.
+with a convergence analysis based on the Clarke nonsmooth calculus. OMADS combines it with
+a progressive barrier, a granular mesh, a quadratic-model search and a density-guided
+sampling search.
 
 Main features
 -------------
@@ -78,8 +78,7 @@ Organization of this documentation
    Definitions, convergence-related concepts and the algorithms implemented in OMADS, given
    as pseudocode.
 :doc:`benchmarking`
-   The regression suite, reference values against NOMAD 4, and the COCO
-   ``bbob-constrained`` experiment.
+   The regression suite and the COCO ``bbob-constrained`` experiment.
 :doc:`tutorials/index`
    Worked examples: test functions, constrained and multi-objective problems, external
    simulators, parallel evaluation and post-processing.

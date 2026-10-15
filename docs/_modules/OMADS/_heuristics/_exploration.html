@@ -984,8 +984,8 @@
   <span class="k">def</span><span class="w"> </span><span class="nf">generate_quad_model_points</span><span class="p">(</span>
           <span class="bp">self</span><span class="p">,</span> <span class="n">hashtable</span><span class="p">:</span> <span class="n">Cache</span><span class="p">,</span> <span class="n">fc</span><span class="p">:</span> <span class="n">CandidatePoint</span><span class="p">,</span>
           <span class="n">x_parent</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""NOMAD-style cheap search, meant to run first every iteration (at</span>
-<span class="sd">    most two evaluations):</span>
+<span class="w">    </span><span class="sd">"""Cheap search, meant to run first every iteration (at most two</span>
+<span class="sd">    evaluations):</span>
 
 <span class="sd">    - speculative search: right after a success (`x_parent` is the point</span>
 <span class="sd">      the incumbent was generated from), repeat that successful step once</span>

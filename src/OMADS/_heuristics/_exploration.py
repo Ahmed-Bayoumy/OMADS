@@ -503,8 +503,8 @@ class EfficientExploration(GenericSamplerBaseData, GenericSamplerBase):
   def generate_quad_model_points(
           self, hashtable: Cache, fc: CandidatePoint,
           x_parent: Optional[List[float]] = None):
-    """NOMAD-style cheap search, meant to run first every iteration (at
-    most two evaluations):
+    """Cheap search, meant to run first every iteration (at most two
+    evaluations):
 
     - speculative search: right after a success (`x_parent` is the point
       the incumbent was generated from), repeat that successful step once
