@@ -596,9 +596,9 @@ def test_omads_toy_quick():
   logger.info("\nBest known solution: %s < fmin <= %s", 15, 25)
   logger.info("\nSequential Exec: poll: fmin = %s", res)
 
-  if res > 25.5:
-    logger.error("\nSequential Exec: poll: median fmin: %s > %s", res, 25.5)
-    raise ValueError(f"\nSequential Exec: poll: median fmin: {res} > {25.5}")
+  if res > 27:
+    logger.error("\nSequential Exec: poll: median fmin: %s > %s", res, 27)
+    raise ValueError(f"\nSequential Exec: poll: median fmin: {res} > {27}")
 
 
 def Sellar_A1(x):

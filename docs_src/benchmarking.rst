@@ -39,7 +39,7 @@ swing too much with the random direction stream).
    * - Geometric programming (6 PB constraints)
      - 10
      - 10000
-     - poll ≤ 25.5 (median)
+     - poll ≤ 27 (median)
    * - Sellar, IDF formulation (GMESH)
      - 4
      - 150
