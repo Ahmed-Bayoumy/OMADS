@@ -1,9 +1,14 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
+type: software
 authors:
   - family-names: Bayoumy
     given-names: Ahmed H.
     orcid: https://orcid.org/0000-0002-4874-7838
-title: "OMADS"
-version: 1.5.0
-date-released: 2022
+title: "OMADS: Optimization using Mesh Adaptive Direct Search"
+version: "2610"
+doi: 10.5281/zenodo.23407559
+date-released: 2026-10-16
+license: GPL-3.0-or-later
+repository-code: "https://github.com/Ahmed-Bayoumy/OMADS"
+url: "https://ahmed-bayoumy.github.io/OMADS/"

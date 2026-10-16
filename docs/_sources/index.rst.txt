@@ -4,7 +4,7 @@ OMADS: Optimization using Mesh Adaptive Direct Search
 | **Author:** Ahmed H. Bayoumy
 | **Release:** |release|
 | **Source:** https://github.com/Ahmed-Bayoumy/OMADS
-| **DOI:** `10.5281/zenodo.7212701 <https://doi.org/10.5281/zenodo.7212701>`_
+| **DOI:** `10.5281/zenodo.23407559 <https://doi.org/10.5281/zenodo.23407559>`_
 
 Overview
 --------
@@ -114,7 +114,7 @@ If OMADS contributes to published work, please cite it as follows.
      year      = {2022},
      publisher = {GitHub},
      version   = {2610},
-     doi       = {10.5281/zenodo.7212701},
+     doi       = {10.5281/zenodo.23407559},
      url       = {https://github.com/Ahmed-Bayoumy/OMADS}
    }
 

@@ -169,7 +169,7 @@ If you use this code, please cite it as follows.
   year      = {2022},
   publisher = {GitHub},
   version   = {2610},
-  doi       = {10.5281/zenodo.7212701},
+  doi       = {10.5281/zenodo.23407559},
   url       = {https://github.com/Ahmed-Bayoumy/OMADS}
 }
 ```
