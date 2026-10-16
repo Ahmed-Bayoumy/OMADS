@@ -3,7 +3,7 @@
 [![win-build-and-pytest](https://github.com/Ahmed-Bayoumy/OMADS/actions/workflows/win-build-and-pytest.yml/badge.svg?branch=DEV)](https://github.com/Ahmed-Bayoumy/OMADS/actions/workflows/win-build-and-pytest.yml)
 [![macos-build-and-pytest](https://github.com/Ahmed-Bayoumy/OMADS/actions/workflows/macos-build-and-pytest.yml/badge.svg?branch=DEV)](https://github.com/Ahmed-Bayoumy/OMADS/actions/workflows/macos-build-and-pytest.yml)
 
-<img width="870" alt="OMADS logo" src="https://ahmed-bayoumy.github.io/OMADS/_static/OMADS_logo.png">
+<img width="870" alt="OMADS logo" src="https://ahmed-bayoumy.github.io/OMADS/_static/OMADS_logo.png?v=2610">
 
 # OMADS
 
@@ -45,7 +45,7 @@ derivatives, no surrogate to train and no solver to compile.
   Windows and macOS in continuous integration.
 
 <p align="center">
-  <img width="560" alt="Runtime distributions on COCO bbob-constrained in 2D: OMADS against COBYLA, AL1-CMA-ES, fmincon and random search" src="https://ahmed-bayoumy.github.io/OMADS/_images/ecdf_02D.svg">
+  <img width="560" alt="Runtime distributions on COCO bbob-constrained in 2D: OMADS against COBYLA, AL1-CMA-ES, fmincon and random search" src="https://ahmed-bayoumy.github.io/OMADS/_images/ecdf_02D.svg?v=2610">
 </p>
 
 *Fraction of (function, target) pairs solved versus evaluations per variable, over the 54
