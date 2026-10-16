@@ -1,0 +1,11 @@
+# Requirements to build the OMADS documentation:
+#   pip install -r docs_src/requirements.txt
+#   sphinx-build -b html docs_src docs
+sphinx>=8
+pydata-sphinx-theme>=0.16
+sphinx-design>=0.6
+sphinx-copybutton>=0.5
+sphinx-proof>=0.2
+sphinxcontrib-bibtex>=2.6
+sphinxcontrib-pseudocode>=0.8
+sphinxcontrib-video>=0.4

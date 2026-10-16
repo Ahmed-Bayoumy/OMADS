@@ -31,24 +31,47 @@ class Options:
 
     :param seed: Random generator seed
     :param budget: The evaluation budget
-    :param tol: The threshold of the minimum poll size at which the run will be terminated
-    :param psize_init: Initial poll size
-    :param dispaly: Print the study progress during the run
-    :param opportunistic: Loop on the points populated in the poll set until a better 
-    minimum found, then stop the evaluation loop
-    :param check_cache: Check the hash table before points evaluation to avoid duplicates
-    :param store_cache: Enable storing evaluated points into the hash table
-    :param collect_y: Collect dependent design variables (required for DMDO)
-    :param rich_direction: Go with the rich direction (Impact the mesh size update)
-    :param precision: Define the precision level
-    :param save_results: A boolean flag that indicates saving results in a csv file
-    :param save_coordinates: A boolean flag that indicates saving coordinates of the poll
-      set in a JSON file (required to generate animations of the spinner)
-    :param save_all_best: A boolean used to check whether saving best points only in
-      the MADS.out file
-    :param parallel_mode: A boolean to check whether evaluating the poll set 
-    in parallel multiprocessing
-    :param np: The number of CPUs
+    :param tol: The threshold of the minimum frame (poll) or mesh (search)
+      size at which the run is terminated
+    :param psize_init: Initial frame size of the orthogonal mesh
+    :param display: Print the evaluation of the starting point and a run summary
+    :param opportunistic: Stop evaluating the current poll or search set as
+      soon as a full success is found
+    :param check_cache: Check the cache before evaluating points to avoid duplicates
+    :param store_cache: Store evaluated points in the cache (required by the
+      ``mads`` and ``search`` solvers to locate frame centres)
+    :param collect_y: Reserved (collect coupling variables for DMDO)
+    :param rich_direction: Use random Householder poll directions, which are
+      asymptotically dense
+    :param precision: Floating-point precision: "high", "medium" or "low"
+    :param save_results: Write every evaluation to
+      ``<post_dir>/<name>_run/<name>_all.out``
+    :param save_coordinates: Write the poll points of each iteration to
+      ``coords.json`` (used to animate the poll trajectory; ``poll`` solver)
+    :param save_all_best: Reserved
+    :param parallel_mode: Evaluate candidate sets in parallel processes
+    :param np: The number of worker processes (capped at the CPU count)
+    :param extend: Reserved (a ``Dirs2n`` instance to continue a run)
+    :param is_verbose: Write extra diagnostics to ``OMADS.log``
+    :param anisotropy_factor: GMESH: threshold of the anisotropic frame
+      enlargement rule
+    :param anistropic_mesh: GMESH: enable anisotropic frame enlargement
+    :param refine_freq: GMESH: refine the frame every ``refine_freq``
+      unsuccessful iterations
+    :param use_dms_success: Count any improvement of the non-dominated set as
+      a full success
+    :param use_omads_partial_success: When False, an unsuccessful iteration
+      becomes a partial success if an infeasible point has a lower violation
+      than the infeasible frame centre
+    :param use_penalty_approach: Reserved
+    :param noutbound_hits_max: Stop after this many trial points hit the bounds
+    :param use_dom_trigger: Choose the primary frame centre with the
+      dominance-distance trigger of the progressive barrier
+    :param direction_type: Poll directions: "ORTHO_2N" (2n orthogonal
+      directions) or "ORTHO_N+1" (n of them plus their negative sum; real
+      variables only, falls back to ORTHO_2N otherwise)
+    :param search_every: In ``mads``, run the sampling search only after every
+      ``search_every``-th consecutive unsuccessful poll (1: after every one)
   """
 
   def __init__(
@@ -79,6 +102,8 @@ class Options:
       use_penalty_approach: bool = False,
       noutbound_hits_max: int = 60000,
       use_dom_trigger: bool = True,
+      direction_type: str = "ORTHO_2N",
+      search_every: int = 1,
   ):
     self.seed = seed
     self.budget = budget
@@ -106,3 +131,5 @@ class Options:
     self.use_penalty_approach = use_penalty_approach
     self.noutbound_hits_max = noutbound_hits_max
     self.use_dom_trigger = use_dom_trigger
+    self.direction_type = direction_type
+    self.search_every = search_every

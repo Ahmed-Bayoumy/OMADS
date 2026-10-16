@@ -1,0 +1,1053 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" data-theme="light">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OMADS._evaluator._evaluator &#8212; OMADS 2610</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/proof.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/pseudocode@latest/build/pseudocode.min.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=2ebac5eb" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../../_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
+
+    <script src="../../../_static/documentation_options.js?v=c14009a4"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=fd10adb8"></script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pseudocode@latest/build/pseudocode.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/OMADS/_evaluator/_evaluator';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="2610" />
+  
+    
+    <script src="../../../_static/searchtools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <script src="../../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="light">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+    
+    <img src="../../../_static/OMADS_logo.png" class="logo__image only-light" alt="OMADS 2610 - Home"/>
+    <img src="../../../_static/OMADS_logo.png" class="logo__image only-dark pst-js-only" alt="OMADS 2610 - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../getting_started.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../background.html">
+    Background
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../benchmarking.html">
+    Benchmarking
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide/configuration.html">
+    Configuration reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide/outputs.html">
+    Outputs
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../../references.html">
+    References
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/Ahmed-Bayoumy/OMADS" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../getting_started.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../background.html">
+    Background
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../benchmarking.html">
+    Benchmarking
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide/configuration.html">
+    Configuration reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide/outputs.html">
+    Outputs
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../references.html">
+    References
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/Ahmed-Bayoumy/OMADS" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">OMADS._evaluator._evaluator</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for OMADS._evaluator._evaluator</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""</span>
+<span class="sd"># ------------------------------------------------------------------------------------#</span>
+<span class="sd">#  Mesh Adaptive Direct Search - (MADS)                                               #</span>
+<span class="sd">#                                                                                     #</span>
+<span class="sd">#  Author: Ahmed H. Bayoumy                                                           #</span>
+<span class="sd">#  email: ahmed.bayoumy@mail.mcgill.ca                                                #</span>
+<span class="sd">#                                                                                     #</span>
+<span class="sd">#  This program is free software: you can redistribute it and/or modify it under the  #</span>
+<span class="sd">#  terms of the BSD 3-Clause License as published by the Free Software   #</span>
+<span class="sd">#  Foundation, either version 3 of the License, or (at your option) any later         #</span>
+<span class="sd">#  version.                                                                           #</span>
+<span class="sd">#                                                                                     #</span>
+<span class="sd">#  This program is distributed in the hope that it will be useful, but WITHOUT ANY    #</span>
+<span class="sd">#  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A    #</span>
+<span class="sd">#  PARTICULAR PURPOSE.  See the BSD 3-Clause License for more details.   #</span>
+<span class="sd">#                                                                                     #</span>
+<span class="sd">#  You should have received a copy of the BSD 3-Clause License along     #</span>
+<span class="sd">#  with this program. If not, see &lt;https://opensource.org/license/bsd-3-clause/&gt;.     #</span>
+<span class="sd">#                                                                                     #</span>
+<span class="sd">#  You can find information on OMADS at                                               #</span>
+<span class="sd">#  https://github.com/Ahmed-Bayoumy/OMADS                                             #</span>
+<span class="sd">#  Copyright (C) 2026  Ahmed H. Bayoumy                                               #</span>
+<span class="sd"># ------------------------------------------------------------------------------------#</span>
+<span class="sd">"""</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">inspect</span><span class="w"> </span><span class="kn">import</span> <span class="n">signature</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">concurrent.futures</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">platform</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">paramiko</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="kn">import</span> <span class="n">inf</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.._post._postprocess</span><span class="w"> </span><span class="kn">import</span> <span class="n">PostMADS</span><span class="p">,</span> <span class="n">Output</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.._setup._options</span><span class="w"> </span><span class="kn">import</span> <span class="n">Options</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.._include</span><span class="w"> </span><span class="kn">import</span> <span class="n">CandidatePoint</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.._include</span><span class="w"> </span><span class="kn">import</span> <span class="n">DType</span><span class="p">,</span> <span class="n">DESIGN_STATUS</span><span class="p">,</span> <span class="n">PassException</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.._templates._optimizer</span><span class="w"> </span><span class="kn">import</span> <span class="n">GenericSamplerBase</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.._include</span><span class="w"> </span><span class="kn">import</span> <span class="n">AdaptiveBarrier</span>
+
+<span class="c1"># Deep-but-legitimate (non-cyclic) CandidatePoint/Mesh object graphs built up</span>
+<span class="c1"># over a long run can exceed Python's default pickling recursion depth when</span>
+<span class="c1"># ProcessPoolExecutor serializes work to/from worker processes (observed on</span>
+<span class="c1"># long parallel-mode runs, thousands of evaluations in). Raised here at</span>
+<span class="c1"># module level -- not just in the main process -- so it also takes effect in</span>
+<span class="c1"># freshly spawned worker processes, which re-import this module to</span>
+<span class="c1"># reconstruct evaluate_blackbox_parallel before running it.</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">setrecursionlimit</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">getrecursionlimit</span><span class="p">(),</span> <span class="mi">20000</span><span class="p">))</span>
+
+
+<div class="viewcode-block" id="Evaluator">
+<a class="viewcode-back" href="../../../api/configuration.html#OMADS._evaluator._evaluator.Evaluator">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Evaluator</span><span class="p">:</span>
+<span class="w">  </span><span class="sd">""" Define the evaluator attributes and settings</span>
+<span class="sd">    :param blackbox: The blackbox name (it can be a callable function or an executable file)</span>
+<span class="sd">    :param commandOptions: Define options that will be added to the execution command of the</span>
+<span class="sd">    executable file. Command options should be defined as a string in one line</span>
+<span class="sd">    :param internal: If the blackbox callable function is part of the internal benchmarking library</span>
+<span class="sd">    :param path: The path of the executable file (if any)</span>
+<span class="sd">    :param input: The input file name -- should include the file extension</span>
+<span class="sd">    :param output: The output file name -- should include the file extension</span>
+<span class="sd">    :param constants: Define constant parameters list, see the documentation in</span>
+<span class="sd">    Tutorials-&gt;Blackbox evaluation-&gt;User parameters</span>
+<span class="sd">    :param _dtype: The precision delegator of the numpy library</span>
+<span class="sd">    :param timeout: The time out of the evaluation process</span>
+<span class="sd">  """</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+          <span class="bp">self</span><span class="p">,</span> <span class="n">blackbox</span><span class="o">=</span><span class="s2">"BB"</span><span class="p">,</span> <span class="n">command_options</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">internal</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+          <span class="n">path</span><span class="o">=</span><span class="s2">"..</span><span class="se">\\</span><span class="s2">tests</span><span class="se">\\</span><span class="s2">Rosen"</span><span class="p">,</span> <span class="nb">input</span><span class="o">=</span><span class="s2">"input.inp"</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="s2">"output.out"</span><span class="p">,</span>
+          <span class="n">constants</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">bb_eval</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">_dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">1000000</span><span class="p">,</span>
+          <span class="n">local_exec_jobs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">candidates</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">directions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mesh</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+          <span class="n">incumbent</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">blackbox</span> <span class="o">=</span> <span class="n">blackbox</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">command_options</span> <span class="o">=</span> <span class="n">command_options</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">internal</span> <span class="o">=</span> <span class="n">internal</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">path</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">input</span> <span class="o">=</span> <span class="nb">input</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">output</span> <span class="o">=</span> <span class="n">output</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">constants</span> <span class="o">=</span> <span class="n">constants</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">bb_eval</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">bb_eval</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span> <span class="o">=</span> <span class="n">DType</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">timeout</span> <span class="o">=</span> <span class="n">timeout</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">local_exec_jobs</span> <span class="o">=</span> <span class="n">local_exec_jobs</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">candidates</span> <span class="o">=</span> <span class="n">candidates</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">directions</span> <span class="o">=</span> <span class="n">directions</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span> <span class="o">=</span> <span class="n">mesh</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">incumbent</span> <span class="o">=</span> <span class="n">incumbent</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_executor</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">concurrent</span><span class="o">.</span><span class="n">futures</span><span class="o">.</span><span class="n">ProcessPoolExecutor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_executor_workers</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">__getstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="c1"># executor.submit(self.evaluate_blackbox_parallel, point) pickles the</span>
+    <span class="c1"># bound method's `self` to ship it to the worker process; the reusable</span>
+    <span class="c1"># ProcessPoolExecutor (and its internal locks/threads) must never be</span>
+    <span class="c1"># part of that -- workers only ever call evaluate_blackbox_parallel,</span>
+    <span class="c1"># which doesn't touch self._executor, so it's safe to drop here.</span>
+    <span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">state</span><span class="p">[</span><span class="s2">"_executor"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="n">state</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">__setstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+    <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">run_callable_serial_local</span><span class="p">(</span>
+          <span class="bp">self</span><span class="p">,</span> <span class="n">sampler</span><span class="p">:</span> <span class="n">GenericSamplerBase</span><span class="p">,</span> <span class="n">centers</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+          <span class="n">options</span><span class="p">:</span> <span class="n">Options</span><span class="p">,</span> <span class="n">stats</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">active_barrier</span><span class="p">:</span> <span class="n">AdaptiveBarrier</span><span class="p">,</span>
+          <span class="n">post</span><span class="p">:</span> <span class="n">PostMADS</span><span class="p">,</span> <span class="n">step_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">parent_indices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+          <span class="n">out</span><span class="p">:</span> <span class="n">Output</span><span class="p">,</span> <span class="n">hashtable</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">internal</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">candidates</span> <span class="o">=</span> <span class="n">sampler</span><span class="o">.</span><span class="n">_candidate_points_set</span>
+    <span class="n">insertion_flag</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">sampler</span><span class="o">.</span><span class="n">_candidate_points_set</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">candidate</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">sampler</span><span class="o">.</span><span class="n">_candidate_points_set</span><span class="p">):</span>
+      <span class="n">tic</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+      <span class="n">stats</span><span class="o">.</span><span class="n">neval_bb</span> <span class="o">+=</span> <span class="mi">1</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">incumbent</span> <span class="o">=</span> <span class="n">active_barrier</span><span class="o">.</span><span class="n">elements</span><span class="p">[</span><span class="n">parent_indices</span><span class="p">[</span><span class="n">index</span><span class="p">]]</span>
+
+      <span class="k">if</span> <span class="n">internal</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_internal_dummy_Callable</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+      <span class="k">else</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">evaluate_blackbox</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">candidates</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">fc_index</span> <span class="o">=</span> <span class="n">parent_indices</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+      <span class="n">toc</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">candidates</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">eval_time</span> <span class="o">=</span> <span class="n">toc</span> <span class="o">-</span> <span class="n">tic</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">candidates</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">eval_no</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">neval_bb</span>
+      <span class="n">hashtable</span><span class="o">.</span><span class="n">add_to_cache</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">candidates</span><span class="p">[</span><span class="n">index</span><span class="p">])</span>
+
+      <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">candidates</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">is_feasible</span><span class="p">():</span>
+        <span class="n">insertion_flag</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">active_barrier</span><span class="o">.</span><span class="n">add_feasible</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">candidates</span><span class="p">[</span><span class="n">index</span><span class="p">],</span>
+            <span class="n">sampler</span><span class="o">.</span><span class="n">mesh</span><span class="p">)</span>
+        <span class="n">stats</span><span class="o">.</span><span class="n">neval_bb_feasible</span> <span class="o">+=</span> <span class="mi">1</span>
+      <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">candidates</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">DESIGN_STATUS</span><span class="o">.</span><span class="n">INFEASIBLE</span><span class="p">:</span>
+        <span class="n">insertion_flag</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">active_barrier</span><span class="o">.</span><span class="n">add_infeasible</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">candidates</span><span class="p">[</span><span class="n">index</span><span class="p">],</span>
+            <span class="n">sampler</span><span class="o">.</span><span class="n">mesh</span><span class="p">)</span>
+        <span class="n">stats</span><span class="o">.</span><span class="n">neval_bb_infeasible</span> <span class="o">+=</span> <span class="mi">1</span>
+
+      <span class="n">active_barrier</span><span class="o">.</span><span class="n">parent_indexes</span><span class="p">[</span><span class="n">active_barrier</span><span class="o">.</span><span class="n">last_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">parent_indices</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+
+      <span class="n">post</span><span class="o">.</span><span class="n">bb_eval</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stats</span><span class="o">.</span><span class="n">neval_bb</span><span class="p">)</span>
+
+      <span class="n">post</span><span class="o">.</span><span class="n">iter</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sampler</span><span class="o">.</span><span class="n">_iter</span><span class="p">)</span>
+      <span class="k">if</span> <span class="n">step_name</span><span class="p">:</span>
+        <span class="n">post</span><span class="o">.</span><span class="n">step_name</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">step_name</span><span class="p">)</span>
+      <span class="k">else</span><span class="p">:</span>
+        <span class="n">post</span><span class="o">.</span><span class="n">step_name</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">post</span><span class="o">.</span><span class="n">step_name</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">step_name</span><span class="p">)</span>
+
+      <span class="n">post</span><span class="o">.</span><span class="n">psize</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sampler</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">get_delta_frame_size</span><span class="p">()</span><span class="o">.</span><span class="n">coordinates</span><span class="p">)</span>
+      <span class="n">post</span><span class="o">.</span><span class="n">x_incumbent</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">active_barrier</span><span class="o">.</span><span class="n">elements</span><span class="p">[</span><span class="n">centers</span><span class="p">[</span><span class="n">index</span><span class="p">]])</span>
+
+      <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">opportunistic</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">candidates</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">incumbent</span><span class="p">:</span>
+        <span class="n">stats</span><span class="o">.</span><span class="n">nopportunistic_triggers</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">break</span>
+      <span class="k">if</span> <span class="n">stats</span><span class="o">.</span><span class="n">neval_bb</span> <span class="o">==</span> <span class="n">options</span><span class="o">.</span><span class="n">budget</span><span class="p">:</span>
+        <span class="k">break</span>
+
+    <span class="c1"># COMPLETED: Output results here</span>
+      <span class="n">post</span><span class="o">.</span><span class="n">iter</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sampler</span><span class="o">.</span><span class="n">_iter</span><span class="p">)</span>
+      <span class="n">post</span><span class="o">.</span><span class="n">poll_dirs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sampler</span><span class="o">.</span><span class="n">_candidate_points_set</span><span class="p">[</span><span class="n">index</span><span class="p">])</span>
+    <span class="n">sampler</span><span class="o">.</span><span class="n">_candidate_points_set</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">candidates</span>
+    <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">save_coordinates</span><span class="p">:</span>
+      <span class="n">post</span><span class="o">.</span><span class="n">coords</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sampler</span><span class="o">.</span><span class="n">_candidate_points_set</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">sampler</span><span class="o">.</span><span class="n">prob_params</span><span class="o">.</span><span class="n">is_pareto</span><span class="p">:</span>
+      <span class="n">post</span><span class="o">.</span><span class="n">output_nd_results</span><span class="p">(</span><span class="n">out</span><span class="o">=</span><span class="n">out</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="n">post</span><span class="o">.</span><span class="n">output_results</span><span class="p">(</span><span class="n">out</span><span class="o">=</span><span class="n">out</span><span class="p">,</span> <span class="n">all_res</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">insertion_flag</span><span class="p">,</span> <span class="n">post</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">_internal_dummy_Callable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">candidates</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">neutral_run_callable_serial_local</span><span class="p">(</span>
+          <span class="bp">self</span><span class="p">,</span> <span class="n">candidate_points_set</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">CandidatePoint</span><span class="p">],</span>
+          <span class="n">stats</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">active_barrier</span><span class="p">:</span> <span class="n">AdaptiveBarrier</span><span class="p">,</span> <span class="n">parent_indices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+          <span class="n">hashtable</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">internal</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">candidates</span> <span class="o">=</span> <span class="n">candidate_points_set</span>
+    <span class="c1"># insertion_flag = [None] * len(candidate_points_set)  # noqa: F841</span>
+    <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">candidate</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">candidate_points_set</span><span class="p">):</span>
+      <span class="n">tic</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+      <span class="n">stats</span><span class="o">.</span><span class="n">neval_bb</span> <span class="o">+=</span> <span class="mi">1</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">incumbent</span> <span class="o">=</span> <span class="n">active_barrier</span><span class="o">.</span><span class="n">elements</span><span class="p">[</span><span class="n">parent_indices</span><span class="p">[</span><span class="n">index</span><span class="p">]]</span>
+
+      <span class="bp">self</span><span class="o">.</span><span class="n">evaluate_blackbox</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">candidates</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">fc_index</span> <span class="o">=</span> <span class="n">parent_indices</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+      <span class="n">toc</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">candidates</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">eval_time</span> <span class="o">=</span> <span class="n">toc</span> <span class="o">-</span> <span class="n">tic</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">candidates</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">eval_no</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">neval_bb</span>
+      <span class="n">hashtable</span><span class="o">.</span><span class="n">add_to_cache</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">candidates</span><span class="p">[</span><span class="n">index</span><span class="p">])</span>
+
+    <span class="n">candidate_points_set</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">candidates</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">evaluate_blackbox_parallel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">point</span><span class="p">:</span> <span class="n">CandidatePoint</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">]:</span>
+    <span class="n">f</span><span class="p">,</span> <span class="n">err_status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">point</span><span class="o">.</span><span class="n">mapped_coords</span><span class="p">)</span>
+    <span class="n">point</span><span class="o">.</span><span class="n">__eval__</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">err_status</span><span class="p">:</span>
+      <span class="n">point</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">DESIGN_STATUS</span><span class="o">.</span><span class="n">ERROR</span>
+    <span class="k">return</span> <span class="n">point</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">evaluate_blackbox</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">]:</span>
+    <span class="n">f</span><span class="p">,</span> <span class="n">err_status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">candidates</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">mapped_coords</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">candidates</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">__eval__</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">err_status</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">candidates</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">DESIGN_STATUS</span><span class="o">.</span><span class="n">ERROR</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">candidates</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">_get_executor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">workers</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">concurrent</span><span class="o">.</span><span class="n">futures</span><span class="o">.</span><span class="n">ProcessPoolExecutor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Lazily create the worker pool once and reuse it across iterations.</span>
+
+<span class="sd">    Spawning a ProcessPoolExecutor (esp. on Windows, which always uses the</span>
+<span class="sd">    'spawn' start method) means re-importing the whole interpreter -- numpy,</span>
+<span class="sd">    pandas, scipy, samplersLib, paramiko, etc. -- in every new worker</span>
+<span class="sd">    process, which costs hundreds of ms to seconds per process. Recreating</span>
+<span class="sd">    the pool on every single poll/search iteration (as the previous `with</span>
+<span class="sd">    ProcessPoolExecutor(...) as executor:` block did) turned that startup</span>
+<span class="sd">    cost into a per-iteration tax instead of a one-time one; this call the</span>
+<span class="sd">    caller shuts down via shutdown_executor() once the run's main loop ends.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_executor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_executor_workers</span> <span class="o">!=</span> <span class="n">workers</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_executor</span><span class="o">.</span><span class="n">shutdown</span><span class="p">(</span><span class="n">wait</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_executor</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_executor</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_executor</span> <span class="o">=</span> <span class="n">concurrent</span><span class="o">.</span><span class="n">futures</span><span class="o">.</span><span class="n">ProcessPoolExecutor</span><span class="p">(</span><span class="n">max_workers</span><span class="o">=</span><span class="n">workers</span><span class="p">)</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_executor_workers</span> <span class="o">=</span> <span class="n">workers</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_executor</span>
+
+<div class="viewcode-block" id="Evaluator.shutdown_executor">
+<a class="viewcode-back" href="../../../api/configuration.html#OMADS._evaluator._evaluator.Evaluator.shutdown_executor">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">shutdown_executor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Tear down the reusable process pool (call once the run's main loop</span>
+<span class="sd">    over poll/search iterations has finished)."""</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_executor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_executor</span><span class="o">.</span><span class="n">shutdown</span><span class="p">(</span><span class="n">wait</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_executor</span> <span class="o">=</span> <span class="kc">None</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_executor_workers</span> <span class="o">=</span> <span class="mi">0</span></div>
+
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">run_callable_parallel_local</span><span class="p">(</span>  <span class="c1"># noqa: C901</span>
+          <span class="bp">self</span><span class="p">,</span> <span class="n">sampler</span><span class="p">:</span> <span class="n">GenericSamplerBase</span><span class="p">,</span> <span class="n">centers</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+          <span class="n">options</span><span class="p">:</span> <span class="n">Options</span><span class="p">,</span> <span class="n">stats</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">active_barrier</span><span class="p">:</span> <span class="n">AdaptiveBarrier</span><span class="p">,</span>
+          <span class="n">post</span><span class="p">:</span> <span class="n">PostMADS</span><span class="p">,</span> <span class="n">step_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">parent_indices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+          <span class="n">out</span><span class="p">:</span> <span class="n">Output</span><span class="p">,</span> <span class="n">hashtable</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">candidates</span> <span class="o">=</span> <span class="n">sampler</span><span class="o">.</span><span class="n">candidate_points_set</span>
+    <span class="n">insertion_flag</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">insertion_flag</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">sampler</span><span class="o">.</span><span class="n">_candidate_points_set</span><span class="p">)</span>
+
+    <span class="n">executor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_executor</span><span class="p">(</span><span class="n">options</span><span class="o">.</span><span class="n">np</span><span class="p">)</span>
+    <span class="n">tic</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+    <span class="n">future_to_index</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">evaluate_blackbox_parallel</span><span class="p">,</span> <span class="n">point</span><span class="p">):</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">point</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">point</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">candidates</span><span class="p">)}</span>
+    <span class="n">completed_result</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">for</span> <span class="n">future</span> <span class="ow">in</span> <span class="n">concurrent</span><span class="o">.</span><span class="n">futures</span><span class="o">.</span><span class="n">as_completed</span><span class="p">(</span><span class="n">future_to_index</span><span class="p">):</span>
+      <span class="n">toc</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+      <span class="n">index</span><span class="p">,</span> <span class="n">point</span> <span class="o">=</span> <span class="n">future_to_index</span><span class="p">[</span><span class="n">future</span><span class="p">]</span>
+      <span class="n">stats</span><span class="o">.</span><span class="n">neval_bb</span> <span class="o">+=</span> <span class="mi">1</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">candidates</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">future</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
+      <span class="n">sampler</span><span class="o">.</span><span class="n">candidate_points_set</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">candidates</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+      <span class="n">sampler</span><span class="o">.</span><span class="n">candidate_points_set</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">eval_time</span> <span class="o">=</span> <span class="n">toc</span> <span class="o">-</span> <span class="n">tic</span>
+      <span class="n">sampler</span><span class="o">.</span><span class="n">_candidate_points_set</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">eval_no</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">neval_bb</span>
+      <span class="n">hashtable</span><span class="o">.</span><span class="n">add_to_cache</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">candidates</span><span class="p">[</span><span class="n">index</span><span class="p">])</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">incumbent</span> <span class="o">=</span> <span class="n">active_barrier</span><span class="o">.</span><span class="n">elements</span><span class="p">[</span><span class="n">parent_indices</span><span class="p">[</span><span class="n">index</span><span class="p">]]</span>
+
+      <span class="k">if</span> <span class="n">sampler</span><span class="o">.</span><span class="n">candidate_points_set</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">is_feasible</span><span class="p">():</span>
+        <span class="n">insertion_flag</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">active_barrier</span><span class="o">.</span><span class="n">add_feasible</span><span class="p">(</span>
+            <span class="n">sampler</span><span class="o">.</span><span class="n">candidate_points_set</span><span class="p">[</span><span class="n">index</span><span class="p">],</span>
+            <span class="n">sampler</span><span class="o">.</span><span class="n">mesh</span><span class="p">)</span>
+        <span class="n">stats</span><span class="o">.</span><span class="n">neval_bb_feasible</span> <span class="o">+=</span> <span class="mi">1</span>
+      <span class="k">elif</span> <span class="n">sampler</span><span class="o">.</span><span class="n">candidate_points_set</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">DESIGN_STATUS</span><span class="o">.</span><span class="n">INFEASIBLE</span><span class="p">:</span>
+        <span class="n">insertion_flag</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">active_barrier</span><span class="o">.</span><span class="n">add_infeasible</span><span class="p">(</span>
+            <span class="n">sampler</span><span class="o">.</span><span class="n">candidate_points_set</span><span class="p">[</span><span class="n">index</span><span class="p">],</span>
+            <span class="n">sampler</span><span class="o">.</span><span class="n">mesh</span><span class="p">)</span>
+        <span class="n">stats</span><span class="o">.</span><span class="n">neval_bb_infeasible</span> <span class="o">+=</span> <span class="mi">1</span>
+
+      <span class="n">active_barrier</span><span class="o">.</span><span class="n">parent_indexes</span><span class="p">[</span><span class="n">active_barrier</span><span class="o">.</span><span class="n">last_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">parent_indices</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+      <span class="n">post</span><span class="o">.</span><span class="n">x_incumbent</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">active_barrier</span><span class="o">.</span><span class="n">elements</span><span class="p">[</span><span class="n">centers</span><span class="p">[</span><span class="n">index</span><span class="p">]])</span>
+
+      <span class="n">post</span><span class="o">.</span><span class="n">bb_eval</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stats</span><span class="o">.</span><span class="n">neval_bb</span><span class="p">)</span>
+      <span class="n">post</span><span class="o">.</span><span class="n">iter</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sampler</span><span class="o">.</span><span class="n">_iter</span><span class="p">)</span>
+      <span class="k">if</span> <span class="n">step_name</span><span class="p">:</span>
+        <span class="n">post</span><span class="o">.</span><span class="n">step_name</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">step_name</span><span class="p">)</span>
+      <span class="k">else</span><span class="p">:</span>
+        <span class="n">post</span><span class="o">.</span><span class="n">step_name</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">post</span><span class="o">.</span><span class="n">step_name</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">step_name</span><span class="p">)</span>
+      <span class="n">post</span><span class="o">.</span><span class="n">psize</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sampler</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">get_delta_frame_size</span><span class="p">()</span><span class="o">.</span><span class="n">coordinates</span><span class="p">)</span>
+      <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">opportunistic</span> <span class="ow">and</span> <span class="n">sampler</span><span class="o">.</span><span class="n">candidate_points_set</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">incumbent</span><span class="p">:</span>
+        <span class="n">stats</span><span class="o">.</span><span class="n">nopportunistic_triggers</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">completed_result</span> <span class="o">=</span> <span class="n">future</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
+        <span class="k">break</span>
+      <span class="k">if</span> <span class="n">stats</span><span class="o">.</span><span class="n">neval_bb</span> <span class="o">==</span> <span class="n">options</span><span class="o">.</span><span class="n">budget</span><span class="p">:</span>
+        <span class="n">completed_result</span> <span class="o">=</span> <span class="n">future</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
+        <span class="k">break</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">completed_result</span><span class="p">):</span>
+      <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">future_to_index</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">f</span><span class="o">.</span><span class="n">done</span><span class="p">():</span>
+          <span class="n">f</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">save_coordinates</span><span class="p">:</span>
+      <span class="n">post</span><span class="o">.</span><span class="n">coords</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sampler</span><span class="o">.</span><span class="n">candidate_points_set</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">sampler</span><span class="o">.</span><span class="n">prob_params</span><span class="o">.</span><span class="n">is_pareto</span><span class="p">:</span>
+      <span class="n">post</span><span class="o">.</span><span class="n">output_nd_results</span><span class="p">(</span><span class="n">out</span><span class="o">=</span><span class="n">out</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="n">post</span><span class="o">.</span><span class="n">output_results</span><span class="p">(</span><span class="n">out</span><span class="o">=</span><span class="n">out</span><span class="p">,</span> <span class="n">all_res</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">insertion_flag</span><span class="p">,</span> <span class="n">post</span>
+
+  <span class="c1"># Function to execute .exe file locally</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">run_exe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exe_path</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+      <span class="n">result</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+          <span class="n">exe_path</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">check</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+      <span class="k">return</span> <span class="p">(</span><span class="n">exe_path</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">returncode</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">PassException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+      <span class="k">return</span> <span class="p">(</span><span class="n">exe_path</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="s1">''</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+
+  <span class="c1"># Function to execute .exe file on a remote node</span>
+  <span class="k">def</span><span class="w"> </span><span class="nf">execute_on_remote</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="p">,</span> <span class="n">exe_path</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+      <span class="n">ssh</span> <span class="o">=</span> <span class="n">paramiko</span><span class="o">.</span><span class="n">SSHClient</span><span class="p">()</span>
+      <span class="n">ssh</span><span class="o">.</span><span class="n">set_missing_host_key_policy</span><span class="p">(</span><span class="n">paramiko</span><span class="o">.</span><span class="n">AutoAddPolicy</span><span class="p">())</span>
+      <span class="n">ssh</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">username</span><span class="o">=</span><span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="n">password</span><span class="p">)</span>
+
+      <span class="n">_</span><span class="p">,</span> <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="n">ssh</span><span class="o">.</span><span class="n">exec_command</span><span class="p">(</span><span class="n">exe_path</span><span class="p">)</span>
+
+      <span class="n">output</span> <span class="o">=</span> <span class="n">stdout</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
+      <span class="n">error</span> <span class="o">=</span> <span class="n">stderr</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
+
+      <span class="k">return</span> <span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">PassException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+      <span class="k">return</span> <span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="s1">''</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+    <span class="k">finally</span><span class="p">:</span>
+      <span class="n">ssh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+  <span class="c1"># Function to run .exe files locally</span>
+  <span class="k">def</span><span class="w"> </span><span class="nf">run_locally</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exe_paths</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">concurrent</span><span class="o">.</span><span class="n">futures</span><span class="o">.</span><span class="n">ProcessPoolExecutor</span><span class="p">()</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
+      <span class="n">futures</span> <span class="o">=</span> <span class="p">[</span><span class="n">executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">run_exe</span><span class="p">,</span> <span class="n">exe</span><span class="p">)</span> <span class="k">for</span> <span class="n">exe</span> <span class="ow">in</span> <span class="n">exe_paths</span><span class="p">]</span>
+      <span class="k">for</span> <span class="n">future</span> <span class="ow">in</span> <span class="n">concurrent</span><span class="o">.</span><span class="n">futures</span><span class="o">.</span><span class="n">as_completed</span><span class="p">(</span><span class="n">futures</span><span class="p">):</span>
+        <span class="n">exe_path</span><span class="p">,</span> <span class="n">returncode</span><span class="p">,</span> <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="n">future</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Local Executable: </span><span class="si">{</span><span class="n">exe_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Return Code: </span><span class="si">{</span><span class="n">returncode</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Output: </span><span class="si">{</span><span class="n">stdout</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Error: </span><span class="si">{</span><span class="n">stderr</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">run_remotely</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hosts</span><span class="p">,</span> <span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="p">,</span> <span class="n">exe_path</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">concurrent</span><span class="o">.</span><span class="n">futures</span><span class="o">.</span><span class="n">ThreadPoolExecutor</span><span class="p">()</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
+      <span class="n">futures</span> <span class="o">=</span> <span class="p">[</span>
+          <span class="n">executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span>
+              <span class="bp">self</span><span class="o">.</span><span class="n">execute_on_remote</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="p">,</span> <span class="n">exe_path</span><span class="p">)</span>
+          <span class="k">for</span> <span class="n">host</span> <span class="ow">in</span> <span class="n">hosts</span><span class="p">]</span>
+      <span class="k">for</span> <span class="n">future</span> <span class="ow">in</span> <span class="n">concurrent</span><span class="o">.</span><span class="n">futures</span><span class="o">.</span><span class="n">as_completed</span><span class="p">(</span><span class="n">futures</span><span class="p">):</span>
+        <span class="n">host</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="n">error</span> <span class="o">=</span> <span class="n">future</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Remote Host: </span><span class="si">{</span><span class="n">host</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Output: </span><span class="si">{</span><span class="n">output</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Error: </span><span class="si">{</span><span class="n">error</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+  <span class="nd">@property</span>
+  <span class="k">def</span><span class="w"> </span><span class="nf">dtype</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span>
+
+<div class="viewcode-block" id="Evaluator.eval">
+<a class="viewcode-back" href="../../../api/configuration.html#OMADS._evaluator._evaluator.Evaluator.eval">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Evaluate the poll point.</span>
+
+<span class="sd">    :param values: Poll point coordinates (design vector)</span>
+<span class="sd">    :return: Evaluated optimization functions and error flag</span>
+<span class="sd">    """</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">bb_eval</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="c1"># Handle internal method</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">internal</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="s2">"None"</span><span class="p">,</span> <span class="s2">"none"</span><span class="p">):</span>
+      <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Invalid internal method: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">internal</span><span class="si">}</span><span class="s2">. "</span>
+                    <span class="s2">"Must be a BM library name or None."</span><span class="p">)</span>
+
+    <span class="c1"># Handle callable blackbox</span>
+    <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">blackbox</span><span class="p">):</span>
+      <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_evaluate_callable</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+
+    <span class="c1"># Handle external executable</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_evaluate_executable</span><span class="p">(</span><span class="n">values</span><span class="p">)</span></div>
+
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">_evaluate_callable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Evaluate a callable blackbox function."""</span>
+    <span class="n">evalerr</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">try</span><span class="p">:</span>
+      <span class="c1"># Determine expected number of args</span>
+      <span class="n">sig</span> <span class="o">=</span> <span class="n">signature</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">blackbox</span><span class="p">)</span>
+      <span class="n">npar</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sig</span><span class="o">.</span><span class="n">parameters</span><span class="p">)</span>
+      <span class="n">inputs</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
+          <span class="s2">"("</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
+          <span class="s2">")"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
+          <span class="s2">" "</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">','</span><span class="p">)</span>
+
+      <span class="c1"># Check if constants are used</span>
+      <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">constants</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_valid_callable_signature</span><span class="p">(</span><span class="n">npar</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
+          <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span>
+              <span class="sa">f</span><span class="s2">"Callable </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">blackbox</span><span class="si">}</span><span class="s2"> requires </span><span class="si">{</span><span class="n">npar</span><span class="si">}</span><span class="s2"> args, "</span>
+              <span class="s2">"but only one input can be provided. "</span>
+              <span class="s2">"Use the constants list for additional parameters."</span><span class="p">)</span>
+        <span class="n">f_eval</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">blackbox</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+      <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_valid_callable_with_constants</span><span class="p">(</span><span class="n">npar</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
+          <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span>
+              <span class="sa">f</span><span class="s2">"Callable </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">blackbox</span><span class="si">}</span><span class="s2"> requires </span><span class="si">{</span><span class="n">npar</span><span class="si">}</span><span class="s2"> args, "</span>
+              <span class="s2">"but only two inputs can be provided with constants."</span><span class="p">)</span>
+        <span class="n">f_eval</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">blackbox</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">constants</span><span class="p">)</span>
+
+      <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_format_evaluation_result</span><span class="p">(</span><span class="n">f_eval</span><span class="p">),</span> <span class="n">evalerr</span>
+
+    <span class="k">except</span> <span class="n">PassException</span><span class="p">:</span>
+      <span class="n">evalerr</span> <span class="o">=</span> <span class="kc">True</span>
+      <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+          <span class="s2">"Callable </span><span class="si">%s</span><span class="s2"> evaluation failed at poll point </span><span class="si">%s</span><span class="s2">"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">blackbox</span><span class="p">,</span>
+          <span class="n">values</span><span class="p">)</span>
+      <span class="k">return</span> <span class="p">[[</span><span class="n">inf</span><span class="p">],</span> <span class="p">[</span><span class="n">inf</span><span class="p">]],</span> <span class="n">evalerr</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">_evaluate_executable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Evaluate an external executable."""</span>
+    <span class="n">evalerr</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">timouterr</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">pwd</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+      <span class="c1"># Check if executable</span>
+      <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">access</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">blackbox</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">X_OK</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Blackbox file </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">blackbox</span><span class="si">}</span><span class="s2"> is not executable."</span><span class="p">)</span>
+
+      <span class="c1"># Build command</span>
+      <span class="n">cmd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_command</span><span class="p">()</span>
+
+      <span class="c1"># Run with timeout</span>
+      <span class="n">p</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">timeout</span><span class="p">,</span> <span class="n">check</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+      <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">returncode</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">evalerr</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">"Evaluation #</span><span class="si">%d</span><span class="s2"> failed at poll point </span><span class="si">%s</span><span class="s2">"</span><span class="p">,</span>
+                      <span class="bp">self</span><span class="o">.</span><span class="n">bb_eval</span><span class="p">,</span> <span class="n">values</span><span class="p">)</span>
+
+    <span class="k">except</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">TimeoutExpired</span><span class="p">:</span>
+      <span class="n">timouterr</span> <span class="o">=</span> <span class="kc">True</span>
+      <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">"Timeout (</span><span class="si">%s</span><span class="s2"> s) expired for </span><span class="si">%s</span><span class="s2"> at evaluation #</span><span class="si">%d</span><span class="s2">"</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">timeout</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">blackbox</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bb_eval</span><span class="p">)</span>
+
+    <span class="k">finally</span><span class="p">:</span>
+      <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">pwd</span><span class="p">)</span>
+
+    <span class="c1"># Read output</span>
+    <span class="k">if</span> <span class="n">evalerr</span> <span class="ow">or</span> <span class="n">timouterr</span><span class="p">:</span>
+      <span class="k">return</span> <span class="p">[</span><span class="n">inf</span><span class="p">,</span> <span class="p">[</span><span class="n">inf</span><span class="p">]],</span> <span class="n">evalerr</span>
+
+    <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_output</span><span class="p">()</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">output</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">output</span><span class="p">[</span><span class="mi">1</span><span class="p">:]],</span> <span class="n">evalerr</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">_build_command</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Build execution command based on OS and options."""</span>
+    <span class="n">is_win</span> <span class="o">=</span> <span class="n">platform</span><span class="o">.</span><span class="n">platform</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">'-'</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'Windows'</span>
+    <span class="k">if</span> <span class="n">is_win</span><span class="p">:</span>
+      <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">command_options</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">command_options</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">blackbox</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s1">'./</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">blackbox</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">command_options</span><span class="si">}</span><span class="s1">'</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">command_options</span> <span class="k">else</span> <span class="sa">f</span><span class="s1">'./</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">blackbox</span><span class="si">}</span><span class="s1">'</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">_is_valid_callable_signature</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">npar</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Check if callable signature matches expected input count."""</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">npar</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">or</span> <span class="p">(</span><span class="n">npar</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">npar</span> <span class="o">&lt;=</span> <span class="mi">3</span> <span class="ow">and</span> <span class="s1">'*argv'</span> <span class="ow">in</span> <span class="n">inputs</span><span class="p">))</span> <span class="ow">or</span> \
+           <span class="p">(</span><span class="n">npar</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="s1">'*argv'</span> <span class="ow">in</span> <span class="n">inputs</span><span class="p">)</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">_is_valid_callable_with_constants</span><span class="p">(</span>
+          <span class="bp">self</span><span class="p">,</span> <span class="n">npar</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Check if callable supports constants."""</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">npar</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">or</span> <span class="p">(</span><span class="n">npar</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">npar</span> <span class="o">&lt;=</span> <span class="mi">3</span> <span class="ow">and</span> <span class="s1">'*argv'</span> <span class="ow">in</span> <span class="n">inputs</span><span class="p">))</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">_format_evaluation_result</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f_eval</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Format the evaluation result into expected structure."""</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">f_eval</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+      <span class="k">return</span> <span class="n">f_eval</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">f_eval</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">)):</span>
+      <span class="k">return</span> <span class="p">[[</span><span class="n">f_eval</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unexpected return type from blackbox: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">f_eval</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Evaluator.write_input">
+<a class="viewcode-back" href="../../../api/configuration.html#OMADS._evaluator._evaluator.Evaluator.write_input">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">write_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">"""_summary_</span>
+
+<span class="sd">    :param values: Write the variables in the input file</span>
+<span class="sd">    :type values: List[float]</span>
+<span class="sd">    """</span>
+    <span class="n">inp</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">input</span><span class="p">)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">inp</span><span class="p">,</span> <span class="s1">'w+'</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">'utf-8'</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+      <span class="k">for</span> <span class="n">c</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">):</span>
+          <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+          <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Evaluator.read_output">
+<a class="viewcode-back" href="../../../api/configuration.html#OMADS._evaluator._evaluator.Evaluator.read_output">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">read_output</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""_summary_</span>
+
+<span class="sd">    :return: Read the output values from the output file</span>
+<span class="sd">    :rtype: List[float]</span>
+<span class="sd">    """</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="p">)</span>
+    <span class="n">f_eval</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">'utf-8'</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>  <span class="c1"># read rest of lines</span>
+      <span class="n">f_eval</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">line</span><span class="p">))</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">f_eval</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+      <span class="n">f_eval</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">f_eval</span></div>
+</div>
+
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2022-2026, Ahmed H. Bayoumy.
+      <br/>
+    
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

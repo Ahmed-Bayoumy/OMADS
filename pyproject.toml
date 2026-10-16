@@ -15,7 +15,7 @@ exclude = [
 
 [project]
 name = "OMADS"
-version = "2604.02"
+version = "2610"
 requires-python = ">=3.10"
 description = "Optimization using Mesh Adaptive Direct Search (MADS)"
 readme = "README.md"
@@ -44,7 +44,7 @@ dependencies = [
     "deap==1.4.0",
     "paramiko>=3.4.0, <4.0.0",# 🟢 Fixes decorator/bcrypt version jump
     "scipy>=1.15.3",
-    "samplerslib>=2602.0",
+    "samplerslib>=2610.0",
 ]
 
 [project.optional-dependencies]

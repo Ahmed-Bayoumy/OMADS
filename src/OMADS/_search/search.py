@@ -50,7 +50,21 @@ np.set_printoptions(legacy='1.21')
 
 
 def main(*args) -> Dict[str, Any]:  # noqa: C901
-  """ MADS: Search step main algorithm """
+  """Run MADS with the sampling search step only (no poll step).
+
+  Each iteration draws ``search["ns"]`` points with the sampler selected by
+  ``search["type"]`` and ``search["s_method"]`` (``ACTIVE``, ``LH``, ``RS``,
+  ``HALTON``, ``FULLFACTORIAL`` or ``VNS``), projects them on the mesh,
+  evaluates them and updates the mesh and the barrier threshold.
+
+  :param args: ``args[0]`` is the problem, either a dictionary with the
+    ``evaluator``, ``param``, ``options`` and ``search`` sections or the path
+    to a JSON file holding them. An optional ``args[3]`` overrides the random
+    seed.
+  :return: ``(output, search_sampler)`` where ``output`` is the results
+    dictionary (see :func:`OMADS._mads.mads.main`).
+  :rtype: tuple
+  """
 
   # """ Validate and parse the parameters file """
   validate = validator()
@@ -125,11 +139,18 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
     set_frame_centers_and_hvalues(
         state=state, active_barrier=active_barrier, param=param,
         options=options)
-    # 2- Run the search step
+    # 2- Run the search step: the one-point quadratic model search first,
+    # then the sampling search only if the model didn't improve.
     search_cycle(
         search=search, options=options, param=param, state=state, stats=stats,
         active_barrier=active_barrier, iteration=iteration, log=log, post=post,
-        search_vns=search_vn, bb_handle=bb_handle, hashtable=hashtable, out=out)
+        bb_handle=bb_handle, hashtable=hashtable, out=out, model_search=True)
+    if state.last_success == SUCCESS_TYPES.US:
+      search_cycle(
+          search=search, options=options, param=param, state=state,
+          stats=stats, active_barrier=active_barrier, iteration=iteration,
+          log=log, post=post, search_vns=search_vn, bb_handle=bb_handle,
+          hashtable=hashtable, out=out)
     # 3- Updates
     update(sampler=search, state=state, active_barrier=active_barrier,
            stats=stats, options=options, hashtable=hashtable)
@@ -215,6 +236,7 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
           MSG_TYPE.INFO)
       break
     iteration += 1
+  bb_handle.shutdown_executor()
   sys.stderr = _original_stderr
   if search.prob_params.is_pareto and isinstance(
           active_barrier, AdaptiveBarrier):

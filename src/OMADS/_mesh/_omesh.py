@@ -39,8 +39,8 @@ class Omesh(Mesh):
   :param _delta: mesh size
   :param _Delta: poll size
   :param _rho: poll size to mesh size ratio
-  :param _exp:  manage the poll size granularity for discrete variables. 
-  See Audet et. al, The mesh adaptive direct search algorithm for granular and discrete variable
+  :param _exp:  manage the poll size granularity for discrete variables.
+    See Audet et. al, The mesh adaptive direct search algorithm for granular and discrete variable
   :param _mantissa: Same as ``_exp``
   :param psize_max: Maximum poll size
   :param psize_success: Poll size at successful evaluation

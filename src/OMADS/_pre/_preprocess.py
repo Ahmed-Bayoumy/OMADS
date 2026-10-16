@@ -287,6 +287,7 @@ class preprocess:
         self.sampler.sampling_criter = search_step.criterion
         self.sampler.visualize = search_step.visualize
         self.sampler.weights = search_step.weights
+        self.sampler.tpe_batch = search_step.batch
       # """ 4- Construct an instant for the mesh subclass object by inheriting
       # initial parameters from mesh_params() """
       # COMPLETED: Add the Gmesh constructor req inputs

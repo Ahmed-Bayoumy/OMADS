@@ -1,0 +1,900 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" data-theme="light">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Configuration classes &#8212; OMADS 2610</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/proof.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/pseudocode@latest/build/pseudocode.min.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=2ebac5eb" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
+
+    <script src="../_static/documentation_options.js?v=c14009a4"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=fd10adb8"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pseudocode@latest/build/pseudocode.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'api/configuration';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Algorithm components" href="components.html" />
+    <link rel="prev" title="Solvers" href="solvers.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="2610" />
+  
+    
+    <script src="../_static/searchtools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="light">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+    
+    <img src="../_static/OMADS_logo.png" class="logo__image only-light" alt="OMADS 2610 - Home"/>
+    <img src="../_static/OMADS_logo.png" class="logo__image only-dark pst-js-only" alt="OMADS 2610 - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting_started.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../background.html">
+    Background
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../benchmarking.html">
+    Benchmarking
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/configuration.html">
+    Configuration reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/outputs.html">
+    Outputs
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" current active">
+  <a class="nav-link dropdown-item nav-internal" href="index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../references.html">
+    References
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/Ahmed-Bayoumy/OMADS" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting_started.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../background.html">
+    Background
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../benchmarking.html">
+    Benchmarking
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/configuration.html">
+    Configuration reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/outputs.html">
+    Outputs
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../references.html">
+    References
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/Ahmed-Bayoumy/OMADS" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="solvers.html">Solvers</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Configuration classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="components.html">Algorithm components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="points.html">Points and cache</a></li>
+<li class="toctree-l1"><a class="reference internal" href="results.html">Results and metrics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="constants.html">Constants and enumerations</a></li>
+</ul>
+</div>
+</nav></div>
+        <div class="sidebar-primary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._setup._options.Options"><code class="docutils literal notranslate"><span class="pre">Options</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._setup._parameters.Parameters"><code class="docutils literal notranslate"><span class="pre">Parameters</span></code></a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._setup._parameters.Parameters.set_initial_mesh_parameters"><code class="docutils literal notranslate"><span class="pre">Parameters.set_initial_mesh_parameters()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._setup._parameters.Parameters.set_min_mesh_parameters"><code class="docutils literal notranslate"><span class="pre">Parameters.set_min_mesh_parameters()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._setup._parameters.Parameters.set_min_frame_parameters"><code class="docutils literal notranslate"><span class="pre">Parameters.set_min_frame_parameters()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._setup._parameters.Parameters.to_be_checked"><code class="docutils literal notranslate"><span class="pre">Parameters.to_be_checked()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._setup._parameters.Parameters.get_barrier_type"><code class="docutils literal notranslate"><span class="pre">Parameters.get_barrier_type()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._setup._parameters.Parameters.get_h_max_0"><code class="docutils literal notranslate"><span class="pre">Parameters.get_h_max_0()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._setup._parameters.Parameters.n"><code class="docutils literal notranslate"><span class="pre">Parameters.n</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._evaluator._evaluator.Evaluator"><code class="docutils literal notranslate"><span class="pre">Evaluator</span></code></a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._evaluator._evaluator.Evaluator.shutdown_executor"><code class="docutils literal notranslate"><span class="pre">Evaluator.shutdown_executor()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._evaluator._evaluator.Evaluator.eval"><code class="docutils literal notranslate"><span class="pre">Evaluator.eval()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._evaluator._evaluator.Evaluator.write_input"><code class="docutils literal notranslate"><span class="pre">Evaluator.write_input()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._evaluator._evaluator.Evaluator.read_output"><code class="docutils literal notranslate"><span class="pre">Evaluator.read_output()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._heuristics._exploration.search_sampling"><code class="docutils literal notranslate"><span class="pre">search_sampling</span></code></a></li>
+</ul>
+  </nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">API reference</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Configuration classes</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="configuration-classes">
+<h1>Configuration classes<a class="headerlink" href="#configuration-classes" title="Link to this heading">#</a></h1>
+<p>The sections of the input dictionary are unpacked into these classes.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="OMADS._setup._options.Options">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">OMADS._setup._options.</span></span><span class="sig-name descname"><span class="pre">Options</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">budget</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-09</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">psize_init</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">display</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opportunistic</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_cache</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">store_cache</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">collect_y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rich_direction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">precision</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'high'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_results</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_coordinates</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_all_best</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parallel_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">np</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">anisotropy_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">anistropic_mesh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">refine_freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_dms_success</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_omads_partial_success</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_penalty_approach</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noutbound_hits_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">60000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_dom_trigger</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">direction_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ORTHO_2N'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search_every</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/OMADS/_setup/_options.html#Options"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMADS._setup._options.Options" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>The running study and algorithmic options of OMADS</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>seed</strong> (<em>int</em>) – Random generator seed</p></li>
+<li><p><strong>budget</strong> (<em>int</em>) – The evaluation budget</p></li>
+<li><p><strong>tol</strong> (<em>float</em>) – The threshold of the minimum frame (poll) or mesh (search)
+size at which the run is terminated</p></li>
+<li><p><strong>psize_init</strong> (<em>float</em>) – Initial frame size of the orthogonal mesh</p></li>
+<li><p><strong>display</strong> (<em>bool</em>) – Print the evaluation of the starting point and a run summary</p></li>
+<li><p><strong>opportunistic</strong> (<em>bool</em>) – Stop evaluating the current poll or search set as
+soon as a full success is found</p></li>
+<li><p><strong>check_cache</strong> (<em>bool</em>) – Check the cache before evaluating points to avoid duplicates</p></li>
+<li><p><strong>store_cache</strong> (<em>bool</em>) – Store evaluated points in the cache (required by the
+<code class="docutils literal notranslate"><span class="pre">mads</span></code> and <code class="docutils literal notranslate"><span class="pre">search</span></code> solvers to locate frame centres)</p></li>
+<li><p><strong>collect_y</strong> (<em>bool</em>) – Reserved (collect coupling variables for DMDO)</p></li>
+<li><p><strong>rich_direction</strong> (<em>bool</em>) – Use random Householder poll directions, which are
+asymptotically dense</p></li>
+<li><p><strong>precision</strong> (<em>str</em>) – Floating-point precision: “high”, “medium” or “low”</p></li>
+<li><p><strong>save_results</strong> (<em>bool</em>) – Write every evaluation to
+<code class="docutils literal notranslate"><span class="pre">&lt;post_dir&gt;/&lt;name&gt;_run/&lt;name&gt;_all.out</span></code></p></li>
+<li><p><strong>save_coordinates</strong> (<em>bool</em>) – Write the poll points of each iteration to
+<code class="docutils literal notranslate"><span class="pre">coords.json</span></code> (used to animate the poll trajectory; <code class="docutils literal notranslate"><span class="pre">poll</span></code> solver)</p></li>
+<li><p><strong>save_all_best</strong> (<em>bool</em>) – Reserved</p></li>
+<li><p><strong>parallel_mode</strong> (<em>bool</em>) – Evaluate candidate sets in parallel processes</p></li>
+<li><p><strong>np</strong> (<em>int</em>) – The number of worker processes (capped at the CPU count)</p></li>
+<li><p><strong>extend</strong> (<em>Any</em>) – Reserved (a <code class="docutils literal notranslate"><span class="pre">Dirs2n</span></code> instance to continue a run)</p></li>
+<li><p><strong>is_verbose</strong> (<em>bool</em>) – Write extra diagnostics to <code class="docutils literal notranslate"><span class="pre">OMADS.log</span></code></p></li>
+<li><p><strong>anisotropy_factor</strong> (<em>float</em>) – GMESH: threshold of the anisotropic frame
+enlargement rule</p></li>
+<li><p><strong>anistropic_mesh</strong> (<em>bool</em>) – GMESH: enable anisotropic frame enlargement</p></li>
+<li><p><strong>refine_freq</strong> (<em>int</em>) – GMESH: refine the frame every <code class="docutils literal notranslate"><span class="pre">refine_freq</span></code>
+unsuccessful iterations</p></li>
+<li><p><strong>use_dms_success</strong> (<em>bool</em>) – Count any improvement of the non-dominated set as
+a full success</p></li>
+<li><p><strong>use_omads_partial_success</strong> (<em>bool</em>) – When False, an unsuccessful iteration
+becomes a partial success if an infeasible point has a lower violation
+than the infeasible frame centre</p></li>
+<li><p><strong>use_penalty_approach</strong> (<em>bool</em>) – Reserved</p></li>
+<li><p><strong>noutbound_hits_max</strong> (<em>int</em>) – Stop after this many trial points hit the bounds</p></li>
+<li><p><strong>use_dom_trigger</strong> (<em>bool</em>) – Choose the primary frame centre with the
+dominance-distance trigger of the progressive barrier</p></li>
+<li><p><strong>direction_type</strong> (<em>str</em>) – Poll directions: “ORTHO_2N” (2n orthogonal
+directions) or “ORTHO_N+1” (n of them plus their negative sum; real
+variables only, falls back to ORTHO_2N otherwise)</p></li>
+<li><p><strong>search_every</strong> (<em>int</em>) – In <code class="docutils literal notranslate"><span class="pre">mads</span></code>, run the sampling search only after every
+<code class="docutils literal notranslate"><span class="pre">search_every</span></code>-th consecutive unsuccessful poll (1: after every one)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="OMADS._setup._parameters.Parameters">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">OMADS._setup._parameters.</span></span><span class="sig-name descname"><span class="pre">Parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">baseline</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lb</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ub</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fun_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">design_criteria</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">function_weights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scaling</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">post_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'C:\\Projects\\SW\\Dev\\AB\\OMADS-2608\\OMADS'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_sets</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constants</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constants_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">failure_stop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">problem_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'unknown'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">best_known</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraints_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">inf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lambda_multipliers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'undefined'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mesh_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ORTHO'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_variables</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">granularity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_mesh_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_frame_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_mesh_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_frame_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_pareto</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nobj</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">incumbent_selection_param</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">barrier_initialized_from_cache</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref_point</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lhs_search_initialization</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mesh_adjustment</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/OMADS/_setup/_parameters.html#Parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMADS._setup._parameters.Parameters" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Variables and algorithmic parameters</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>baseline</strong> (<em>List</em><em>[</em><em>float</em><em>]</em>) – Baseline design point (initial point <code class="docutils literal notranslate"><span class="pre">x0</span></code>), or a list
+of starting points</p></li>
+<li><p><strong>lb</strong> (<em>List</em><em>[</em><em>float</em><em>]</em>) – The variables lower bound</p></li>
+<li><p><strong>ub</strong> (<em>List</em><em>[</em><em>float</em><em>]</em>) – The variables upper bound</p></li>
+<li><p><strong>var_names</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – The variables name</p></li>
+<li><p><strong>fun_names</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – The objective names (one per objective)</p></li>
+<li><p><strong>scaling</strong> (<em>float</em>) – Scaling factor (can be defined as a list
+(assigning a factor for each variable) or a scalar value
+that will be applied on all variables). Poll steps are expressed in
+units of <code class="docutils literal notranslate"><span class="pre">(ub</span> <span class="pre">-</span> <span class="pre">lb)</span> <span class="pre">/</span> <span class="pre">scaling</span></code></p></li>
+<li><p><strong>post_dir</strong> (<em>str</em>) – The location and name of the post directory
+where the output results file will live in (if any)</p></li>
+<li><p><strong>var_type</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – Variable types: “R” (real), “I” (integer), “D_&lt;set&gt;”
+(discrete), “C_&lt;set&gt;” (categorical), “O” (ordinal) or “B” (binary)</p></li>
+<li><p><strong>var_sets</strong> (<em>Dict</em>) – Named value lists used by discrete and categorical
+variables</p></li>
+<li><p><strong>constants</strong> (<em>List</em>) – Constant parameters passed to the blackbox callable</p></li>
+<li><p><strong>constraints_type</strong> (<em>List</em><em>[</em><a class="reference internal" href="constants.html#OMADS._utils._globals.BARRIER_TYPES" title="OMADS._utils._globals.BARRIER_TYPES"><em>BARRIER_TYPES</em></a><em>]</em>) – Barrier type of each constraint: “PB”
+(progressive) or “EB” (extreme); “PEB” and “RB” behave like “PB”</p></li>
+<li><p><strong>h_max</strong> (<em>float</em>) – Initial barrier threshold</p></li>
+<li><p><strong>rho</strong> (<em>float</em>) – Trigger of the infeasible frame centre and penalty parameter</p></li>
+<li><p><strong>lambda_multipliers</strong> (<em>List</em><em>[</em><em>float</em><em>]</em>) – Initial Lagrange multipliers of the penalty</p></li>
+<li><p><strong>name</strong> (<em>str</em>) – Run name, used to name the output files</p></li>
+<li><p><strong>mesh_type</strong> (<em>str</em>) – “ORTHO” (orthogonal mesh) or “GMESH” (granular mesh)</p></li>
+<li><p><strong>granularity</strong> (<em>List</em><em>[</em><em>float</em><em>]</em>) – GMESH: per-variable granularity (0 for continuous)</p></li>
+<li><p><strong>min_mesh_size</strong> (<em>List</em><em>[</em><em>float</em><em>]</em>) – GMESH: minimum mesh size per variable</p></li>
+<li><p><strong>min_frame_size</strong> (<em>List</em><em>[</em><em>float</em><em>]</em>) – GMESH: minimum frame size per variable</p></li>
+<li><p><strong>initial_mesh_size</strong> (<em>List</em><em>[</em><em>float</em><em>]</em>) – GMESH: initial mesh size per variable</p></li>
+<li><p><strong>initial_frame_size</strong> (<em>List</em><em>[</em><em>float</em><em>]</em>) – GMESH: initial frame size per variable</p></li>
+<li><p><strong>is_pareto</strong> (<em>bool</em>) – Run a Pareto (multi-objective) study</p></li>
+<li><p><strong>nobj</strong> (<em>int</em>) – Number of objectives</p></li>
+<li><p><strong>ref_point</strong> (<em>List</em><em>[</em><em>float</em><em>]</em>) – Reference point of the hypervolume indicator</p></li>
+<li><p><strong>lhs_search_initialization</strong> (<em>bool</em>) – Use (n+1)(n+2) Latin hypercube samples
+at the first search step</p></li>
+<li><p><strong>w_min</strong> (<em>int</em>) – Frame-size ratio (<code class="docutils literal notranslate"><span class="pre">10**-w_min</span></code>) below which a feasible
+point is not selected as frame centre</p></li>
+<li><p><strong>design_criteria</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><a class="reference internal" href="constants.html#OMADS._utils._globals.DESIGN_CRITERIA" title="OMADS._utils._globals.DESIGN_CRITERIA"><em>DESIGN_CRITERIA</em></a><em>]</em>)</p></li>
+<li><p><strong>function_weights</strong> (<em>List</em><em>[</em><em>float</em><em>]</em>)</p></li>
+<li><p><strong>constants_name</strong> (<em>List</em>)</p></li>
+<li><p><strong>failure_stop</strong> (<em>bool</em>)</p></li>
+<li><p><strong>problem_name</strong> (<em>str</em>)</p></li>
+<li><p><strong>best_known</strong> (<em>List</em><em>[</em><em>float</em><em>]</em>)</p></li>
+<li><p><strong>fixed_variables</strong> (<em>List</em><em>[</em><em>float</em><em>]</em>)</p></li>
+<li><p><strong>incumbent_selection_param</strong> (<em>int</em>)</p></li>
+<li><p><strong>barrier_initialized_from_cache</strong> (<em>bool</em>)</p></li>
+<li><p><strong>mesh_adjustment</strong> (<em>float</em>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="OMADS._setup._parameters.Parameters.set_initial_mesh_parameters">
+<span class="sig-name descname"><span class="pre">set_initial_mesh_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/OMADS/_setup/_parameters.html#Parameters.set_initial_mesh_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMADS._setup._parameters.Parameters.set_initial_mesh_parameters" title="Link to this definition">#</a></dt>
+<dd><p>Set the initial mesh parameters</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>IOError</strong> – _description_</p></li>
+<li><p><strong>IOError</strong> – _description_</p></li>
+<li><p><strong>IOError</strong> – _description_</p></li>
+<li><p><strong>IOError</strong> – _description_</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="OMADS._setup._parameters.Parameters.set_min_mesh_parameters">
+<span class="sig-name descname"><span class="pre">set_min_mesh_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/OMADS/_setup/_parameters.html#Parameters.set_min_mesh_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMADS._setup._parameters.Parameters.set_min_mesh_parameters" title="Link to this definition">#</a></dt>
+<dd><p>Set minimum mesh parameters</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>IOError</strong> – _description_</p></li>
+<li><p><strong>IOError</strong> – _description_</p></li>
+<li><p><strong>IOError</strong> – _description_</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="OMADS._setup._parameters.Parameters.set_min_frame_parameters">
+<span class="sig-name descname"><span class="pre">set_min_frame_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/OMADS/_setup/_parameters.html#Parameters.set_min_frame_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMADS._setup._parameters.Parameters.set_min_frame_parameters" title="Link to this definition">#</a></dt>
+<dd><p>Minimum frame size parameters</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>IOError</strong> – _description_</p></li>
+<li><p><strong>IOError</strong> – _description_</p></li>
+<li><p><strong>IOError</strong> – _description_</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="OMADS._setup._parameters.Parameters.to_be_checked">
+<span class="sig-name descname"><span class="pre">to_be_checked</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/OMADS/_setup/_parameters.html#Parameters.to_be_checked"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMADS._setup._parameters.Parameters.to_be_checked" title="Link to this definition">#</a></dt>
+<dd><p>Check whther parameters been initialized and checked</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>_description_</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="OMADS._setup._parameters.Parameters.get_barrier_type">
+<span class="sig-name descname"><span class="pre">get_barrier_type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/OMADS/_setup/_parameters.html#Parameters.get_barrier_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMADS._setup._parameters.Parameters.get_barrier_type" title="Link to this definition">#</a></dt>
+<dd><p>Get the constraints barrier type</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>_description_</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>_type_</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="OMADS._setup._parameters.Parameters.get_h_max_0">
+<span class="sig-name descname"><span class="pre">get_h_max_0</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/OMADS/_setup/_parameters.html#Parameters.get_h_max_0"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMADS._setup._parameters.Parameters.get_h_max_0" title="Link to this definition">#</a></dt>
+<dd><p>Get constraints violation margine</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>_description_</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>_type_</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="OMADS._setup._parameters.Parameters.n">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">n</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><a class="headerlink" href="#OMADS._setup._parameters.Parameters.n" title="Link to this definition">#</a></dt>
+<dd><p>Get the problem number of dimensions</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>_description_</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="OMADS._evaluator._evaluator.Evaluator">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">OMADS._evaluator._evaluator.</span></span><span class="sig-name descname"><span class="pre">Evaluator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">blackbox</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'BB'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">command_options</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">internal</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'..\\tests\\Rosen'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'input.inp'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'output.out'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constants</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bb_eval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">local_exec_jobs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">candidates</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mesh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">incumbent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/OMADS/_evaluator/_evaluator.html#Evaluator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMADS._evaluator._evaluator.Evaluator" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Define the evaluator attributes and settings
+:param blackbox: The blackbox name (it can be a callable function or an executable file)
+:param commandOptions: Define options that will be added to the execution command of the
+executable file. Command options should be defined as a string in one line
+:param internal: If the blackbox callable function is part of the internal benchmarking library
+:param path: The path of the executable file (if any)
+:param input: The input file name – should include the file extension
+:param output: The output file name – should include the file extension
+:param constants: Define constant parameters list, see the documentation in
+Tutorials-&gt;Blackbox evaluation-&gt;User parameters
+:param _dtype: The precision delegator of the numpy library
+:param timeout: The time out of the evaluation process</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="OMADS._evaluator._evaluator.Evaluator.shutdown_executor">
+<span class="sig-name descname"><span class="pre">shutdown_executor</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/OMADS/_evaluator/_evaluator.html#Evaluator.shutdown_executor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMADS._evaluator._evaluator.Evaluator.shutdown_executor" title="Link to this definition">#</a></dt>
+<dd><p>Tear down the reusable process pool (call once the run’s main loop
+over poll/search iterations has finished).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="OMADS._evaluator._evaluator.Evaluator.eval">
+<span class="sig-name descname"><span class="pre">eval</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/OMADS/_evaluator/_evaluator.html#Evaluator.eval"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMADS._evaluator._evaluator.Evaluator.eval" title="Link to this definition">#</a></dt>
+<dd><p>Evaluate the poll point.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>values</strong> (<em>List</em><em>[</em><em>float</em><em>]</em>) – Poll point coordinates (design vector)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Evaluated optimization functions and error flag</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>Tuple</em>[<em>List</em>[float], bool]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="OMADS._evaluator._evaluator.Evaluator.write_input">
+<span class="sig-name descname"><span class="pre">write_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/OMADS/_evaluator/_evaluator.html#Evaluator.write_input"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMADS._evaluator._evaluator.Evaluator.write_input" title="Link to this definition">#</a></dt>
+<dd><p>_summary_</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>values</strong> (<em>List</em><em>[</em><em>float</em><em>]</em>) – Write the variables in the input file</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="OMADS._evaluator._evaluator.Evaluator.read_output">
+<span class="sig-name descname"><span class="pre">read_output</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/OMADS/_evaluator/_evaluator.html#Evaluator.read_output"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMADS._evaluator._evaluator.Evaluator.read_output" title="Link to this definition">#</a></dt>
+<dd><p>_summary_</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Read the output values from the output file</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>List[float]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="OMADS._heuristics._exploration.search_sampling">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">OMADS._heuristics._exploration.</span></span><span class="sig-name descname"><span class="pre">search_sampling</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s_method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'LH'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">visualize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">criterion</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'SAMPLING'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/OMADS/_heuristics/_exploration.html#search_sampling"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMADS._heuristics._exploration.search_sampling" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Options of the search step (the <code class="docutils literal notranslate"><span class="pre">search</span></code> section of the input).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>s_method</strong> (<em>str</em>) – Sampling method: “ACTIVE”, “LH”, “RS”, “HALTON” or
+“FULLFACTORIAL”</p></li>
+<li><p><strong>ns</strong> (<em>int</em>) – Number of samples per search step (None: (n+1)(n+2)/4)</p></li>
+<li><p><strong>visualize</strong> (<em>bool</em>) – Reserved</p></li>
+<li><p><strong>criterion</strong> (<em>str</em><em> | </em><em>None</em>) – Space-filling criterion of the Latin hypercube sampler</p></li>
+<li><p><strong>weights</strong> (<em>List</em><em>[</em><em>float</em><em>] </em><em>| </em><em>None</em>) – Level weights of the full-factorial sampler</p></li>
+<li><p><strong>type</strong> (<em>str</em>) – “VNS” for the variable neighbourhood search, any other value
+for the sampling search</p></li>
+<li><p><strong>batch</strong> (<em>int</em><em> | </em><em>None</em>) – Number of BiTPE proposals per ACTIVE search step, capped by
+the remaining budget (None: 10)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="solvers.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Solvers</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="components.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Algorithm components</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2022-2026, Ahmed H. Bayoumy.
+      <br/>
+    
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

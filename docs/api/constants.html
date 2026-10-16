@@ -1,0 +1,1359 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" data-theme="light">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Constants and enumerations &#8212; OMADS 2610</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/proof.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/pseudocode@latest/build/pseudocode.min.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=2ebac5eb" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
+
+    <script src="../_static/documentation_options.js?v=c14009a4"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=fd10adb8"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pseudocode@latest/build/pseudocode.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'api/constants';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="References" href="../references.html" />
+    <link rel="prev" title="Results and metrics" href="results.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="2610" />
+  
+    
+    <script src="../_static/searchtools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="light">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+    
+    <img src="../_static/OMADS_logo.png" class="logo__image only-light" alt="OMADS 2610 - Home"/>
+    <img src="../_static/OMADS_logo.png" class="logo__image only-dark pst-js-only" alt="OMADS 2610 - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting_started.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../background.html">
+    Background
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../benchmarking.html">
+    Benchmarking
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/configuration.html">
+    Configuration reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/outputs.html">
+    Outputs
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" current active">
+  <a class="nav-link dropdown-item nav-internal" href="index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../references.html">
+    References
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/Ahmed-Bayoumy/OMADS" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting_started.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../background.html">
+    Background
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../benchmarking.html">
+    Benchmarking
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/configuration.html">
+    Configuration reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/outputs.html">
+    Outputs
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../references.html">
+    References
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/Ahmed-Bayoumy/OMADS" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="solvers.html">Solvers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="components.html">Algorithm components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="points.html">Points and cache</a></li>
+<li class="toctree-l1"><a class="reference internal" href="results.html">Results and metrics</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Constants and enumerations</a></li>
+</ul>
+</div>
+</nav></div>
+        <div class="sidebar-primary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.PassException"><code class="docutils literal notranslate"><span class="pre">PassException</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.DType"><code class="docutils literal notranslate"><span class="pre">DType</span></code></a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.DType.zero"><code class="docutils literal notranslate"><span class="pre">DType.zero</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.DType.precision"><code class="docutils literal notranslate"><span class="pre">DType.precision</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.DType.dtype"><code class="docutils literal notranslate"><span class="pre">DType.dtype</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.DType.itype"><code class="docutils literal notranslate"><span class="pre">DType.itype</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.VAR_TYPE"><code class="docutils literal notranslate"><span class="pre">VAR_TYPE</span></code></a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.VAR_TYPE.REAL"><code class="docutils literal notranslate"><span class="pre">VAR_TYPE.REAL</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.VAR_TYPE.INTEGER"><code class="docutils literal notranslate"><span class="pre">VAR_TYPE.INTEGER</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.VAR_TYPE.DISCRETE"><code class="docutils literal notranslate"><span class="pre">VAR_TYPE.DISCRETE</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.VAR_TYPE.BINARY"><code class="docutils literal notranslate"><span class="pre">VAR_TYPE.BINARY</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.VAR_TYPE.CATEGORICAL"><code class="docutils literal notranslate"><span class="pre">VAR_TYPE.CATEGORICAL</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.VAR_TYPE.ORDINAL"><code class="docutils literal notranslate"><span class="pre">VAR_TYPE.ORDINAL</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.BARRIER_TYPES"><code class="docutils literal notranslate"><span class="pre">BARRIER_TYPES</span></code></a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.BARRIER_TYPES.EB"><code class="docutils literal notranslate"><span class="pre">BARRIER_TYPES.EB</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.BARRIER_TYPES.PB"><code class="docutils literal notranslate"><span class="pre">BARRIER_TYPES.PB</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.BARRIER_TYPES.PEB"><code class="docutils literal notranslate"><span class="pre">BARRIER_TYPES.PEB</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.BARRIER_TYPES.RB"><code class="docutils literal notranslate"><span class="pre">BARRIER_TYPES.RB</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.SUCCESS_TYPES"><code class="docutils literal notranslate"><span class="pre">SUCCESS_TYPES</span></code></a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.SUCCESS_TYPES.US"><code class="docutils literal notranslate"><span class="pre">SUCCESS_TYPES.US</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.SUCCESS_TYPES.PS"><code class="docutils literal notranslate"><span class="pre">SUCCESS_TYPES.PS</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.SUCCESS_TYPES.FS"><code class="docutils literal notranslate"><span class="pre">SUCCESS_TYPES.FS</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.MPP"><code class="docutils literal notranslate"><span class="pre">MPP</span></code></a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.MPP.LAMBDA"><code class="docutils literal notranslate"><span class="pre">MPP.LAMBDA</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.MPP.RHO"><code class="docutils literal notranslate"><span class="pre">MPP.RHO</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.DESIGN_STATUS"><code class="docutils literal notranslate"><span class="pre">DESIGN_STATUS</span></code></a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.DESIGN_STATUS.FEASIBLE"><code class="docutils literal notranslate"><span class="pre">DESIGN_STATUS.FEASIBLE</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.DESIGN_STATUS.INFEASIBLE"><code class="docutils literal notranslate"><span class="pre">DESIGN_STATUS.INFEASIBLE</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.DESIGN_STATUS.ERROR"><code class="docutils literal notranslate"><span class="pre">DESIGN_STATUS.ERROR</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.DESIGN_STATUS.UNEVALUATED"><code class="docutils literal notranslate"><span class="pre">DESIGN_STATUS.UNEVALUATED</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.DESIGN_CRITERIA"><code class="docutils literal notranslate"><span class="pre">DESIGN_CRITERIA</span></code></a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.DESIGN_CRITERIA.OBJECTIVE"><code class="docutils literal notranslate"><span class="pre">DESIGN_CRITERIA.OBJECTIVE</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.DESIGN_CRITERIA.INEQUALITY_CONSTRAINT"><code class="docutils literal notranslate"><span class="pre">DESIGN_CRITERIA.INEQUALITY_CONSTRAINT</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.DESIGN_CRITERIA.EQALITY_CONSTRAINT"><code class="docutils literal notranslate"><span class="pre">DESIGN_CRITERIA.EQALITY_CONSTRAINT</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.DESIGN_CRITERIA.UNDEFINED"><code class="docutils literal notranslate"><span class="pre">DESIGN_CRITERIA.UNDEFINED</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.BB_EVAL_STATUS"><code class="docutils literal notranslate"><span class="pre">BB_EVAL_STATUS</span></code></a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.BB_EVAL_STATUS.SUCCESS"><code class="docutils literal notranslate"><span class="pre">BB_EVAL_STATUS.SUCCESS</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.BB_EVAL_STATUS.ERROR"><code class="docutils literal notranslate"><span class="pre">BB_EVAL_STATUS.ERROR</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.BB_EVAL_STATUS.UNEVALUATED"><code class="docutils literal notranslate"><span class="pre">BB_EVAL_STATUS.UNEVALUATED</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.MSG_TYPE"><code class="docutils literal notranslate"><span class="pre">MSG_TYPE</span></code></a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.MSG_TYPE.DEBUG"><code class="docutils literal notranslate"><span class="pre">MSG_TYPE.DEBUG</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.MSG_TYPE.WARNING"><code class="docutils literal notranslate"><span class="pre">MSG_TYPE.WARNING</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.MSG_TYPE.ERROR"><code class="docutils literal notranslate"><span class="pre">MSG_TYPE.ERROR</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.MSG_TYPE.INFO"><code class="docutils literal notranslate"><span class="pre">MSG_TYPE.INFO</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.MSG_TYPE.CRITICAL"><code class="docutils literal notranslate"><span class="pre">MSG_TYPE.CRITICAL</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.SAMPLING_METHOD"><code class="docutils literal notranslate"><span class="pre">SAMPLING_METHOD</span></code></a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.SAMPLING_METHOD.FULLFACTORIAL"><code class="docutils literal notranslate"><span class="pre">SAMPLING_METHOD.FULLFACTORIAL</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.SAMPLING_METHOD.LH"><code class="docutils literal notranslate"><span class="pre">SAMPLING_METHOD.LH</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.SAMPLING_METHOD.RS"><code class="docutils literal notranslate"><span class="pre">SAMPLING_METHOD.RS</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.SAMPLING_METHOD.HALTON"><code class="docutils literal notranslate"><span class="pre">SAMPLING_METHOD.HALTON</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.SAMPLING_METHOD.ACTIVE"><code class="docutils literal notranslate"><span class="pre">SAMPLING_METHOD.ACTIVE</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.SEARCH_TYPE"><code class="docutils literal notranslate"><span class="pre">SEARCH_TYPE</span></code></a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.SEARCH_TYPE.SAMPLING"><code class="docutils literal notranslate"><span class="pre">SEARCH_TYPE.SAMPLING</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.SEARCH_TYPE.SURROGATE"><code class="docutils literal notranslate"><span class="pre">SEARCH_TYPE.SURROGATE</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.SEARCH_TYPE.VNS"><code class="docutils literal notranslate"><span class="pre">SEARCH_TYPE.VNS</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.SEARCH_TYPE.BAYESIAN"><code class="docutils literal notranslate"><span class="pre">SEARCH_TYPE.BAYESIAN</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.SEARCH_TYPE.NM"><code class="docutils literal notranslate"><span class="pre">SEARCH_TYPE.NM</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.SEARCH_TYPE.PSO"><code class="docutils literal notranslate"><span class="pre">SEARCH_TYPE.PSO</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.DIST_TYPE"><code class="docutils literal notranslate"><span class="pre">DIST_TYPE</span></code></a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.DIST_TYPE.GAUSS"><code class="docutils literal notranslate"><span class="pre">DIST_TYPE.GAUSS</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.DIST_TYPE.GAMMA"><code class="docutils literal notranslate"><span class="pre">DIST_TYPE.GAMMA</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.DIST_TYPE.EXPONENTIAL"><code class="docutils literal notranslate"><span class="pre">DIST_TYPE.EXPONENTIAL</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.DIST_TYPE.BIONOMIAL"><code class="docutils literal notranslate"><span class="pre">DIST_TYPE.BIONOMIAL</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.DIST_TYPE.POISSON"><code class="docutils literal notranslate"><span class="pre">DIST_TYPE.POISSON</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.SAMPLER_TYPE"><code class="docutils literal notranslate"><span class="pre">SAMPLER_TYPE</span></code></a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.SAMPLER_TYPE.POLL"><code class="docutils literal notranslate"><span class="pre">SAMPLER_TYPE.POLL</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.SAMPLER_TYPE.SEARCH"><code class="docutils literal notranslate"><span class="pre">SAMPLER_TYPE.SEARCH</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.STOP_TYPE"><code class="docutils literal notranslate"><span class="pre">STOP_TYPE</span></code></a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.STOP_TYPE.NO_STOP"><code class="docutils literal notranslate"><span class="pre">STOP_TYPE.NO_STOP</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.STOP_TYPE.ERROR"><code class="docutils literal notranslate"><span class="pre">STOP_TYPE.ERROR</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.STOP_TYPE.UNKNOWN_STOP_REASON"><code class="docutils literal notranslate"><span class="pre">STOP_TYPE.UNKNOWN_STOP_REASON</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.STOP_TYPE.CTRL_C"><code class="docutils literal notranslate"><span class="pre">STOP_TYPE.CTRL_C</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.STOP_TYPE.USER_STOPPED"><code class="docutils literal notranslate"><span class="pre">STOP_TYPE.USER_STOPPED</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.STOP_TYPE.MESH_PREC_REACHED"><code class="docutils literal notranslate"><span class="pre">STOP_TYPE.MESH_PREC_REACHED</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.STOP_TYPE.X0_FAIL"><code class="docutils literal notranslate"><span class="pre">STOP_TYPE.X0_FAIL</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.STOP_TYPE.P1_FAIL"><code class="docutils literal notranslate"><span class="pre">STOP_TYPE.P1_FAIL</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.STOP_TYPE.DELTA_M_MIN_REACHED"><code class="docutils literal notranslate"><span class="pre">STOP_TYPE.DELTA_M_MIN_REACHED</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.STOP_TYPE.DELTA_P_MIN_REACHED"><code class="docutils literal notranslate"><span class="pre">STOP_TYPE.DELTA_P_MIN_REACHED</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.STOP_TYPE.MAX_TIME_REACHED"><code class="docutils literal notranslate"><span class="pre">STOP_TYPE.MAX_TIME_REACHED</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.STOP_TYPE.MAX_BB_EVAL_REACHED"><code class="docutils literal notranslate"><span class="pre">STOP_TYPE.MAX_BB_EVAL_REACHED</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.STOP_TYPE.MAX_SGTE_EVAL_REACHED"><code class="docutils literal notranslate"><span class="pre">STOP_TYPE.MAX_SGTE_EVAL_REACHED</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.STOP_TYPE.F_TARGET_REACHED"><code class="docutils literal notranslate"><span class="pre">STOP_TYPE.F_TARGET_REACHED</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.STOP_TYPE.MAX_CACHE_MEMORY_REACHED"><code class="docutils literal notranslate"><span class="pre">STOP_TYPE.MAX_CACHE_MEMORY_REACHED</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.STOP_TYPE.GL_LIMITS_REACHED"><code class="docutils literal notranslate"><span class="pre">STOP_TYPE.GL_LIMITS_REACHED</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.STOP_TYPE.STOP_IF_FEASIBLE"><code class="docutils literal notranslate"><span class="pre">STOP_TYPE.STOP_IF_FEASIBLE</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.STOP_TYPE.NO_INIT_CANDIDATES"><code class="docutils literal notranslate"><span class="pre">STOP_TYPE.NO_INIT_CANDIDATES</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.STOP_TYPE.MAX_BB_OUTBOUND_REACHED"><code class="docutils literal notranslate"><span class="pre">STOP_TYPE.MAX_BB_OUTBOUND_REACHED</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.STOP_TYPE.MIN_MESH_REACHED"><code class="docutils literal notranslate"><span class="pre">STOP_TYPE.MIN_MESH_REACHED</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.MESH_TYPE"><code class="docutils literal notranslate"><span class="pre">MESH_TYPE</span></code></a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.MESH_TYPE.ORTHO"><code class="docutils literal notranslate"><span class="pre">MESH_TYPE.ORTHO</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.MESH_TYPE.GMESH"><code class="docutils literal notranslate"><span class="pre">MESH_TYPE.GMESH</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.MESH_TYPE.XMESH"><code class="docutils literal notranslate"><span class="pre">MESH_TYPE.XMESH</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.MESH_TYPE.SMESH"><code class="docutils literal notranslate"><span class="pre">MESH_TYPE.SMESH</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.EVAL_TYPE"><code class="docutils literal notranslate"><span class="pre">EVAL_TYPE</span></code></a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.EVAL_TYPE.BB"><code class="docutils literal notranslate"><span class="pre">EVAL_TYPE.BB</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.EVAL_TYPE.CALLABLE"><code class="docutils literal notranslate"><span class="pre">EVAL_TYPE.CALLABLE</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.COMPARE_TYPE"><code class="docutils literal notranslate"><span class="pre">COMPARE_TYPE</span></code></a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.COMPARE_TYPE.EQUAL"><code class="docutils literal notranslate"><span class="pre">COMPARE_TYPE.EQUAL</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.COMPARE_TYPE.INDIFFERENT"><code class="docutils literal notranslate"><span class="pre">COMPARE_TYPE.INDIFFERENT</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.COMPARE_TYPE.DOMINATED"><code class="docutils literal notranslate"><span class="pre">COMPARE_TYPE.DOMINATED</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.COMPARE_TYPE.DOMINATING"><code class="docutils literal notranslate"><span class="pre">COMPARE_TYPE.DOMINATING</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.COMPARE_TYPE.UNDEFINED"><code class="docutils literal notranslate"><span class="pre">COMPARE_TYPE.UNDEFINED</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.INSERTION_FLAG"><code class="docutils literal notranslate"><span class="pre">INSERTION_FLAG</span></code></a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.INSERTION_FLAG.IMPROVES"><code class="docutils literal notranslate"><span class="pre">INSERTION_FLAG.IMPROVES</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.INSERTION_FLAG.EXTENDS"><code class="docutils literal notranslate"><span class="pre">INSERTION_FLAG.EXTENDS</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.INSERTION_FLAG.DOMINATES"><code class="docutils literal notranslate"><span class="pre">INSERTION_FLAG.DOMINATES</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.INSERTION_FLAG.IS_DOMINATED"><code class="docutils literal notranslate"><span class="pre">INSERTION_FLAG.IS_DOMINATED</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.INSERTION_FLAG.REJECTED"><code class="docutils literal notranslate"><span class="pre">INSERTION_FLAG.REJECTED</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#OMADS._utils._globals.INSERTION_FLAG.NO_IMPROVEMENT"><code class="docutils literal notranslate"><span class="pre">INSERTION_FLAG.NO_IMPROVEMENT</span></code></a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">API reference</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Constants and enumerations</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="module-OMADS._utils._globals">
+<span id="constants-and-enumerations"></span><h1>Constants and enumerations<a class="headerlink" href="#module-OMADS._utils._globals" title="Link to this heading">#</a></h1>
+<p># ————————————————————————————#
+#  Mesh Adaptive Direct Search - (MADS)                                               #
+#                                                                                     #
+#  Author: Ahmed H. Bayoumy                                                           #
+#  email: <a class="reference external" href="mailto:ahmed&#46;bayoumy&#37;&#52;&#48;mail&#46;mcgill&#46;ca">ahmed<span>&#46;</span>bayoumy<span>&#64;</span>mail<span>&#46;</span>mcgill<span>&#46;</span>ca</a>                                                #
+#                                                                                     #
+#  This program is free software: you can redistribute it and/or modify it under the  #
+#  terms of the BSD 3-Clause License as published by the Free Software   #
+#  Foundation, either version 3 of the License, or (at your option) any later         #
+#  version.                                                                           #
+#                                                                                     #
+#  This program is distributed in the hope that it will be useful, but WITHOUT ANY    #
+#  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A    #
+#  PARTICULAR PURPOSE.  See the BSD 3-Clause License for more details.   #
+#                                                                                     #
+#  You should have received a copy of the BSD 3-Clause License along     #
+#  with this program. If not, see &lt;<a class="reference external" href="https://opensource.org/license/bsd-3-clause/">https://opensource.org/license/bsd-3-clause/</a>&gt;.     #
+#                                                                                     #
+#  You can find information on OMADS at                                               #
+#  <a class="github reference external" href="https://github.com/Ahmed-Bayoumy/OMADS">Ahmed-Bayoumy/OMADS</a>                                             #
+#  Copyright (C) 2026  Ahmed H. Bayoumy                                               #
+# ————————————————————————————#</p>
+<dl class="py exception">
+<dt class="sig sig-object py" id="OMADS._utils._globals.PassException">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">OMADS._utils._globals.</span></span><span class="sig-name descname"><span class="pre">PassException</span></span><a class="reference internal" href="../_modules/OMADS/_utils/_globals.html#PassException"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMADS._utils._globals.PassException" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Custom exception that can be used to pass silently.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="OMADS._utils._globals.DType">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">OMADS._utils._globals.</span></span><span class="sig-name descname"><span class="pre">DType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'medium'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/OMADS/_utils/_globals.html#DType"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMADS._utils._globals.DType" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A numpy data type delegator for decimal precision control</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>prec</strong> (<em>str</em><em>, </em><em>optional</em>) – Default precision option can be set to “high”,
+“medium” or “low” precision resolution, defaults to “medium”</p></li>
+<li><p><strong>dtype</strong> (<em>np.dtype</em><em>, </em><em>optional</em>) – Numpy double data type precision, defaults to np.float64</p></li>
+<li><p><strong>itype</strong> (<em>np.dtype</em><em>, </em><em>optional</em>) – Numpy integer data type precision, defaults to np.int</p></li>
+<li><p><strong>zero</strong> (<em>float</em><em>, </em><em>optional</em>) – Zero value resolution, defaults to np.finfo(np.float64).resolution</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="OMADS._utils._globals.DType.zero">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">zero</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></span><a class="headerlink" href="#OMADS._utils._globals.DType.zero" title="Link to this definition">#</a></dt>
+<dd><p>This is the mantissa value of the machine zero</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>machine precision zero resolution</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="OMADS._utils._globals.DType.precision">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">precision</span></span><a class="headerlink" href="#OMADS._utils._globals.DType.precision" title="Link to this definition">#</a></dt>
+<dd><p>Set/get precision resolution level</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float precision value</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>numpy float</p>
+</dd>
+<dt class="field-odd">Note<span class="colon">:</span></dt>
+<dd class="field-odd"><p>MS Windows does not support precision with the {1e-18} high resolution of the python
+numerical library (numpy) so high precision will be
+changed to medium precision which supports {1e-15} resolution
+check: <a class="reference external" href="https://numpy.org/doc/stable/user/basics.types.html">https://numpy.org/doc/stable/user/basics.types.html</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="OMADS._utils._globals.DType.dtype">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">dtype</span></span><a class="headerlink" href="#OMADS._utils._globals.DType.dtype" title="Link to this definition">#</a></dt>
+<dd><p>Set/get the double formate type</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float precision value</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>numpy float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="OMADS._utils._globals.DType.itype">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">itype</span></span><a class="headerlink" href="#OMADS._utils._globals.DType.itype" title="Link to this definition">#</a></dt>
+<dd><p>Set/Get for the integer formate type</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>integer precision value</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>numpy float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="OMADS._utils._globals.VAR_TYPE">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">OMADS._utils._globals.</span></span><span class="sig-name descname"><span class="pre">VAR_TYPE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/OMADS/_utils/_globals.html#VAR_TYPE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMADS._utils._globals.VAR_TYPE" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.VAR_TYPE.REAL">
+<span class="sig-name descname"><span class="pre">REAL</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></span><a class="headerlink" href="#OMADS._utils._globals.VAR_TYPE.REAL" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.VAR_TYPE.INTEGER">
+<span class="sig-name descname"><span class="pre">INTEGER</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></span><a class="headerlink" href="#OMADS._utils._globals.VAR_TYPE.INTEGER" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.VAR_TYPE.DISCRETE">
+<span class="sig-name descname"><span class="pre">DISCRETE</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></span><a class="headerlink" href="#OMADS._utils._globals.VAR_TYPE.DISCRETE" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.VAR_TYPE.BINARY">
+<span class="sig-name descname"><span class="pre">BINARY</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></span><a class="headerlink" href="#OMADS._utils._globals.VAR_TYPE.BINARY" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.VAR_TYPE.CATEGORICAL">
+<span class="sig-name descname"><span class="pre">CATEGORICAL</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">5</span></span><a class="headerlink" href="#OMADS._utils._globals.VAR_TYPE.CATEGORICAL" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.VAR_TYPE.ORDINAL">
+<span class="sig-name descname"><span class="pre">ORDINAL</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">6</span></span><a class="headerlink" href="#OMADS._utils._globals.VAR_TYPE.ORDINAL" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="OMADS._utils._globals.BARRIER_TYPES">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">OMADS._utils._globals.</span></span><span class="sig-name descname"><span class="pre">BARRIER_TYPES</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/OMADS/_utils/_globals.html#BARRIER_TYPES"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMADS._utils._globals.BARRIER_TYPES" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.BARRIER_TYPES.EB">
+<span class="sig-name descname"><span class="pre">EB</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></span><a class="headerlink" href="#OMADS._utils._globals.BARRIER_TYPES.EB" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.BARRIER_TYPES.PB">
+<span class="sig-name descname"><span class="pre">PB</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></span><a class="headerlink" href="#OMADS._utils._globals.BARRIER_TYPES.PB" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.BARRIER_TYPES.PEB">
+<span class="sig-name descname"><span class="pre">PEB</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></span><a class="headerlink" href="#OMADS._utils._globals.BARRIER_TYPES.PEB" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.BARRIER_TYPES.RB">
+<span class="sig-name descname"><span class="pre">RB</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></span><a class="headerlink" href="#OMADS._utils._globals.BARRIER_TYPES.RB" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="OMADS._utils._globals.SUCCESS_TYPES">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">OMADS._utils._globals.</span></span><span class="sig-name descname"><span class="pre">SUCCESS_TYPES</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/OMADS/_utils/_globals.html#SUCCESS_TYPES"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMADS._utils._globals.SUCCESS_TYPES" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.SUCCESS_TYPES.US">
+<span class="sig-name descname"><span class="pre">US</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></span><a class="headerlink" href="#OMADS._utils._globals.SUCCESS_TYPES.US" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.SUCCESS_TYPES.PS">
+<span class="sig-name descname"><span class="pre">PS</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></span><a class="headerlink" href="#OMADS._utils._globals.SUCCESS_TYPES.PS" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.SUCCESS_TYPES.FS">
+<span class="sig-name descname"><span class="pre">FS</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></span><a class="headerlink" href="#OMADS._utils._globals.SUCCESS_TYPES.FS" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="OMADS._utils._globals.MPP">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">OMADS._utils._globals.</span></span><span class="sig-name descname"><span class="pre">MPP</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/OMADS/_utils/_globals.html#MPP"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMADS._utils._globals.MPP" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.MPP.LAMBDA">
+<span class="sig-name descname"><span class="pre">LAMBDA</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.0</span></span><a class="headerlink" href="#OMADS._utils._globals.MPP.LAMBDA" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.MPP.RHO">
+<span class="sig-name descname"><span class="pre">RHO</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">5e-05</span></span><a class="headerlink" href="#OMADS._utils._globals.MPP.RHO" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="OMADS._utils._globals.DESIGN_STATUS">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">OMADS._utils._globals.</span></span><span class="sig-name descname"><span class="pre">DESIGN_STATUS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/OMADS/_utils/_globals.html#DESIGN_STATUS"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMADS._utils._globals.DESIGN_STATUS" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.DESIGN_STATUS.FEASIBLE">
+<span class="sig-name descname"><span class="pre">FEASIBLE</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></span><a class="headerlink" href="#OMADS._utils._globals.DESIGN_STATUS.FEASIBLE" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.DESIGN_STATUS.INFEASIBLE">
+<span class="sig-name descname"><span class="pre">INFEASIBLE</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></span><a class="headerlink" href="#OMADS._utils._globals.DESIGN_STATUS.INFEASIBLE" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.DESIGN_STATUS.ERROR">
+<span class="sig-name descname"><span class="pre">ERROR</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></span><a class="headerlink" href="#OMADS._utils._globals.DESIGN_STATUS.ERROR" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.DESIGN_STATUS.UNEVALUATED">
+<span class="sig-name descname"><span class="pre">UNEVALUATED</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></span><a class="headerlink" href="#OMADS._utils._globals.DESIGN_STATUS.UNEVALUATED" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="OMADS._utils._globals.DESIGN_CRITERIA">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">OMADS._utils._globals.</span></span><span class="sig-name descname"><span class="pre">DESIGN_CRITERIA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/OMADS/_utils/_globals.html#DESIGN_CRITERIA"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMADS._utils._globals.DESIGN_CRITERIA" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.DESIGN_CRITERIA.OBJECTIVE">
+<span class="sig-name descname"><span class="pre">OBJECTIVE</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></span><a class="headerlink" href="#OMADS._utils._globals.DESIGN_CRITERIA.OBJECTIVE" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.DESIGN_CRITERIA.INEQUALITY_CONSTRAINT">
+<span class="sig-name descname"><span class="pre">INEQUALITY_CONSTRAINT</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></span><a class="headerlink" href="#OMADS._utils._globals.DESIGN_CRITERIA.INEQUALITY_CONSTRAINT" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.DESIGN_CRITERIA.EQALITY_CONSTRAINT">
+<span class="sig-name descname"><span class="pre">EQALITY_CONSTRAINT</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></span><a class="headerlink" href="#OMADS._utils._globals.DESIGN_CRITERIA.EQALITY_CONSTRAINT" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.DESIGN_CRITERIA.UNDEFINED">
+<span class="sig-name descname"><span class="pre">UNDEFINED</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></span><a class="headerlink" href="#OMADS._utils._globals.DESIGN_CRITERIA.UNDEFINED" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="OMADS._utils._globals.BB_EVAL_STATUS">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">OMADS._utils._globals.</span></span><span class="sig-name descname"><span class="pre">BB_EVAL_STATUS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/OMADS/_utils/_globals.html#BB_EVAL_STATUS"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMADS._utils._globals.BB_EVAL_STATUS" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.BB_EVAL_STATUS.SUCCESS">
+<span class="sig-name descname"><span class="pre">SUCCESS</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></span><a class="headerlink" href="#OMADS._utils._globals.BB_EVAL_STATUS.SUCCESS" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.BB_EVAL_STATUS.ERROR">
+<span class="sig-name descname"><span class="pre">ERROR</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></span><a class="headerlink" href="#OMADS._utils._globals.BB_EVAL_STATUS.ERROR" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.BB_EVAL_STATUS.UNEVALUATED">
+<span class="sig-name descname"><span class="pre">UNEVALUATED</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></span><a class="headerlink" href="#OMADS._utils._globals.BB_EVAL_STATUS.UNEVALUATED" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="OMADS._utils._globals.MSG_TYPE">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">OMADS._utils._globals.</span></span><span class="sig-name descname"><span class="pre">MSG_TYPE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/OMADS/_utils/_globals.html#MSG_TYPE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMADS._utils._globals.MSG_TYPE" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.MSG_TYPE.DEBUG">
+<span class="sig-name descname"><span class="pre">DEBUG</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></span><a class="headerlink" href="#OMADS._utils._globals.MSG_TYPE.DEBUG" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.MSG_TYPE.WARNING">
+<span class="sig-name descname"><span class="pre">WARNING</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></span><a class="headerlink" href="#OMADS._utils._globals.MSG_TYPE.WARNING" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.MSG_TYPE.ERROR">
+<span class="sig-name descname"><span class="pre">ERROR</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></span><a class="headerlink" href="#OMADS._utils._globals.MSG_TYPE.ERROR" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.MSG_TYPE.INFO">
+<span class="sig-name descname"><span class="pre">INFO</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></span><a class="headerlink" href="#OMADS._utils._globals.MSG_TYPE.INFO" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.MSG_TYPE.CRITICAL">
+<span class="sig-name descname"><span class="pre">CRITICAL</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">5</span></span><a class="headerlink" href="#OMADS._utils._globals.MSG_TYPE.CRITICAL" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="OMADS._utils._globals.SAMPLING_METHOD">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">OMADS._utils._globals.</span></span><span class="sig-name descname"><span class="pre">SAMPLING_METHOD</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/OMADS/_utils/_globals.html#SAMPLING_METHOD"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMADS._utils._globals.SAMPLING_METHOD" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.SAMPLING_METHOD.FULLFACTORIAL">
+<span class="sig-name descname"><span class="pre">FULLFACTORIAL</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></span><a class="headerlink" href="#OMADS._utils._globals.SAMPLING_METHOD.FULLFACTORIAL" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.SAMPLING_METHOD.LH">
+<span class="sig-name descname"><span class="pre">LH</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></span><a class="headerlink" href="#OMADS._utils._globals.SAMPLING_METHOD.LH" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.SAMPLING_METHOD.RS">
+<span class="sig-name descname"><span class="pre">RS</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></span><a class="headerlink" href="#OMADS._utils._globals.SAMPLING_METHOD.RS" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.SAMPLING_METHOD.HALTON">
+<span class="sig-name descname"><span class="pre">HALTON</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></span><a class="headerlink" href="#OMADS._utils._globals.SAMPLING_METHOD.HALTON" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.SAMPLING_METHOD.ACTIVE">
+<span class="sig-name descname"><span class="pre">ACTIVE</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">5</span></span><a class="headerlink" href="#OMADS._utils._globals.SAMPLING_METHOD.ACTIVE" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="OMADS._utils._globals.SEARCH_TYPE">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">OMADS._utils._globals.</span></span><span class="sig-name descname"><span class="pre">SEARCH_TYPE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/OMADS/_utils/_globals.html#SEARCH_TYPE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMADS._utils._globals.SEARCH_TYPE" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.SEARCH_TYPE.SAMPLING">
+<span class="sig-name descname"><span class="pre">SAMPLING</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></span><a class="headerlink" href="#OMADS._utils._globals.SEARCH_TYPE.SAMPLING" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.SEARCH_TYPE.SURROGATE">
+<span class="sig-name descname"><span class="pre">SURROGATE</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></span><a class="headerlink" href="#OMADS._utils._globals.SEARCH_TYPE.SURROGATE" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.SEARCH_TYPE.VNS">
+<span class="sig-name descname"><span class="pre">VNS</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></span><a class="headerlink" href="#OMADS._utils._globals.SEARCH_TYPE.VNS" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.SEARCH_TYPE.BAYESIAN">
+<span class="sig-name descname"><span class="pre">BAYESIAN</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></span><a class="headerlink" href="#OMADS._utils._globals.SEARCH_TYPE.BAYESIAN" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.SEARCH_TYPE.NM">
+<span class="sig-name descname"><span class="pre">NM</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">5</span></span><a class="headerlink" href="#OMADS._utils._globals.SEARCH_TYPE.NM" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.SEARCH_TYPE.PSO">
+<span class="sig-name descname"><span class="pre">PSO</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">6</span></span><a class="headerlink" href="#OMADS._utils._globals.SEARCH_TYPE.PSO" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="OMADS._utils._globals.DIST_TYPE">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">OMADS._utils._globals.</span></span><span class="sig-name descname"><span class="pre">DIST_TYPE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/OMADS/_utils/_globals.html#DIST_TYPE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMADS._utils._globals.DIST_TYPE" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.DIST_TYPE.GAUSS">
+<span class="sig-name descname"><span class="pre">GAUSS</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></span><a class="headerlink" href="#OMADS._utils._globals.DIST_TYPE.GAUSS" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.DIST_TYPE.GAMMA">
+<span class="sig-name descname"><span class="pre">GAMMA</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></span><a class="headerlink" href="#OMADS._utils._globals.DIST_TYPE.GAMMA" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.DIST_TYPE.EXPONENTIAL">
+<span class="sig-name descname"><span class="pre">EXPONENTIAL</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></span><a class="headerlink" href="#OMADS._utils._globals.DIST_TYPE.EXPONENTIAL" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.DIST_TYPE.BIONOMIAL">
+<span class="sig-name descname"><span class="pre">BIONOMIAL</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></span><a class="headerlink" href="#OMADS._utils._globals.DIST_TYPE.BIONOMIAL" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.DIST_TYPE.POISSON">
+<span class="sig-name descname"><span class="pre">POISSON</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">5</span></span><a class="headerlink" href="#OMADS._utils._globals.DIST_TYPE.POISSON" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="OMADS._utils._globals.SAMPLER_TYPE">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">OMADS._utils._globals.</span></span><span class="sig-name descname"><span class="pre">SAMPLER_TYPE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/OMADS/_utils/_globals.html#SAMPLER_TYPE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMADS._utils._globals.SAMPLER_TYPE" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.SAMPLER_TYPE.POLL">
+<span class="sig-name descname"><span class="pre">POLL</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></span><a class="headerlink" href="#OMADS._utils._globals.SAMPLER_TYPE.POLL" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.SAMPLER_TYPE.SEARCH">
+<span class="sig-name descname"><span class="pre">SEARCH</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></span><a class="headerlink" href="#OMADS._utils._globals.SAMPLER_TYPE.SEARCH" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="OMADS._utils._globals.STOP_TYPE">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">OMADS._utils._globals.</span></span><span class="sig-name descname"><span class="pre">STOP_TYPE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/OMADS/_utils/_globals.html#STOP_TYPE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMADS._utils._globals.STOP_TYPE" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.STOP_TYPE.NO_STOP">
+<span class="sig-name descname"><span class="pre">NO_STOP</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></span><a class="headerlink" href="#OMADS._utils._globals.STOP_TYPE.NO_STOP" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.STOP_TYPE.ERROR">
+<span class="sig-name descname"><span class="pre">ERROR</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></span><a class="headerlink" href="#OMADS._utils._globals.STOP_TYPE.ERROR" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.STOP_TYPE.UNKNOWN_STOP_REASON">
+<span class="sig-name descname"><span class="pre">UNKNOWN_STOP_REASON</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></span><a class="headerlink" href="#OMADS._utils._globals.STOP_TYPE.UNKNOWN_STOP_REASON" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.STOP_TYPE.CTRL_C">
+<span class="sig-name descname"><span class="pre">CTRL_C</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></span><a class="headerlink" href="#OMADS._utils._globals.STOP_TYPE.CTRL_C" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.STOP_TYPE.USER_STOPPED">
+<span class="sig-name descname"><span class="pre">USER_STOPPED</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">5</span></span><a class="headerlink" href="#OMADS._utils._globals.STOP_TYPE.USER_STOPPED" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.STOP_TYPE.MESH_PREC_REACHED">
+<span class="sig-name descname"><span class="pre">MESH_PREC_REACHED</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">6</span></span><a class="headerlink" href="#OMADS._utils._globals.STOP_TYPE.MESH_PREC_REACHED" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.STOP_TYPE.X0_FAIL">
+<span class="sig-name descname"><span class="pre">X0_FAIL</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">7</span></span><a class="headerlink" href="#OMADS._utils._globals.STOP_TYPE.X0_FAIL" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.STOP_TYPE.P1_FAIL">
+<span class="sig-name descname"><span class="pre">P1_FAIL</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">8</span></span><a class="headerlink" href="#OMADS._utils._globals.STOP_TYPE.P1_FAIL" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.STOP_TYPE.DELTA_M_MIN_REACHED">
+<span class="sig-name descname"><span class="pre">DELTA_M_MIN_REACHED</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">9</span></span><a class="headerlink" href="#OMADS._utils._globals.STOP_TYPE.DELTA_M_MIN_REACHED" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.STOP_TYPE.DELTA_P_MIN_REACHED">
+<span class="sig-name descname"><span class="pre">DELTA_P_MIN_REACHED</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">10</span></span><a class="headerlink" href="#OMADS._utils._globals.STOP_TYPE.DELTA_P_MIN_REACHED" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.STOP_TYPE.MAX_TIME_REACHED">
+<span class="sig-name descname"><span class="pre">MAX_TIME_REACHED</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">11</span></span><a class="headerlink" href="#OMADS._utils._globals.STOP_TYPE.MAX_TIME_REACHED" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.STOP_TYPE.MAX_BB_EVAL_REACHED">
+<span class="sig-name descname"><span class="pre">MAX_BB_EVAL_REACHED</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">12</span></span><a class="headerlink" href="#OMADS._utils._globals.STOP_TYPE.MAX_BB_EVAL_REACHED" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.STOP_TYPE.MAX_SGTE_EVAL_REACHED">
+<span class="sig-name descname"><span class="pre">MAX_SGTE_EVAL_REACHED</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">13</span></span><a class="headerlink" href="#OMADS._utils._globals.STOP_TYPE.MAX_SGTE_EVAL_REACHED" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.STOP_TYPE.F_TARGET_REACHED">
+<span class="sig-name descname"><span class="pre">F_TARGET_REACHED</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">14</span></span><a class="headerlink" href="#OMADS._utils._globals.STOP_TYPE.F_TARGET_REACHED" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.STOP_TYPE.MAX_CACHE_MEMORY_REACHED">
+<span class="sig-name descname"><span class="pre">MAX_CACHE_MEMORY_REACHED</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">15</span></span><a class="headerlink" href="#OMADS._utils._globals.STOP_TYPE.MAX_CACHE_MEMORY_REACHED" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.STOP_TYPE.GL_LIMITS_REACHED">
+<span class="sig-name descname"><span class="pre">GL_LIMITS_REACHED</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">16</span></span><a class="headerlink" href="#OMADS._utils._globals.STOP_TYPE.GL_LIMITS_REACHED" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.STOP_TYPE.STOP_IF_FEASIBLE">
+<span class="sig-name descname"><span class="pre">STOP_IF_FEASIBLE</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">17</span></span><a class="headerlink" href="#OMADS._utils._globals.STOP_TYPE.STOP_IF_FEASIBLE" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.STOP_TYPE.NO_INIT_CANDIDATES">
+<span class="sig-name descname"><span class="pre">NO_INIT_CANDIDATES</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">18</span></span><a class="headerlink" href="#OMADS._utils._globals.STOP_TYPE.NO_INIT_CANDIDATES" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.STOP_TYPE.MAX_BB_OUTBOUND_REACHED">
+<span class="sig-name descname"><span class="pre">MAX_BB_OUTBOUND_REACHED</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">19</span></span><a class="headerlink" href="#OMADS._utils._globals.STOP_TYPE.MAX_BB_OUTBOUND_REACHED" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.STOP_TYPE.MIN_MESH_REACHED">
+<span class="sig-name descname"><span class="pre">MIN_MESH_REACHED</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">20</span></span><a class="headerlink" href="#OMADS._utils._globals.STOP_TYPE.MIN_MESH_REACHED" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="OMADS._utils._globals.MESH_TYPE">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">OMADS._utils._globals.</span></span><span class="sig-name descname"><span class="pre">MESH_TYPE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/OMADS/_utils/_globals.html#MESH_TYPE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMADS._utils._globals.MESH_TYPE" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.MESH_TYPE.ORTHO">
+<span class="sig-name descname"><span class="pre">ORTHO</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></span><a class="headerlink" href="#OMADS._utils._globals.MESH_TYPE.ORTHO" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.MESH_TYPE.GMESH">
+<span class="sig-name descname"><span class="pre">GMESH</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></span><a class="headerlink" href="#OMADS._utils._globals.MESH_TYPE.GMESH" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.MESH_TYPE.XMESH">
+<span class="sig-name descname"><span class="pre">XMESH</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></span><a class="headerlink" href="#OMADS._utils._globals.MESH_TYPE.XMESH" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.MESH_TYPE.SMESH">
+<span class="sig-name descname"><span class="pre">SMESH</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></span><a class="headerlink" href="#OMADS._utils._globals.MESH_TYPE.SMESH" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="OMADS._utils._globals.EVAL_TYPE">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">OMADS._utils._globals.</span></span><span class="sig-name descname"><span class="pre">EVAL_TYPE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/OMADS/_utils/_globals.html#EVAL_TYPE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMADS._utils._globals.EVAL_TYPE" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.EVAL_TYPE.BB">
+<span class="sig-name descname"><span class="pre">BB</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></span><a class="headerlink" href="#OMADS._utils._globals.EVAL_TYPE.BB" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.EVAL_TYPE.CALLABLE">
+<span class="sig-name descname"><span class="pre">CALLABLE</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></span><a class="headerlink" href="#OMADS._utils._globals.EVAL_TYPE.CALLABLE" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="OMADS._utils._globals.COMPARE_TYPE">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">OMADS._utils._globals.</span></span><span class="sig-name descname"><span class="pre">COMPARE_TYPE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/OMADS/_utils/_globals.html#COMPARE_TYPE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMADS._utils._globals.COMPARE_TYPE" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.COMPARE_TYPE.EQUAL">
+<span class="sig-name descname"><span class="pre">EQUAL</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></span><a class="headerlink" href="#OMADS._utils._globals.COMPARE_TYPE.EQUAL" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.COMPARE_TYPE.INDIFFERENT">
+<span class="sig-name descname"><span class="pre">INDIFFERENT</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></span><a class="headerlink" href="#OMADS._utils._globals.COMPARE_TYPE.INDIFFERENT" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.COMPARE_TYPE.DOMINATED">
+<span class="sig-name descname"><span class="pre">DOMINATED</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></span><a class="headerlink" href="#OMADS._utils._globals.COMPARE_TYPE.DOMINATED" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.COMPARE_TYPE.DOMINATING">
+<span class="sig-name descname"><span class="pre">DOMINATING</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></span><a class="headerlink" href="#OMADS._utils._globals.COMPARE_TYPE.DOMINATING" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.COMPARE_TYPE.UNDEFINED">
+<span class="sig-name descname"><span class="pre">UNDEFINED</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">5</span></span><a class="headerlink" href="#OMADS._utils._globals.COMPARE_TYPE.UNDEFINED" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="OMADS._utils._globals.INSERTION_FLAG">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">OMADS._utils._globals.</span></span><span class="sig-name descname"><span class="pre">INSERTION_FLAG</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/OMADS/_utils/_globals.html#INSERTION_FLAG"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMADS._utils._globals.INSERTION_FLAG" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.INSERTION_FLAG.IMPROVES">
+<span class="sig-name descname"><span class="pre">IMPROVES</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></span><a class="headerlink" href="#OMADS._utils._globals.INSERTION_FLAG.IMPROVES" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.INSERTION_FLAG.EXTENDS">
+<span class="sig-name descname"><span class="pre">EXTENDS</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></span><a class="headerlink" href="#OMADS._utils._globals.INSERTION_FLAG.EXTENDS" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.INSERTION_FLAG.DOMINATES">
+<span class="sig-name descname"><span class="pre">DOMINATES</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></span><a class="headerlink" href="#OMADS._utils._globals.INSERTION_FLAG.DOMINATES" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.INSERTION_FLAG.IS_DOMINATED">
+<span class="sig-name descname"><span class="pre">IS_DOMINATED</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></span><a class="headerlink" href="#OMADS._utils._globals.INSERTION_FLAG.IS_DOMINATED" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.INSERTION_FLAG.REJECTED">
+<span class="sig-name descname"><span class="pre">REJECTED</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">5</span></span><a class="headerlink" href="#OMADS._utils._globals.INSERTION_FLAG.REJECTED" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMADS._utils._globals.INSERTION_FLAG.NO_IMPROVEMENT">
+<span class="sig-name descname"><span class="pre">NO_IMPROVEMENT</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">6</span></span><a class="headerlink" href="#OMADS._utils._globals.INSERTION_FLAG.NO_IMPROVEMENT" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="results.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Results and metrics</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../references.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">References</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2022-2026, Ahmed H. Bayoumy.
+      <br/>
+    
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

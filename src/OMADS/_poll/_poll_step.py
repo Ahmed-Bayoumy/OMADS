@@ -62,6 +62,10 @@ def poll_cycle(poll: Dirs2n, options: Options, param: Parameters,  # noqa: C901
   generated_during_search_step = []
   # Generate candidate points given each center
   for center in state.ordered_frame_centers:
+    if center == -1:
+      # No real secondary/infeasible center this iteration (see
+      # set_frame_centers_and_hvalues) -- nothing to do here.
+      continue
     generated_candidates_during_step = poll_step(
         poll=poll, options=options, param=param, state=state, stats=stats,
         active_barrier=active_barrier, iteration=iteration,
@@ -125,8 +129,11 @@ def poll_cycle(poll: Dirs2n, options: Options, param: Parameters,  # noqa: C901
       x_parent.coordinates = hashtable.get_candidate_from_cache_by_index(
           parent_index_candidates[index]).coordinates
       direction: Point = Point()
-      direction.coordinates = np.array(hashtable.get_candidate_from_cache_by_index(
-          hashtable.last_index).coordinates) - np.array(x_parent.coordinates)
+      # The successful candidate's step, not the last evaluated point's: with
+      # a non-opportunistic poll those differ, and an anisotropic mesh would
+      # enlarge the frame along the wrong coordinates.
+      direction.coordinates = np.array(candidate.coordinates) - np.array(
+          x_parent.coordinates)
       m_index: int = active_barrier.elements.get_index_loc_by_signature(
           candidate.signature)
       active_barrier.meshes[m_index].enlarge_delta_frame_size(
@@ -238,7 +245,8 @@ def poll_step(
     poll.create_poll_set(
         ub=param.ub, lb=param.lb, fc=xcp_frame, fci=frame_center, it=iteration,
         var_type=param.var_type, var_sets=param.var_sets, var_link=None,
-        rich_direction=options.rich_direction, c_types=param.constraints_type)
+        rich_direction=options.rich_direction, c_types=param.constraints_type,
+        direction_type=options.direction_type)
 
     # poll.candidate_points_set
     if poll.candidate_points_set is not None and len(

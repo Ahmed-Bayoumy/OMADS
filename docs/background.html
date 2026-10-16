@@ -1,555 +1,1395 @@
-<!DOCTYPE html>
-<html class="writer-html5" lang="en" >
-<head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Background &mdash; Read the Docs OMADS 2.1.0 documentation</title>
-      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="_static/proof.css" type="text/css" />
-      <link rel="stylesheet" href="_static/proof.css" type="text/css" />
-      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pseudocode@latest/build/pseudocode.min.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" data-theme="light">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Background &#8212; OMADS 2610</title>
   
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
-        <script src="_static/doctools.js"></script>
-        <script src="_static/proof.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/pseudocode@latest/build/pseudocode.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.js"></script>
-        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-        <script src="_static/katex_autorenderer_background.js"></script>
-        <script src="_static/debug.js"></script>
-    <script src="_static/js/theme.js"></script>
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/proof.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/pseudocode@latest/build/pseudocode.min.css" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=2ebac5eb" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
+
+    <script src="_static/documentation_options.js?v=c14009a4"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=fd10adb8"></script>
+    <script src="_static/design-tabs.js?v=f930bc37"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pseudocode@latest/build/pseudocode.js"></script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/pseudocode_autorenderer_background.js?v=9802589f"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'background';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Benchmarking" href="benchmarking.html" />
-    <link rel="prev" title="Welcome to OMADS!" href="index.html" /> 
-</head>
+    <link rel="prev" title="Getting started" href="getting_started.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="2610" />
+  
+    
+    <script src="_static/searchtools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script src="searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="light">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
 
-<body class="wy-body-for-nav"> 
-  <div class="wy-grid-for-nav">
-    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
-      <div class="wy-side-scroll">
-        <div class="wy-side-nav-search" >
-            <a href="index.html" class="icon icon-home"> OMADS 2.1.0
-              <img src="_static/OMADS_logo.png" class="logo" alt="Logo"/>
-          </a>
-<div role="search">
-  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
-    <input type="hidden" name="check_keywords" value="yes" />
-    <input type="hidden" name="area" value="default" />
-  </form>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
-        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Technical Documentation</span></p>
-<ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Background</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#when-to-use-omads">When to use OMADS</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#introduction">Introduction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#mads-algorithm">MADS algorithm</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#initialization-step">Initialization step</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#update-parameters">Update parameters</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#search-step">Search step</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#poll-step">Poll step</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#termination">Termination</a></li>
-</ul>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+    
+    
+    
+    <img src="_static/OMADS_logo.png" class="logo__image only-light" alt="OMADS 2610 - Home"/>
+    <img src="_static/OMADS_logo.png" class="logo__image only-dark pst-js-only" alt="OMADS 2610 - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="getting_started.html">
+    Getting started
+  </a>
 </li>
-</ul>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    Background
+  </a>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="benchmarking.html">Benchmarking</a></li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">Demo Documentation</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a></li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">Code Documentation</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="OMADS.html">OMADS package</a></li>
-<li class="toctree-l1"><a class="reference internal" href="indicesAndTables.html">Indices and tables</a></li>
-</ul>
 
-        </div>
-      </div>
-    </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="index.html">Read the Docs OMADS</a>
-      </nav>
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="benchmarking.html">
+    Benchmarking
+  </a>
+</li>
 
-      <div class="wy-nav-content">
-        <div class="rst-content">
-          <div role="navigation" aria-label="Page navigation">
-  <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Background</li>
-      <li class="wy-breadcrumbs-aside">
-            <a href="_sources/background.rst.txt" rel="nofollow"> View page source</a>
-      </li>
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="user_guide/configuration.html">
+    Configuration reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="user_guide/outputs.html">
+    Outputs
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="references.html">
+    References
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
   </ul>
-  <hr/>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/Ahmed-Bayoumy/OMADS" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
 </div>
-          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
-           <div itemprop="articleBody">
-             
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="getting_started.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    Background
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="benchmarking.html">
+    Benchmarking
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="user_guide/configuration.html">
+    Configuration reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="user_guide/outputs.html">
+    Outputs
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="references.html">
+    References
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/Ahmed-Bayoumy/OMADS" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"></div>
+</nav></div>
+        <div class="sidebar-primary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#when-to-use-omads">When to use OMADS</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#introduction">Introduction</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mads-algorithm">MADS algorithm</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#initialization-step">Initialization step</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#update-parameters">Update parameters</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#search-step">Search step</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#poll-step">Poll step</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#mesh-update">Mesh update</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#termination">Termination</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Background</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
   <section id="background">
-<h1>Background<a class="headerlink" href="#background" title="Permalink to this headline"></a></h1>
-<p>MADS is a derivative-free optimization method supported by global convergence properties where it converges to a minimizer regardless of the starting point. The algorithm consists of two steps as shown in <a class="reference internal" href="#f1"><span class="std std-numref">Fig. 1</span></a>. The first step is an optional search step where the user can run a DOE study or a global optimization study, i.e., genetic algorithm (GA), on a set of variables with size <span class="math notranslate nohighlight">\(n\)</span>. The second step is a mandatory local search step called poll-step where the <span class="math notranslate nohighlight">\(2n\)</span> orthogonal poll directions spin around the incumbent solution on the discretized poll frame to randomly choose <span class="math notranslate nohighlight">\(2n\)</span> contiguous directions where the blackbox functions are evaluated on the delimited region containing the poll point.</p>
-<figure class="align-center" id="id6">
-<span id="f1"></span><a class="reference internal image-reference" href="_images/mesh2.png"><img alt="_images/mesh2.png" src="_images/mesh2.png" style="width: 700px;" /></a>
+<h1>Background<a class="headerlink" href="#background" title="Link to this heading">#</a></h1>
+<p>MADS is a derivative-free optimization method supported by a convergence analysis: under
+mild assumptions it generates a subsequence of iterates that converges to a point satisfying
+first-order (Clarke) optimality conditions, wherever it starts <span class="bibtex-citation" id="id1">[<a class="reference internal" href="references.html#id2" title="Charles Audet and Jr. Dennis, John E. Mesh adaptive direct search algorithms for constrained optimization. SIAM Journal on Optimization, 17(1):188–217, 2006. doi:10.1137/040603371.">Audet and Dennis, 2006</a>]</span>. Each
+iteration has two main steps, shown in <a class="reference internal" href="#f1"><span class="std std-numref">Figure 1</span></a>. The first is an optional <strong>search
+step</strong>, where any strategy may propose a finite number of trial points on the mesh (a
+design of experiments, a surrogate or model optimization, a global heuristic). The second is
+the mandatory <strong>poll step</strong>, a local exploration where poll directions spin around the
+incumbent solution on the discretized frame, and the blackbox is evaluated at the resulting
+poll points.</p>
+<figure class="align-center" id="id11">
+<span id="f1"></span><a class="reference internal image-reference" href="_images/mesh2.png"><img alt="_images/mesh2.png" src="_images/mesh2.png" width="700" />
+</a>
 <figcaption>
-<p><span class="caption-number">Fig. 1 </span><span class="caption-text">OMADS flow chart.</span><a class="headerlink" href="#id6" title="Permalink to this image"></a></p>
+<p><span class="caption-number">Figure 1 </span><span class="caption-text">OMADS flow chart.</span><a class="headerlink" href="#id11" title="Link to this image">#</a></p>
 </figcaption>
 </figure>
 <section id="when-to-use-omads">
-<h2>When to use OMADS<a class="headerlink" href="#when-to-use-omads" title="Permalink to this headline"></a></h2>
-<p>If the optimization problem is deterministic, then the following checklist will help you to decide whether using OMADS is a recommended choice from a computational speed perspective.</p>
+<h2>When to use OMADS<a class="headerlink" href="#when-to-use-omads" title="Link to this heading">#</a></h2>
+<p>If the optimization problem is deterministic, this checklist helps you decide whether OMADS
+is a good choice from a computational-cost point of view.</p>
 <ul class="simple">
-<li><p>If the optimization problem has a known structure where <em>derivatives are explicit</em>, then exploit them by using an appropriate gradient-based method, i.e., SQP.</p></li>
-<li><p>If the problem has unknown derivatives, but they can be reliably approximated and the design space <em>has no differentiability issues</em>, then apply an appropriate gradient-based method that supports a model-based algorithm, i.e., NLPQLP.</p></li>
-<li><p>If the problem has unknown derivatives but can be approximated and the design space <em>has differentiability issues</em>, then apply a derivative-free method that supports model-based algorithms, i.e., COBYLA.</p></li>
-<li><p>If <em>none of the above works</em>, then use blackbox optimization methods like MADS.</p></li>
+<li><p>If the problem has a known structure with <strong>explicit derivatives</strong>, a gradient-based
+method such as SQP should be used.</p></li>
+<li><p>If the derivatives are unknown but <strong>can be reliably approximated</strong> and the design space
+<strong>has no differentiability issues</strong>, a gradient-based or model-based method such as
+NLPQLP is appropriate.</p></li>
+<li><p>If the derivatives can be approximated but the design space <strong>has differentiability
+issues</strong>, a model-based derivative-free method such as COBYLA may be preferred.</p></li>
+<li><p>If <strong>none of the above applies</strong>, that is, the functions are blackboxes (simulations or
+codes that cannot be differentiated), non-smooth, noisy or liable to fail, a blackbox
+method such as MADS is recommended. This is particularly so when evaluations are
+expensive, or when the problem has hidden or unrelaxable constraints, several objectives,
+or granular variables.</p></li>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>OMADS 2604 is an advanced variant of MADS with a pythonic flavor <span id="id1">[<a class="reference internal" href="index.html#id6" title="C. Audet, S. Digabel, V. Rochon Montplaisir, and C. Tribes. Algorithm 1027: NOMAD Version 4: Nonlinear Optimization with the MADS Algorithm. ACM Transactions on Mathematical Software, 48(3):35:1–35:22, 2022. URL: https://dx.doi.org/10.1145/3544489, doi:10.1145/3544489.">3</a>]</span>. OMADS can also be integrated with the surrogate models library (SLML) published on my GitHub repository <span id="id2">[<a class="reference internal" href="index.html#id8" title="A. Bayoumy. StatLML: Statistical Machine Learning Library. 2022. URL: https://github.com/Ahmed-Bayoumy/SLML.">4</a>]</span>.</p>
+<p>OMADS 2610 is a Pythonic implementation of MADS with a progressive barrier, a granular
+mesh, ORTHO N+1 poll directions, a quadratic-model search and a density-guided sampling
+search.</p>
 </div>
 </section>
 <section id="introduction">
-<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline"></a></h2>
-<p>In this section, we present the MADS algorithm. We begin with the following definitions of the mesh and the frame from <span id="id3">[<a class="reference internal" href="index.html#id4" title="C. Audet and J. Dennis. Mesh Adaptive Direct Search Algorithms for Constrained Optimization. SIAM Journal on optimization, 17(1):188–217, 2006.">1</a>, <a class="reference internal" href="index.html#id10" title="C. Audet and W. Hare. Derivative-free and Blackbox Optimization. Volume 2. Springer, 2017.">5</a>]</span>:</p>
-<div class="admonition important">
-<p class="admonition-title">Definition: Mesh and Mesh Size Parameter</p>
-<p>Let <span class="math notranslate nohighlight">\(G \in \mathbb{R}^{n\times n}\)</span> be an invertible matrix and the columns of <span class="math notranslate nohighlight">\(Z \in \mathbb{Z}^{n \times p}\)</span> form a positive spanning set for <span class="math notranslate nohighlight">\(\mathbb{R}^n\)</span>. Define <span class="math notranslate nohighlight">\(D = GZ\)</span>. The mesh of coarseness <span class="math notranslate nohighlight">\(\delta^{k} &gt; 0\)</span> generated by <span class="math notranslate nohighlight">\(D\)</span>, centered at the incumbent solution <span class="math notranslate nohighlight">\(x_{k} ∈ \mathbb{R}^n\)</span>, is defined by
-<span class="math notranslate nohighlight">\(M^{k} := \{ x^{k} + \delta^{k}D_{y} : y \in \mathbb{N}^{p} \subset \mathbb{R}^{n}, \}\)</span>
-where <span class="math notranslate nohighlight">\(\delta^{k}\)</span> is called the mesh size parameter.</p>
-</div>
-<p>What distinguishes MADS from the global pattern search (GPS) algorithm is the idea of creating a new parameter, the frame size parameter <span class="math notranslate nohighlight">\(\Delta^{k}\)</span>, that replaces <span class="math notranslate nohighlight">\(\delta^{k}\)</span> in the poll step. The frame size parameter <span class="math notranslate nohighlight">\(\Delta^{k}\)</span> defines the frame in which polling is done – polling directions spin around the incumbent solution. At every iteration, these two parameters will satisfy <span class="math notranslate nohighlight">\(0 &lt; \delta^{k} ≤ \Delta^{k}\)</span>.</p>
-<div class="admonition important">
-<p class="admonition-title">Definition: Frame and Frame Size Parameter</p>
-<p>Let <span class="math notranslate nohighlight">\(G \in \mathbb{R}^{n\times n}\)</span> be an invertible matrix and the columns of <span class="math notranslate nohighlight">\(Z \in \mathbb{Z}^{n \times p}\)</span> form a positive spanning set for <span class="math notranslate nohighlight">\(\mathbb{R}^n\)</span>. Define <span class="math notranslate nohighlight">\(D = GZ\)</span>. Select a mesh size parameter <span class="math notranslate nohighlight">\(\delta^{k} &gt; 0\)</span> and let <span class="math notranslate nohighlight">\(\Delta^{k}\)</span> be such that <span class="math notranslate nohighlight">\(\delta^{k} \leq \Delta^{k}\)</span>. The frame of extent <span class="math notranslate nohighlight">\(\Delta^{k}\)</span> generated by <span class="math notranslate nohighlight">\(D\)</span>, centered at the incumbent solution <span class="math notranslate nohighlight">\(x_{k} ∈ \mathbb{R}^n\)</span>, is defined by
-<span class="math notranslate nohighlight">\(F^{k} := \{ x \in M^{k} : ||x-x^{k}||_{\infty} \leq \Delta^{k}b \}\)</span>
-with <span class="math notranslate nohighlight">\(b = \text{max}\{ ||d^{\prime}||_{\infty} : d^{\prime} \in \mathbb{D} \}\)</span> and <span class="math notranslate nohighlight">\(\Delta^{k}\)</span> is called the frame size parameter.</p>
-</div>
-<p>In the MADS algorithm, the poll set is constructed by selecting mesh points from inside the frame <span class="math notranslate nohighlight">\(F_{k}\)</span>, and is not necessarily forced to equal <span class="math notranslate nohighlight">\(P_{k}\)</span>. By having the mesh size parameter decrease more rapidly than the frame size parameter, this allows for asymptotically dense selections of poll directions, see <a class="reference internal" href="#f2"><span class="std std-numref">Fig. 2</span></a>.</p>
-<figure class="align-center" id="id7">
-<span id="f2"></span><a class="reference internal image-reference" href="_images/mesh.png"><img alt="_images/mesh.png" src="_images/mesh.png" style="width: 400px;" /></a>
+<h2>Introduction<a class="headerlink" href="#introduction" title="Link to this heading">#</a></h2>
+<p>In this section, we present the MADS algorithm. We begin with the definitions of the mesh and
+the frame from <span class="bibtex-citation" id="id2">[<a class="reference internal" href="references.html#id2" title="Charles Audet and Jr. Dennis, John E. Mesh adaptive direct search algorithms for constrained optimization. SIAM Journal on Optimization, 17(1):188–217, 2006. doi:10.1137/040603371.">Audet and Dennis, 2006</a>, <a class="reference internal" href="references.html#id4" title="Charles Audet and Warren Hare. Derivative-Free and Blackbox Optimization. Springer Series in Operations Research and Financial Engineering. Springer, 2017. doi:10.1007/978-3-319-68913-5.">Audet and Hare, 2017</a>]</span>.</p>
+<div class="proof definition admonition" id="def-mesh">
+<p class="admonition-title"><span class="caption-number">Definition 1 </span> (Mesh)</p>
+<section class="definition-content" id="proof-content">
+<p>Let <span class="math notranslate nohighlight">\(G \in \mathbb{R}^{n\times n}\)</span> be an invertible matrix and let the columns of
+<span class="math notranslate nohighlight">\(Z \in \mathbb{Z}^{n \times p}\)</span> form a positive spanning set for
+<span class="math notranslate nohighlight">\(\mathbb{R}^n\)</span>. Define <span class="math notranslate nohighlight">\(D = GZ\)</span>. The mesh of coarseness
+<span class="math notranslate nohighlight">\(\delta^{k} &gt; 0\)</span> generated by <span class="math notranslate nohighlight">\(D\)</span>, centred at the incumbent solution
+<span class="math notranslate nohighlight">\(x^{k} \in \mathbb{R}^n\)</span>, is</p>
+<div class="math notranslate nohighlight">
+\[M^{k} := \{ x^{k} + \delta^{k} D y : y \in \mathbb{N}^{p} \} \subset \mathbb{R}^{n},\]</div>
+<p>where <span class="math notranslate nohighlight">\(\delta^{k}\)</span> is called the mesh size parameter.</p>
+</section>
+</div><p>What distinguishes MADS from generalized pattern search (GPS) is a second parameter, the
+frame size <span class="math notranslate nohighlight">\(\Delta^{k}\)</span>, which replaces <span class="math notranslate nohighlight">\(\delta^{k}\)</span> in the poll step. The frame
+size defines the region in which polling happens: the poll directions spin around the
+incumbent solution. At every iteration the two parameters satisfy
+<span class="math notranslate nohighlight">\(0 &lt; \delta^{k} \le \Delta^{k}\)</span>.</p>
+<div class="proof definition admonition" id="def-frame">
+<p class="admonition-title"><span class="caption-number">Definition 2 </span> (Frame)</p>
+<section class="definition-content" id="proof-content">
+<p>With <span class="math notranslate nohighlight">\(G\)</span>, <span class="math notranslate nohighlight">\(Z\)</span> and <span class="math notranslate nohighlight">\(D = GZ\)</span> as above, select a mesh size parameter
+<span class="math notranslate nohighlight">\(\delta^{k} &gt; 0\)</span> and let <span class="math notranslate nohighlight">\(\Delta^{k}\)</span> satisfy <span class="math notranslate nohighlight">\(\delta^{k} \le \Delta^{k}\)</span>.
+The frame of extent <span class="math notranslate nohighlight">\(\Delta^{k}\)</span> generated by <span class="math notranslate nohighlight">\(D\)</span>, centred at
+<span class="math notranslate nohighlight">\(x^{k}\)</span>, is</p>
+<div class="math notranslate nohighlight">
+\[F^{k} := \{ x \in M^{k} : \|x - x^{k}\|_{\infty} \le \Delta^{k} b \},
+\qquad b = \max\{ \|d'\|_{\infty} : d' \in \mathbb{D} \},\]</div>
+<p>and <span class="math notranslate nohighlight">\(\Delta^{k}\)</span> is called the frame size parameter.</p>
+</section>
+</div><p>In MADS, the poll set is built from mesh points inside the frame <span class="math notranslate nohighlight">\(F^{k}\)</span>. Because the
+mesh size shrinks faster than the frame size (<span class="math notranslate nohighlight">\(\delta^{k} = \min\{\Delta^{k},
+(\Delta^{k})^2\}\)</span>), the set of directions that can be chosen keeps growing, which allows an
+asymptotically dense set of poll directions; see <a class="reference internal" href="#f2"><span class="std std-numref">Figure 2</span></a>.</p>
+<figure class="align-center" id="id12">
+<span id="f2"></span><a class="reference internal image-reference" href="_images/mesh.png"><img alt="_images/mesh.png" src="_images/mesh.png" width="400" />
+</a>
 <figcaption>
-<p><span class="caption-number">Fig. 2 </span><span class="caption-text">Mesh and poll updates.</span><a class="headerlink" href="#id7" title="Permalink to this image"></a></p>
+<p><span class="caption-number">Figure 2 </span><span class="caption-text">Mesh and poll updates.</span><a class="headerlink" href="#id12" title="Link to this image">#</a></p>
 </figcaption>
 </figure>
+<p>Constraints are handled through the constraint violation function</p>
+<div class="math notranslate nohighlight">
+\[h(x) = \sum_{j \in \mathcal{P}} \max\{c_j(x), 0\}^2,\]</div>
+<p>computed over the relaxable constraints <span class="math notranslate nohighlight">\(\mathcal{P}\)</span> (<code class="docutils literal notranslate"><span class="pre">&quot;PB&quot;</span></code>). A point violating an
+unrelaxable constraint (<code class="docutils literal notranslate"><span class="pre">&quot;EB&quot;</span></code>) is rejected outright (its violation is reported as
+<span class="math notranslate nohighlight">\(h_{EB} = \sum_{j \in \mathcal{E}} \max\{c_j(x),0\}^2\)</span> and it never enters the
+barrier as a candidate centre). A point is <strong>feasible</strong> when <span class="math notranslate nohighlight">\(h(x) = 0\)</span>.</p>
 </section>
 <section id="mads-algorithm">
-<h2>MADS algorithm<a class="headerlink" href="#mads-algorithm" title="Permalink to this headline"></a></h2>
-<p>In this section, we will demonstrate how each step of the MADS algorithm, shown in <a class="reference internal" href="#a1"><span class="std std-numref">Algorithm 1</span></a>, works and how they are implemented in OMADS.</p>
-<div class="pseudocode" id="id8">
-<span id="a1"></span><div class="pseudocode-caption">
-</div><div class="pseudocode-content">
-<pre id="1" style="display:hidden;">
-             % This quicksort algorithm is extracted from Chapter 7, Introduction to Algorithms (3rd edition)
- \begin{algorithm}
- \caption{Mesh adaptive direct search (MADS)}
+<h2>MADS algorithm<a class="headerlink" href="#mads-algorithm" title="Link to this heading">#</a></h2>
+<p>This section explains each step of the MADS algorithm, shown in <a class="reference internal" href="#a1"><span class="std std-numref">Algorithm 1</span></a>, and how it is
+implemented in OMADS. The three public entry points run different subsets of it:
+<code class="docutils literal notranslate"><span class="pre">mads.main</span></code> runs the whole algorithm, <code class="docutils literal notranslate"><span class="pre">poll.main</span></code> runs the Update, Poll and Terminate
+procedures only, and <code class="docutils literal notranslate"><span class="pre">search.main</span></code> replaces the poll with the sampling search.</p>
+<div class="pseudocode" id="id13">
+<span id="a1"></span><div class="pseudocode-content">
+<pre id="1" style="display:none;">
+             \begin{algorithm}
+ \caption{Mesh adaptive direct search (MADS) as implemented in OMADS}
  \begin{algorithmic}
- \STATE{Given $f : \mathbb{R}^{n} \mapsto  \mathbb{R} \cup \{ \infty \}$ and a starting point $x^{0} \in \Omega$ and barrier function $f_{\Omega}(x)$}
+ \STATE{Given $f : \mathbb{R}^{n} \mapsto (\mathbb{R} \cup \{ \infty \})^{p}$, constraints $c : \mathbb{R}^{n} \mapsto \mathbb{R}^{m}$, a starting point $x^{0} \in X$ and the violation function $h$}
  \PROCEDURE{Initialization}{}
      \STATE{$\Delta^{0} \in (0, \infty)$} initial frame size
      \STATE{$D=GZ$} positive spanning matrix
      \STATE{$\tau \in (0,1)$, with $\tau$ rational} mesh size adjustment parameter
      \STATE{$\epsilon_{\text{stop}} \in [0,\infty)$} stopping tolerance
+     \STATE{$h_{\max}^{0} \in [0,\infty]$} barrier threshold
+     \STATE{evaluate $x^{0}$ and insert it in the cache $V^{0}$ and in the barrier}
      \STATE{$k \gets 0$}  iteration counter
  \ENDPROCEDURE
  \PROCEDURE{Update}{}
      \STATE{set the mesh size parameter to $\delta^{k} = \text{min} \{ \Delta^{k}, (\Delta^{k})^{2} \}$}
+     \STATE{select the primary and secondary frame centres $x^{k}_{F}$ and $x^{k}_{I}$ from the barrier}
  \ENDPROCEDURE
- \PROCEDURE{Search}{}
-     \IF{$f_{\Omega}(t) &lt; f_{\Omega}(x^{k})$ for some t in a finite subset $S^{k}$ of $M^{k}$}
-         \STATE set $x^{k+1} \gets t$ and $\Delta^{k+1} \gets \tau^{-1} \Delta^{k}$ and go to 27
-     \ELSE
-         \STATE go to 19
+ \PROCEDURE{Model-Search}{}
+     \STATE{$S^{k}_{M} \gets$ the speculative point $x^{k} + (x^{k} - x^{k}_{\text{parent}})$ and the minimizer of a quadratic model of $f$ and $c$}
+     \IF{some $t \in S^{k}_{M}$ is a success}
+         \STATE set $x^{k+1} \gets t$ and $\Delta^{k+1} \gets \tau^{-1} \Delta^{k}$ and go to \textsc{Terminate}
      \ENDIF
  \ENDPROCEDURE
  \PROCEDURE{Poll}{}
-     \STATE select a positive spanning set $\mathbb{D^{k}_{\Delta}}$ such that \\
-     $P^{k}=\{x^{k}+\delta^{k}:d\in\mathbb{D}^{k}_{\Delta}\}$ \\
+     \IF{the sampling search was successful at iteration $k-1$}
+         \STATE go to \textsc{Search}
+     \ENDIF
+     \STATE select a positive spanning set $\mathbb{D}^{k}_{\Delta}$ such that \\
+     $P^{k}=\{x^{k}+\delta^{k}d:d\in\mathbb{D}^{k}_{\Delta}\}$ \\
      is a subset of the frame $F^{k}$ of extent $\Delta^{k}$
-     \IF{$f_{\Omega}(t) &lt; f_{\Omega}(x^{k})$ for some $t$ in $t \in P^{k}$}
-         \STATE set $x^{k+1} \gets t$ and $\Delta^{k+1} \gets \tau^{-1} \Delta^{k}$
+     \IF{some $t \in P^{k}$ is a full or partial success}
+         \STATE set $x^{k+1} \gets t$ and $\Delta^{k+1} \gets \tau^{-1} \Delta^{k}$ and go to \textsc{Terminate}
      \ELSE
          \STATE set $x^{k+1} \gets x^{k}$ and $\Delta^{k+1} \gets \tau \Delta^{k}$
      \ENDIF
  \ENDPROCEDURE
+ \PROCEDURE{Search}{}
+     \IF{some $t$ in a finite subset $S^{k}$ of $M^{k}$ is a full or partial success}
+         \STATE set $x^{k+1} \gets t$ and $\Delta^{k+1} \gets \tau^{-1} \Delta^{k+1}$ and search again at iteration $k+1$
+     \ELSE
+         \STATE poll at iteration $k+1$
+     \ENDIF
+ \ENDPROCEDURE
  \PROCEDURE{Terminate}{}
-     \IF{$\Delta^{k+1}\geq \epsilon_{stop}$}
-         \STATE increament $k \gets k+1$ and go to 9
+     \STATE{update the barrier threshold $h^{k+1}_{\max}$}
+     \IF{$\Delta^{k+1}\geq \epsilon_{stop}$ and the evaluation budget is not exhausted}
+         \STATE increment $k \gets k+1$ and go to \textsc{Update}
      \ELSE
          \STATE stop
      \ENDIF
  \ENDPROCEDURE
  \end{algorithmic}
  \end{algorithm}
-        </pre></div></div><section id="initialization-step">
-<h3>Initialization step<a class="headerlink" href="#initialization-step" title="Permalink to this headline"></a></h3>
-<p>In this step, we can set the initial frame size <span class="math notranslate nohighlight">\(\Delta_{0}\)</span>, generate the initial positive spanning set matrix <span class="math notranslate nohighlight">\(D_{0}\)</span>, adjust the initial mesh size and set the termination criteria before firing up the study.</p>
-<p>Let us see how we can do that in OMADS. The class responsible for MADS preprocessing is called ‘PreMADS’ which uses the data dictionaries that hold user inputs required to initialize the algorithm:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot; Run preprocessor for the setup of</span>
-<span class="sd"> the optimization problem and the initialization</span>
-<span class="sd">of optimization process &quot;&quot;&quot;</span>
-<span class="n">iteration</span><span class="p">,</span> <span class="n">xmin</span><span class="p">,</span> <span class="n">poll</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">param</span><span class="p">,</span> <span class="n">post</span><span class="p">,</span> <span class="n">out</span> <span class="o">=</span> <span class="n">PreMADS</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">initialize_from_dict</span><span class="p">()</span>
-</pre></div>
-</div>
-<p>The data dictionary consists of four other dictionaries:</p>
-<ul>
-<li><p>Evaluator settings which have the following five keys:</p>
-<blockquote>
-<div><ul>
-<li><p><code class="docutils literal notranslate"><span class="pre">blackbox</span></code>: The name of the callable or executable file</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">internal</span></code>: Specify whether the evaluator is a callable function, a blackbox executable file, or an internal benchmarking test</p>
-<blockquote>
-<div><ul>
-<li><p>Internal takes one of these values:</p>
-<blockquote>
-<div><ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">uncon</span></code>: Unconstrained benchmarking</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">con</span></code>: Constrained benchmarking</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">exe</span></code>: Executable blackbox</p></li>
-</ul>
-</div></blockquote>
-</li>
-</ul>
-</div></blockquote>
-</li>
-<li><p><code class="docutils literal notranslate"><span class="pre">path</span></code>: The evaluation path that should contain the executable file (if any)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">input</span></code>: For the case of blackbox executables, it is the input file required to run the blackbox</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">output</span></code>: For the case of blackbox executables, it is the output file that will be parsed to extract response outputs</p></li>
-</ul>
-</div></blockquote>
-</li>
-<li><p>Example:</p></li>
-</ul>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;evaluator&quot;</span><span class="p">:</span>
-  <span class="p">{</span>
-    <span class="s2">&quot;blackbox&quot;</span><span class="p">:</span> <span class="s2">&quot;rosenbrock&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;internal&quot;</span><span class="p">:</span> <span class="s2">&quot;uncon&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;./bm&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;input&quot;</span><span class="p">:</span> <span class="s2">&quot;input.inp&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;output&quot;</span><span class="p">:</span> <span class="s2">&quot;output.out&quot;</span><span class="p">}</span>
-</pre></div>
-</div>
-<p>If the evaluator is a callable function, the blackbox key has to be assigned to the callable function name, but no need to define other keys under the evaluator dictionary, see the following example.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">eval</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;blackbox&quot;</span><span class="p">:</span> <span class="n">fun</span><span class="p">}</span>
-</pre></div>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>For blackbox files, the input file should contain one column that has the design vector values that follow the same order as the variables populated in the global design vector. The output file should hold all the evaluated response outputs where the first value in the vector will be assigned to the objective function and the other values will be assigned to the constraint functions, respectively.</p>
-</div>
-<ul>
-<li><p>Parameter settings that have the following keys:</p>
-<blockquote>
-<div><ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">name</span></code>: Run name (important for saving the output files in the post directory. If not specified the output folder will be named as <code class="docutils literal notranslate"><span class="pre">unknown</span></code>)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">baseline</span></code>: The design initial point</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">lb</span></code>: Lower bound</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">ub</span></code>: Upper bound</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">var_names</span></code>: Variables name</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">var_types</span></code>: Variables type
-* <code class="docutils literal notranslate"><span class="pre">R</span></code>: Continuous variable (real value)
-* <code class="docutils literal notranslate"><span class="pre">I</span></code>: Integer variable
-* <code class="docutils literal notranslate"><span class="pre">C_&lt;set</span> <span class="pre">name&gt;</span></code>: Categorical variable. A set name from the sets dictionary should be added after the underscore that follows the <cite>C</cite>
-* <code class="docutils literal notranslate"><span class="pre">D_&lt;set</span> <span class="pre">name&gt;</span></code>: Discrete variable. A set name from the sets dictionary should be added after the underscore that follows <code class="docutils literal notranslate"><span class="pre">D</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">Sets</span></code>: a dictionary where its keys refer to the set name and their value should be assigned to a list of values (the values can be of heterogeneous type)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">scaling</span></code>: The scaling factor</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">post_dir</span></code>: The post directory</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">constraints_type</span></code>: List of the constraints barrier type
-* <code class="docutils literal notranslate"><span class="pre">PB</span></code>: Progressive barrier
-* <code class="docutils literal notranslate"><span class="pre">EB</span></code>: Extreme barrier</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">LAMBDA</span></code>: List of the initial Lagrangian multipliers value assigned to the constraints</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">RHO</span></code>: List of the initial penalty parameter</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">hmax</span></code>: The maximum feasibility threshold</p></li>
-</ul>
-</div></blockquote>
-</li>
-<li><p>Example:</p></li>
-</ul>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;param&quot;</span><span class="p">:</span>
-  <span class="p">{</span>
-    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;pressure_vessel&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;baseline&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">99</span><span class="p">,</span> <span class="mi">99</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">200</span><span class="p">],</span>
-    <span class="s2">&quot;lb&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">],</span>
-    <span class="s2">&quot;ub&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">99</span><span class="p">,</span><span class="mi">99</span><span class="p">,</span><span class="mi">200</span><span class="p">,</span> <span class="mi">200</span><span class="p">],</span>
-    <span class="s2">&quot;var_names&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;x1&quot;</span><span class="p">,</span> <span class="s2">&quot;x2&quot;</span><span class="p">,</span> <span class="s2">&quot;x3&quot;</span><span class="p">,</span> <span class="s2">&quot;x4&quot;</span><span class="p">],</span>
-    <span class="s2">&quot;scaling&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">98</span><span class="p">,</span><span class="mi">98</span><span class="p">,</span><span class="mi">190</span><span class="p">,</span><span class="mi">190</span><span class="p">],</span>
-    <span class="s2">&quot;constraints_type&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;PB&quot;</span><span class="p">,</span> <span class="s2">&quot;EB&quot;</span><span class="p">,</span> <span class="s2">&quot;PB&quot;</span><span class="p">,</span> <span class="s2">&quot;PB&quot;</span><span class="p">],</span>
-    <span class="s2">&quot;LAMBDA&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span>
-    <span class="s2">&quot;RHO&quot;</span><span class="p">:</span> <span class="mf">0.0001</span><span class="p">,</span>
-    <span class="s2">&quot;post_dir&quot;</span><span class="p">:</span> <span class="s2">&quot;./tests/bm/constrained/post&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;h_max&quot;</span><span class="p">:</span> <span class="mi">1</span>
-  <span class="p">},</span>
-</pre></div>
-</div>
-<ul>
-<li><p>Search step options dictionary which has the following keys:
-* <code class="docutils literal notranslate"><span class="pre">search</span></code>: The search step options
-* <code class="docutils literal notranslate"><span class="pre">type</span></code>: Search type can take one of the following values</p>
-<blockquote>
-<div><ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">VNS</span></code>: Variable neighbor search</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">sampling</span></code>: Sampling search</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">BO</span></code>: Bayesian optimization (TODO: not published yet as it is still in the testing and BM phase)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">NM</span></code>: Nelder-Mead (TODO: not published yet as it is still in the testing and BM phase)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">PSO</span></code>: Particle swarm optimization (TODO: not published yet as it is in the testing phase)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">CMA-ES</span></code>: Covariance matrix adaptation evolution strategy (TODO: not published yet as it is in the testing phase)</p></li>
-</ul>
-</div></blockquote>
+        </pre></div></div><div class="admonition-success-types admonition">
+<p class="admonition-title">Success types</p>
+<p>OMADS classifies every evaluated trial point <span class="math notranslate nohighlight">\(t\)</span> against the current frame centres
+(see <a class="reference internal" href="#a3"><span class="std std-numref">Algorithm 2</span></a>):</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">s_method</span></code>: Can take one of the following values
-* <code class="docutils literal notranslate"><span class="pre">LH</span></code>: Latin Hypercube sampling* <code class="docutils literal notranslate"><span class="pre">RS</span></code>: Random sampling
-* <code class="docutils literal notranslate"><span class="pre">HALTON</span></code>: Halton sampling</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">ns</span></code>: Number of samples</p></li>
+<li><p><strong>Full success</strong>: <span class="math notranslate nohighlight">\(t\)</span> is feasible and dominates (or equals) the feasible frame
+centre, or <span class="math notranslate nohighlight">\(t\)</span> is infeasible and dominates the infeasible frame centre.</p></li>
+<li><p><strong>Partial success</strong>: <span class="math notranslate nohighlight">\(t\)</span> is infeasible and only reduces the constraint
+violation <span class="math notranslate nohighlight">\(h\)</span> of the infeasible frame centre.</p></li>
+<li><p><strong>Unsuccessful</strong>: anything else.</p></li>
 </ul>
-</li>
-<li><p>Example:</p></li>
-</ul>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;search&quot;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;VNS&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;s_method&quot;</span><span class="p">:</span> <span class="s2">&quot;LH&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;ns&quot;</span><span class="p">:</span> <span class="mi">100</span>
-  <span class="p">}</span>
+<p>Successful points enlarge the frame of their own barrier element along the successful
+step; an unsuccessful iteration refines the frame of the feasible frame centre.</p>
+</div>
+<section id="initialization-step">
+<h3>Initialization step<a class="headerlink" href="#initialization-step" title="Link to this heading">#</a></h3>
+<p>In this step, OMADS sets the initial frame size <span class="math notranslate nohighlight">\(\Delta^{0}\)</span>, builds the mesh, adjusts
+the initial mesh size and sets the termination criteria before the study starts.</p>
+<p>The class responsible for this is <code class="docutils literal notranslate"><span class="pre">preprocess</span></code>. It reads the input dictionaries and
+returns all the objects the main loop needs: the sampler (poll directions <code class="docutils literal notranslate"><span class="pre">Dirs2n</span></code> or
+search sampler <code class="docutils literal notranslate"><span class="pre">EfficientExploration</span></code>), the <code class="docutils literal notranslate"><span class="pre">Options</span></code> and <code class="docutils literal notranslate"><span class="pre">Parameters</span></code> objects, the
+post-processor, the adaptive barrier, the run state and statistics, the evaluator and the
+cache.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pre</span> <span class="o">=</span> <span class="n">preprocess</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="n">log</span><span class="p">,</span> <span class="n">sampler_t</span><span class="o">=</span><span class="n">SAMPLER_TYPE</span><span class="o">.</span><span class="n">POLL</span><span class="p">)</span>
+<span class="p">(</span><span class="n">iteration</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">poll_sampler</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">param</span><span class="p">,</span> <span class="n">post</span><span class="p">,</span> <span class="n">out</span><span class="p">,</span> <span class="n">active_barrier</span><span class="p">,</span>
+ <span class="n">out_p</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">stats</span><span class="p">,</span> <span class="n">bb_handle</span><span class="p">,</span> <span class="n">hashtable</span><span class="p">,</span> <span class="n">ms</span><span class="p">)</span> <span class="o">=</span> <span class="n">pre</span><span class="o">.</span><span class="n">initialize_from_dict</span><span class="p">()</span>
 </pre></div>
 </div>
-<ul class="simple">
-<li><p>Algorithmic options dictionary which has the following keys:</p>
-<ul>
-<li><p><code class="docutils literal notranslate"><span class="pre">seed</span></code>: The random generator seed that ensures results reproducibility. This should be an integer value</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">budget</span></code>: The evaluation budget; the maximum number of evaluations for the blackbox defined</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">tol</span></code>: The minimum poll size tolerance; the algorithm terminates once the poll size falls below this value</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">psize_init</span></code>: Initial poll size</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">display</span></code>: A boolean for displaying verbose outputs per iteration in the terminal window</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">opportunistic</span></code>: A boolean for enabling an opportunistic search</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">check_cache</span></code>: A boolean for checking if the current point is a duplicate by checking its hashed address (integer signature)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">store_cache</span></code>: A boolean for saving evaluated designs in the cache memory</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">collect_y</span></code>: Currently inactive (to be used when the code is integrated with the PyADMM MDO module)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">rich_direction</span></code>: A boolean that enables capturing a rich set of directions in a generalized pattern</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">precision</span></code>: A string character input that controls the <cite>dtype</cite> decimal resolution used by the numerical library <cite>numpy</cite></p>
-<ul>
-<li><p><code class="docutils literal notranslate"><span class="pre">high</span></code>: <cite>float128</cite> 1e-18</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">medium</span></code>: <cite>float64</cite> 1e-15</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">low</span></code>: <cite>float32</cite> 1e-8</p></li>
-</ul>
-</li>
-<li><p><code class="docutils literal notranslate"><span class="pre">save_results</span></code>: A boolean for generating a <cite>MADS.csv</cite> file for the output results under the post directory</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">save_coordinates</span></code>: Saving poll coordinates (spinners) of each iteration in a JASON dictionary template that can be used for visualization</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">save_all_best</span></code>: A boolean for saving only incumbent solutions</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">parallel_mode</span></code>: A boolean for parallel computation of the poll set</p></li>
-</ul>
-</li>
-<li><p>Example:</p></li>
-</ul>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;options&quot;</span><span class="p">:</span>
-  <span class="p">{</span>
-    <span class="s2">&quot;seed&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-    <span class="s2">&quot;budget&quot;</span><span class="p">:</span> <span class="mi">10000</span><span class="p">,</span>
-    <span class="s2">&quot;tol&quot;</span><span class="p">:</span> <span class="mf">1e-12</span><span class="p">,</span>
-    <span class="s2">&quot;psize_init&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-    <span class="s2">&quot;display&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
-    <span class="s2">&quot;opportunistic&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
-    <span class="s2">&quot;check_cache&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
-    <span class="s2">&quot;store_cache&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
-    <span class="s2">&quot;collect_y&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
-    <span class="s2">&quot;rich_direction&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
-    <span class="s2">&quot;precision&quot;</span><span class="p">:</span> <span class="s2">&quot;high&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;save_results&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
-    <span class="s2">&quot;save_coordinates&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
-    <span class="s2">&quot;save_all_best&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
-    <span class="s2">&quot;parallel_mode&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
-    <span class="s2">&quot;np&quot;</span><span class="p">:</span> <span class="mi">4</span>
-  <span class="p">}</span>
-</pre></div>
+<p>The <code class="docutils literal notranslate"><span class="pre">data</span></code> dictionary holds four sub-dictionaries, <code class="docutils literal notranslate"><span class="pre">evaluator</span></code>, <code class="docutils literal notranslate"><span class="pre">param</span></code>, <code class="docutils literal notranslate"><span class="pre">options</span></code>
+and <code class="docutils literal notranslate"><span class="pre">search</span></code>. Every key is described in <a class="reference internal" href="user_guide/configuration.html"><span class="doc">Configuration reference</span></a>. The most
+important initial values are:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 30.0%" />
+<col style="width: 70.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Quantity</p></th>
+<th class="head"><p>Where it comes from</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><span class="math notranslate nohighlight">\(\Delta^{0}\)</span></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">options[&quot;psize_init&quot;]</span></code> for the orthogonal mesh (default <code class="docutils literal notranslate"><span class="pre">1.0</span></code>); for the
+granular mesh, <code class="docutils literal notranslate"><span class="pre">param[&quot;initial_frame_size&quot;]</span></code> or one tenth of each variable range.</p></td>
+</tr>
+<tr class="row-odd"><td><p><span class="math notranslate nohighlight">\(D = GZ\)</span></p></td>
+<td><p>Orthogonal Householder bases, scaled by <code class="docutils literal notranslate"><span class="pre">(ub</span> <span class="pre">-</span> <span class="pre">lb)</span> <span class="pre">/</span> <span class="pre">scaling</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><span class="math notranslate nohighlight">\(\tau\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(1/2\)</span> for the orthogonal mesh; the granular mesh walks the mantissas
+<span class="math notranslate nohighlight">\(1 \to 2 \to 5 \to 10\)</span> (enlarge) and back (refine).</p></td>
+</tr>
+<tr class="row-odd"><td><p><span class="math notranslate nohighlight">\(\epsilon_{\text{stop}}\)</span></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">options[&quot;tol&quot;]</span></code>, applied to the frame size (poll) and the mesh size (search).</p></td>
+</tr>
+<tr class="row-even"><td><p><span class="math notranslate nohighlight">\(h^{0}_{\max}\)</span></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">param[&quot;h_max&quot;]</span></code> (default <span class="math notranslate nohighlight">\(+\infty\)</span>).</p></td>
+</tr>
+</tbody>
+</table>
 </div>
 </section>
 <section id="update-parameters">
-<h3>Update parameters<a class="headerlink" href="#update-parameters" title="Permalink to this headline"></a></h3>
-<p>After checking the termination criteria, the mesh parameters update step can be called by reaching that step all the running serial/parallel processes are supposed to be done. It is important to ensure that poll directions have been evaluated on the same mesh and frame parameters, particularly in parallel points evaluation.</p>
-<p>This is the code used to update the poll and mesh parameters:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">master_updates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Point</span><span class="p">],</span> <span class="n">peval</span><span class="p">):</span>
-  <span class="k">if</span> <span class="n">peval</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eval_budget</span><span class="p">:</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">terminate</span> <span class="o">=</span> <span class="kc">True</span>
-  <span class="k">for</span> <span class="n">xtry</span> <span class="ow">in</span> <span class="n">x</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot; Check success conditions &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">xtry</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">xmin</span><span class="p">:</span>
-      <span class="bp">self</span><span class="o">.</span><span class="n">success</span> <span class="o">=</span> <span class="kc">True</span>
-      <span class="bp">self</span><span class="o">.</span><span class="n">nb_success</span> <span class="o">+=</span> <span class="mi">1</span>
-      <span class="sd">&quot;&quot;&quot; Update the post instant &quot;&quot;&quot;</span>
-      <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xmin</span>
-      <span class="bp">self</span><span class="o">.</span><span class="n">_xmin</span> <span class="o">=</span> <span class="n">Point</span><span class="p">()</span>
-      <span class="bp">self</span><span class="o">.</span><span class="n">_xmin</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">xtry</span><span class="p">)</span>
-      <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">display</span><span class="p">:</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">:</span>
-          <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Success: fmin = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">xmin</span><span class="o">.</span><span class="n">f</span><span class="si">:</span><span class="s2">.15f</span><span class="si">}</span><span class="s2"> (hmin = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">xmin</span><span class="o">.</span><span class="n">h</span><span class="si">:</span><span class="s2">.15</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">:</span>
-          <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Success: fmin = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">xmin</span><span class="o">.</span><span class="n">f</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2"> (hmin = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">xmin</span><span class="o">.</span><span class="n">h</span><span class="si">:</span><span class="s2">.6</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-          <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Success: fmin = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">xmin</span><span class="o">.</span><span class="n">f</span><span class="si">:</span><span class="s2">.18f</span><span class="si">}</span><span class="s2"> (hmin = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">xmin</span><span class="o">.</span><span class="n">h</span><span class="si">:</span><span class="s2">.18</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+<h3>Update parameters<a class="headerlink" href="#update-parameters" title="Link to this heading">#</a></h3>
+<p>Each iteration starts by choosing the frame centres from the adaptive barrier
+(<a class="reference internal" href="#a3"><span class="std std-numref">Algorithm 2</span></a>). The barrier keeps three sets: the non-dominated feasible points
+<span class="math notranslate nohighlight">\(F^{k}\)</span>, the infeasible points <span class="math notranslate nohighlight">\(U^{k}\)</span> with <span class="math notranslate nohighlight">\(h \le h^{k}_{\max}\)</span> and its
+non-dominated subset <span class="math notranslate nohighlight">\(I^{k}\)</span>. Each barrier element carries <strong>its own mesh</strong>, so frame
+sizes adapt per centre, which matters for multi-objective problems.</p>
+<p>After the poll or search, <code class="docutils literal notranslate"><span class="pre">update</span></code> applies the success logic: on an unsuccessful iteration
+it refines the frame of the feasible centre and lowers <span class="math notranslate nohighlight">\(h_{\max}\)</span>; on a partial
+success it lowers <span class="math notranslate nohighlight">\(h_{\max}\)</span> below the infeasible centre’s violation.</p>
+<div class="literal-block-wrapper docutils container" id="id14">
+<div class="code-block-caption"><span class="caption-number">Listing 3 </span><span class="caption-text">The update step (<code class="docutils literal notranslate"><span class="pre">OMADS/_updates/_updates.py</span></code>)</span><a class="headerlink" href="#id14" title="Link to this code">#</a></div>
+<div class="dropdown highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="n">sampler</span><span class="p">:</span> <span class="n">GenericSamplerBase</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">MadsState</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="n">Options</span><span class="p">,</span>  <span class="c1"># noqa: C901</span>
+           <span class="n">active_barrier</span><span class="p">:</span> <span class="n">AdaptiveBarrier</span><span class="p">,</span> <span class="n">stats</span><span class="p">:</span> <span class="n">MadsStatistics</span><span class="p">,</span>
+           <span class="n">hashtable</span><span class="p">:</span> <span class="n">Cache</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">  </span><span class="sd">"""Update step</span>
 
-      <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">psize_success</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">psize</span><span class="p">)</span>
-      <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">psize_max</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">maximum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">psize</span><span class="p">,</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">psize_max</span><span class="p">,</span>
-                            <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="o">.</span><span class="n">dtype</span><span class="p">))</span>
+<span class="sd">  :param poll: poll directions</span>
+<span class="sd">  :type poll: Dirs2n</span>
+<span class="sd">  :param state: Algorithmic current success state</span>
+<span class="sd">  :type state: MadsState</span>
+<span class="sd">  :param options: Algorithmic options</span>
+<span class="sd">  :type options: Options</span>
+<span class="sd">  :param active_barrier: Active barrier</span>
+<span class="sd">  :type active_barrier: BarrierMO</span>
+<span class="sd">  :param stats: Metadata and run statistics</span>
+<span class="sd">  :type stats: MadsStatistics</span>
+<span class="sd">  """</span>
+  <span class="c1"># Phase one is over.</span>
+  <span class="k">if</span> <span class="n">state</span><span class="o">.</span><span class="n">stop_reason</span> <span class="o">==</span> <span class="n">STOP_TYPE</span><span class="o">.</span><span class="n">STOP_IF_FEASIBLE</span><span class="p">:</span>
+    <span class="n">state</span><span class="o">.</span><span class="n">is_phase_one</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">state</span><span class="o">.</span><span class="n">stop_reason</span> <span class="o">=</span> <span class="n">STOP_TYPE</span><span class="o">.</span><span class="n">UNKNOWN_STOP_REASON</span>
+
+  <span class="c1"># No need to update in this case</span>
+  <span class="k">if</span> <span class="n">state</span><span class="o">.</span><span class="n">stop_reason</span> <span class="ow">in</span> <span class="p">[</span>
+          <span class="n">STOP_TYPE</span><span class="o">.</span><span class="n">MIN_MESH_REACHED</span><span class="p">,</span> <span class="n">STOP_TYPE</span><span class="o">.</span><span class="n">DELTA_M_MIN_REACHED</span><span class="p">,</span> <span class="n">STOP_TYPE</span><span class="o">.</span>
+          <span class="n">MAX_BB_EVAL_REACHED</span><span class="p">,</span> <span class="n">STOP_TYPE</span><span class="o">.</span><span class="n">MAX_BB_EVAL_REACHED</span><span class="p">]:</span>
+    <span class="n">sampler</span><span class="o">.</span><span class="n">terminate</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">return</span>
+
+  <span class="c1"># There can remain some points in the set Uk which have better h-value,</span>
+  <span class="c1"># To check if the flag is activated</span>
+  <span class="k">if</span> <span class="ow">not</span> <span class="n">options</span><span class="o">.</span><span class="n">use_omads_partial_success</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">state</span><span class="o">.</span><span class="n">last_success</span> <span class="o">==</span> <span class="n">SUCCESS_TYPES</span><span class="o">.</span><span class="n">US</span> <span class="ow">and</span> <span class="n">state</span><span class="o">.</span><span class="n">uk_frame_center</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+      <span class="n">tmp_hx_inf_min</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">elt</span><span class="o">.</span><span class="n">h</span> <span class="k">for</span> <span class="n">elt</span> <span class="ow">in</span> <span class="n">active_barrier</span><span class="o">.</span><span class="n">get_uk</span><span class="p">())</span>
+      <span class="k">if</span> <span class="n">tmp_hx_inf_min</span> <span class="o">&lt;</span> <span class="n">active_barrier</span><span class="o">.</span><span class="n">elements</span><span class="p">[</span><span class="n">state</span><span class="o">.</span><span class="n">uk_frame_center</span><span class="p">]</span><span class="o">.</span><span class="n">h</span><span class="p">:</span>
+        <span class="n">state</span><span class="o">.</span><span class="n">last_success</span> <span class="o">=</span> <span class="n">SUCCESS_TYPES</span><span class="o">.</span><span class="n">PS</span>
+
+  <span class="c1"># Update barrier and mesh</span>
+  <span class="k">if</span> <span class="n">state</span><span class="o">.</span><span class="n">last_success</span> <span class="o">==</span> <span class="n">SUCCESS_TYPES</span><span class="o">.</span><span class="n">US</span><span class="p">:</span>
+    <span class="c1"># Set to null the last success directions of the current incumbents.</span>
+    <span class="k">for</span> <span class="n">frame_center</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
+      <span class="n">barrier_index</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">ordered_frame_centers</span><span class="p">[</span><span class="n">frame_center</span><span class="p">]</span>
+      <span class="k">if</span> <span class="n">barrier_index</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+        <span class="n">active_barrier</span><span class="o">.</span><span class="n">parent_indexes</span><span class="p">[</span><span class="n">barrier_index</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="c1"># Update the mesh</span>
+    <span class="k">if</span> <span class="n">state</span><span class="o">.</span><span class="n">fk_frame_center</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+      <span class="n">active_barrier</span><span class="o">.</span><span class="n">meshes</span><span class="p">[</span><span class="n">state</span><span class="o">.</span><span class="n">fk_frame_center</span><span class="p">]</span><span class="o">.</span><span class="n">refine_delta_frame_size</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="n">active_barrier</span><span class="o">.</span><span class="n">meshes</span><span class="p">[</span><span class="n">state</span><span class="o">.</span><span class="n">ordered_frame_centers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                            <span class="p">]</span><span class="o">.</span><span class="n">refine_delta_frame_size</span><span class="p">()</span>
+
+    <span class="c1"># Update the barrier threshold</span>
+    <span class="k">if</span> <span class="n">state</span><span class="o">.</span><span class="n">h_max</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+      <span class="n">below_hmax_elements</span> <span class="o">=</span> <span class="p">[</span>
+          <span class="n">elt</span>
+          <span class="k">for</span> <span class="n">elt</span> <span class="ow">in</span> <span class="n">active_barrier</span><span class="o">.</span><span class="n">elements</span>
+          <span class="k">if</span> <span class="n">elt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">elt</span><span class="o">.</span><span class="n">h</span> <span class="o">&lt;</span> <span class="n">state</span><span class="o">.</span><span class="n">h_max</span> <span class="ow">and</span> <span class="n">active_barrier</span><span class="o">.</span><span class="n">within_uk</span>
+          <span class="p">[</span><span class="n">active_barrier</span><span class="o">.</span><span class="n">elements</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">elt</span><span class="p">)]]</span>
+
+      <span class="k">if</span> <span class="n">state</span><span class="o">.</span><span class="n">uk_frame_center</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">below_hmax_elements</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">h_max_tmp</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">elt</span><span class="o">.</span><span class="n">h</span> <span class="k">for</span> <span class="n">elt</span> <span class="ow">in</span> <span class="n">below_hmax_elements</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">h_max_tmp</span> <span class="o">&gt;</span> <span class="n">active_barrier</span><span class="o">.</span><span class="n">elements</span><span class="p">[</span><span class="n">state</span><span class="o">.</span><span class="n">uk_frame_center</span><span class="p">]</span><span class="o">.</span><span class="n">h</span><span class="p">:</span>
+          <span class="n">active_barrier</span><span class="o">.</span><span class="n">update_barrier</span><span class="p">(</span><span class="n">h_max_tmp</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+          <span class="n">active_barrier</span><span class="o">.</span><span class="n">update_barrier</span><span class="p">(</span>
+              <span class="n">active_barrier</span><span class="o">.</span><span class="n">elements</span><span class="p">[</span><span class="n">state</span><span class="o">.</span><span class="n">uk_frame_center</span><span class="p">]</span><span class="o">.</span><span class="n">h</span><span class="p">)</span>
+
+    <span class="n">stats</span><span class="o">.</span><span class="n">nno_successes</span> <span class="o">+=</span> <span class="mi">1</span>
+
+  <span class="k">elif</span> <span class="n">state</span><span class="o">.</span><span class="n">last_success</span> <span class="o">==</span> <span class="n">SUCCESS_TYPES</span><span class="o">.</span><span class="n">PS</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">state</span><span class="o">.</span><span class="n">h_max</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+      <span class="n">below_hxi_elements</span> <span class="o">=</span> <span class="p">[</span>
+          <span class="n">elt</span>
+          <span class="k">for</span> <span class="n">elt</span> <span class="ow">in</span> <span class="n">active_barrier</span><span class="o">.</span><span class="n">elements</span>
+          <span class="k">if</span> <span class="n">elt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">elt</span><span class="o">.</span><span class="n">h</span> <span class="o">&lt;</span> <span class="n">active_barrier</span><span class="o">.</span><span class="n">elements</span>
+          <span class="p">[</span><span class="n">state</span><span class="o">.</span><span class="n">uk_frame_center</span><span class="p">]</span><span class="o">.</span><span class="n">h</span> <span class="ow">and</span> <span class="n">active_barrier</span><span class="o">.</span><span class="n">within_uk</span>
+          <span class="p">[</span><span class="n">active_barrier</span><span class="o">.</span><span class="n">elements</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">elt</span><span class="p">)]]</span>
+      <span class="k">if</span> <span class="n">below_hxi_elements</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">below_hxi_elements</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">active_barrier</span><span class="o">.</span><span class="n">update_barrier</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">elt</span><span class="o">.</span><span class="n">h</span> <span class="k">for</span> <span class="n">elt</span> <span class="ow">in</span> <span class="n">below_hxi_elements</span><span class="p">))</span>
+
+    <span class="n">stats</span><span class="o">.</span><span class="n">npartial_successes</span> <span class="o">+=</span> <span class="mi">1</span>
+
+  <span class="k">else</span><span class="p">:</span>  <span class="c1"># Full success</span>
+    <span class="c1"># Update the barrier threshold</span>
+
+    <span class="k">if</span> <span class="n">state</span><span class="o">.</span><span class="n">h_max</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+      <span class="n">below_hmax_elements</span> <span class="o">=</span> <span class="p">[</span>
+          <span class="n">elt</span> <span class="k">for</span> <span class="n">elt</span> <span class="ow">in</span> <span class="n">active_barrier</span><span class="o">.</span><span class="n">elements</span>
+          <span class="k">if</span> <span class="n">elt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">elt</span><span class="o">.</span><span class="n">h</span> <span class="o">&lt;</span> <span class="n">state</span><span class="o">.</span><span class="n">h_max</span> <span class="ow">and</span> <span class="n">active_barrier</span><span class="o">.</span><span class="n">within_uk</span>
+          <span class="p">[</span><span class="n">active_barrier</span><span class="o">.</span><span class="n">elements</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">elt</span><span class="p">)]]</span>
+      <span class="k">if</span> <span class="n">state</span><span class="o">.</span><span class="n">uk_frame_center</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span> <span class="ow">and</span> <span class="n">below_hmax_elements</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span>
+              <span class="n">below_hmax_elements</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">h_max_tmp</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">elt</span><span class="o">.</span><span class="n">h</span> <span class="k">for</span> <span class="n">elt</span> <span class="ow">in</span> <span class="n">below_hmax_elements</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">h_max_tmp</span> <span class="o">&gt;</span> <span class="n">active_barrier</span><span class="o">.</span><span class="n">elements</span><span class="p">[</span><span class="n">state</span><span class="o">.</span><span class="n">uk_frame_center</span><span class="p">]</span><span class="o">.</span><span class="n">h</span><span class="p">:</span>
+          <span class="n">active_barrier</span><span class="o">.</span><span class="n">update_barrier</span><span class="p">(</span><span class="n">h_max_tmp</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+          <span class="n">active_barrier</span><span class="o">.</span><span class="n">update_barrier</span><span class="p">(</span>
+              <span class="n">active_barrier</span><span class="o">.</span><span class="n">elements</span><span class="p">[</span><span class="n">state</span><span class="o">.</span><span class="n">uk_frame_center</span><span class="p">]</span><span class="o">.</span><span class="n">h</span><span class="p">)</span>
+
+    <span class="c1"># In the case of phase one, update the mesh; otherwise, it was already set before</span>
+    <span class="k">if</span> <span class="n">state</span><span class="o">.</span><span class="n">is_phase_one</span><span class="p">:</span>
+      <span class="n">emin</span> <span class="o">=</span> <span class="kc">None</span>
+      <span class="n">cmin</span> <span class="o">=</span> <span class="mi">0</span>
+      <span class="n">c</span> <span class="o">=</span> <span class="mi">0</span>
+      <span class="n">filled_elts_size</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                              <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">active_barrier</span><span class="o">.</span><span class="n">elements</span><span class="p">])</span>
+      <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">active_barrier</span><span class="o">.</span><span class="n">elements</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">filled_elts_size</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">emin</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="p">(</span><span class="n">e</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">e</span> <span class="o">&lt;</span> <span class="n">emin</span><span class="p">):</span>
+          <span class="n">emin</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+          <span class="n">cmin</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+        <span class="n">c</span> <span class="o">+=</span> <span class="mi">1</span>
+      <span class="n">new_incumbent_index</span> <span class="o">=</span> <span class="n">cmin</span>
+      <span class="n">x_parent</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="n">hashtable</span><span class="o">.</span><span class="n">get_candidate_from_cache_by_index</span><span class="p">(</span>
+          <span class="n">active_barrier</span><span class="o">.</span><span class="n">parent_indexes</span><span class="p">[</span><span class="n">new_incumbent_index</span><span class="p">]))</span><span class="o">.</span><span class="n">coordinates</span><span class="p">)</span>
+      <span class="n">active_barrier</span><span class="o">.</span><span class="n">meshes</span><span class="p">[</span><span class="n">new_incumbent_index</span><span class="p">]</span><span class="o">.</span><span class="n">enlarge_delta_frame_size</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+          <span class="p">(</span><span class="n">hashtable</span><span class="o">.</span><span class="n">get_candidate_from_cache_by_index</span><span class="p">(</span><span class="n">new_incumbent_index</span><span class="p">))</span><span class="o">.</span><span class="n">coordinates</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">x_parent</span><span class="p">))</span>
+
+    <span class="n">stats</span><span class="o">.</span><span class="n">nfull_successes</span> <span class="o">+=</span> <span class="mi">1</span>
+  <span class="k">assert</span> <span class="n">active_barrier</span><span class="o">.</span><span class="n">last_index</span> <span class="o">==</span> <span class="n">hashtable</span><span class="o">.</span><span class="n">_last_index</span>
 </pre></div>
 </div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>The update function belongs to the poll class. The method is named <code class="docutils literal notranslate"><span class="pre">master_update</span></code> to refer to the master process in the parallel-space decomposition which will be included in future versions of OMADS.</p>
 </div>
+<div class="pseudocode" id="id15">
+<span id="a3"></span><div class="pseudocode-content">
+<pre id="2" style="display:none;">
+             \begin{algorithm}
+ \caption{Progressive barrier: frame centres and threshold update}
+ \begin{algorithmic}
+ \PROCEDURE{Select-frame-centres}{}
+     \IF{phase one, i.e. no evaluated point has $h \leq h^{k}_{\max}$}
+         \STATE{$x^{k}_{F} \gets \arg\min_{x \in V^{k}} h(x)$ and there is no secondary centre}
+     \ELSE
+         \STATE{$x^{k}_{F} \gets$ the point of $F^{k}$ with the largest objective-space gap among those with $\|\Delta\|_{\infty} \geq 10^{-w} \max_{y \in F^{k}} \|\Delta_{y}\|_{\infty}$}
+         \STATE{$x^{k}_{I} \gets$ the point of $I^{k}$, with $h \leq h^{k}_{\max}$, farthest from being dominated by $F^{k}$}
+         \IF{$F^{k} = \emptyset$}
+             \STATE{primary centre $x^{k}_{I}$, no secondary centre}
+         \ELSIF{$I^{k} = \emptyset$}
+             \STATE{primary centre $x^{k}_{F}$, no secondary centre}
+         \ELSIF{$\min_{y \in F^{k}} \sum_{i} \left(f_{i}(y) - \min\{f_{i}(x^{k}_{I}), f_{i}(y)\}\right) \geq \rho \, \text{extent}(F^{k})$}
+             \STATE{primary centre $x^{k}_{I}$, secondary centre $x^{k}_{F}$}
+         \ELSE
+             \STATE{primary centre $x^{k}_{F}$, secondary centre $x^{k}_{I}$}
+         \ENDIF
+     \ENDIF
+ \ENDPROCEDURE
+ \PROCEDURE{Update-threshold}{}
+     \IF{the iteration is unsuccessful}
+         \STATE{refine the frame of $x^{k}_{F}$}
+         \STATE{$h^{k+1}_{\max} \gets \max\{h(x^{k}_{I}), \max\{h(y) : y \in U^{k}, h(y) &lt; h^{k}_{\max}\}\}$}
+     \ELSIF{the iteration is a partial success}
+         \STATE{$h^{k+1}_{\max} \gets \max\{h(y) : y \in U^{k}, h(y) &lt; h(x^{k}_{I})\}$}
+     \ELSE
+         \STATE{$h^{k+1}_{\max} \gets \max\{h(x^{k}_{I}), \max\{h(y) : y \in U^{k}, h(y) &lt; h^{k}_{\max}\}\}$}
+     \ENDIF
+     \STATE{remove from $U^{k}$ and $I^{k}$ every point with $h &gt; h^{k+1}_{\max}$}
+ \ENDPROCEDURE
+ \end{algorithmic}
+ \end{algorithm}
+        </pre></div></div><p>The infeasible centre is chosen first when it is “far enough” from the feasible front
+(controlled by <code class="docutils literal notranslate"><span class="pre">param[&quot;rho&quot;]</span></code> and <code class="docutils literal notranslate"><span class="pre">options[&quot;use_dom_trigger&quot;]</span></code>); this is how the
+progressive barrier <span class="bibtex-citation" id="id3">[<a class="reference internal" href="references.html#id3" title="Charles Audet and Jr. Dennis, John E. A progressive barrier for derivative-free nonlinear programming. SIAM Journal on Optimization, 20(1):445–472, 2009. doi:10.1137/070692662.">Audet and Dennis, 2009</a>]</span> lets OMADS approach the feasible region
+from outside. For single-objective problems <span class="math notranslate nohighlight">\(F^{k}\)</span> holds the best feasible point
+only, so <span class="math notranslate nohighlight">\(x^{k}_{F}\)</span> is simply the incumbent. Dominance comparisons follow
+<span class="bibtex-citation" id="id4">Jaszkiewicz and Lust [<a class="reference internal" href="references.html#id11" title="Andrzej Jaszkiewicz and Thibaut Lust. ND-tree-based update: a fast algorithm for the dynamic nondominance problem. IEEE Transactions on Evolutionary Computation, 22(5):778–791, 2018. doi:10.1109/TEVC.2018.2799684.">2018</a>]</span>.</p>
 </section>
 <section id="search-step">
-<h3>Search step<a class="headerlink" href="#search-step" title="Permalink to this headline"></a></h3>
-<p>This step breaks free of local minimizers, and it is restricted to the mesh. The search step is discussed in more details in the documentation of StatML and RAF that can be found in <span id="id4">[<a class="reference internal" href="index.html#id8" title="A. Bayoumy. StatLML: Statistical Machine Learning Library. 2022. URL: https://github.com/Ahmed-Bayoumy/SLML.">4</a>, <a class="reference internal" href="index.html#id9" title="A. Bayoumy. RAF: Relative Adequacy Framework. 2022. URL: https://github.com/Ahmed-Bayoumy/RAF.">6</a>]</span>.</p>
+<h3>Search step<a class="headerlink" href="#search-step" title="Link to this heading">#</a></h3>
+<p>The search step helps escape local minimizers, and every trial point is projected onto the
+mesh. In <code class="docutils literal notranslate"><span class="pre">mads.main</span></code> it comes in two flavours.</p>
+<p><strong>Model search</strong> runs first at every iteration and costs at most two evaluations
+(<a class="reference internal" href="#a5"><span class="std std-numref">Algorithm 3</span></a>). Right after a success, a <em>speculative</em> point repeats the last successful step.
+Then a quadratic model of the objective, and of each constraint when there are any, is fitted
+to cached points around the frame centre and minimized inside a trust region
+<span class="bibtex-citation" id="id5">[<a class="reference internal" href="references.html#id7" title="Andrew R. Conn and Sébastien Le Digabel. Use of quadratic models with mesh-adaptive direct search for constrained black box optimization. Optimization Methods and Software, 28(1):139–158, 2013. doi:10.1080/10556788.2011.623162.">Conn and Le Digabel, 2013</a>]</span>. When the model search succeeds, the poll and sampling search are
+skipped for that iteration.</p>
+<div class="pseudocode" id="id16">
+<span id="a5"></span><div class="pseudocode-content">
+<pre id="3" style="display:none;">
+             \begin{algorithm}
+ \caption{Quadratic model search}
+ \begin{algorithmic}
+ \PROCEDURE{Speculative-step}{}
+     \IF{$x^{k}$ was generated from a parent point $x_{p}$ by a successful step}
+         \STATE{$S^{k}_{M} \gets \{\text{clip}_{[\ell,u]}(x^{k} + (x^{k} - x_{p}))\}$}
+     \ENDIF
+ \ENDPROCEDURE
+ \PROCEDURE{Build-models}{}
+     \STATE{$r \gets \max\{2\Delta^{k}, r_{M}\} \cdot (u-\ell)/s$} trust-region radius in original units
+     \STATE{collect the cached points with $\|(y - x^{k})/r\|_{\infty} \leq 2$, at most twice the size of a full quadratic basis}
+     \IF{fewer than $n+2$ points are available}
+         \STATE{return $S^{k}_{M}$}
+     \ENDIF
+     \STATE{fit $m_{f}(s) = c + g^{T}s + \frac{1}{2}s^{T}Hs$ by ridge regression on the quadratic terms}
+     \STATE{replace $H$ by its saddle-free version $V|\Lambda|V^{T}$ with eigenvalues floored at $10^{-3}\max|\lambda|$}
+     \STATE{fit $m_{c_{j}}$ for each constraint without convexification}
+ \ENDPROCEDURE
+ \PROCEDURE{Minimize-model}{}
+     \IF{there are no constraints}
+         \STATE{$s^{*} \gets \arg\min_{s \in [-1,1]^{n}} m_{f}(s)$ by L-BFGS-B from $0$ and from the best regression point}
+     \ELSE
+         \STATE{$s^{*} \gets \arg\min m_{f}(s)$ s.t. $m_{c_{j}}(s) \leq -\text{margin}_{j}$ by SLSQP}
+         \IF{no feasible model decrease exists and $x^{k}$ is infeasible}
+             \STATE{$s^{*} \gets \arg\min \sum_{j}\max\{m_{c_{j}}(s),0\}^{2}$}
+         \ENDIF
+     \ENDIF
+     \IF{$s^{*}$ predicts a decrease}
+         \STATE{$S^{k}_{M} \gets S^{k}_{M} \cup \{\text{clip}_{[\ell,u]}(x^{k} + r \odot s^{*})\}$}
+     \ENDIF
+ \ENDPROCEDURE
+ \PROCEDURE{Ratio-test}{}
+     \STATE{$\varrho \gets$ actual decrease over predicted decrease of the previous constrained model step}
+     \IF{$\varrho \geq 0.75$ and the step reached the trust-region boundary}
+         \STATE{$r_{M} \gets 2 r$}
+     \ELSIF{$\varrho &lt; 0.1$}
+         \STATE{$r_{M} \gets \frac{1}{2}\min\{r_{M}, r\}$}
+     \ENDIF
+ \ENDPROCEDURE
+ \end{algorithmic}
+ \end{algorithm}
+        </pre></div></div><p>The constraint margin pushes the model minimizer inside the predicted feasible region by
+twice the change of each constraint model over half a mesh step, so that projecting it on the
+mesh does not make it infeasible. The ratio test lets model steps travel further than the
+poll frame along long, flat valleys. The model search applies to single-objective problems
+only.</p>
+<p><strong>Sampling search</strong> runs after an unsuccessful poll, and keeps running while it succeeds
+(<a class="reference internal" href="#a6"><span class="std std-numref">Algorithm 4</span></a>). Its behaviour depends on <code class="docutils literal notranslate"><span class="pre">search[&quot;type&quot;]</span></code> and <code class="docutils literal notranslate"><span class="pre">search[&quot;s_method&quot;]</span></code>. With
+the classic samplers (<code class="docutils literal notranslate"><span class="pre">LH</span></code>, <code class="docutils literal notranslate"><span class="pre">RS</span></code>, <code class="docutils literal notranslate"><span class="pre">HALTON</span></code>, <code class="docutils literal notranslate"><span class="pre">FULLFACTORIAL</span></code>) it draws <code class="docutils literal notranslate"><span class="pre">ns</span></code> points
+in the whole box (or in a neighbourhood of the incumbent). With <code class="docutils literal notranslate"><span class="pre">ACTIVE</span></code>, OMADS chooses
+between strategies from the data it has gathered so far.</p>
+<div class="pseudocode" id="id17">
+<span id="a6"></span><div class="pseudocode-content">
+<pre id="4" style="display:none;">
+             \begin{algorithm}
+ \caption{Active sampling search with BiTPE}
+ \begin{algorithmic}
+ \PROCEDURE{Bootstrap}{}
+     \IF{$k = 1$ or fewer than 5 points are cached}
+         \STATE{$S^{k} \gets$ Halton or Latin hypercube samples of $[\ell, u]$}
+         \RETURN{$S^{k}$}
+     \ENDIF
+ \ENDPROCEDURE
+ \PROCEDURE{Local-split}{}
+     \STATE{$T^{k} \gets [x^{k} - r, x^{k} + r] \cap [\ell, u]$ with $r = 2\Delta^{k}(u-\ell)/s$} trust region
+     \STATE{keep the cached points nearest to $x^{k}$ in $T^{k}$ units and split them into the best $30\%$ (good) and the rest (bad)}
+ \ENDPROCEDURE
+ \PROCEDURE{Choose-strategy}{}
+     \STATE{ready $\gets$ at least $\max\{5, 3 n_{\text{eff}}\}$ good points and separable good and bad objective values}
+     \STATE{stance $\gets$ conservative if the frame is still coarse or the search stagnates, aggressive otherwise}
+     \STATE{trust $\gets$ the fraction of the last BiTPE proposals that landed in the good set}
+     \IF{ready}
+         \STATE{$S^{k} \gets n_{b}$ BiTPE samples in $T^{k}$ (narrow Gaussian kernel, or wide Cauchy and multiquadric kernels if conservative, $n &gt; 15$ or trust $&lt; 0.5$)}
+         \STATE{add three line probes from $x^{k}$ towards the faces of $T^{k}$}
+     \ELSIF{the search is due to diversify and more than 100 centres are cached}
+         \STATE{$S^{k} \gets$ simulated annealing, particle swarm and Latin hypercube samples in $[\ell, u]$}
+     \ELSE
+         \STATE{$S^{k} \gets$ Halton samples of $T^{k}$}
+     \ENDIF
+ \ENDPROCEDURE
+ \PROCEDURE{Project}{}
+     \STATE{project $S^{k}$ on the mesh $M^{k}$, clip it to $[\ell, u]$ and drop cached duplicates}
+ \ENDPROCEDURE
+ \end{algorithmic}
+ \end{algorithm}
+        </pre></div></div><p>BiTPE (bi-population tree-structured Parzen estimation, from samplersLib) resamples from the
+density ratio between kernel density estimates of the good and the bad points, in the spirit
+of TPE and of trust-region Bayesian optimization <span class="bibtex-citation" id="id6">[<a class="reference internal" href="references.html#id9" title="David Eriksson, Michael Pearce, Jacob Gardner, Ryan D. Turner, and Matthias Poloczek. Scalable global optimization via local Bayesian optimization. In Advances in Neural Information Processing Systems, volume 32. 2019.">Eriksson <em>et al.</em>, 2019</a>]</span>. Each
+model-based step proposes <span class="math notranslate nohighlight">\(n_b\)</span> points, set by <code class="docutils literal notranslate"><span class="pre">search[&quot;batch&quot;]</span></code> (10 by default,
+capped by the remaining budget), plus three line probes. Readiness alone
+decides whether BiTPE runs; a low trust only widens its kernels, so one unlucky round cannot
+starve it of the data it needs to recover. When the installed samplersLib supports it, BiTPE
+works in a reduced space of <span class="math notranslate nohighlight">\(n_{\text{eff}} = \max\{3, \lfloor 0.7n \rfloor\}\)</span>
+dimensions for <span class="math notranslate nohighlight">\(n &gt; 3\)</span>. Any sampler failure falls back to Halton sampling of the trust
+region for that iteration.</p>
+<p>With <code class="docutils literal notranslate"><span class="pre">&quot;type&quot;:</span> <span class="pre">&quot;VNS&quot;</span></code> the search is a variable neighbourhood search that draws points around
+the incumbent from Gaussian, gamma, exponential, Poisson and binomial distributions.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>The search step can also be driven by surrogate models; see StatLML and RAF
+<span class="bibtex-citation" id="id7">[<a class="reference internal" href="references.html#id13" title="Ahmed H. Bayoumy. StatLML: statistical machine learning library. 2022. URL: https://github.com/Ahmed-Bayoumy/SLML.">Bayoumy, 2022</a>, <a class="reference internal" href="references.html#id14" title="Ahmed H. Bayoumy. RAF: relative adequacy framework. 2022. URL: https://github.com/Ahmed-Bayoumy/RAF.">Bayoumy, 2022</a>]</span>.</p>
+</div>
 </section>
 <section id="poll-step">
-<h3>Poll step<a class="headerlink" href="#poll-step" title="Permalink to this headline"></a></h3>
-<p>The MADS algorithm is permitted to select any poll direction such that <span class="math notranslate nohighlight">\(x^{k}+\delta^{k}d\)</span> lies inside the frame where <span class="math notranslate nohighlight">\(\delta^{k}d \leq \Delta^{k}b\)</span> for all <span class="math notranslate nohighlight">\(d \in \mathbb{D}^{k}_{\Delta}\)</span>. Since <span class="math notranslate nohighlight">\(\Delta^{k}&gt;\delta^{k}\)</span> whenever <span class="math notranslate nohighlight">\(\delta^{k} &lt; 1\)</span> which provides flexibility in how the poll set is constructed.</p>
-<p>We will give here a glimpse of the MADS convergence properties and the meaning of the dense sets (richness) of poll directions. In MADS, any direction that is sampled in the limit of a refining sequence must have a nonnegative directional derivative. Moreover, the directions are generated from an ever-expanding set of options where the mesh size parameter <span class="math notranslate nohighlight">\(\delta_{k}\)</span> goes to zero more rapidly than the poll size parameter <span class="math notranslate nohighlight">\(\Delta_{k}\)</span>.</p>
-<p>MADS can produce an asymptotically dense set of poll directions that can be demonstrated by using the Householder matrix. Firstly, let’s define the dense subset</p>
-<div class="admonition important">
-<p class="admonition-title">Definition: Asymptotically Dense</p>
-<p>The set <span class="math notranslate nohighlight">\(V \subseteq \mathbb{R}^{n}\)</span> is said to be asymptotically dense if the normalised <span class="math notranslate nohighlight">\(set \{v/||v||:v \in V\}\)</span> is dense on the <em>unit sphere</em> <span class="math notranslate nohighlight">\(S=\{w\in \mathbb{R}^{n} :|w|= 1\}\)</span>.</p>
-</div>
-<p>Now the Householder matrix can be defined as:</p>
-<div class="admonition important">
-<p class="admonition-title">Definition: Householder Matrix</p>
-<p>Let <span class="math notranslate nohighlight">\(V \subseteq \mathbb{R}^{n}\)</span> be a <em>normalized vector</em>. The Householder matrix H associated with <span class="math notranslate nohighlight">\(v\)</span> is <span class="math notranslate nohighlight">\(H:=I-2vv^{T} \in \mathbb{R}^{n \times n}\)</span>, where I is the <span class="math notranslate nohighlight">\(n \times n\)</span> <em>identity matrix</em>.</p>
-</div>
-<p>Let <span class="math notranslate nohighlight">\(v\)</span> be a <em>nonzero</em> in <span class="math notranslate nohighlight">\(\mathbb{R}^{n}\)</span> and <span class="math notranslate nohighlight">\(H\)</span> be the associated <em>Householder</em> matrix. Then for any <span class="math notranslate nohighlight">\(\gamma H [ I-I ]\)</span> forms a maximal positive basis of <span class="math notranslate nohighlight">\(\mathbb{R}^{n}\)</span>.</p>
-<div class="pseudocode" id="id9">
-<span id="a2"></span><div class="pseudocode-caption">
-</div><div class="pseudocode-content">
-<pre id="2" style="display:hidden;">
+<h3>Poll step<a class="headerlink" href="#poll-step" title="Link to this heading">#</a></h3>
+<p>The MADS algorithm may select any poll direction such that <span class="math notranslate nohighlight">\(x^{k}+\delta^{k}d\)</span> lies
+inside the frame, <span class="math notranslate nohighlight">\(\|\delta^{k}d\|_\infty \leq \Delta^{k}b\)</span> for all
+<span class="math notranslate nohighlight">\(d \in \mathbb{D}^{k}_{\Delta}\)</span>. Since <span class="math notranslate nohighlight">\(\Delta^{k}&gt;\delta^{k}\)</span> whenever
+<span class="math notranslate nohighlight">\(\delta^{k} &lt; 1\)</span>, there is a lot of freedom in how the poll set is built.</p>
+<p>Here is a glimpse of the MADS convergence properties and of what dense sets (richness) of poll
+directions mean. In MADS, any direction sampled in the limit of a refining sequence has a
+nonnegative Clarke generalized directional derivative. Moreover, the directions come from an
+ever-expanding set of options, because the mesh size parameter <span class="math notranslate nohighlight">\(\delta^{k}\)</span> goes to
+zero faster than the frame size parameter <span class="math notranslate nohighlight">\(\Delta^{k}\)</span>.</p>
+<p>MADS can produce an asymptotically dense set of poll directions using Householder matrices.
+First, the dense subset:</p>
+<div class="proof definition admonition" id="def-dense">
+<p class="admonition-title"><span class="caption-number">Definition 3 </span> (Asymptotically dense subset)</p>
+<section class="definition-content" id="proof-content">
+<p>The set <span class="math notranslate nohighlight">\(V \subseteq \mathbb{R}^{n}\)</span> is asymptotically dense if the normalized set
+<span class="math notranslate nohighlight">\(\{v/\|v\| : v \in V\}\)</span> is dense on the <em>unit sphere</em>
+<span class="math notranslate nohighlight">\(S=\{w\in \mathbb{R}^{n} : \|w\| = 1\}\)</span>.</p>
+</section>
+</div><p>Then the Householder matrix:</p>
+<div class="proof definition admonition" id="def-householder">
+<p class="admonition-title"><span class="caption-number">Definition 4 </span> (Householder matrix)</p>
+<section class="definition-content" id="proof-content">
+<p>Let <span class="math notranslate nohighlight">\(v \in \mathbb{R}^{n}\)</span> be a <em>normalized vector</em>. The Householder matrix
+associated with <span class="math notranslate nohighlight">\(v\)</span> is <span class="math notranslate nohighlight">\(H := I - 2vv^{T} \in \mathbb{R}^{n \times n}\)</span>, where
+<span class="math notranslate nohighlight">\(I\)</span> is the <span class="math notranslate nohighlight">\(n \times n\)</span> <em>identity matrix</em>.</p>
+</section>
+</div><p>Let <span class="math notranslate nohighlight">\(v\)</span> be a <em>nonzero</em> vector of <span class="math notranslate nohighlight">\(\mathbb{R}^{n}\)</span> and <span class="math notranslate nohighlight">\(H\)</span> its associated
+Householder matrix. Then for any nonzero <span class="math notranslate nohighlight">\(\gamma\)</span>, <span class="math notranslate nohighlight">\(\gamma\,[H \;\; -H]\)</span> forms a
+maximal positive basis of <span class="math notranslate nohighlight">\(\mathbb{R}^{n}\)</span>. Keeping only <span class="math notranslate nohighlight">\(H\)</span> and the negative
+sum of its (rounded) columns gives a minimal positive basis of <span class="math notranslate nohighlight">\(n+1\)</span> directions
+<span class="bibtex-citation" id="id8">[<a class="reference internal" href="references.html#id5" title="Charles Audet, Andrea Ianni, Sébastien Le Digabel, and Christophe Tribes. Reducing the number of function evaluations in mesh adaptive direct search algorithms. SIAM Journal on Optimization, 24(2):621–642, 2014. doi:10.1137/120895056.">Audet <em>et al.</em>, 2014</a>]</span>.</p>
+<div class="pseudocode" id="id18">
+<span id="a2"></span><div class="pseudocode-content">
+<pre id="5" style="display:none;">
              \begin{algorithm}
  \caption{Creating the set of poll directions}
  \begin{algorithmic}
  \PROCEDURE{Create-Householder-matrix}{}
-     \STATE{use $v_{k}$ to create its associated Householder matrix}
+     \IF{rich directions are enabled}
+         \STATE{draw $v_{k} \sim \mathcal{N}(0, I_{n})$ and normalize it, $v_{k} \gets v_{k}/\|v_{k}\|_{2}$}
+         \STATE{use $v_{k}$ to create its associated Householder matrix $H^{k} = I - 2v_{k}v_{k}^{T}$}
+     \ELSE
+         \STATE{$H^{k} = I$}
+     \ENDIF
      \STATE{$H^{k} = [h_{1} \, h_{2} \, ..., \, h_{n}]$}
  \ENDPROCEDURE
  \PROCEDURE{Create-poll-set}{}
-     \STATE{define $\mathbb{B}^{k} = \{b1,b2, ..., b_{n}\}$ with $b_{j}=\text{round}(\frac{\Delta_{k}}{\delta{k}}\frac{h_{j}}{||h_{j}||_{\infty}})$}
-     \STATE{set $\mathbb{D}^{k}_{\Delta} = \mathbb{B}^{k} \cup (-\mathbb{B}^{k})$ }
+     \STATE{define $\mathbb{B}^{k} = \{b_{1},b_{2}, ..., b_{n}\}$ with $b_{j}=\left\lceil\frac{\Delta^{k}}{\delta^{k}}\frac{h_{j}}{||h_{j}||_{\infty}}\right\rceil$}
+     \IF{the direction type is ORTHO 2N}
+         \STATE{set $\mathbb{D}^{k}_{\Delta} = \mathbb{B}^{k} \cup (-\mathbb{B}^{k})$ }
+     \ELSE
+         \STATE{$b_{n+1} = \text{round}\left(\frac{\Delta^{k}}{\delta^{k}}\frac{-\sum_{j} b_{j}}{\|\sum_{j} b_{j}\|_{\infty}}\right)$}
+         \STATE{set $\mathbb{D}^{k}_{\Delta} = \mathbb{B}^{k} \cup \{b_{n+1}\}$ }
+     \ENDIF
  \ENDPROCEDURE
-
+ \PROCEDURE{Create-poll-points}{}
+     \STATE{$P^{k} = \{x^{k} + \delta^{k}\,\text{diag}((u - \ell)/s)\,d : d \in \mathbb{D}^{k}_{\Delta}\}$}
+     \STATE{shuffle $P^{k}$, clip it to $[\ell, u]$ and remove repeated points}
+     \STATE{project $P^{k}$ on the mesh $M^{k}$ and drop the points already in the cache}
+ \ENDPROCEDURE
  \end{algorithmic}
  \end{algorithm}
-        </pre></div></div><p>In OMADS, <a class="reference internal" href="#a2"><span class="std std-numref">Algorithm 2</span></a> is implemented under the directions class <code class="docutils literal notranslate"><span class="pre">Dirs2n</span></code> in a function called <code class="docutils literal notranslate"><span class="pre">create_housholder</span></code>.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">create_housholder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">is_rich</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-  <span class="sd">&quot;&quot;&quot;Create householder matrix</span>
+        </pre></div></div><p>In OMADS, <a class="reference internal" href="#a2"><span class="std std-numref">Algorithm 5</span></a> is implemented in the poll class <code class="docutils literal notranslate"><span class="pre">Dirs2n</span></code>: <code class="docutils literal notranslate"><span class="pre">create_housholder</span></code>
+builds the scaled, rounded direction matrix, <code class="docutils literal notranslate"><span class="pre">_ortho_n_plus_1</span></code> builds the
+<span class="math notranslate nohighlight">\(n+1\)</span> set (<code class="docutils literal notranslate"><span class="pre">options[&quot;direction_type&quot;]</span> <span class="pre">=</span> <span class="pre">&quot;ORTHO_N+1&quot;</span></code>, real variables only) and
+<code class="docutils literal notranslate"><span class="pre">create_poll_set</span></code> turns the directions into candidate points.</p>
+<div class="literal-block-wrapper docutils container" id="id19">
+<div class="code-block-caption"><span class="caption-number">Listing 4 </span><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">Dirs2n.create_housholder</span></code> (<code class="docutils literal notranslate"><span class="pre">OMADS/_directions/_directions.py</span></code>)</span><a class="headerlink" href="#id19" title="Link to this code">#</a></div>
+<div class="dropdown highlight-python notranslate"><div class="highlight"><pre><span></span>  <span class="k">def</span><span class="w"> </span><span class="nf">create_housholder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">is_rich</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">domain</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>  <span class="c1"># noqa: C901</span>
+                        <span class="n">is_one_dir</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                        <span class="n">n_plus_1</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Create householder matrix</span>
 
-<span class="sd">  :param is_rich:  A flag that indicates if the rich direction option is enabled</span>
-<span class="sd">  :type is_rich: bool</span>
-<span class="sd">  :return: The householder matrix</span>
-<span class="sd">  :rtype: np.ndarray</span>
-<span class="sd">  &quot;&quot;&quot;</span>
-  <span class="n">hhm</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
-  <span class="k">if</span> <span class="n">is_rich</span><span class="p">:</span>
-    <span class="n">v_dir</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ran</span><span class="p">())</span>
-    <span class="n">v_dir_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">v_dir</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
-    <span class="n">v_dir_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">v_dir_array</span><span class="p">,</span>
-                <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">v_dir_array</span><span class="p">,</span>
-                        <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="o">.</span><span class="n">dtype</span><span class="p">)),</span>
-                <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
-    <span class="n">hhm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span>
-              <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">v_dir_array</span><span class="p">,</span> <span class="n">v_dir_array</span><span class="o">.</span><span class="n">T</span><span class="p">),</span>
-                    <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span>
-              <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
-  <span class="k">else</span><span class="p">:</span>
-    <span class="n">hhm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
-  <span class="n">hhm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">hhm</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">hhm</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="o">.</span><span class="n">dtype</span><span class="p">))</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)))</span>
-  <span class="c1"># Rounding( and transpose)</span>
-  <span class="n">tmp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">rho</span><span class="p">,</span> <span class="n">hhm</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
-  <span class="n">hhm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">msize</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">tmp</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="o">.</span><span class="n">dtype</span><span class="p">))</span>
-  <span class="n">hhm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">hhm</span><span class="p">,</span> <span class="o">-</span><span class="n">hhm</span><span class="p">)),</span> <span class="bp">self</span><span class="o">.</span><span class="n">scaling</span><span class="p">)</span>
+<span class="sd">    :param is_rich:  A flag that indicates if the rich direction option is enabled</span>
+<span class="sd">    :type is_rich: bool</span>
+<span class="sd">    :return: The householder matrix</span>
+<span class="sd">    :rtype: np.ndarray</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">domain</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+      <span class="n">domain</span> <span class="o">=</span> <span class="p">[</span><span class="n">VAR_TYPE</span><span class="o">.</span><span class="n">REAL</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">domain</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n</span><span class="p">:</span>
+      <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span>
+          <span class="s2">"Number of dimensions doesn't match the size of </span><span class="se">\</span>
+<span class="s2">          the variables type list invoked to Dirs2n::create_householder."</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">domain</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+      <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span>
+          <span class="s2">"The variables domain type input invoked </span><span class="se">\</span>
+<span class="s2">            to Dirs2n::create_householder should be of type list."</span><span class="p">)</span>
 
-  <span class="k">return</span> <span class="n">hhm</span>
+    <span class="n">hhm</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="k">if</span> <span class="n">is_rich</span><span class="p">:</span>
+      <span class="n">v_dir</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ran</span><span class="p">())</span>
+      <span class="n">v_dir_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">v_dir</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+      <span class="n">v_dir_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span>
+          <span class="n">v_dir_array</span><span class="p">,</span>
+          <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">v_dir_array</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="o">.</span><span class="n">dtype</span><span class="p">)),</span>
+          <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+      <span class="n">hhm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span>
+                        <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">v_dir_array</span><span class="p">,</span> <span class="n">v_dir_array</span><span class="o">.</span><span class="n">T</span><span class="p">),</span>
+                                    <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span>
+                        <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="n">hhm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="n">hhm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">hhm</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">hhm</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="o">.</span><span class="n">dtype</span><span class="p">))</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)))</span>
+    <span class="k">if</span> <span class="n">n_plus_1</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">is_one_dir</span> <span class="ow">and</span> <span class="nb">all</span><span class="p">(</span>
+            <span class="n">t</span> <span class="ow">in</span> <span class="p">(</span><span class="n">VAR_TYPE</span><span class="o">.</span><span class="n">REAL</span><span class="p">,</span> <span class="n">VAR_TYPE</span><span class="o">.</span><span class="n">REAL</span><span class="o">.</span><span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">domain</span><span class="p">):</span>
+      <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ortho_n_plus_1</span><span class="p">(</span><span class="n">hhm</span><span class="p">)</span>
+    <span class="c1"># Rounding( and transpose)</span>
+    <span class="n">tmp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">get_rho</span><span class="p">(),</span> <span class="n">hhm</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="n">hhm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">get_delta_mesh_size</span><span class="p">()</span><span class="o">.</span><span class="n">coordinates</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">tmp</span><span class="p">),</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="o">.</span><span class="n">dtype</span><span class="p">))</span>
+    <span class="n">hhm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">hhm</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scaling</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">((</span><span class="n">domain</span><span class="p">)):</span>
+      <span class="k">if</span> <span class="n">domain</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="n">VAR_TYPE</span><span class="o">.</span><span class="n">DISCRETE</span> <span class="ow">or</span> \
+              <span class="n">domain</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="n">VAR_TYPE</span><span class="o">.</span><span class="n">BINARY</span> <span class="ow">or</span> <span class="n">domain</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="n">VAR_TYPE</span><span class="o">.</span><span class="n">INTEGER</span><span class="p">:</span>
+        <span class="n">hhm</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span> <span class="k">if</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">2</span> <span class="k">else</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">**</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">get_delta_mesh_size</span><span class="p">()</span><span class="o">.</span><span class="n">coordinates</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+      <span class="k">elif</span> <span class="n">domain</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="n">VAR_TYPE</span><span class="o">.</span><span class="n">CATEGORICAL</span><span class="p">:</span>
+        <span class="n">hhm</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rng</span><span class="o">.</span><span class="n">random</span><span class="p">(</span>
+            <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="o">.</span><span class="n">dtype</span><span class="p">))</span>
+      <span class="k">else</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">((</span><span class="n">domain</span><span class="p">)):</span>
+          <span class="k">if</span> <span class="n">domain</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">!=</span> <span class="n">VAR_TYPE</span><span class="o">.</span><span class="n">REAL</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+            <span class="n">hhm</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">+</span> <span class="mi">2</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">get_delta_mesh_size</span><span class="p">()</span><span class="o">.</span><span class="n">coordinates</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+
+    <span class="k">if</span> <span class="n">is_one_dir</span><span class="p">:</span>
+      <span class="k">return</span> <span class="n">hhm</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="n">hhm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">hhm</span><span class="p">,</span> <span class="o">-</span><span class="n">hhm</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">hhm</span>
 </pre></div>
 </div>
-<p>Then the generated Householder matrix will be used in the following function to create the poll set:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">create_poll_set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hhm</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">ub</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">lb</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">it</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-  <span class="sd">&quot;&quot;&quot;Create the poll directions</span>
+</div>
+<div class="literal-block-wrapper docutils container" id="id20">
+<div class="code-block-caption"><span class="caption-number">Listing 5 </span><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">Dirs2n._ortho_n_plus_1</span></code></span><a class="headerlink" href="#id20" title="Link to this code">#</a></div>
+<div class="dropdown highlight-python notranslate"><div class="highlight"><pre><span></span>  <span class="k">def</span><span class="w"> </span><span class="nf">_ortho_n_plus_1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hhm</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""ORTHO N+1 NEG poll set (Audet, Ianni, Le Digabel &amp; Tribes 2014):</span>
+<span class="sd">    the n mesh-rounded orthogonal directions plus the negative of their</span>
+<span class="sd">    sum rescaled to the frame -- a positive spanning set of n+1 instead of</span>
+<span class="sd">    2n directions.</span>
 
-<span class="sd">  :param hhm: Householder matrix</span>
-<span class="sd">  :type hhm: np.ndarray</span>
-<span class="sd">  :param ub: Variables upper bound</span>
-<span class="sd">  :type ub: List[float]</span>
-<span class="sd">  :param lb: Variables lower bound</span>
-<span class="sd">  :type lb: List[float]</span>
-<span class="sd">  :param it: iteration</span>
-<span class="sd">  :type it: int</span>
-<span class="sd">  &quot;&quot;&quot;</span>
-  <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">poll_dirs</span>
-  <span class="n">temp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">hhm</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xmin</span><span class="o">.</span><span class="n">coordinates</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
-  <span class="c1"># np.random.seed(self._seed)</span>
-  <span class="n">temp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">permutation</span><span class="p">(</span><span class="n">temp</span><span class="p">)</span>
-  <span class="n">temp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">temp</span><span class="p">,</span> <span class="n">ub</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
-  <span class="n">temp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">temp</span><span class="p">,</span> <span class="n">lb</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
-
-  <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">):</span>
-    <span class="n">tmp</span> <span class="o">=</span> <span class="n">Point</span><span class="p">()</span>
-    <span class="n">tmp</span><span class="o">.</span><span class="n">coordinates</span> <span class="o">=</span> <span class="n">temp</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
-    <span class="n">tmp</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">precision</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">precision</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">poll_dirs</span> <span class="o">=</span> <span class="n">tmp</span>
-    <span class="k">del</span> <span class="n">tmp</span>
-  <span class="k">del</span> <span class="n">temp</span>
-
-  <span class="bp">self</span><span class="o">.</span><span class="n">iter</span> <span class="o">=</span> <span class="n">it</span>
+<span class="sd">    `hhm` is the normalized Householder matrix (rows are directions). The</span>
+<span class="sd">    basis is rounded exactly like the 2n set; the extra direction is</span>
+<span class="sd">    built from the *rounded* basis so it stays its negative sum (rounding</span>
+<span class="sd">    it after normalizing would zero its negative entries when rho = 1).</span>
+<span class="sd">    """</span>
+    <span class="n">rho</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">get_rho</span><span class="p">(),</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="n">delta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">get_delta_mesh_size</span><span class="p">()</span><span class="o">.</span><span class="n">coordinates</span><span class="p">,</span>
+                       <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="n">basis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">rho</span><span class="p">,</span> <span class="n">hhm</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="o">.</span><span class="n">dtype</span><span class="p">))</span>
+    <span class="n">neg</span> <span class="o">=</span> <span class="o">-</span><span class="n">basis</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">neg</span><span class="p">):</span>
+      <span class="n">dirs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">basis</span><span class="p">,</span> <span class="o">-</span><span class="n">basis</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="n">dirs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">basis</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">neg</span> <span class="o">*</span> <span class="p">(</span><span class="n">rho</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">neg</span><span class="p">))))))</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">delta</span><span class="p">,</span> <span class="n">dirs</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span>
+                  <span class="bp">self</span><span class="o">.</span><span class="n">scaling</span><span class="p">)</span>
 </pre></div>
 </div>
-<p><code class="xref std std-numref docutils literal notranslate"><span class="pre">F3</span></code> depicts the dense directions on the same frame size where</p>
-<figure class="align-center">
-<a class="reference internal image-reference" href="_images/poll_anim.gif"><img alt="_images/poll_anim.gif" src="_images/poll_anim.gif" style="width: 700px;" /></a>
+</div>
+<div class="literal-block-wrapper docutils container" id="id21">
+<div class="code-block-caption"><span class="caption-number">Listing 6 </span><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">Dirs2n.create_poll_set</span></code></span><a class="headerlink" href="#id21" title="Link to this code">#</a></div>
+<div class="dropdown highlight-python notranslate"><div class="highlight"><pre><span></span>  <span class="k">def</span><span class="w"> </span><span class="nf">create_poll_set</span><span class="p">(</span>
+          <span class="bp">self</span><span class="p">,</span> <span class="n">ub</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+          <span class="n">lb</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">fc</span><span class="p">:</span> <span class="n">CandidatePoint</span><span class="p">,</span> <span class="n">fci</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+          <span class="n">it</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">var_type</span><span class="p">:</span> <span class="n">List</span><span class="p">,</span> <span class="n">var_sets</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">var_link</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+          <span class="n">c_types</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">BARRIER_TYPES</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+          <span class="n">rich_direction</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">direction_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"ORTHO_2N"</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Create the poll directions</span>
+
+<span class="sd">    :param hhm: Householder matrix</span>
+<span class="sd">    :type hhm: np.ndarray</span>
+<span class="sd">    :param ub: Variables upper bound</span>
+<span class="sd">    :type ub: List[float]</span>
+<span class="sd">    :param lb: Variables lower bound</span>
+<span class="sd">    :type lb: List[float]</span>
+<span class="sd">    :param it: iteration</span>
+<span class="sd">    :type it: int</span>
+<span class="sd">    """</span>
+    <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">candidate_points_set</span>
+    <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">poll_dirs</span>
+    <span class="n">hhm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_housholder</span><span class="p">(</span>
+        <span class="n">rich_direction</span><span class="p">,</span>
+        <span class="n">domain</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">prob_params</span><span class="o">.</span><span class="n">var_type</span><span class="p">,</span>
+        <span class="n">n_plus_1</span><span class="o">=</span><span class="n">direction_type</span> <span class="o">==</span> <span class="s2">"ORTHO_N+1"</span><span class="p">)</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
+        <span class="n">hhm</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="n">fc</span><span class="o">.</span><span class="n">coordinates</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
+        <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+
+    <span class="n">temp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rng</span><span class="o">.</span><span class="n">permutation</span><span class="p">(</span><span class="n">temp</span><span class="p">)</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">temp</span><span class="p">,</span> <span class="n">ub</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">temp</span><span class="p">,</span> <span class="n">lb</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">temp</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">temp</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">temp</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+      <span class="n">ndirs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">temp</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span>
+          <span class="n">temp</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+          <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span>
+          <span class="n">temp</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+          <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="k">else</span> <span class="mi">1</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="n">ndirs</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndirs</span><span class="p">):</span>
+      <span class="n">tmp</span> <span class="o">=</span> <span class="n">CandidatePoint</span><span class="p">()</span>
+      <span class="n">tmp</span><span class="o">.</span><span class="n">create_candidate_point_from_coords</span><span class="p">(</span>
+          <span class="n">temp</span><span class="o">=</span><span class="n">temp</span><span class="p">[</span><span class="n">k</span><span class="p">],</span>
+          <span class="n">var_type</span><span class="o">=</span><span class="n">var_type</span><span class="p">,</span> <span class="n">var_sets</span><span class="o">=</span><span class="n">var_sets</span><span class="p">,</span> <span class="n">var_link</span><span class="o">=</span><span class="n">var_link</span><span class="p">,</span>
+          <span class="n">c_types</span><span class="o">=</span><span class="n">c_types</span><span class="p">,</span> <span class="n">fc_index</span><span class="o">=</span><span class="n">fci</span><span class="p">,</span> <span class="n">other</span><span class="o">=</span><span class="n">fc</span><span class="p">)</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">candidate_points_set</span> <span class="o">=</span> <span class="n">tmp</span>
+      <span class="c1"># tmp.mesh = self.mesh</span>
+      <span class="k">if</span> <span class="n">fc</span><span class="o">.</span><span class="n">is_feasible</span><span class="p">():</span>
+        <span class="n">tmp</span><span class="o">.</span><span class="n">direction</span> <span class="o">=</span> <span class="n">tmp</span> <span class="o">-</span> <span class="n">fc</span>
+        <span class="n">tmp</span><span class="o">.</span><span class="n">fc_index</span> <span class="o">=</span> <span class="n">fc</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">poll_dirs</span> <span class="o">=</span> <span class="n">tmp</span> <span class="o">-</span> <span class="n">fc</span>
+      <span class="k">else</span><span class="p">:</span>
+        <span class="n">tmp</span><span class="o">.</span><span class="n">fc_index</span> <span class="o">=</span> <span class="n">fc</span>
+        <span class="n">tmp</span><span class="o">.</span><span class="n">direction</span> <span class="o">=</span> <span class="n">tmp</span> <span class="o">-</span> <span class="n">fc</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">poll_dirs</span> <span class="o">=</span> <span class="n">tmp</span> <span class="o">-</span> <span class="n">fc</span>
+      <span class="k">del</span> <span class="n">tmp</span>
+    <span class="k">del</span> <span class="n">temp</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">iter</span> <span class="o">=</span> <span class="n">it</span>
+</pre></div>
+</div>
+</div>
+<p><a class="reference internal" href="#f3"><span class="std std-numref">Figure 3</span></a> shows the dense directions on the same frame size.</p>
+<figure class="align-center" id="id22">
+<span id="f3"></span><a class="reference internal image-reference" href="_images/poll_anim.gif"><img alt="_images/poll_anim.gif" src="_images/poll_anim.gif" width="700" />
+</a>
+<figcaption>
+<p><span class="caption-number">Figure 3 </span><span class="caption-text">Poll set of dense directions.</span><a class="headerlink" href="#id22" title="Link to this image">#</a></p>
+</figcaption>
 </figure>
-<p>We recommend you to visit <span id="id5">[<a class="reference internal" href="index.html#id10" title="C. Audet and W. Hare. Derivative-free and Blackbox Optimization. Volume 2. Springer, 2017.">5</a>]</span> for further details on the proofs of Householder positive basis that show how the columns of the associated Householder matrices are asymptotically dense, given a dense set of directions in the unit sphere <em>S</em>.</p>
+<p>We recommend <span class="bibtex-citation" id="id9">[<a class="reference internal" href="references.html#id4" title="Charles Audet and Warren Hare. Derivative-Free and Blackbox Optimization. Springer Series in Operations Research and Financial Engineering. Springer, 2017. doi:10.1007/978-3-319-68913-5.">Audet and Hare, 2017</a>]</span> for the proofs showing that the columns of the
+associated Householder matrices are asymptotically dense, given a dense set of directions on
+the unit sphere <span class="math notranslate nohighlight">\(S\)</span>.</p>
 </section>
+<section id="mesh-update">
+<h3>Mesh update<a class="headerlink" href="#mesh-update" title="Link to this heading">#</a></h3>
+<p>OMADS has two meshes, selected with <code class="docutils literal notranslate"><span class="pre">param[&quot;mesh_type&quot;]</span></code>.</p>
+<p><strong>Orthogonal mesh (default).</strong> <code class="docutils literal notranslate"><span class="pre">Omesh</span></code> keeps one frame size per variable and applies
+<span class="math notranslate nohighlight">\(\tau = 1/2\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\Delta^{k+1}_i =
+\begin{cases}
+   2\,\Delta^{k}_i &amp; \text{after a success,}\\
+   \Delta^{k}_i / 2 &amp; \text{after a failure,}
+\end{cases}
+\qquad
+\delta^{k+1}_i = \min\{\Delta^{k+1}_i, (\Delta^{k+1}_i)^2\}.\end{split}\]</div>
+<p><strong>Granular mesh</strong> (<code class="docutils literal notranslate"><span class="pre">GMESH</span></code>). <code class="docutils literal notranslate"><span class="pre">Gmesh</span></code> implements the granular, anisotropic mesh of
+<span class="bibtex-citation" id="id10">Audet <em>et al.</em> [<a class="reference internal" href="references.html#id6" title="Charles Audet, Sébastien Le Digabel, and Christophe Tribes. The mesh adaptive direct search algorithm for granular and discrete variables. SIAM Journal on Optimization, 29(2):1164–1189, 2019. doi:10.1137/18M1175872.">2019</a>]</span>. Each frame size is <span class="math notranslate nohighlight">\(\Delta_i = a_i \times 10^{b_i}\)</span> with
+mantissa <span class="math notranslate nohighlight">\(a_i \in \{1, 2, 5\}\)</span>, and may be a multiple of a granularity <span class="math notranslate nohighlight">\(g_i\)</span>
+(<code class="docutils literal notranslate"><span class="pre">param[&quot;granularity&quot;]</span></code>). The update rules are given in <a class="reference internal" href="#a4"><span class="std std-numref">Algorithm 6</span></a>:</p>
+<ul class="simple">
+<li><p><strong>refinement</strong> (every <code class="docutils literal notranslate"><span class="pre">options[&quot;refine_freq&quot;]</span></code> failures): <span class="math notranslate nohighlight">\(a_i\)</span> follows
+<span class="math notranslate nohighlight">\(5 \to 2 \to 1 \to 5\,(b_i - 1)\)</span>, never below the minimum mesh size;</p></li>
+<li><p><strong>enlargement</strong>: <span class="math notranslate nohighlight">\(a_i\)</span> follows <span class="math notranslate nohighlight">\(1 \to 2 \to 5 \to 1\,(b_i + 1)\)</span>, only for the
+coordinates where the successful step was large relative to the mesh,
+<span class="math notranslate nohighlight">\(|d_i| / (\delta_i \rho_i) &gt;\)</span> <code class="docutils literal notranslate"><span class="pre">options[&quot;anisotropy_factor&quot;]</span></code> (when
+<code class="docutils literal notranslate"><span class="pre">options[&quot;anistropic_mesh&quot;]</span></code> is true), and never beyond the variable range.</p></li>
+</ul>
+<div class="pseudocode" id="id23">
+<span id="a4"></span><div class="pseudocode-content">
+<pre id="6" style="display:none;">
+             \begin{algorithm}
+ \caption{Granular mesh update}
+ \begin{algorithmic}
+ \PROCEDURE{Enlarge}{$d$}
+     \FOR{$i = 1, \dots, n$}
+         \IF{$\Delta_{i} &lt; \Delta^{\max}_{i}$ and ($|d_{i}| / (\delta_{i}\rho_{i}) &gt; \alpha$ or the mesh is isotropic)}
+             \STATE{$(a_{i}, b_{i}) \gets$ next larger mantissa and exponent in $\{1,2,5\} \times 10^{b}$}
+             \STATE{$r_{i} \gets r_{i} + 1$} mesh index
+         \ENDIF
+     \ENDFOR
+ \ENDPROCEDURE
+ \PROCEDURE{Refine}{}
+     \FOR{$i = 1, \dots, n$}
+         \STATE{$(a'_{i}, b'_{i}) \gets$ next smaller mantissa and exponent in $\{1,2,5\} \times 10^{b}$}
+         \IF{$\delta^{\min}_{i} \leq \delta_{i}$}
+             \STATE{$(a_{i}, b_{i}) \gets (a'_{i}, b'_{i})$ and $r_{i} \gets r_{i} - 1$}
+         \ENDIF
+     \ENDFOR
+ \ENDPROCEDURE
+ \end{algorithmic}
+ \end{algorithm}
+        </pre></div></div></section>
 <section id="termination">
-<h3>Termination<a class="headerlink" href="#termination" title="Permalink to this headline"></a></h3>
-<p>Typically, the algorithm terminates when the evaluation budget is exhausted and/or the poll size falls below the tolerance size.</p>
+<h3>Termination<a class="headerlink" href="#termination" title="Link to this heading">#</a></h3>
+<p>The algorithm stops when one of the following happens:</p>
+<ul class="simple">
+<li><p>the evaluation budget <code class="docutils literal notranslate"><span class="pre">options[&quot;budget&quot;]</span></code> is exhausted;</p></li>
+<li><p>every component of the frame size (poll) or of the mesh size (search) falls below
+<code class="docutils literal notranslate"><span class="pre">options[&quot;tol&quot;]</span></code>;</p></li>
+<li><p>the number of trial points that hit the bounds exceeds <code class="docutils literal notranslate"><span class="pre">options[&quot;noutbound_hits_max&quot;]</span></code>;</p></li>
+<li><p>a feasible point is found during phase one (the run then continues in phase two).</p></li>
+</ul>
+<p>The reason is written to <code class="docutils literal notranslate"><span class="pre">OMADS.log</span></code> in the post directory.</p>
 </section>
 </section>
 </section>
 
 
-           </div>
-          </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to OMADS!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="benchmarking.html" class="btn btn-neutral float-right" title="Benchmarking" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-    </div>
-
-  <hr/>
-
-  <div role="contentinfo">
-    <p>&#169; Copyright Ahmed Bayoumy, Read the Docs, Inc. &amp; contributors.</p>
-  </div>
-
-  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    provided by <a href="https://readthedocs.org">Read the Docs</a>.
-   
-
-</footer>
-        </div>
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="getting_started.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Getting started</p>
       </div>
-    </section>
+    </a>
+    <a class="right-next"
+       href="benchmarking.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Benchmarking</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
   </div>
-  <script>
-      jQuery(function () {
-          SphinxRtdTheme.Navigation.enable(true);
-      });
-  </script> 
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
 
-</body>
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2022-2026, Ahmed H. Bayoumy.
+      <br/>
+    
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
 </html>

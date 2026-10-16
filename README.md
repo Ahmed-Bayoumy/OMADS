@@ -3,213 +3,175 @@
 [![win-build-and-pytest](https://github.com/Ahmed-Bayoumy/OMADS/actions/workflows/win-build-and-pytest.yml/badge.svg?branch=DEV)](https://github.com/Ahmed-Bayoumy/OMADS/actions/workflows/win-build-and-pytest.yml)
 [![macos-build-and-pytest](https://github.com/Ahmed-Bayoumy/OMADS/actions/workflows/macos-build-and-pytest.yml/badge.svg?branch=DEV)](https://github.com/Ahmed-Bayoumy/OMADS/actions/workflows/macos-build-and-pytest.yml)
 
-<img width="870" alt="OMADS_logo" src="https://github.com/Ahmed-Bayoumy/OMADS/assets/22842095/dedff4b1-4ec5-4b1f-a155-8b64155d1558">
+<img width="870" alt="OMADS logo" src="https://ahmed-bayoumy.github.io/OMADS/_static/OMADS_logo.png">
 
 # OMADS
-OMADS: A Python implementation for the optimization using the mesh adaptive direct search (MADS) method; Optimization using MADS (OMADS). OMADS can solve both single- and multi-objective optimization problems.
 
-For technical and code documentation, please visit [OMADS Webpage](https://ahmed-bayoumy.github.io/OMADS/).
+OMADS (Optimization using Mesh Adaptive Direct Search) is a Python implementation of the MADS
+algorithm for blackbox optimization. It solves single- and multi-objective problems, with or
+without constraints.
+
+Documentation, tutorials and algorithms: [ahmed-bayoumy.github.io/OMADS](https://ahmed-bayoumy.github.io/OMADS/)
 
 ---
 
-**Version 2604.0**
+**Version 2610**
 
 ---
 
-## License & copyright
+## Why OMADS
 
-© Ahmed H. Bayoumy 2022-2026
+**Optimize what you can only run.** Your simulation, CAD pipeline or legacy code gives you a
+number, not a gradient: it may be noisy, non-smooth, slow, or crash at some inputs. OMADS
+optimizes it directly from `pip install` and a ten-line Python dictionary, with no
+derivatives, no surrogate to train and no solver to compile.
 
-This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License either version 3 of the License, or (at your option) any later version.
+- **Built on a convergence theory, not a heuristic.** OMADS implements Mesh Adaptive Direct
+  Search (MADS), whose iterates converge, under standard assumptions and from any starting
+  point, to points satisfying Clarke stationarity conditions.
+- **Strong where evaluations are scarce.** On the 54 constrained problems of the COCO
+  `bbob-constrained` suite in 2D, the published benchmark configuration solves about
+  **98% of the (function, target) pairs within 100 × n evaluations**, ahead of fmincon
+  (92%), and close to COBYLA and AL1-CMA-ES, which were run with up to 10⁷ × n evaluations.
+- **Constraints the way engineers have them.** Relaxable constraints are steered towards
+  feasibility with a progressive barrier; points that violate hard constraints (where the
+  code cannot even run) are rejected; failed evaluations are discarded and the search
+  carries on.
+- **One input, many problems.** The same dictionary or JSON file handles constrained and
+  unconstrained, single- and multi-objective (Pareto) problems, serial or parallel
+  evaluation, and any Python callable, including wrappers around external programs.
+- **Results you can check.** Every published benchmark is reproducible with a single command
+  (`python benchmarks/coco/reproduce_results.py`), and a regression suite runs on Linux,
+  Windows and macOS in continuous integration.
 
-See the [LICENSE](LICENSE) file for the full license text.
----
+<p align="center">
+  <img width="560" alt="Runtime distributions on COCO bbob-constrained in 2D: OMADS against COBYLA, AL1-CMA-ES, fmincon and random search" src="https://ahmed-bayoumy.github.io/OMADS/_images/ecdf_02D.svg">
+</p>
 
-## Citation
+*Fraction of (function, target) pairs solved versus evaluations per variable, over the 54
+COCO `bbob-constrained` functions in 2D. `OMADS-A` is the published benchmark configuration
+(`OMADS-B` and `OMADS-Hal` are two alternatives); OMADS used at most 100 × n evaluations
+(more on the axis, since COCO also counts constraint evaluations), the reference algorithms
+up to 10⁷ × n. Details in the
+[benchmarking documentation](https://ahmed-bayoumy.github.io/OMADS/benchmarking.html).*
 
-If you use this code, please cite it as follows.
+## Features
 
-```pycon
-   @software{OMADS_AB,
-   author       = {Bayoumy, A.},
-   title        = {OMADS},
-   year         = 2022,
-   publisher    = {Github},
-   version      = {2407},
-   url          = {https://github.com/Ahmed-Bayoumy/OMADS}
-   }
-```
+- Three solvers with one input format: full MADS (`mads`), poll only (`poll`) and search only (`search`)
+- Orthogonal Householder poll directions, `2n` (`ORTHO_2N`) or `n+1` (`ORTHO_N+1`)
+- Orthogonal mesh or anisotropic granular mesh (`GMESH`)
+- Progressive (`PB`) and extreme (`EB`) barriers for constraints
+- A cheap speculative step plus a constraint-aware quadratic model search at every iteration
+- An `ACTIVE` sampling search (BiTPE density-ratio sampling with Halton, LHS, simulated annealing and particle swarm fallbacks)
+- Multi-objective Pareto studies with the hypervolume indicator
+- Cache, opportunistic evaluation, parallel evaluation, CSV logs and reproducible seeds
 
-## How to use the OMADS package
-
-After installing the `OMADS` package from [PYPI](https://pypi.org/) website, the functions and classes of `OMADS` basic 
-module can be imported directly to the Python script as follows:
-
-```pycon
-from OMADS import *
-```
-
-## How to run OMADS from the terminal
-After installing `OMADS`, `SEARCH`, `POLL`, and `MADS` modules can be called directly from a 
-terminal window under the src directory. The path of the JSON template, which contains the problem input parameters, 
-should be entered as an input argument to the aforementioned modules call. 
+## Installation
 
 ```commandline
-python ./OMADS/POLL.py ../../tests/unconstrained/rosenbrock.json
-python ./OMADS/SEARCH.py ../../tests/unconstrained/rosenbrock.json
-python ./OMADS/MADS.py ../../tests/unconstrained/rosenbrock.json
+pip install OMADS
 ```
 
-## Input parameters
-Input parameters are serialized in a `JSON` template using predefined attributes (keywords) under four dictionaries; 
-`evaluator`, `param`, `options`, and `search`. Here is a brief description of each dictionary and its key attributes.
+## Quick start
 
-* `evaluator`: in this dictionary, we define the blackbox location and the name of input and output files (if exist)
-  * `blackbox`: blackbox executable file name, or the function name if this is an internal function defined within the BM_suite
-  * `internal`: the name of the testing category that holds your internal/external test function or blackbox evaluator
-    * `con`: internal constrained single-objective function
-    * `uncon`: internal unconstrained single-objective function
-    * `exe`: external executable blackbox evaluator
-  * `input`: the name of the input file (considered if an external executable was defined)
-  * `output`: the name of the output file (considered if an external executable was defined)
----
-* `param`: problem setup
-  * `baseline`: this is the initial starting point (initial design vector)
-  * `lb`: lower bounds vector
-  * `ub`: upper bounds vector
-  * `var_names`: list of design variable names
-  * `var_types`: list of variable types
-     * `R`: real variable
-     * `I`: integer variable
-     * `C_<set name>`: categorical variable. A set name from the sets dict should be added after the underscore that follows `C`
-     * `D_<set name>`: discrete variable. A set name from the sets dict should be added after the underscore that follows `D`
-  * `Sets`: a dictionary where its keys refer to the set name and their value should be assigned to a list of values (the values can be of heterogeneous type)
-  * `scaling`: scaling factor
-  * `post_dir`: the location of the post directory where the results file shall be saved if requested
-  * `constraints_type`: list of the constraints barrier type, i.e., progressive barrier (PB) and extreme barrier (EB)
-  * `LAMBDA`: list of the initial Lagrangian multipliers assigned to the constraints
-  * `RHO`: list of the initial penalty parameter
-  * `hmax`: the maximum feasibility threshold
-  * `nobj`: number of objectives
-  * `isPareto`: boolean for running a Pareto study
-  * `meshType`: specify whether to use a granular or an orthogonal mesh
-    * `GMESH`: granular mesh
-    * `OMESH`: orthogonal mesh
-  * `name`: problem name (that name will be used for naming the output files)
----
-* `options`: algorithmic options
-  * `seed`: the random generator seed that ensures reproducibility of results. This should be an integer value
-  * `budget`: the evaluation budget; the maximum number of evaluations for the blackbox defined
-  * `tol`: the minimum poll size tolerance; the algorithm terminates once the poll size falls below this value
-  * `psize_init`: initial poll size
-  * `display`: a boolean for displaying verbose outputs per iteration in the terminal window
-  * `opportunistic`: a boolean for enabling opportunistic search
-  * `check_cache`: a boolean for checking if the current point is a duplicate by checking its hashed address (integer signature)
-  * `store_cache`: a boolean for saving evaluated designs in the cache memory
-  * `collect_y`: currently inactive (to be used when the code is integrated with the PyADMM MDO module)
-  * `rich_direction`: a boolean that enables capturing a rich set of directions in a generalized pattern
-  * `precision`: a string character input that controls the `dtype` decimal resolution used by the numerical library `numpy`
-    * `high`: `float128` 1e-18
-    * `medium`: `float64` 1e-15
-    * `low`: `float32` 1e-8
-  * `save_results`: a boolean for generating a `MADS.csv` file for the output results under the post directory
-  * `save_coordinates`: saving poll coordinates (spinners) of each iteration in a JASON dictionary template that can be used for visualization
-  * `save_all_best`: a boolean for saving only incumbent solutions
-  * `parallel_mode`: a boolean for parallel computation of the poll set
----
-* `search`: the search step options
-   * `type`: search type can take one of the following values 
-      * `VNS`: variable neighbor search 
-      * `sampling`: sampling search
-      * `BO`: Bayesian optimization (TODO: not published yet, as it is still in the testing and BM phase)
-      * `NM`: Nelder-Mead (TODO: not published ye,t as it is still in the testing and BM phase)
-      * `PSO`: particle swarm optimization (TODO: not published yet as it is in the testing phase)
-      * `CMA-ES`: covariance matrix adaptation evolution strategy (TODO: not published yet, as it is in the testing phase)
-   * `s_method`: can take one of the following values
-      * `ACTIVE`: Online active sampling using kernel density estimators (KDE) 
-      * `LH`: Latin Hypercube sampling\
-      * `RS`: random sampling
-      * `HALTON`: Halton sampling
-   * `ns`: number of samples
----
+```python
+import numpy as np
+from OMADS import mads
 
-## Multiobjective MADS
+def rosenbrock(x):
+    x = np.asarray(x)
+    f = np.sum(100.0 * (x[1:] - x[:-1] ** 2) ** 2 + (1 - x[:-1]) ** 2)
+    return [f, [0]]              # [objective, list of constraints c(x) <= 0]
 
-The poll, search, and MADS algorithms are capable of solving both unconstrained and constrained multiobjective problems by conducting a Pareto study. The approximated Pareto front (non-dominated solutions) are saved in a separate CSV file named with the suffix Pareto "{problem_name}_Pareto.out". The figures below display the results of test functions chosen from the literature.
+data = {
+    "evaluator": {"blackbox": rosenbrock},
+    "param": {"name": "rosen", "baseline": [-2.0, -2.0], "lb": [-5, -5],
+              "ub": [10, 10], "scaling": [15, 15], "post_dir": "./post"},
+    "options": {"seed": 0, "budget": 1000, "tol": 1e-9, "rich_direction": True,
+                "store_cache": True, "check_cache": True},
+    "search": {"type": "sampling", "s_method": "ACTIVE", "ns": 10},
+}
+
+if __name__ == "__main__":
+    out, poll_step, search_step = mads.main(data)
+    print(out["xmin"], out["fmin"], out["nbb_evals"])   # [1.0, 1.0] [0.0] 223
+```
+
+`poll.main(data)` and `search.main(data)` take the same input and return `(out, sampler)`.
+Each solver also accepts the path to a JSON file holding the same dictionary.
+
+## Input at a glance
+
+| Section | Purpose | Main keys |
+|---|---|---|
+| `evaluator` | How to evaluate a point | `blackbox` (callable or executable), `constants`, `path`, `input`, `output`, `timeout` |
+| `param` | The problem | `name`, `baseline`, `lb`, `ub`, `var_names`, `scaling`, `post_dir`, `constraints_type`, `h_max`, `mesh_type`, `nobj`, `is_pareto` |
+| `options` | Algorithm and run options | `seed`, `budget`, `tol`, `psize_init`, `store_cache`, `check_cache`, `rich_direction`, `direction_type`, `opportunistic`, `parallel_mode`, `np`, `save_results` |
+| `search` | The search step (`mads`, `search`) | `type` (`sampling` or `VNS`), `s_method` (`ACTIVE`, `LH`, `RS`, `HALTON`, `FULLFACTORIAL`), `ns` |
+
+The blackbox receives the design vector and returns `[f, [c1, c2, ...]]`, with constraints
+feasible when `c_j(x) <= 0`. Every key, with its default, is listed in the
+[configuration reference](https://ahmed-bayoumy.github.io/OMADS/user_guide/configuration.html).
+
+> **Note:** keep `store_cache` and `check_cache` set to `True`; the `mads` and `search` solvers
+> need the cache. The `internal` evaluator suites (`"con"`, `"uncon"`) of older releases have been
+> removed.
+
+## Multi-objective MADS
+
+Return a list of objectives from the blackbox and set `"nobj"` and `"is_pareto": True` in
+`param` to run a Pareto study (use `poll.main` in this release). See the
+[multi-objective tutorial](https://ahmed-bayoumy.github.io/OMADS/tutorials/multiobjective.html).
+The figures below show fronts found on test problems from the literature.
 
 ### Constrained test functions
 
 ![BM_res_ConstrainedMOO](https://github.com/user-attachments/assets/033012c6-8e4f-4f8f-b6e3-982ef4ec1f47)
 
-
 ### Unconstrained test functions
 
 ![BM_res_UnconstrainedMOO](https://github.com/user-attachments/assets/4b856656-e294-41b0-89ab-ea79818ecf76)
 
----
-
 ## Benchmarking
 
-To benchmark `OMADS`, per se, you need to install the non-linear optimization benchmarking project `NOBM` (will be installed automatically when you install `OMADS`) from 
-[PYPI](https://pypi.org/).  Two benchmarking suites are provided under the `BMDFO` package -- `BMDFO` stands for 
-benchmarking derivative-free optimization algorithms.  The benchmarking suites have different constrained and 
-unconstrained optimization problems with various characteristics.  The `BMDFO` modules can be imported directly 
-to the Python script as shown below: 
-```pycon
-from BMDFO import toy
-```
-For more details about the `NOBM` project and its use, check this [link](https://github.com/Ahmed-Bayoumy/NOBM). 
-After running the benchmarking suite using various seed values, which are used to initialize the random number generator, 
-a `BM_report.csv` file will be created in the post directory under the `examples` folder.
+- `pytest tests` runs the regression suite (Rosenbrock in 2, 10 and 20 dimensions, constrained
+  and geometric-programming problems), with a target value for each solver.
+- `benchmarks/coco/run_mads_bbob_constrained.py` runs OMADS on the COCO `bbob-constrained` suite.
 
-## Example
+See the [benchmarking page](https://ahmed-bayoumy.github.io/OMADS/benchmarking.html).
 
-```pycon
-import OMADS
-import numpy as np
+## Building the documentation
 
-def rosen(x, *argv):
-    x = np.asarray(x)
-    y = [np.sum(100.0 * (x[1:] - x[:-1] ** 2.0) ** 2.0 + (1 - x[:-1]) ** 2.0,
-                axis=0), [0]]
-    return y
-
-eval = {"blackbox": rosen}
-param = {"baseline": [-2.0, -2.0],
-            "lb": [-5, -5],
-            "ub": [10, 10],
-            "var_names": ["x1", "x2"],
-            "scaling": 10.0,
-            "post_dir": "./post"}
-options = {"seed": 0, "budget": 100000, "tol": 1e-12, "display": True}
-
-data = {"evaluator": eval, "param": param, "options":options}
-
-out = {}
-# out is a dictionary that will hold output data of the final solution. The out dictionary has three keys: "xmin", "fmin" and "hmin"
-
-out = OMADS.main(data)
-
-
-
+```commandline
+pip install -r docs_src/requirements.txt
+sphinx-build -b html docs_src docs
 ```
 
-### Results
-```text
- --- Run Summary ---
- Run completed in 0.0303 seconds
- Random numbers generator's seed 0
- xmin = [1.0, 1.0]
- hmin = 1e-30
- fmin = 0.0
- #bb_eval = 185
- #iteration = 46
- nb_success = 4
- psize = 9.094947017729282e-13
- psize_success = 1.0
- psize_max = 2.0
+The sources live in `docs_src/`; the rendered site in `docs/` is served by GitHub Pages.
+
+## License & copyright
+
+© Ahmed H. Bayoumy 2022-2026
+
+This program is free software: you can redistribute it and/or modify it under the terms of the
+GNU General Public License as published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version. See the [LICENSE](LICENSE) file for the full
+license text.
+
+## Citation
+
+If you use this code, please cite it as follows.
+
+```bibtex
+@software{OMADS_AB,
+  author    = {Bayoumy, Ahmed H.},
+  title     = {OMADS: Optimization using Mesh Adaptive Direct Search},
+  year      = {2022},
+  publisher = {GitHub},
+  version   = {2610},
+  doi       = {10.5281/zenodo.7212701},
+  url       = {https://github.com/Ahmed-Bayoumy/OMADS}
+}
 ```
 
 https://github.com/Ahmed-Bayoumy/OMADS/assets/22842095/5dc72c34-4722-4d93-8c84-d17f5595556d
-
-

@@ -1,7 +1,0 @@
-OMADS
-=====
-
-.. toctree::
-   :maxdepth: 4
-
-   OMADS

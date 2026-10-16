@@ -1,135 +1,1167 @@
-<!DOCTYPE html>
-<html class="writer-html5" lang="en" >
-<head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Benchmarking &mdash; Read the Docs OMADS 2.1.0 documentation</title>
-      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="_static/proof.css" type="text/css" />
-      <link rel="stylesheet" href="_static/proof.css" type="text/css" />
-      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pseudocode@latest/build/pseudocode.min.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" data-theme="light">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Benchmarking &#8212; OMADS 2610</title>
   
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
-        <script src="_static/doctools.js"></script>
-        <script src="_static/proof.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/pseudocode@latest/build/pseudocode.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.js"></script>
-        <script src="_static/debug.js"></script>
-    <script src="_static/js/theme.js"></script>
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/proof.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/pseudocode@latest/build/pseudocode.min.css" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=2ebac5eb" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
+
+    <script src="_static/documentation_options.js?v=c14009a4"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=fd10adb8"></script>
+    <script src="_static/design-tabs.js?v=f930bc37"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pseudocode@latest/build/pseudocode.js"></script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'benchmarking';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Tutorials" href="tutorials.html" />
-    <link rel="prev" title="Background" href="background.html" /> 
-</head>
+    <link rel="next" title="Tutorials" href="tutorials/index.html" />
+    <link rel="prev" title="Background" href="background.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="2610" />
+  
+    
+    <script src="_static/searchtools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script src="searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="light">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
 
-<body class="wy-body-for-nav"> 
-  <div class="wy-grid-for-nav">
-    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
-      <div class="wy-side-scroll">
-        <div class="wy-side-nav-search" >
-            <a href="index.html" class="icon icon-home"> OMADS 2.1.0
-              <img src="_static/OMADS_logo.png" class="logo" alt="Logo"/>
-          </a>
-<div role="search">
-  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
-    <input type="hidden" name="check_keywords" value="yes" />
-    <input type="hidden" name="area" value="default" />
-  </form>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
-        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Technical Documentation</span></p>
-<ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="background.html">Background</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Benchmarking</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#results-of-unconstrained-problems">Results of unconstrained problems</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#results-of-constrained-problems">Results of constrained problems</a></li>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+    
+    
+    
+    <img src="_static/OMADS_logo.png" class="logo__image only-light" alt="OMADS 2610 - Home"/>
+    <img src="_static/OMADS_logo.png" class="logo__image only-dark pst-js-only" alt="OMADS 2610 - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="getting_started.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="background.html">
+    Background
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    Benchmarking
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="user_guide/configuration.html">
+    Configuration reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="user_guide/outputs.html">
+    Outputs
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="references.html">
+    References
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/Ahmed-Bayoumy/OMADS" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="getting_started.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="background.html">
+    Background
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    Benchmarking
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="user_guide/configuration.html">
+    Configuration reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="user_guide/outputs.html">
+    Outputs
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="references.html">
+    References
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/Ahmed-Bayoumy/OMADS" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"></div>
+</nav></div>
+        <div class="sidebar-primary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#regression-suite">Regression suite</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#coco-bbob-constrained">COCO <code class="docutils literal notranslate"><span class="pre">bbob-constrained</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#results-on-bbob-constrained">Results on <code class="docutils literal notranslate"><span class="pre">bbob-constrained</span></code></a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#experimental-setup">Experimental setup</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fraction-of-solved-runs">Fraction of solved runs</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#runtime-distributions">Runtime distributions</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#discussion">Discussion</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#results-reproducibility">Results reproducibility</a></li>
 </ul>
 </li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#toy-problems">Toy problems</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Demo Documentation</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a></li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">Code Documentation</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="OMADS.html">OMADS package</a></li>
-<li class="toctree-l1"><a class="reference internal" href="indicesAndTables.html">Indices and tables</a></li>
-</ul>
-
-        </div>
-      </div>
-    </nav>
-
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="index.html">Read the Docs OMADS</a>
-      </nav>
-
-      <div class="wy-nav-content">
-        <div class="rst-content">
-          <div role="navigation" aria-label="Page navigation">
-  <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Benchmarking</li>
-      <li class="wy-breadcrumbs-aside">
-            <a href="_sources/benchmarking.rst.txt" rel="nofollow"> View page source</a>
-      </li>
-  </ul>
-  <hr/>
-</div>
-          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
-           <div itemprop="articleBody">
-             
-  <section id="benchmarking">
-<h1>Benchmarking<a class="headerlink" href="#benchmarking" title="Permalink to this headline"></a></h1>
-<p>This section shows benchmarking results of running <code class="docutils literal notranslate"><span class="pre">OMADS-2.1.0</span></code> on selected constrained and unconstrained benchmarking problems that have various design space characteristics.</p>
-<section id="results-of-unconstrained-problems">
-<h2>Results of unconstrained problems<a class="headerlink" href="#results-of-unconstrained-problems" title="Permalink to this headline"></a></h2>
-<p>TBD</p>
-</section>
-<section id="results-of-constrained-problems">
-<h2>Results of constrained problems<a class="headerlink" href="#results-of-constrained-problems" title="Permalink to this headline"></a></h2>
-<p>TBD</p>
-</section>
-</section>
-
-
-           </div>
-          </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="background.html" class="btn btn-neutral float-left" title="Background" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="tutorials.html" class="btn btn-neutral float-right" title="Tutorials" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+  </nav></div>
     </div>
-
-  <hr/>
-
-  <div role="contentinfo">
-    <p>&#169; Copyright Ahmed Bayoumy, Read the Docs, Inc. &amp; contributors.</p>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
   </div>
 
-  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    provided by <a href="https://readthedocs.org">Read the Docs</a>.
-   
 
-</footer>
-        </div>
       </div>
-    </section>
-  </div>
-  <script>
-      jQuery(function () {
-          SphinxRtdTheme.Navigation.enable(true);
-      });
-  </script> 
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
 
-</body>
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Benchmarking</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="benchmarking">
+<h1>Benchmarking<a class="headerlink" href="#benchmarking" title="Link to this heading">#</a></h1>
+<p>This section describes how OMADS 2610 is benchmarked: the regression suite that runs on
+every commit, and the COCO <code class="docutils literal notranslate"><span class="pre">bbob-constrained</span></code> runner for large studies.</p>
+<section id="regression-suite">
+<h2>Regression suite<a class="headerlink" href="#regression-suite" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">tests/test_OMADS_BASIC.py</span></code> runs on Linux, Windows and macOS in continuous integration.
+Every solver must reach a target value within a fixed budget. For the 10D and 20D
+Rosenbrock problems, the target is the <strong>median over three seeds</strong> (single-seed results
+swing too much with the random direction stream).</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 36.0%" />
+<col style="width: 10.0%" />
+<col style="width: 16.0%" />
+<col style="width: 38.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Problem</p></th>
+<th class="head"><p><span class="math notranslate nohighlight">\(n\)</span></p></th>
+<th class="head"><p>Budget</p></th>
+<th class="head"><p>Solver: target</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Rosenbrock, <span class="math notranslate nohighlight">\(x^0 = (-2.5, \dots)\)</span></p></td>
+<td><p>2</p></td>
+<td><p>3500</p></td>
+<td><p>mads ≤ 0.005, poll ≤ 0.008, search ≤ 0.07</p></td>
+</tr>
+<tr class="row-odd"><td><p>Thin constrained band (2 PB constraints)</p></td>
+<td><p>2</p></td>
+<td><p>2000</p></td>
+<td><p>mads ≤ 0.0989</p></td>
+</tr>
+<tr class="row-even"><td><p>Rosenbrock (ORTHO N+1)</p></td>
+<td><p>10</p></td>
+<td><p>4000 / 3000</p></td>
+<td><p>mads ≤ 9.7, poll ≤ 8, search ≤ 7.3</p></td>
+</tr>
+<tr class="row-odd"><td><p>Rosenbrock (ORTHO N+1)</p></td>
+<td><p>20</p></td>
+<td><p>5000</p></td>
+<td><p>mads ≤ 20.5, poll ≤ 20, search ≤ 24.3</p></td>
+</tr>
+<tr class="row-even"><td><p>Geometric programming (6 PB constraints)</p></td>
+<td><p>10</p></td>
+<td><p>10000</p></td>
+<td><p>poll ≤ 27 (median)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Sellar, IDF formulation (GMESH)</p></td>
+<td><p>4</p></td>
+<td><p>150</p></td>
+<td><p>runs to completion</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The 2D Rosenbrock test also runs every solver in parallel mode (<code class="docutils literal notranslate"><span class="pre">np</span> <span class="pre">=</span> <span class="pre">4</span></code>) and checks the
+same targets.</p>
+<p>Run the suite locally with:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">".[test]"</span>
+<span class="gp">$ </span>pytest<span class="w"> </span>tests<span class="w"> </span>-v
+</pre></div>
+</div>
+</section>
+<section id="coco-bbob-constrained">
+<h2>COCO <code class="docutils literal notranslate"><span class="pre">bbob-constrained</span></code><a class="headerlink" href="#coco-bbob-constrained" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">benchmarks/coco/run_mads_bbob_constrained.py</span></code> runs <code class="docutils literal notranslate"><span class="pre">mads.main</span></code> on the 54 functions of the
+COCO <code class="docutils literal notranslate"><span class="pre">bbob-constrained</span></code> suite <span class="bibtex-citation" id="id1">[<a class="reference internal" href="references.html#id15" title="Nikolaus Hansen, Anne Auger, Raymond Ros, Olaf Mersmann, Tea Tušar, and Dimo Brockhoff. COCO: a platform for comparing continuous optimizers in a black-box setting. 2021. doi:10.1080/10556788.2020.1808977.">Hansen <em>et al.</em>, 2021</a>]</span>. Each COCO problem
+<span class="math notranslate nohighlight">\(x \mapsto f(x)\)</span> with constraints <span class="math notranslate nohighlight">\(g(x) \le 0\)</span> becomes a callable blackbox
+returning <code class="docutils literal notranslate"><span class="pre">[f,</span> <span class="pre">g]</span></code>, and every constraint uses the progressive barrier. A run stops as soon
+as COCO’s final target is hit, and unsolved instances are restarted (new start point and
+seed) until <code class="docutils literal notranslate"><span class="pre">budget_multiplier</span> <span class="pre">×</span> <span class="pre">dimension</span></code> evaluations are used.</p>
+<p>The runner’s defaults are the configuration published below (<code class="docutils literal notranslate"><span class="pre">--preset</span> <span class="pre">A</span></code>): the
+<code class="docutils literal notranslate"><span class="pre">ACTIVE</span></code> sampling search with <span class="math notranslate nohighlight">\(n_s = \min\{(n+1)(n+2)/2,\ 2n\}\)</span>, the <code class="docutils literal notranslate"><span class="pre">ORTHO_N+1</span></code>
+poll and opportunistic evaluation, on dimensions 2, 3, 5 and 10, instances 1 to 15, with a
+budget of <span class="math notranslate nohighlight">\(100\,n\)</span>. The other published configurations are available as presets, and
+any option overrides its preset value.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>benchmarks/coco/requirements.txt
+<span class="gp">$ </span>python<span class="w"> </span>benchmarks/coco/run_mads_bbob_constrained.py<span class="w">                  </span><span class="c1"># preset A</span>
+<span class="gp">$ </span>python<span class="w"> </span>benchmarks/coco/run_mads_bbob_constrained.py<span class="w"> </span>--preset<span class="w"> </span>halton
+<span class="gp">$ </span>python<span class="w"> </span>benchmarks/coco/run_mads_bbob_constrained.py<span class="w"> </span>-d<span class="w"> </span><span class="m">2</span>,3,5<span class="w"> </span>-f<span class="w"> </span><span class="m">1</span>-12<span class="w"> </span>-i<span class="w"> </span><span class="m">1</span>-3<span class="w"> </span><span class="se">\</span>
+<span class="w">      </span>--budget-multiplier<span class="w"> </span><span class="m">50</span>
+</pre></div>
+</div>
+<p>Results go to <code class="docutils literal notranslate"><span class="pre">exdata/&lt;output-folder&gt;</span></code> and are post-processed with <code class="docutils literal notranslate"><span class="pre">cocopp</span></code> into an
+HTML report under <code class="docutils literal notranslate"><span class="pre">ppdata/</span></code>. Large runs can be split over several processes with
+<code class="docutils literal notranslate"><span class="pre">--batches</span> <span class="pre">N</span> <span class="pre">--batch</span> <span class="pre">k</span></code>; post-process all the batch folders together with
+<code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">cocopp</span> <span class="pre">exdata/...</span></code>.</p>
+<div class="pst-scrollable-table-container"><table class="table" id="id2">
+<caption><span class="caption-number">Table 1 </span><span class="caption-text">Presets of the COCO runner</span><a class="headerlink" href="#id2" title="Link to this table">#</a></caption>
+<colgroup>
+<col style="width: 14.0%" />
+<col style="width: 18.0%" />
+<col style="width: 68.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Preset</p></th>
+<th class="head"><p>COCO name</p></th>
+<th class="head"><p>Configuration</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">A</span></code> (default)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">OMADS-A</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">ACTIVE</span></code> search, <span class="math notranslate nohighlight">\(n_s = \min\{(n+1)(n+2)/2,\ 2n\}\)</span>, <code class="docutils literal notranslate"><span class="pre">ORTHO_N+1</span></code> poll,
+opportunistic.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">B</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">OMADS-B</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">ACTIVE</span></code> search, <span class="math notranslate nohighlight">\(n_s = (n+1)(n+2)/2\)</span>, after every third failed poll,
+<code class="docutils literal notranslate"><span class="pre">ORTHO_N+1</span></code> poll, opportunistic.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">halton</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">OMADS-Halton</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">HALTON</span></code> search, <span class="math notranslate nohighlight">\(n_s = 1\)</span> (56 on f43 to f54), <code class="docutils literal notranslate"><span class="pre">ORTHO_2N</span></code> poll.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">initial</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">OMADS-ACTIVE</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">ACTIVE</span></code> search, <span class="math notranslate nohighlight">\(n_s = (n+1)(n+2)/2 + 10\)</span>, <code class="docutils literal notranslate"><span class="pre">ORTHO_2N</span></code> poll.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="pst-scrollable-table-container"><table class="table" id="id3">
+<caption><span class="caption-number">Table 2 </span><span class="caption-text">Main options of the COCO runner</span><a class="headerlink" href="#id3" title="Link to this table">#</a></caption>
+<colgroup>
+<col style="width: 30.0%" />
+<col style="width: 20.0%" />
+<col style="width: 50.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Option</p></th>
+<th class="head"><p>Default</p></th>
+<th class="head"><p>Meaning</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--preset</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">A</span></code></p></td>
+<td><p>Published configuration (see the table above).</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--budget-multiplier</span></code>, <code class="docutils literal notranslate"><span class="pre">-b</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">100</span></code></p></td>
+<td><p>Evaluations per instance, times the dimension.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--dimensions</span></code>, <code class="docutils literal notranslate"><span class="pre">-d</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">2,3,5,10</span></code></p></td>
+<td><p>Dimensions to run (the suite has 2, 3, 5, 10, 20, 40).</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--functions</span></code>, <code class="docutils literal notranslate"><span class="pre">-f</span></code></p></td>
+<td><p>all</p></td>
+<td><p>Function indices, e.g. <code class="docutils literal notranslate"><span class="pre">1-18</span></code> (1 to 54).</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--instances</span></code>, <code class="docutils literal notranslate"><span class="pre">-i</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">1-15</span></code></p></td>
+<td><p>Instance indices.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--s-method</span></code></p></td>
+<td><p>preset</p></td>
+<td><p>Sampling method of the search step (<code class="docutils literal notranslate"><span class="pre">ACTIVE</span></code>, <code class="docutils literal notranslate"><span class="pre">HALTON</span></code>, <code class="docutils literal notranslate"><span class="pre">LH</span></code>, …).</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--ns</span></code> / <code class="docutils literal notranslate"><span class="pre">--ns-multimodal</span></code></p></td>
+<td><p>preset</p></td>
+<td><p>Samples per search step on f1 to f42 and on the multimodal Rastrigin functions
+f43 to f54: an integer, <code class="docutils literal notranslate"><span class="pre">quad</span></code> for <span class="math notranslate nohighlight">\((n+1)(n+2)/2\)</span>, <code class="docutils literal notranslate"><span class="pre">min2n</span></code> for
+<span class="math notranslate nohighlight">\(\min\{(n+1)(n+2)/2,\ 2n\}\)</span> or <code class="docutils literal notranslate"><span class="pre">auto</span></code> for <span class="math notranslate nohighlight">\((n+1)(n+2)/2 + 10\)</span>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--search-every</span></code></p></td>
+<td><p>preset</p></td>
+<td><p>Run the sampling search after every k-th consecutive failed poll only.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--direction-type</span></code></p></td>
+<td><p>preset</p></td>
+<td><p>Poll directions: <code class="docutils literal notranslate"><span class="pre">ORTHO_2N</span></code> or <code class="docutils literal notranslate"><span class="pre">ORTHO_N+1</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--opportunistic</span></code> / <code class="docutils literal notranslate"><span class="pre">--no-opportunistic</span></code></p></td>
+<td><p>preset</p></td>
+<td><p>Stop evaluating a poll or search set at its first improvement.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--mesh-type</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">GMESH</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">GMESH</span></code> (anisotropic granular mesh) or <code class="docutils literal notranslate"><span class="pre">ORTHO</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--anisotropy-factor</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">0.05</span></code></p></td>
+<td><p>GMESH anisotropy factor.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--min-mesh-size</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">1e-13</span></code></p></td>
+<td><p>GMESH minimum mesh size.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--seed</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">1234</span></code></p></td>
+<td><p>Base seed, offset at each restart.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--batches</span></code>, <code class="docutils literal notranslate"><span class="pre">--batch</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">1</span></code>, <code class="docutils literal notranslate"><span class="pre">1</span></code></p></td>
+<td><p>Split the suite and pick the batch run by this process.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="results-on-bbob-constrained">
+<h2>Results on <code class="docutils literal notranslate"><span class="pre">bbob-constrained</span></code><a class="headerlink" href="#results-on-bbob-constrained" title="Link to this heading">#</a></h2>
+<section id="experimental-setup">
+<h3>Experimental setup<a class="headerlink" href="#experimental-setup" title="Link to this heading">#</a></h3>
+<p>OMADS 2610 was run on the 54 functions of <code class="docutils literal notranslate"><span class="pre">bbob-constrained</span></code> in dimensions 2, 3, 5 and 10,
+on instances 1 to 15, with a budget of <span class="math notranslate nohighlight">\(100\,n\)</span> function evaluations per instance
+(810 runs per dimension). All runs use <code class="docutils literal notranslate"><span class="pre">mads.main</span></code> with the settings of the COCO runner
+(granular mesh, progressive barrier on every constraint). The quadratic model search runs
+first at every iteration in all configurations; they differ in the sampling search and the
+poll.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 24.0%" />
+<col style="width: 76.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Label</p></th>
+<th class="head"><p>Configuration</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">ACTIVE</span> <span class="pre">(A)</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;s_method&quot;:</span> <span class="pre">&quot;ACTIVE&quot;</span></code> (BiTPE) with smaller batches,
+<span class="math notranslate nohighlight">\(n_s = \min\{(n+1)(n+2)/2,\ 2n\}\)</span> (4, 6, 10 and 20 in dimensions 2, 3, 5 and
+10); <code class="docutils literal notranslate"><span class="pre">ORTHO_N+1</span></code> poll; <code class="docutils literal notranslate"><span class="pre">&quot;opportunistic&quot;:</span> <span class="pre">True</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">ACTIVE</span> <span class="pre">(B)</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;s_method&quot;:</span> <span class="pre">&quot;ACTIVE&quot;</span></code> (BiTPE) with <span class="math notranslate nohighlight">\(n_s = (n+1)(n+2)/2\)</span>, run only after every
+third consecutive unsuccessful poll (<code class="docutils literal notranslate"><span class="pre">&quot;search_every&quot;:</span> <span class="pre">3</span></code>); <code class="docutils literal notranslate"><span class="pre">ORTHO_N+1</span></code> poll;
+<code class="docutils literal notranslate"><span class="pre">&quot;opportunistic&quot;:</span> <span class="pre">True</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">HALTON</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;s_method&quot;:</span> <span class="pre">&quot;HALTON&quot;</span></code>, <span class="math notranslate nohighlight">\(n_s = 1\)</span> (<span class="math notranslate nohighlight">\(n_s = 56\)</span> on the multimodal
+functions f43 to f54); <code class="docutils literal notranslate"><span class="pre">ORTHO_2N</span></code> poll; the default of the COCO runner.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">ACTIVE,</span> <span class="pre">ns</span> <span class="pre">=</span> <span class="pre">(n+1)(n+2)/2</span> <span class="pre">+</span> <span class="pre">10</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;s_method&quot;:</span> <span class="pre">&quot;ACTIVE&quot;</span></code> with <span class="math notranslate nohighlight">\(n_s = (n+1)(n+2)/2 + 10\)</span> after every
+unsuccessful poll; <code class="docutils literal notranslate"><span class="pre">ORTHO_2N</span></code> poll. A first configuration, reported in
+<a class="reference internal" href="#t-coco-summary"><span class="std std-numref">Table 3</span></a> only.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>With the <code class="docutils literal notranslate"><span class="pre">ACTIVE</span></code> search, each model-based search step evaluates up to <span class="math notranslate nohighlight">\(n_s\)</span> BiTPE
+proposals plus three line probes (the runner sets <code class="docutils literal notranslate"><span class="pre">search[&quot;batch&quot;]</span></code> to <span class="math notranslate nohighlight">\(n_s\)</span>;
+OMADS’ default is 10); with <code class="docutils literal notranslate"><span class="pre">&quot;opportunistic&quot;:</span> <span class="pre">True</span></code> the evaluation of a poll or
+search set stops at its first improvement.</p>
+<p>The reference algorithms are the 2022 entries of the COCO data archive: COBYLA and AL1-CMA-ES
+(Dufossé), fmincon (Hellwig) and random search. These were run with much larger budgets, up to
+<span class="math notranslate nohighlight">\(10^{7}\,n\)</span> evaluations. Note that COCO counts every constraint evaluation in addition to
+the objective evaluation (“evals = f-evals + g-evals”), which is why the OMADS curves extend
+beyond <span class="math notranslate nohighlight">\(\log_{10}(100) = 2\)</span> on the horizontal axis.</p>
+</section>
+<section id="fraction-of-solved-runs">
+<h3>Fraction of solved runs<a class="headerlink" href="#fraction-of-solved-runs" title="Link to this heading">#</a></h3>
+<p><a class="reference internal" href="#f-coco-summary"><span class="std std-numref">Figure 4</span></a> and <a class="reference internal" href="#t-coco-summary"><span class="std std-numref">Table 3</span></a> report, for each configuration and
+dimension, the fraction of the 810 runs whose final precision <span class="math notranslate nohighlight">\(f - f_{\text{opt}}\)</span>
+reached <span class="math notranslate nohighlight">\(10^{-1}\)</span>, <span class="math notranslate nohighlight">\(10^{-3}\)</span> and <span class="math notranslate nohighlight">\(10^{-6}\)</span> within the budget.</p>
+<figure class="align-default" id="id4">
+<span id="f-coco-summary"></span><a class="reference internal image-reference" href="_images/coco_summary.svg"><img alt="_images/coco_summary.svg" src="_images/coco_summary.svg" style="width: 100%;" />
+</a>
+<figcaption>
+<p><span class="caption-number">Figure 4 </span><span class="caption-text">Fraction of <code class="docutils literal notranslate"><span class="pre">bbob-constrained</span></code> runs (54 functions × 15 instances) reaching a given
+precision within <span class="math notranslate nohighlight">\(100\,n\)</span> evaluations, for three configurations of <code class="docutils literal notranslate"><span class="pre">mads.main</span></code>.</span><a class="headerlink" href="#id4" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<div class="pst-scrollable-table-container"><span id="t-coco-summary"></span><table class="table" id="id5">
+<caption><span class="caption-number">Table 3 </span><span class="caption-text">Fraction of runs reaching each precision (data of <a class="reference internal" href="#f-coco-summary"><span class="std std-numref">Figure 4</span></a>).</span><a class="headerlink" href="#id5" title="Link to this table">#</a></caption>
+<thead>
+<tr class="row-odd"><th class="head"><p>algorithm</p></th>
+<th class="head"><p>dimension</p></th>
+<th class="head"><p>runs</p></th>
+<th class="head"><p>reached 0.1</p></th>
+<th class="head"><p>reached 0.001</p></th>
+<th class="head"><p>reached 1e-06</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>mads.main, ACTIVE (A)</p></td>
+<td><p>2</p></td>
+<td><p>810</p></td>
+<td><p>0.753</p></td>
+<td><p>0.554</p></td>
+<td><p>0.164</p></td>
+</tr>
+<tr class="row-odd"><td><p>mads.main, ACTIVE (A)</p></td>
+<td><p>3</p></td>
+<td><p>810</p></td>
+<td><p>0.636</p></td>
+<td><p>0.456</p></td>
+<td><p>0.136</p></td>
+</tr>
+<tr class="row-even"><td><p>mads.main, ACTIVE (A)</p></td>
+<td><p>5</p></td>
+<td><p>810</p></td>
+<td><p>0.421</p></td>
+<td><p>0.260</p></td>
+<td><p>0.096</p></td>
+</tr>
+<tr class="row-odd"><td><p>mads.main, ACTIVE (A)</p></td>
+<td><p>10</p></td>
+<td><p>810</p></td>
+<td><p>0.272</p></td>
+<td><p>0.160</p></td>
+<td><p>0.101</p></td>
+</tr>
+<tr class="row-even"><td><p>mads.main, ACTIVE (B)</p></td>
+<td><p>2</p></td>
+<td><p>810</p></td>
+<td><p>0.781</p></td>
+<td><p>0.572</p></td>
+<td><p>0.158</p></td>
+</tr>
+<tr class="row-odd"><td><p>mads.main, ACTIVE (B)</p></td>
+<td><p>3</p></td>
+<td><p>810</p></td>
+<td><p>0.621</p></td>
+<td><p>0.435</p></td>
+<td><p>0.122</p></td>
+</tr>
+<tr class="row-even"><td><p>mads.main, ACTIVE (B)</p></td>
+<td><p>5</p></td>
+<td><p>810</p></td>
+<td><p>0.419</p></td>
+<td><p>0.249</p></td>
+<td><p>0.073</p></td>
+</tr>
+<tr class="row-odd"><td><p>mads.main, ACTIVE (B)</p></td>
+<td><p>10</p></td>
+<td><p>810</p></td>
+<td><p>0.233</p></td>
+<td><p>0.104</p></td>
+<td><p>0.028</p></td>
+</tr>
+<tr class="row-even"><td><p>mads.main, HALTON search</p></td>
+<td><p>2</p></td>
+<td><p>810</p></td>
+<td><p>0.785</p></td>
+<td><p>0.637</p></td>
+<td><p>0.300</p></td>
+</tr>
+<tr class="row-odd"><td><p>mads.main, HALTON search</p></td>
+<td><p>3</p></td>
+<td><p>810</p></td>
+<td><p>0.651</p></td>
+<td><p>0.496</p></td>
+<td><p>0.216</p></td>
+</tr>
+<tr class="row-even"><td><p>mads.main, HALTON search</p></td>
+<td><p>5</p></td>
+<td><p>810</p></td>
+<td><p>0.449</p></td>
+<td><p>0.288</p></td>
+<td><p>0.115</p></td>
+</tr>
+<tr class="row-odd"><td><p>mads.main, HALTON search</p></td>
+<td><p>10</p></td>
+<td><p>810</p></td>
+<td><p>0.256</p></td>
+<td><p>0.153</p></td>
+<td><p>0.084</p></td>
+</tr>
+<tr class="row-even"><td><p>mads.main, ACTIVE, ns = (n+1)(n+2)/2 + 10</p></td>
+<td><p>2</p></td>
+<td><p>810</p></td>
+<td><p>0.093</p></td>
+<td><p>0.005</p></td>
+<td><p>0.000</p></td>
+</tr>
+<tr class="row-odd"><td><p>mads.main, ACTIVE, ns = (n+1)(n+2)/2 + 10</p></td>
+<td><p>3</p></td>
+<td><p>810</p></td>
+<td><p>0.088</p></td>
+<td><p>0.010</p></td>
+<td><p>0.000</p></td>
+</tr>
+<tr class="row-even"><td><p>mads.main, ACTIVE, ns = (n+1)(n+2)/2 + 10</p></td>
+<td><p>5</p></td>
+<td><p>810</p></td>
+<td><p>0.025</p></td>
+<td><p>0.001</p></td>
+<td><p>0.000</p></td>
+</tr>
+<tr class="row-odd"><td><p>mads.main, ACTIVE, ns = (n+1)(n+2)/2 + 10</p></td>
+<td><p>10</p></td>
+<td><p>810</p></td>
+<td><p>0.015</p></td>
+<td><p>0.002</p></td>
+<td><p>0.000</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="runtime-distributions">
+<h3>Runtime distributions<a class="headerlink" href="#runtime-distributions" title="Link to this heading">#</a></h3>
+<p>The grid in <a class="reference internal" href="#f-coco-ecdf"><span class="std std-numref">Table 4</span></a> shows the empirical cumulative distribution functions
+(ECDFs) of the runtime, aggregated over all 54 functions, as produced by <code class="docutils literal notranslate"><span class="pre">cocopp</span></code>. Each curve
+gives the fraction of (function, target) pairs, for 41 targets between <span class="math notranslate nohighlight">\(10^{2}\)</span> and
+<span class="math notranslate nohighlight">\(10^{-6}\)</span>, solved after a given number of evaluations divided by the dimension. In the
+legends, <code class="docutils literal notranslate"><span class="pre">OMADS-A</span></code>, <code class="docutils literal notranslate"><span class="pre">OMADS-B</span></code> and <code class="docutils literal notranslate"><span class="pre">OMADS-Hal</span></code> stand for <code class="docutils literal notranslate"><span class="pre">ACTIVE</span> <span class="pre">(A)</span></code>,
+<code class="docutils literal notranslate"><span class="pre">ACTIVE</span> <span class="pre">(B)</span></code> and <code class="docutils literal notranslate"><span class="pre">HALTON</span></code> (<code class="docutils literal notranslate"><span class="pre">cocopp</span></code> truncates the labels).</p>
+<div class="pst-scrollable-table-container"><span id="f-coco-ecdf"></span><table class="figure-grid table" id="id6">
+<caption><span class="caption-number">Table 4 </span><span class="caption-text">Runtime ECDFs aggregated over all <code class="docutils literal notranslate"><span class="pre">bbob-constrained</span></code> functions, in 2, 3,
+5 and 10 dimensions.</span><a class="headerlink" href="#id6" title="Link to this table">#</a></caption>
+<tbody>
+<tr class="row-odd"><td><img alt="_images/ecdf_02D.svg" src="_images/ecdf_02D.svg" />
+</td>
+<td><img alt="_images/ecdf_03D.svg" src="_images/ecdf_03D.svg" />
+</td>
+</tr>
+<tr class="row-even"><td><img alt="_images/ecdf_05D.svg" src="_images/ecdf_05D.svg" />
+</td>
+<td><img alt="_images/ecdf_10D.svg" src="_images/ecdf_10D.svg" />
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="discussion">
+<h3>Discussion<a class="headerlink" href="#discussion" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>The cost of the <code class="docutils literal notranslate"><span class="pre">ACTIVE</span></code> search decides its usefulness at this budget. With
+<span class="math notranslate nohighlight">\(n_s = (n+1)(n+2)/2 + 10\)</span> after every unsuccessful poll, a search step costs up to
+<span class="math notranslate nohighlight">\(79\)</span> of the <span class="math notranslate nohighlight">\(1000\)</span> evaluations available in dimension 10, and fewer than 10%
+of the runs reach <span class="math notranslate nohighlight">\(10^{-1}\)</span> in any dimension. Capping the batch at <span class="math notranslate nohighlight">\(2n\)</span>
+(<code class="docutils literal notranslate"><span class="pre">ACTIVE</span> <span class="pre">(A)</span></code>), or running the search after every third failed poll only
+(<code class="docutils literal notranslate"><span class="pre">ACTIVE</span> <span class="pre">(B)</span></code>), together with the cheaper <code class="docutils literal notranslate"><span class="pre">ORTHO_N+1</span></code> poll and opportunistic
+evaluation, brings the <code class="docutils literal notranslate"><span class="pre">ACTIVE</span></code> search level with the <code class="docutils literal notranslate"><span class="pre">HALTON</span></code> configuration.</p></li>
+<li><p>In dimension 10, <code class="docutils literal notranslate"><span class="pre">ACTIVE</span> <span class="pre">(A)</span></code> is the best configuration at every precision: 27.2% of
+the runs reach <span class="math notranslate nohighlight">\(10^{-1}\)</span> (25.6% for <code class="docutils literal notranslate"><span class="pre">HALTON</span></code>), 16.0% reach <span class="math notranslate nohighlight">\(10^{-3}\)</span>
+(15.3%) and 10.1% reach <span class="math notranslate nohighlight">\(10^{-6}\)</span> (8.4%). In dimension 5 the two <code class="docutils literal notranslate"><span class="pre">ACTIVE</span></code>
+configurations are within three points of <code class="docutils literal notranslate"><span class="pre">HALTON</span></code>.</p></li>
+<li><p>In dimensions 2 and 3, <code class="docutils literal notranslate"><span class="pre">HALTON</span></code> remains ahead, mostly at tight precisions; there the
+one-point sampling search leaves almost the whole budget to the model search and the poll.</p></li>
+<li><p>The runtime distributions (<a class="reference internal" href="#f-coco-ecdf"><span class="std std-numref">Table 4</span></a>) give a complementary view, over 41
+targets instead of three precisions. In dimension 2, both <code class="docutils literal notranslate"><span class="pre">ACTIVE</span></code> configurations solve
+about 98% of the (function, target) pairs within their budget, more than <code class="docutils literal notranslate"><span class="pre">HALTON</span></code> (91%)
+and fmincon (92%), and close to COBYLA and AL1-CMA-ES, which use up to <span class="math notranslate nohighlight">\(10^{7}\,n\)</span>
+evaluations. In dimension 10, <code class="docutils literal notranslate"><span class="pre">HALTON</span></code> solves slightly more pairs (55%) than
+<code class="docutils literal notranslate"><span class="pre">ACTIVE</span> <span class="pre">(A)</span></code> (52%) and <code class="docutils literal notranslate"><span class="pre">ACTIVE</span> <span class="pre">(B)</span></code> (50%): it reaches more of the easy targets, while
+<code class="docutils literal notranslate"><span class="pre">ACTIVE</span> <span class="pre">(A)</span></code> reaches more of the tight ones.</p></li>
+<li><p>Smaller batches generalize better than a less frequent search: <code class="docutils literal notranslate"><span class="pre">ACTIVE</span> <span class="pre">(B)</span></code>, which keeps
+the large batches, is close to <code class="docutils literal notranslate"><span class="pre">ACTIVE</span> <span class="pre">(A)</span></code> in dimensions 2 to 5 but falls behind in
+dimension 10.</p></li>
+<li><p>COBYLA and fmincon, two model-based local solvers, are faster on these constrained,
+mostly smooth functions; they also reach more targets because they were run with budgets
+several orders of magnitude larger.</p></li>
+</ul>
+</section>
+<section id="results-reproducibility">
+<h3>Results reproducibility<a class="headerlink" href="#results-reproducibility" title="Link to this heading">#</a></h3>
+<p>The results above are reproduced, from the benchmark runs to the figures and the table of
+this page, by a single script.</p>
+<p><strong>Requirements.</strong> Python 3.10 or newer and an internet connection (<code class="docutils literal notranslate"><span class="pre">cocopp</span></code> downloads the reference algorithms from the COCO data
+archive on first use). From the root of the OMADS repository, install OMADS and the
+benchmarking packages (<code class="docutils literal notranslate"><span class="pre">coco-experiment</span></code>, <code class="docutils literal notranslate"><span class="pre">cocopp</span></code> and <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code>):</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
+<span class="gp">$ </span>python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>benchmarks/coco/requirements.txt
+</pre></div>
+</div>
+<p><strong>Run.</strong></p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>python<span class="w"> </span>benchmarks/coco/reproduce_results.py
+</pre></div>
+</div>
+<p>The script</p>
+<ol class="arabic simple">
+<li><p>runs the four presets <code class="docutils literal notranslate"><span class="pre">A</span></code>, <code class="docutils literal notranslate"><span class="pre">B</span></code>, <code class="docutils literal notranslate"><span class="pre">halton</span></code> and <code class="docutils literal notranslate"><span class="pre">initial</span></code> of
+<code class="docutils literal notranslate"><span class="pre">run_mads_bbob_constrained.py</span></code> on dimensions 2, 3, 5 and 10, instances 1 to 15, with a
+budget of <span class="math notranslate nohighlight">\(100\,n\)</span>, each split into 12 batches executed in parallel (a batch that
+fails is run again once);</p></li>
+<li><p>gathers the batches of each preset into <code class="docutils literal notranslate"><span class="pre">exdata/OMADS-A</span></code>, <code class="docutils literal notranslate"><span class="pre">exdata/OMADS-B</span></code>,
+<code class="docutils literal notranslate"><span class="pre">exdata/OMADS-Halton</span></code> and <code class="docutils literal notranslate"><span class="pre">exdata/OMADS-ACTIVE</span></code>;</p></li>
+<li><p>post-processes <code class="docutils literal notranslate"><span class="pre">OMADS-A</span></code>, <code class="docutils literal notranslate"><span class="pre">OMADS-B</span></code> and <code class="docutils literal notranslate"><span class="pre">OMADS-Halton</span></code> with <code class="docutils literal notranslate"><span class="pre">cocopp</span></code> against
+COBYLA, AL1-CMA-ES, fmincon and random search (full HTML report in <code class="docutils literal notranslate"><span class="pre">ppdata/repro</span></code>);</p></li>
+<li><p>writes the runtime ECDFs (<a class="reference internal" href="#f-coco-ecdf"><span class="std std-numref">Table 4</span></a>) and, from all four presets, the summary
+chart and table (<a class="reference internal" href="#f-coco-summary"><span class="std std-numref">Figure 4</span></a> and <a class="reference internal" href="#t-coco-summary"><span class="std std-numref">Table 3</span></a>) to
+<code class="docutils literal notranslate"><span class="pre">docs_src/media/figures/coco</span></code>. Rebuild the documentation with
+<code class="docutils literal notranslate"><span class="pre">sphinx-build</span> <span class="pre">-b</span> <span class="pre">html</span> <span class="pre">docs_src</span> <span class="pre">docs</span></code> to update this page.</p></li>
+</ol>
+<p>On a 24-core workstation with 12 parallel processes, the runs take about 8 to 10 hours, most
+of it for presets <code class="docutils literal notranslate"><span class="pre">A</span></code> and <code class="docutils literal notranslate"><span class="pre">B</span></code> in dimension 10, and <code class="docutils literal notranslate"><span class="pre">cocopp</span></code> about half an hour more.</p>
+<div class="pst-scrollable-table-container"><table class="table" id="id7">
+<caption><span class="caption-number">Table 5 </span><span class="caption-text">Options of <code class="docutils literal notranslate"><span class="pre">reproduce_results.py</span></code></span><a class="headerlink" href="#id7" title="Link to this table">#</a></caption>
+<colgroup>
+<col style="width: 30.0%" />
+<col style="width: 25.0%" />
+<col style="width: 45.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Option</p></th>
+<th class="head"><p>Default</p></th>
+<th class="head"><p>Meaning</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--presets</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">A,B,halton,initial</span></code></p></td>
+<td><p>Presets to run.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--workers</span></code></p></td>
+<td><p>half the CPU cores, at most 12</p></td>
+<td><p>Parallel processes. On a 64 GB machine, 12 processes run without problems while 24
+run out of memory; lower it if batches fail with memory errors.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--batches</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">12</span></code></p></td>
+<td><p>Batches per preset.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">-d</span></code>, <code class="docutils literal notranslate"><span class="pre">-f</span></code>, <code class="docutils literal notranslate"><span class="pre">-i</span></code></p></td>
+<td><p>runner defaults</p></td>
+<td><p>Dimensions, functions and instances, for a reduced reproduction.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--workdir</span></code></p></td>
+<td><p>repository root</p></td>
+<td><p>Folder that receives <code class="docutils literal notranslate"><span class="pre">exdata/</span></code> and <code class="docutils literal notranslate"><span class="pre">ppdata/repro</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--figures</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">docs_src/media/figures/coco</span></code></p></td>
+<td><p>Where the figures and table are written.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--skip-runs</span></code></p></td>
+<td><p>off</p></td>
+<td><p>Reuse existing <code class="docutils literal notranslate"><span class="pre">exdata/</span></code> data and only post-process.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>A single configuration can also be run on its own, for example
+<code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">benchmarks/coco/run_mads_bbob_constrained.py</span> <span class="pre">--preset</span> <span class="pre">B</span></code>, and post-processed with
+<code class="docutils literal notranslate"><span class="pre">benchmarks/coco/postprocess_bbob_constrained.py</span></code> and
+<code class="docutils literal notranslate"><span class="pre">benchmarks/coco/summarize_bbob_constrained.py</span></code>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The sampling search draws random numbers that are not all controlled by the run seed, so
+repeated campaigns give slightly different individual runs. The aggregated fractions and
+runtime distributions agree to within about one percentage point.</p>
+</div>
+</section>
+</section>
+<section id="toy-problems">
+<h2>Toy problems<a class="headerlink" href="#toy-problems" title="Link to this heading">#</a></h2>
+<p>Results on the 2D toy functions, from the <a class="reference internal" href="tutorials/toy_problems.html"><span class="doc">Toy problems</span></a>, with
+<code class="docutils literal notranslate"><span class="pre">mads.main</span></code>, seed 0 and a 1000-evaluation budget (2000 for Eggholder):</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 22.0%" />
+<col style="width: 22.0%" />
+<col style="width: 22.0%" />
+<col style="width: 17.0%" />
+<col style="width: 17.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Function</p></th>
+<th class="head"><p>Global minimum</p></th>
+<th class="head"><p>OMADS <code class="docutils literal notranslate"><span class="pre">fmin</span></code></p></th>
+<th class="head"><p>Evaluations</p></th>
+<th class="head"><p>Search</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Rosenbrock</p></td>
+<td><p>0</p></td>
+<td><p>0.0</p></td>
+<td><p>223</p></td>
+<td><p>ACTIVE</p></td>
+</tr>
+<tr class="row-odd"><td><p>Alpine</p></td>
+<td><p>0</p></td>
+<td><p>4.5e-06</p></td>
+<td><p>270</p></td>
+<td><p>ACTIVE</p></td>
+</tr>
+<tr class="row-even"><td><p>Ackley 3</p></td>
+<td><p>−186.4112</p></td>
+<td><p>−186.4112</p></td>
+<td><p>253</p></td>
+<td><p>ACTIVE</p></td>
+</tr>
+<tr class="row-odd"><td><p>Eggholder</p></td>
+<td><p>−959.6407</p></td>
+<td><p>−959.6407</p></td>
+<td><p>871</p></td>
+<td><p>LH, <code class="docutils literal notranslate"><span class="pre">ns</span> <span class="pre">=</span> <span class="pre">30</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="background.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Background</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="tutorials/index.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Tutorials</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2022-2026, Ahmed H. Bayoumy.
+      <br/>
+    
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
 </html>

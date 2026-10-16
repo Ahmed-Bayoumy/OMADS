@@ -1,0 +1,72 @@
+/* OMADS documentation: restrained, publication-style adjustments to
+   pydata-sphinx-theme. */
+
+html[data-theme="light"] {
+  --pst-color-primary: #1d3557;
+  --pst-color-secondary: #1d3557;
+  --pst-color-link: #1d4e89;
+  --pst-color-link-hover: #0b2545;
+  --pst-color-inline-code: #1d3557;
+}
+
+html[data-theme="dark"] {
+  --pst-color-primary: #a9c1e0;
+  --pst-color-secondary: #a9c1e0;
+  --pst-color-link: #9fbbe0;
+  --pst-color-link-hover: #cfdcef;
+  --pst-color-inline-code: #c9d6e8;
+}
+
+/* Serif headings and a slightly larger body text, as in a technical report. */
+.bd-article h1,
+.bd-article h2,
+.bd-article h3,
+.bd-article h4 {
+  font-family: Charter, "Bitstream Charter", "Sitka Text", Cambria, Georgia, serif;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+.bd-article h1 { font-size: 2.0rem; }
+.bd-article h2 {
+  font-size: 1.5rem;
+  border-bottom: 1px solid var(--pst-color-border);
+  padding-bottom: 0.2rem;
+  margin-top: 2.2rem;
+}
+.bd-article h3 { font-size: 1.2rem; }
+.bd-article p, .bd-article li, .bd-article dd { line-height: 1.6; }
+
+/* Figure captions in a smaller, plain style. */
+figcaption, .caption-text { font-size: 0.92rem; }
+figcaption .caption-number { font-weight: 600; font-style: normal; }
+
+/* Definition lists used as tables of contents. */
+.bd-article dl.simple > dt { font-weight: 600; margin-top: 0.6rem; }
+
+/* Admonitions: plain, thin-bordered boxes. */
+.bd-article .admonition {
+  box-shadow: none;
+  border-radius: 2px;
+}
+
+/* Algorithms (pseudocode.js): framed like a figure in a paper. */
+.ps-root {
+  padding: 0.4rem 0.8rem;
+  overflow-x: auto;
+}
+html[data-theme="dark"] .ps-root,
+html[data-theme="dark"] .ps-root .ps-algorithm { color: var(--pst-color-text-base); }
+html[data-theme="dark"] .ps-root .ps-algorithm { border-color: var(--pst-color-border); }
+
+/* Reference tables. */
+table.omads-ref td:first-child code { white-space: nowrap; }
+table.omads-ref td { vertical-align: top; }
+
+/* Keep wide media inside the content column on small screens. */
+.bd-article video, .bd-article img { max-width: 100%; height: auto; }
+
+/* Grids of figures laid out with a borderless list-table. */
+table.figure-grid,
+table.figure-grid td { border: none !important; background: transparent !important; }
+table.figure-grid td { padding: 0.2rem; width: 50%; }
+table.figure-grid img { width: 100%; }
