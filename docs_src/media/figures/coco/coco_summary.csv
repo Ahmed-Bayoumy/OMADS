@@ -1,0 +1,17 @@
+algorithm,dimension,runs,reached 0.1,reached 0.001,reached 1e-06
+"mads.main, ACTIVE (A)",2,810,0.765,0.586,0.169
+"mads.main, ACTIVE (A)",3,810,0.667,0.474,0.135
+"mads.main, ACTIVE (A)",5,810,0.454,0.278,0.104
+"mads.main, ACTIVE (A)",10,810,0.277,0.186,0.119
+"mads.main, ACTIVE (B)",2,810,0.785,0.585,0.163
+"mads.main, ACTIVE (B)",3,810,0.652,0.480,0.132
+"mads.main, ACTIVE (B)",5,810,0.430,0.270,0.079
+"mads.main, ACTIVE (B)",10,810,0.248,0.119,0.053
+"mads.main, HALTON search",2,810,0.794,0.644,0.295
+"mads.main, HALTON search",3,810,0.654,0.495,0.214
+"mads.main, HALTON search",5,810,0.460,0.299,0.130
+"mads.main, HALTON search",10,810,0.268,0.167,0.094
+"mads.main, ACTIVE, ns = (n+1)(n+2)/2 + 10",2,810,0.088,0.006,0.000
+"mads.main, ACTIVE, ns = (n+1)(n+2)/2 + 10",3,810,0.080,0.011,0.000
+"mads.main, ACTIVE, ns = (n+1)(n+2)/2 + 10",5,810,0.023,0.001,0.000
+"mads.main, ACTIVE, ns = (n+1)(n+2)/2 + 10",10,810,0.015,0.001,0.000

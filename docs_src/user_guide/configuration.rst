@@ -245,8 +245,9 @@ Multi-objective and barrier
      - Random Householder directions (asymptotically dense). Recommended: ``True``.
    * - ``direction_type``
      - ``"ORTHO_2N"``
-     - ``"ORTHO_2N"`` (:math:`2n` poll points) or ``"ORTHO_N+1"`` (:math:`n+1`; real
-       variables only, otherwise falls back to :math:`2n`).
+     - ``"ORTHO_2N"`` (:math:`2n` orthogonal poll directions) or ``"N+1"`` (:math:`n`
+       orthogonal directions and their negative sum; real variables only, otherwise falls
+       back to :math:`2n`).
    * - ``opportunistic``
      - ``False``
      - Stop evaluating the current poll or search set at the first full success.

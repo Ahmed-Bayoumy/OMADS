@@ -10,7 +10,7 @@ Follows the COCO getting-started recipe (https://coco-platform.org/getting-start
 
 The defaults reproduce the configuration published in the OMADS documentation
 (``--preset A``): ``mads.main`` with the ACTIVE (BiTPE) sampling search,
-ns = min((n+1)(n+2)/2, 2n), the ORTHO N+1 poll and opportunistic evaluation,
+ns = min((n+1)(n+2)/2, 2n), the N+1 poll and opportunistic evaluation,
 on dimensions 2, 3, 5 and 10, instances 1-15, with a budget of 100 x dimension.
 ``--preset B``, ``--preset halton`` and ``--preset initial`` give the other
 published configurations; any explicit option overrides its preset value. To run all of
@@ -19,9 +19,11 @@ them and regenerate the documentation figures, use ``reproduce_results.py``.
 Each COCO problem ``x -> f(x)`` with constraints ``g(x) <= 0`` is handed to
 ``OMADS.mads.main`` as a callable blackbox returning ``[f, g]``, with every
 constraint treated by the progressive barrier (PB). Runs stop early once the
-final COCO target is hit, and ``cocoex.ExperimentRepeater`` restarts unsolved
-instances (from different initial points and seeds) until the
-``budget_multiplier * dimension`` budget per instance is used up.
+final COCO target is hit, and an unsolved instance is restarted (from a new
+initial point and seed) until its ``budget_multiplier * dimension`` budget is
+used up; COCO records the restarts of an instance as one trial. The seed and
+the initial point of each restart depend only on the restart number, so any
+subset of the suite (``--only``) or batch split reproduces the same runs.
 
 Results go to ``exdata/<output-folder>`` and are post-processed with
 ``cocopp`` (HTML report in ``ppdata/``) unless ``--no-postprocess`` is given.
@@ -35,7 +37,7 @@ import os
 import shutil
 import sys
 import time
-from typing import Dict, Tuple
+from typing import Dict
 
 import cocoex
 import numpy as np
@@ -51,10 +53,10 @@ MULTIMODAL_FUNCTIONS = range(43, 55)
 # bbob-constrained). A is the default.
 PRESETS = {
     "A": dict(s_method="ACTIVE", ns="min2n", ns_multimodal="min2n",
-              search_every=1, direction_type="ORTHO_N+1", opportunistic=True,
+              search_every=1, direction_type="N+1", opportunistic=True,
               algorithm_name="OMADS-A"),
     "B": dict(s_method="ACTIVE", ns="quad", ns_multimodal="quad",
-              search_every=3, direction_type="ORTHO_N+1", opportunistic=True,
+              search_every=3, direction_type="N+1", opportunistic=True,
               algorithm_name="OMADS-B"),
     "halton": dict(s_method="HALTON", ns="1", ns_multimodal="56",
                    search_every=1, direction_type="ORTHO_2N",
@@ -131,6 +133,7 @@ def build_omads_input(problem, x0, budget: int, seed: int,
           "precision": "high", "anisotropy_factor": args.anisotropy_factor,
           "direction_type": args.direction_type,
           "search_every": args.search_every,
+          "on_min_mesh": args.on_min_mesh,
       },
       "search": {
           "type": args.search_type,
@@ -167,9 +170,24 @@ def run_mads(problem, x0, budget: int, seed: int,
                     ignore_errors=True)
 
 
-def parse_args() -> argparse.Namespace:
-  parser = argparse.ArgumentParser(
-      description="Benchmark OMADS MADS on COCO's bbob-constrained suite.")
+def solve(problem, args: argparse.Namespace) -> int:
+  """Run MADS on ``problem``, restarted until its budget is used or its final
+  target is hit; return the number of runs."""
+  budget = int(args.budget_multiplier * problem.dimension)
+  restart = 0
+  while (problem.evaluations < budget and not problem.final_target_hit
+         and restart < args.max_restarts):
+    seed = args.seed + restart
+    np.random.seed(seed)   # cocoex draws the restart points with numpy
+    run_mads(problem, problem.initial_solution_proposal(restart),
+             budget=budget - problem.evaluations, seed=seed, args=args)
+    restart += 1
+  return restart
+
+
+def build_parser(description: str = "Benchmark OMADS MADS on COCO's"
+                 " bbob-constrained suite.") -> argparse.ArgumentParser:
+  parser = argparse.ArgumentParser(description=description)
   parser.add_argument("--preset", default="A", choices=sorted(PRESETS),
                       help="published OMADS configuration (default: A); the"
                       " options below override its values")
@@ -187,8 +205,8 @@ def parse_args() -> argparse.Namespace:
                       help="split the suite into this many batches")
   parser.add_argument("--batch", type=int, default=1,
                       help="which batch (1..batches) this process runs")
-  parser.add_argument("--max-sweeps", type=int, default=None,
-                      help="max restarts per instance (COCO default: 20)")
+  parser.add_argument("--max-restarts", type=int, default=20,
+                      help="max runs per instance (default: 20)")
   parser.add_argument("--seed", type=int, default=1234,
                       help="base OMADS seed (offset per restart)")
   parser.add_argument("--psize-init", type=float, default=1.0,
@@ -231,9 +249,21 @@ def parse_args() -> argparse.Namespace:
                       help="stop evaluating a poll or search set at its first"
                       " improvement (default: from the preset)")
   parser.add_argument("--direction-type", default=None,
-                      choices=["ORTHO_2N", "ORTHO_N+1"],
+                      choices=["ORTHO_2N", "N+1"],
                       help="poll directions: 2n or n+1 (default: from the"
                       " preset)")
+  parser.add_argument("--on-min-mesh", default="stop", choices=["stop", "search"],
+                      help="when the poll size falls below --tol with budget"
+                      " left: stop the run (COCO then restarts it from a new"
+                      " point; default) or keep running the sampling search"
+                      " with the initial mesh until it improves")
+  parser.add_argument("--only", default=None,
+                      help="file listing the problems to run, one"
+                      " 'function dimension instance' triple per line")
+  parser.add_argument("--folder-per-instance", action="store_true",
+                      help="write each instance to its own folder under the"
+                      " output folder, so that data sets can be assembled"
+                      " instance by instance")
   parser.add_argument("--solver", default="mads", choices=["mads", "poll"],
                       help="OMADS entry point: mads.main (default) or poll.main"
                       " (poll step only; the search options are ignored)")
@@ -250,14 +280,39 @@ def parse_args() -> argparse.Namespace:
                       help="skip running cocopp at the end")
   parser.add_argument("--cocopp-args", default="",
                       help="extra cocopp arguments, e.g. reference algorithms")
-  args = parser.parse_args()
+  return parser
+
+
+def observer_options(args: argparse.Namespace, folder: str) -> str:
+  """COCO observer options: result folder, algorithm name and description."""
+  return (
+      f"result_folder: {folder} algorithm_name: {args.algorithm_name} "
+      f"algorithm_info: \"OMADS {args.solver}.main, PB constraints, {args.mesh_type} mesh, "
+      f"search={args.search_type}/{args.s_method}, "
+      f"ns={args.ns} (f43-f54: {args.ns_multimodal}), "
+      f"search_every={args.search_every}, poll={args.direction_type}, "
+      f"opportunistic={args.opportunistic}, on_min_mesh={args.on_min_mesh}, "
+      f"preset={args.preset}\"")
+
+
+def instance_folder(output_folder: str, key) -> str:
+  """Folder of one (function, dimension, instance) under the output folder."""
+  return "{}/f{:02d}_d{:02d}_i{:02d}".format(output_folder, *key)
+
+
+def apply_preset(args: argparse.Namespace) -> argparse.Namespace:
+  """Fill the options left unset with the values of ``args.preset``."""
   for key, value in PRESETS[args.preset].items():
     if getattr(args, key) is None:
       setattr(args, key, value)
   return args
 
 
-def main():
+def parse_args() -> argparse.Namespace:
+  return apply_preset(build_parser().parse_args())
+
+
+def main():  # noqa: C901
   args = parse_args()
   if not 1 <= args.batch <= args.batches:
     raise SystemExit("--batch must be in 1..--batches")
@@ -272,39 +327,44 @@ def main():
   output_folder = args.output_folder or "{}_{}x_on_{}{}".format(
       args.algorithm_name, int(args.budget_multiplier), SUITE_NAME,
       f"_batch{args.batch}of{args.batches}" if args.batches > 1 else "")
-  observer = cocoex.Observer(
-      SUITE_NAME,
-      f"result_folder: {output_folder} algorithm_name: {args.algorithm_name} "
-      f"algorithm_info: \"OMADS {args.solver}.main, PB constraints, {args.mesh_type} mesh, "
-      f"search={args.search_type}/{args.s_method}, "
-      f"ns={args.ns} (f43-f54: {args.ns_multimodal}), "
-      f"search_every={args.search_every}, poll={args.direction_type}, "
-      f"opportunistic={args.opportunistic}, preset={args.preset}\"")
+  observer = cocoex.Observer(SUITE_NAME, observer_options(args, output_folder))
   args.omads_post_dir = os.path.join(observer.result_folder, "omads_post")
-  repeater = cocoex.ExperimentRepeater(args.budget_multiplier,
-                                       max_sweeps=args.max_sweeps)
   minimal_print = cocoex.utilities.MiniPrint()
-  used: Dict[Tuple[int, int, int], int] = {}
+  only = None
+  if args.only:
+    with open(args.only, encoding="utf-8") as f:
+      only = {tuple(int(v) for v in line.split()) for line in f if line.strip()}
+  observers = {}
+
+  def observer_of(problem):
+    """The shared observer, or one per instance with --folder-per-instance."""
+    if not args.folder_per_instance:
+      return observer
+    key = problem.id_triple
+    if key not in observers:
+      observers[key] = cocoex.Observer(SUITE_NAME, observer_options(
+          args, instance_folder(output_folder, key)))
+    return observers[key]
 
   print(f"Benchmarking {args.algorithm_name} on {SUITE_NAME} "
         f"[{suite_options or 'full suite'}], results in {observer.result_folder}")
   tic = time.perf_counter()
-  while not repeater.done():
-    for problem in suite:
-      if problem.index % args.batches != args.batch - 1:
-        continue
-      if repeater.done(problem):
-        continue
-      problem.observe_with(observer)
-      key = problem.id_triple
-      remaining = int(repeater.budget_from_dimension(problem)) - used.get(key, 0)
-      trial = sum(repeater.trials(problem))
-      if remaining > 0:
-        run_mads(problem, repeater.initial_solution_proposal(problem),
-                 budget=remaining, seed=args.seed + trial, args=args)
-      used[key] = used.get(key, 0) + problem.evaluations
-      repeater.track(problem)
-      minimal_print(problem)
+  # Runs per instance: an instance run more than once stopped early (e.g. on
+  # the poll size), the others ran to their budget or target in one go.
+  os.makedirs(observer.result_folder, exist_ok=True)
+  runs_log = open(os.path.join(observer.result_folder, "runs.txt"), "a",
+                  encoding="utf-8")
+  for problem in suite:
+    if problem.index % args.batches != args.batch - 1:
+      continue
+    if only is not None and problem.id_triple not in only:
+      continue
+    problem.observe_with(observer_of(problem))
+    runs = solve(problem, args)
+    runs_log.write("{} {} {} {}\n".format(*problem.id_triple, runs))
+    runs_log.flush()
+    minimal_print(problem)
+  runs_log.close()
   print(f"\nDone in {time.perf_counter() - tic:.1f} s")
 
   if not args.no_postprocess and args.batches == 1:

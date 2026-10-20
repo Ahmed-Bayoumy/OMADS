@@ -30,8 +30,9 @@ Main features
 
 * Three solvers sharing one input format: the complete algorithm (``mads``), the poll step
   alone (``poll``), and the search step alone (``search``).
-* Orthogonal poll directions derived from Householder matrices, with :math:`2n`
-  (``ORTHO_2N``) or :math:`n+1` (``ORTHO_N+1``) directions :cite:p:`audet2014orthon1`.
+* Poll directions derived from Householder matrices: :math:`2n` orthogonal directions
+  (``ORTHO_2N``) or :math:`n+1` directions (``N+1``: :math:`n` orthogonal directions and
+  their negative sum) :cite:p:`audet2014orthon1`.
 * The classical orthogonal mesh and the anisotropic granular mesh
   :cite:p:`audet2019granular`.
 * Constraint handling by the progressive barrier and the extreme barrier

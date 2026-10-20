@@ -311,7 +311,7 @@ def test_callable_quick_10d():
       # n+1 poll points instead of 2n: on 10D Rosenbrock the 2n poll's
       # median was ~7.6 vs ~5.9 with N+1 (NOMAD: 5.0) over 8 seeds. The
       # other tests keep exercising the default ORTHO_2N.
-      "direction_type": "ORTHO_N+1"}
+      "direction_type": "N+1"}
   search_conf = {
       "type": "sampling",
       "s_method": "ACTIVE",
@@ -403,7 +403,7 @@ def test_callable_quick_20d():
       "check_cache": True, "store_cache": True, "rich_direction": True,
       "opportunistic": False, "save_results": False, "is_verbose": False,
       "precision": "medium",
-      "direction_type": "ORTHO_N+1"}
+      "direction_type": "N+1"}
   search_conf = {
       "type": "sampling",
       "s_method": "ACTIVE",

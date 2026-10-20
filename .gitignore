@@ -34,3 +34,4 @@ dntTrack
 tests/_*
 .*
 !.github
+!docs_src/media/figures/coco/coco_summary.csv
