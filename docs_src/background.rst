@@ -40,7 +40,7 @@ is a good choice from a computational-cost point of view.
 .. note::
 
    OMADS 2610 is a Pythonic implementation of MADS with a progressive barrier, a granular
-   mesh, ORTHO N+1 poll directions, a quadratic-model search and a density-guided sampling
+   mesh, N+1 poll directions, a quadratic-model search and a density-guided sampling
    search.
 
 Introduction
@@ -493,7 +493,7 @@ sum of its (rounded) columns gives a minimal positive basis of :math:`n+1` direc
 
 In OMADS, :numref:`A2` is implemented in the poll class ``Dirs2n``: ``create_housholder``
 builds the scaled, rounded direction matrix, ``_ortho_n_plus_1`` builds the
-:math:`n+1` set (``options["direction_type"] = "ORTHO_N+1"``, real variables only) and
+:math:`n+1` set (``options["direction_type"] = "N+1"``, real variables only) and
 ``create_poll_set`` turns the directions into candidate points.
 
 .. literalinclude:: ../src/OMADS/_directions/_directions.py

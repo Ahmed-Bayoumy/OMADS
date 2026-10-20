@@ -68,8 +68,9 @@ class Options:
     :param use_dom_trigger: Choose the primary frame centre with the
       dominance-distance trigger of the progressive barrier
     :param direction_type: Poll directions: "ORTHO_2N" (2n orthogonal
-      directions) or "ORTHO_N+1" (n of them plus their negative sum; real
-      variables only, falls back to ORTHO_2N otherwise)
+      directions) or "N+1" (n orthogonal directions plus their negative sum,
+      which is not orthogonal to them; real variables only, falls back to
+      ORTHO_2N otherwise). The former name "ORTHO_N+1" is still accepted
     :param search_every: In ``mads``, run the sampling search only after every
       ``search_every``-th consecutive unsuccessful poll (1: after every one)
     :param on_min_mesh: In ``mads``, what to do when the poll or mesh size
@@ -136,7 +137,8 @@ class Options:
     self.use_penalty_approach = use_penalty_approach
     self.noutbound_hits_max = noutbound_hits_max
     self.use_dom_trigger = use_dom_trigger
-    self.direction_type = direction_type
+    # "ORTHO_N+1" is the former name of the N+1 set, kept for old inputs.
+    self.direction_type = "N+1" if direction_type == "ORTHO_N+1" else direction_type
     self.search_every = search_every
     if on_min_mesh not in ("stop", "search"):
       raise ValueError(

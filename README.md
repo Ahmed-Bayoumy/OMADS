@@ -64,7 +64,7 @@ OMADS budget and at 10⁷ × n. Details in the
 ## Features
 
 - Three solvers with one input format: full MADS (`mads`), poll only (`poll`) and search only (`search`)
-- Orthogonal Householder poll directions, `2n` (`ORTHO_2N`) or `n+1` (`ORTHO_N+1`)
+- Householder poll directions: `2n` orthogonal directions (`ORTHO_2N`) or `n+1` directions (`N+1`)
 - Orthogonal mesh or anisotropic granular mesh (`GMESH`)
 - Progressive (`PB`) and extreme (`EB`) barriers for constraints
 - A cheap speculative step plus a constraint-aware quadratic model search at every iteration

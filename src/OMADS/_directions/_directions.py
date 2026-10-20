@@ -364,10 +364,10 @@ class Dirs2n(GenericSamplerBaseData, GenericSamplerBase):
     return hhm
 
   def _ortho_n_plus_1(self, hhm: np.ndarray) -> np.ndarray:
-    """ORTHO N+1 NEG poll set (Audet, Ianni, Le Digabel & Tribes 2014):
-    the n mesh-rounded orthogonal directions plus the negative of their
-    sum rescaled to the frame -- a positive spanning set of n+1 instead of
-    2n directions.
+    """N+1 poll set (Audet, Ianni, Le Digabel & Tribes 2014): the n
+    mesh-rounded orthogonal directions plus the negative of their sum
+    rescaled to the frame -- a positive spanning set of n+1 instead of 2n
+    directions (the extra direction is not orthogonal to the others).
 
     `hhm` is the normalized Householder matrix (rows are directions). The
     basis is rounded exactly like the 2n set; the extra direction is
@@ -408,7 +408,7 @@ class Dirs2n(GenericSamplerBaseData, GenericSamplerBase):
     hhm = self.create_housholder(
         rich_direction,
         domain=self.prob_params.var_type,
-        n_plus_1=direction_type == "ORTHO_N+1")
+        n_plus_1=direction_type in ("N+1", "ORTHO_N+1"))  # former name
     temp = np.add(
         hhm, np.array(
             fc.coordinates).T,

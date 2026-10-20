@@ -50,8 +50,8 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
   """Run MADS with the poll step only (no search step).
 
   Each iteration selects the frame centres from the adaptive barrier, polls
-  around them with orthogonal Householder directions (``ORTHO_2N`` or
-  ``ORTHO_N+1``) and updates the mesh and the barrier threshold. This solver
+  around them with Householder directions (``ORTHO_2N`` or ``N+1``) and
+  updates the mesh and the barrier threshold. This solver
   also supports Pareto studies (``param["is_pareto"]``) and writing the poll
   trajectory (``options["save_coordinates"]``).
 

@@ -28,11 +28,11 @@ swing too much with the random direction stream).
      - 2
      - 2000
      - mads ≤ 0.0989
-   * - Rosenbrock (ORTHO N+1)
+   * - Rosenbrock (N+1)
      - 10
      - 4000 / 3000
      - mads ≤ 9.7, poll ≤ 8, search ≤ 7.3
-   * - Rosenbrock (ORTHO N+1)
+   * - Rosenbrock (N+1)
      - 20
      - 5000
      - mads ≤ 20.5, poll ≤ 20, search ≤ 24.3
@@ -69,7 +69,7 @@ only on the instance and the restart number, so any subset of the suite or batch
 reproduces the same runs.
 
 The runner's defaults are the configuration published below (``--preset A``): the
-``ACTIVE`` sampling search with :math:`n_s = \min\{(n+1)(n+2)/2,\ 2n\}`, the ``ORTHO_N+1``
+``ACTIVE`` sampling search with :math:`n_s = \min\{(n+1)(n+2)/2,\ 2n\}`, the ``N+1``
 poll and opportunistic evaluation, on dimensions 2, 3, 5 and 10, instances 1 to 15, with a
 budget of :math:`100\,n`. The other published configurations are available as presets, and
 any option overrides its preset value.
@@ -96,12 +96,12 @@ HTML report under ``ppdata/``. Large runs can be split over several processes wi
      - Configuration
    * - ``A`` (default)
      - ``OMADS-A``
-     - ``ACTIVE`` search, :math:`n_s = \min\{(n+1)(n+2)/2,\ 2n\}`, ``ORTHO_N+1`` poll,
+     - ``ACTIVE`` search, :math:`n_s = \min\{(n+1)(n+2)/2,\ 2n\}`, ``N+1`` poll,
        opportunistic.
    * - ``B``
      - ``OMADS-B``
      - ``ACTIVE`` search, :math:`n_s = (n+1)(n+2)/2`, after every third failed poll,
-       ``ORTHO_N+1`` poll, opportunistic.
+       ``N+1`` poll, opportunistic.
    * - ``halton``
      - ``OMADS-Halton``
      - ``HALTON`` search, :math:`n_s = 1` (56 on f43 to f54), ``ORTHO_2N`` poll.
@@ -144,7 +144,7 @@ HTML report under ``ppdata/``. Large runs can be split over several processes wi
      - Run the sampling search after every k-th consecutive failed poll only.
    * - ``--direction-type``
      - preset
-     - Poll directions: ``ORTHO_2N`` or ``ORTHO_N+1``.
+     - Poll directions: ``ORTHO_2N`` or ``N+1``.
    * - ``--opportunistic`` / ``--no-opportunistic``
      - preset
      - Stop evaluating a poll or search set at its first improvement.
@@ -201,10 +201,10 @@ poll.
    * - ``ACTIVE (A)``
      - ``"s_method": "ACTIVE"`` (BiTPE) with smaller batches,
        :math:`n_s = \min\{(n+1)(n+2)/2,\ 2n\}` (4, 6, 10 and 20 in dimensions 2, 3, 5 and
-       10); ``ORTHO_N+1`` poll; ``"opportunistic": True``.
+       10); ``N+1`` poll; ``"opportunistic": True``.
    * - ``ACTIVE (B)``
      - ``"s_method": "ACTIVE"`` (BiTPE) with :math:`n_s = (n+1)(n+2)/2`, run only after every
-       third consecutive unsuccessful poll (``"search_every": 3``); ``ORTHO_N+1`` poll;
+       third consecutive unsuccessful poll (``"search_every": 3``); ``N+1`` poll;
        ``"opportunistic": True``.
    * - ``HALTON``
      - ``"s_method": "HALTON"``, :math:`n_s = 1` (:math:`n_s = 56` on the multimodal
@@ -276,7 +276,7 @@ Discussion
   :math:`79` of the :math:`1000` evaluations available in dimension 10, and fewer than 10%
   of the runs reach :math:`10^{-1}` in any dimension. Capping the batch at :math:`2n`
   (``ACTIVE (A)``), or running the search after every third failed poll only
-  (``ACTIVE (B)``), together with the cheaper ``ORTHO_N+1`` poll and opportunistic
+  (``ACTIVE (B)``), together with the cheaper ``N+1`` poll and opportunistic
   evaluation, brings the ``ACTIVE`` search level with the ``HALTON`` configuration.
 * In dimension 10, ``ACTIVE (A)`` is the best configuration at every precision: 27.7% of
   the runs reach :math:`10^{-1}` (26.8% for ``HALTON``), 18.6% reach :math:`10^{-3}`
@@ -396,7 +396,16 @@ presets take about 1.8 hours, and ``cocopp`` about 15 minutes more.
 A single configuration can also be run on its own, for example
 ``python benchmarks/coco/run_mads_bbob_constrained.py --preset B``, and post-processed with
 ``benchmarks/coco/postprocess_bbob_constrained.py`` and
-``benchmarks/coco/summarize_bbob_constrained.py``.
+``benchmarks/coco/summarize_bbob_constrained.py``. ``benchmarks/coco/run_single_problem.py``
+runs one problem with the same formulation and options (by default f1, the sphere with one
+linear constraint, in dimension 10, which preset ``A`` does not solve to the final target
+within :math:`100\,n` evaluations) and prints a summary of its instances; for example
+``python benchmarks/coco/run_single_problem.py -i 1-3 --direction-type ORTHO_2N``. With
+``--plot`` it also draws the objective trajectory of the runs: the best
+:math:`f - f_{\text{opt}}` so far against the objective evaluations, as the band between the
+5th and 95th percentiles of the instances with their mean and median.
+``benchmarks/coco/plot_trajectory.py`` draws the same figure from any COCO data folders,
+pooled (e.g. several seeds) or as labelled series to compare configurations.
 
 .. note::
 
