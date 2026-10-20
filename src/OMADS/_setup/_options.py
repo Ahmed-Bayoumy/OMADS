@@ -72,6 +72,10 @@ class Options:
       variables only, falls back to ORTHO_2N otherwise)
     :param search_every: In ``mads``, run the sampling search only after every
       ``search_every``-th consecutive unsuccessful poll (1: after every one)
+    :param on_min_mesh: In ``mads``, what to do when the poll or mesh size
+      falls below ``tol`` before the budget is used: "stop" ends the run;
+      "search" keeps running the sampling search with the initial mesh around
+      the incumbent, and resumes the MADS iterations at its first improvement
   """
 
   def __init__(
@@ -104,6 +108,7 @@ class Options:
       use_dom_trigger: bool = True,
       direction_type: str = "ORTHO_2N",
       search_every: int = 1,
+      on_min_mesh: str = "stop",
   ):
     self.seed = seed
     self.budget = budget
@@ -133,3 +138,7 @@ class Options:
     self.use_dom_trigger = use_dom_trigger
     self.direction_type = direction_type
     self.search_every = search_every
+    if on_min_mesh not in ("stop", "search"):
+      raise ValueError(
+          f'on_min_mesh must be "stop" or "search", not {on_min_mesh!r}')
+    self.on_min_mesh = on_min_mesh

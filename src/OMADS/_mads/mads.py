@@ -23,6 +23,7 @@
 #  Copyright (C) 2026  Ahmed H. Bayoumy                                               #
 # ------------------------------------------------------------------------------------#
 """
+import copy
 import time
 from typing import List, Dict, Any, Optional
 import sys
@@ -283,6 +284,13 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
     search_sampler.ns = sum(search_vn.ns_dist)
   can_search = False if ms is None else True
   failed_polls = 0
+  # options.on_min_mesh == "search": once the poll or mesh size is below
+  # `tol`, keep sampling with the initial mesh (`init_mesh`) around the
+  # incumbent until the search improves (`search_only`), or until it stops
+  # producing new points (`stalled` consecutive steps without evaluations).
+  init_mesh = None
+  search_only = False
+  stalled = 0
   while True:
     # """ Run search step (Optional) """
     # COMPLETED: This rule cannot be generalized -- needs further invistigation
@@ -295,6 +303,14 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
     set_frame_centers_and_hvalues(
         state=state, active_barrier=active_barrier, param=param,
         options=options)
+    if init_mesh is None:
+      init_mesh = copy.deepcopy(
+          active_barrier.meshes[state.ordered_frame_centers[0]])
+    continuing = search_only
+    if continuing:
+      for center in {state.fk_frame_center, state.ordered_frame_centers[0]}:
+        if center != -1:
+          active_barrier.meshes[center] = copy.deepcopy(init_mesh)
 
     # Cheap speculative + quadratic model search first, as in NOMAD: at
     # most two evaluations, and when it improves, this iteration's poll and
@@ -312,9 +328,37 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
              hashtable=hashtable)
       post.h_max = active_barrier.h_max
       stats.nno_successes = 0
+      search_only = False
+
+    if continuing and not model_succeeded:
+      log.log_msg(
+          f"------- Iteration # {iteration}: Run the search step (poll size"
+          " below tol) -------", MSG_TYPE.INFO)
+      neval = stats.neval_bb
+      search_sampler.iter = iteration
+      stats.niterations = iteration
+      search_cycle(
+          search=search_sampler, options=options, param=param, state=state,
+          stats=stats, active_barrier=active_barrier, iteration=iteration,
+          log=log, post=post, search_vns=search_vn, bb_handle=bb_handle,
+          hashtable=hashtable, out=out, ms=ms)
+      if state.last_success != SUCCESS_TYPES.US:
+        update(sampler=search_sampler, state=state,
+               active_barrier=active_barrier, stats=stats, options=options,
+               hashtable=hashtable)
+        post.h_max = active_barrier.h_max
+        stats.nno_successes = 0
+        failed_polls = 0
+        search_only = False
+        stalled = 0
+      else:
+        # A failed step leaves the meshes alone (they are reset above).
+        stalled = stalled + 1 if stats.neval_bb == neval else 0
+        if stalled >= 3:
+          state.stop_reason = STOP_TYPE.MIN_MESH_REACHED
 
     # 2- Run the poll step
-    poll_ran = not can_search and not model_succeeded
+    poll_ran = not can_search and not model_succeeded and not continuing
     if poll_ran:
       log.log_msg(
           f"------- Iteration # {iteration}: Run the poll step -------",
@@ -372,7 +416,7 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
     # `search_every`-th consecutive failure (a successful search still repeats).
     if can_search and poll_ran and failed_polls % max(options.search_every, 1) != 0:
       can_search = False
-    if can_search and not model_succeeded:
+    if can_search and not model_succeeded and not continuing:
       log.log_msg(
           f"------- Iteration # {iteration}: Run the search step -------",
           MSG_TYPE.INFO)
@@ -440,6 +484,15 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
             for pp in range(search_sampler.mesh.n)))
     if pt or st:
       state.stop_reason = STOP_TYPE.MIN_MESH_REACHED
+    if (options.on_min_mesh == "search" and stalled < 3
+            and state.stop_reason == STOP_TYPE.MIN_MESH_REACHED
+            and stats.neval_bb < options.budget):
+      # Budget left: carry on with the search instead of stopping.
+      search_only = True
+      state.stop_reason = STOP_TYPE.NO_STOP
+      poll_sampler.terminate = search_sampler.terminate = False
+      poll_sampler.mesh = copy.deepcopy(init_mesh)
+      pt = st = False
     # bt = state.stop_reason == STOP_TYPE.MIN_MESH_REACHED
     # last_success = state.last_success
     # if not isinstance(state.last_success, SUCCESS_TYPES)

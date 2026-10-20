@@ -29,10 +29,11 @@ derivatives, no surrogate to train and no solver to compile.
 - **Built on a convergence theory, not a heuristic.** OMADS implements Mesh Adaptive Direct
   Search (MADS), whose iterates converge, under standard assumptions and from any starting
   point, to points satisfying Clarke stationarity conditions.
-- **Strong where evaluations are scarce.** On the 54 constrained problems of the COCO
+- **Measured against established solvers.** On the 54 constrained problems of the COCO
   `bbob-constrained` suite in 2D, the published benchmark configuration solves about
-  **98% of the (function, target) pairs within 100 × n evaluations**, ahead of fmincon
-  (92%), and close to COBYLA and AL1-CMA-ES, which were run with up to 10⁷ × n evaluations.
+  **61% of the (function, target) pairs within 100 × n evaluations**, and **97%** with
+  restarts (as simulated by COCO): ahead of fmincon (92%) and close to COBYLA and
+  AL1-CMA-ES (100%), which were run with up to 10⁷ × n evaluations.
 - **Constraints the way engineers have them.** Relaxable constraints are steered towards
   feasibility with a progressive barrier; points that violate hard constraints (where the
   code cannot even run) are rejected; failed evaluations are discarded and the search
@@ -45,14 +46,19 @@ derivatives, no surrogate to train and no solver to compile.
   Windows and macOS in continuous integration.
 
 <p align="center">
-  <img width="560" alt="Runtime distributions on COCO bbob-constrained in 2D: OMADS against COBYLA, AL1-CMA-ES, fmincon and random search" src="https://ahmed-bayoumy.github.io/OMADS/_images/ecdf_02D.svg?v=2610">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://ahmed-bayoumy.github.io/OMADS/_static/ecdf_02D_dark.svg?v=2612">
+    <img width="780" alt="Runtime distributions on COCO bbob-constrained in 2D: OMADS against COBYLA, AL1-CMA-ES, fmincon and random search" src="https://ahmed-bayoumy.github.io/OMADS/_static/ecdf_02D.svg?v=2612">
+  </picture>
 </p>
 
 *Fraction of (function, target) pairs solved versus evaluations per variable, over the 54
 COCO `bbob-constrained` functions in 2D. `OMADS-A` is the published benchmark configuration
-(`OMADS-B` and `OMADS-Hal` are two alternatives); OMADS used at most 100 × n evaluations
-(more on the axis, since COCO also counts constraint evaluations), the reference algorithms
-up to 10⁷ × n. Details in the
+(`OMADS-B` and `OMADS-Halton` are two alternatives). OMADS ran with 100 × n objective
+evaluations (shaded; COCO also counts constraint evaluations, hence about 200 × n on the
+axis), the reference algorithms with up to 10⁷ × n. Curves are solid over the recorded runs
+and dotted where COCO simulates restarts; the two columns give each solver's value at the
+OMADS budget and at 10⁷ × n. Details in the
 [benchmarking documentation](https://ahmed-bayoumy.github.io/OMADS/benchmarking.html).*
 
 ## Features
