@@ -31,6 +31,19 @@ import numpy as np
 from .._include import DType
 
 
+def coordinates_signature(coords) -> int:
+  """Hash of a point's coordinates, rounded to 12 significant digits so
+  that coordinates differing only by floating-point error (e.g. 0.3 and
+  0.30000000000000004 after a mesh projection) are the same cache entry."""
+  key = []
+  for c in coords:
+    try:
+      key.append(float(f"{float(c):.12g}"))
+    except (TypeError, ValueError):
+      key.append(c)
+  return hash(tuple(key))
+
+
 class Point:
   """ A class for the poll point
 
@@ -135,7 +148,7 @@ class Point:
     """ Get the coordinates of the point. """
     self._n = len(coords)
     self._coords = list(coords)
-    self._signature = hash(tuple(self._coords))
+    self._signature = coordinates_signature(self._coords)
     self._defined = [True] * self._n
 
   @coordinates.deleter

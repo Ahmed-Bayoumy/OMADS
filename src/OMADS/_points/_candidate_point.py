@@ -30,6 +30,7 @@ import numpy as np
 
 
 from .._include import VAR_TYPE, DType, BARRIER_TYPES, MPP, DESIGN_STATUS, COMPARE_TYPE
+from ._point import coordinates_signature
 
 
 class CandidatePoint:
@@ -491,7 +492,7 @@ class CandidatePoint:
     """ Get the coordinates of the point. """
     self._n = len(coords)
     self._coords = list(coords)
-    self._signature = hash(tuple(self._coords))
+    self._signature = coordinates_signature(self._coords)
     self.map_coordinates()
     self._defined = [True] * self._n
 

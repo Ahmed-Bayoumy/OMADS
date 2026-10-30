@@ -70,7 +70,8 @@ def set_frame_centers_and_hvalues(
     )
   else:
     out = active_barrier.frame_centers(
-        param.w_min, use_dom_selection=options.use_dom_trigger)
+        param.w_min, use_dom_selection=options.use_dom_trigger,
+        w_plus=param.w_plus)
     fk_index = out["feasible"]
     uk_index = out["infeasible"]
     # Set primary and secondary frame centers according to trigger conditions.
@@ -120,6 +121,17 @@ def set_frame_centers_and_hvalues(
       state.h_max = max(elt.h for elt in active_barrier.get_ik())
 
 
+def _uk_elements_below(active_barrier: AdaptiveBarrier, bound: float):
+  """Elements of U_k with h below `bound` (read-only references: cloning
+  every barrier element each iteration made long runs quadratic)."""
+  out = []
+  for i in np.flatnonzero(np.array(active_barrier.within_uk[:active_barrier.last_index + 1])):
+    elt = active_barrier.elements.get_raw(int(i))
+    if elt is not None and elt.h < bound:
+      out.append(elt)
+  return out
+
+
 def update(sampler: GenericSamplerBase, state: MadsState, options: Options,  # noqa: C901
            active_barrier: AdaptiveBarrier, stats: MadsStatistics,
            hashtable: Cache = None):
@@ -162,7 +174,7 @@ def update(sampler: GenericSamplerBase, state: MadsState, options: Options,  # n
     for frame_center in range(2):
       barrier_index = state.ordered_frame_centers[frame_center]
       if barrier_index != -1:
-        active_barrier.parent_indexes[barrier_index] = 0
+        active_barrier.parent_indexes[barrier_index] = -1
 
     # Update the mesh
     if state.fk_frame_center != -1:
@@ -173,11 +185,7 @@ def update(sampler: GenericSamplerBase, state: MadsState, options: Options,  # n
 
     # Update the barrier threshold
     if state.h_max is not None:
-      below_hmax_elements = [
-          elt
-          for elt in active_barrier.elements
-          if elt is not None and elt.h < state.h_max and active_barrier.within_uk
-          [active_barrier.elements.index(elt)]]
+      below_hmax_elements = _uk_elements_below(active_barrier, state.h_max)
 
       if state.uk_frame_center != -1 and len(below_hmax_elements) != 0:
         h_max_tmp = max(elt.h for elt in below_hmax_elements)
@@ -191,12 +199,8 @@ def update(sampler: GenericSamplerBase, state: MadsState, options: Options,  # n
 
   elif state.last_success == SUCCESS_TYPES.PS:
     if state.h_max is not None:
-      below_hxi_elements = [
-          elt
-          for elt in active_barrier.elements
-          if elt is not None and elt.h < active_barrier.elements
-          [state.uk_frame_center].h and active_barrier.within_uk
-          [active_barrier.elements.index(elt)]]
+      below_hxi_elements = _uk_elements_below(
+          active_barrier, active_barrier.elements[state.uk_frame_center].h)
       if below_hxi_elements is not None and len(below_hxi_elements) > 0:
         active_barrier.update_barrier(max(elt.h for elt in below_hxi_elements))
 
@@ -206,10 +210,7 @@ def update(sampler: GenericSamplerBase, state: MadsState, options: Options,  # n
     # Update the barrier threshold
 
     if state.h_max is not None:
-      below_hmax_elements = [
-          elt for elt in active_barrier.elements
-          if elt is not None and elt.h < state.h_max and active_barrier.within_uk
-          [active_barrier.elements.index(elt)]]
+      below_hmax_elements = _uk_elements_below(active_barrier, state.h_max)
       if state.uk_frame_center != -1 and below_hmax_elements and len(
               below_hmax_elements) > 0:
         h_max_tmp = max(elt.h for elt in below_hmax_elements)
@@ -232,8 +233,10 @@ def update(sampler: GenericSamplerBase, state: MadsState, options: Options,  # n
           cmin = copy.deepcopy(c)
         c += 1
       new_incumbent_index = cmin
+      # Without a known parent, enlarge along the step from the starting point.
+      parent_index = max(active_barrier.parent_indexes[new_incumbent_index], 0)
       x_parent = np.array((hashtable.get_candidate_from_cache_by_index(
-          active_barrier.parent_indexes[new_incumbent_index])).coordinates)
+          parent_index)).coordinates)
       active_barrier.meshes[new_incumbent_index].enlarge_delta_frame_size(np.array(
           (hashtable.get_candidate_from_cache_by_index(new_incumbent_index)).coordinates) - np.array(x_parent))
 

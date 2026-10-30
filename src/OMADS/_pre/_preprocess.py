@@ -127,9 +127,15 @@ class preprocess:
       bl = param.baseline
     else:
       bl = [param.baseline]
-    for xs in bl:
-      xs = self.set_variables_type(is_xs=is_xs, xs=xs,
-                                   x_start=x_start, param=param)
+    # Evaluate every starting point (e.g. the line of points of DMS and
+    # DMulti-MADS), each as its own candidate; all enter the cache and the
+    # barrier, which picks the frame centers among them.
+    starts: List[CandidatePoint] = []
+    for k, xs in enumerate(bl):
+      if k > 0 and (is_xs or stats.neval_bb >= options.budget):
+        break
+      x_start = x_start if k == 0 else CandidatePoint()
+      self.set_variables_type(is_xs=is_xs, xs=xs, x_start=x_start, param=param)
       if not is_xs:
         x_start.dtype.precision = options.precision
       if x_start.sets is not None and isinstance(x_start.sets, dict):
@@ -166,70 +172,76 @@ class preprocess:
         stats.neval_bb += 1
         self.sampler.bb_eval += 1
         x_start.eval_no = stats.neval_bb
-      # """ 10- Hold the starting point in the poll
-      # directions subclass and define problem parameters """
-      self.sampler.candidate_points_set = x_start
-      self.sampler.scale(ub=param.ub, lb=param.lb, factor=param.scaling)
-      self.sampler.dim = x_start.n_dimensions
+      starts.append(x_start)
+    x_start = starts[0]
 
-      hashtable = Cache(capacity=options.budget)
-      hashtable._is_pareto = param.is_pareto
+    # """ 10- Hold the starting point in the poll
+    # directions subclass and define problem parameters """
+    self.sampler.candidate_points_set = x_start
+    self.sampler.scale(ub=param.ub, lb=param.lb, factor=param.scaling)
+    self.sampler.dim = x_start.n_dimensions
 
-      # """ 10- Initialize the number of successful points
-      # found and check if the starting minimizer performs better
-      # than the worst (f = inf) """
-      self.sampler.nb_success = 0
+    hashtable = Cache(capacity=options.budget)
+    hashtable._is_pareto = param.is_pareto
 
-      post = PostMADS(
-          x_incumbent=[x_start],
-          xmin=x_start, poll_dirs=[x_start])
+    # """ 10- Initialize the number of successful points
+    # found and check if the starting minimizer performs better
+    # than the worst (f = inf) """
+    self.sampler.nb_success = 0
+
+    post = PostMADS(
+        x_incumbent=list(starts),
+        xmin=x_start, poll_dirs=list(starts))
+    for _ in starts:
       post.psize.append(self.sampler.mesh.get_delta_frame_size().coordinates)
-      post.bb_eval.append(self.sampler.bb_eval)
       post.iter.append(iteration)
-      post.step_name = []
-      post.step_name.append("Poll_2n")
+    post.bb_eval.append(self.sampler.bb_eval)
+    post.step_name = ["Poll_2n"] * len(starts)
 
-      # """ 11- Construct the results postprocessor class object 'post' """
+    # """ 11- Construct the results postprocessor class object 'post' """
 
-      # """ Note: printing the post will print a results row
-      # within the results table shown in Python console if the
-      # 'display' option is true """
-      # """ 12- Add the starting point hash value to the cache memory """
-      x_start.improving = True
-      x_start.was_center = True
-      x_start.is_nondominated = True
-      if options.store_cache:
-        hashtable.add_to_cache(x_start)
-      # """ 13- Initialize the output results file object  """
-      out = Output(
+    # """ Note: printing the post will print a results row
+    # within the results table shown in Python console if the
+    # 'display' option is true """
+    # """ 12- Add the starting point hash value to the cache memory """
+    x_start.improving = True
+    x_start.was_center = True
+    x_start.is_nondominated = True
+    if options.store_cache:
+      for xt in starts:
+        xt.improving = True
+        xt.was_center = True
+        xt.is_nondominated = True
+        hashtable.add_to_cache(xt)
+    # """ 13- Initialize the output results file object  """
+    out = Output(
+        file_path=param.post_dir, vnames=param.var_names,
+        fnames=param.fun_names, pname=param.name,
+        runfolder=f'{param.name}_run', suffix="all")
+    if param.is_pareto:
+      out_p = Output(
           file_path=param.post_dir, vnames=param.var_names,
           fnames=param.fun_names, pname=param.name,
-          runfolder=f'{param.name}_run', suffix="all")
-      if param.is_pareto:
-        out_p = Output(
-            file_path=param.post_dir, vnames=param.var_names,
-            fnames=param.fun_names, pname=param.name,
-            runfolder=f'{param.name}_ND', suffix="Pareto")
+          runfolder=f'{param.name}_ND', suffix="Pareto")
+    else:
+      out_p = None
+    if options.display:
+      print("End of the evaluation of the starting points")
+      if self.log is not None:
+        self.log.log_msg(
+            msg="- End of the evaluation of the starting points",
+            msg_type=MSG_TYPE.INFO)
+
+    # """ 14- Update the barrier with points """
+    for xt in starts:
+      if xt.is_feasible():
+        B.add_feasible(xt, self.sampler.mesh)
       else:
-        out_p = None
-      if options.display:
-        print("End of the evaluation of the starting points")
-        if self.log is not None:
-          self.log.log_msg(
-              msg="- End of the evaluation of the starting points",
-              msg_type=MSG_TYPE.INFO)
+        B.add_infeasible(xt, self.sampler.mesh)
 
-      # """ 14- Update the barrier with points """
-      stot = x_start if isinstance(x_start, list) else [x_start]
-      for xt in stot:
-        if xt.is_feasible():
-          B.add_feasible(xt, self.sampler.mesh)
-        else:
-          B.add_infeasible(xt, self.sampler.mesh)
+    iteration += 1
 
-      iteration += 1
-
-      return iteration, x_start, self.sampler, options, param, post, out, B, out_p, state, stats, ev, hashtable, ms
+    return iteration, x_start, self.sampler, options, param, post, out, B, out_p, state, stats, ev, hashtable, ms
 
   def initialize_from_dict(self, xs: CandidatePoint = None, ignore_ms: bool = False):  # noqa: C901
     # """ MADS initialization """
@@ -284,7 +296,10 @@ class preprocess:
         self.sampler.sampling_t = search_step.s_method
         self.sampler.type = search_step.type
         self.sampler.ns = search_step.ns
-        self.sampler.sampling_criter = search_step.criterion
+        # "corr" is the former samplersLib name of "correlation".
+        self.sampler.sampling_criter = (
+            "correlation" if search_step.criterion == "corr"
+            else search_step.criterion)
         self.sampler.visualize = search_step.visualize
         self.sampler.weights = search_step.weights
         self.sampler.tpe_batch = search_step.batch

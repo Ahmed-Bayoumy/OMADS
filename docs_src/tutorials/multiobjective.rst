@@ -28,25 +28,22 @@ The Binh and Korn problem
 
 .. code-block:: text
 
-   hypervolume = 0.8435
-   380 non-dominated points, e.g.
-         x1       x2        f1        f2
-   0.000000 0.000000  0.000000 50.000000
-   0.750000 0.718750  4.316406 36.391602
-   1.593750 1.515625 19.348633 23.743408
-   2.500000 2.453125 49.071289 12.736572
-   3.484375 3.000000 84.563477  6.297119
+   hypervolume = 0.8192
+   312 non-dominated points, e.g.
+         x1      x2         f1        f2
+   0.000000 0.00000   0.000000 50.000000
+   0.859375 0.75000   5.204102 35.207275
+   1.687500 1.56250  21.156250 22.789062
+   2.500000 2.46875  49.378906 12.657227
+   3.437500 3.00000  83.265625  6.441406
+   4.968750 3.00000 134.753906  4.000977
 
 The front runs from :math:`(0, 50)` at :math:`x = (0, 0)` to the region around
 :math:`x_2 = 3`, where the upper bound becomes active. ``out["xmin"]`` and ``out["fmin"]``
-hold one point of the front; the whole front is in the results file.
+hold one point of the front; the whole front is in ``<name>_Pareto.out``. With
+``ref_point`` and ``ideal_point``, ``HV`` is scaled to :math:`[0, 1]` by the box they bound,
+so it can be compared across runs.
 
-.. important::
-
-   In this release, use ``poll.main`` for multi-objective problems. ``mads.main`` stops with
-   an ``IndexError`` while writing the Pareto file, and the ``ACTIVE`` sampling search
-   fails on multi-objective problems. Also, ``<name>_Pareto.out`` only keeps the starting
-   point, which is why the script extracts the front from ``<name>_all.out``.
 
 Gallery
 =======

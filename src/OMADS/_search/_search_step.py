@@ -97,9 +97,16 @@ def search_cycle(search: EfficientExploration, options: Options,  # noqa: C901
       search.candidate_points_set = c
   del candidates
   candidates = search._candidate_points_set
+  def full_success(candidate: CandidatePoint, flag) -> bool:
+    # The success rule of the loop below, for the opportunistic strategy.
+    return flag is not None and compute_success(
+        active_barrier=active_barrier, state=state, options=options,
+        insertion_flag=flag, v=candidate) == SUCCESS_TYPES.FS
+
   if ms is None:
     if not options.parallel_mode:
       insertion_flag, post = bb_handle.run_callable_serial_local(
+          full_success=full_success,
           sampler=search, centers=parent_index_candidates, options=options,
           stats=stats, active_barrier=active_barrier, post=post,
           step_name='Search', parent_indices=parent_index_candidates, out=out,
@@ -110,6 +117,7 @@ def search_cycle(search: EfficientExploration, options: Options,  # noqa: C901
       search.point_index = -1
       # """ Parallel evaluation for points in the samples set """
       insertion_flag, post = bb_handle.run_callable_parallel_local(
+          full_success=full_success,
           sampler=search, options=options, stats=stats,
           active_barrier=active_barrier, post=post, step_name='Search',
           parent_indices=parent_index_candidates, hashtable=hashtable,
@@ -162,25 +170,22 @@ def search_cycle(search: EfficientExploration, options: Options,  # noqa: C901
       state.last_success = success_flag
       search.n_successes += 1
 
-    # Detect potential stopping reasons
-    if (search.bb_eval >= options.budget):
-      state.stop_reason = STOP_TYPE.MAX_BB_EVAL_REACHED
-      return
-
-    if (search.bb_eval >= options.noutbound_hits_max):
-      state.stop_reason = STOP_TYPE.MAX_BB_OUTBOUND_REACHED
-      return
-
     # Detect feasibility in case we are in phase one
     if state.is_phase_one and insertion_flag is not None:
       if active_barrier.elements[active_barrier.last_index].h == 0:
         state.stop_reason = STOP_TYPE.STOP_IF_FEASIBLE
         return
 
-    # Trigger opportunistic strategy only when an iteration is considered as a full success
-    if success_flag.value > SUCCESS_TYPES.PS.value and options.opportunistic:
-      stats.nopportunistic_triggers += 1
-      break
+    # No opportunistic break here: the evaluator already stopped at the first
+    # full success (see `full_success`), and every point it did evaluate must
+    # still get its frame size updated above.
+
+  # Stopping reasons, once every evaluated point has been processed (the
+  # sampler's own `bb_eval` only counts the starting point).
+  if stats.neval_bb >= options.budget:
+    state.stop_reason = STOP_TYPE.MAX_BB_EVAL_REACHED
+  elif stats.noutbound_hits >= options.noutbound_hits_max:
+    state.stop_reason = STOP_TYPE.MAX_BB_OUTBOUND_REACHED
 
   # toc = time.perf_counter()
 
@@ -249,7 +254,7 @@ def search_step(search: EfficientExploration, options: Options,
     x_frame.coordinates = np.array(xcp_frame.coordinates)
     parent_index = active_barrier.parent_indexes[frame_center]
     x_parent: Point = Point()
-    if parent_index != 0:
+    if parent_index >= 0:
       x_parent.coordinates = hashtable.get_candidate_from_cache_by_index(
           parent_index).coordinates
 
@@ -258,7 +263,9 @@ def search_step(search: EfficientExploration, options: Options,
       # Cheap quadratic-model search instead of the sampling search
       search.generate_quad_model_points(
           hashtable=hashtable, fc=xcp_frame,
-          x_parent=x_parent.coordinates if parent_index != 0 else None)
+          x_parent=x_parent.coordinates if parent_index >= 0 else None,
+          snap_to_bounds=options.snap_to_bounds,
+          front=active_barrier.get_fk(), mo_search=options.mo_search)
     else:
       search.generate_sample_points(
           nsamples=int(
@@ -280,7 +287,7 @@ def search_step(search: EfficientExploration, options: Options,
           m=mk, x_center=active_barrier.elements[frame_center].coordinates,
           lb=param.lb, ub=param.ub, hashtable=hashtable, stats=stats)
 
-      peval = search.bb_eval
+      peval = stats.neval_bb
       search.omit_duplicates(peval, stats, hashtable=hashtable)
 
     generated_candidates_during_step = search.candidate_points_set

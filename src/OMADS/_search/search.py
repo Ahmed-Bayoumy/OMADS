@@ -163,8 +163,7 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
       out.h_max = active_barrier.h_max
       post.output_results(out=out, all_res=False)
       if param.is_pareto:
-        for i in range(len(active_barrier.get_filled_elements())):
-          post.nd_points.append(active_barrier.get_filled_elements()[i])
+        post.nd_points = active_barrier.pareto_points()
         post.output_nd_results(out_p)
 
     post.h_max = active_barrier.h_max
@@ -246,7 +245,8 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
       rp.coordinates = param.ref_point
     perf_m = Metrics(
         nd_solutions=active_barrier.get_filled_elements(),
-        nobj=active_barrier.dims[1], ref_point=rp)
+        nobj=active_barrier.dims[1], ref_point=rp,
+        ideal_point=param.ideal_point)
     hv = perf_m.hypervolume()
 
   xmin_found = False

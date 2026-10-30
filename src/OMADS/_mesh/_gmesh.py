@@ -361,7 +361,8 @@ class Gmesh(Mesh):
 
   def project_on_mesh(self, point: Point, frame_center: Point):
     proj: Point = point
-    delta: Any = self.get_delta_mesh_size()
+    # The lattice in the variables' units, as the poll steps are scaled.
+    delta: Any = self.get_lattice_size()
     max_nb_try: int = 10
     verif_value_i: Point = Point(self._n)
     verif_value_i.coordinates = [0] * self._n
@@ -610,6 +611,19 @@ class Gmesh(Mesh):
       delta = granularity * max(1.0, delta)
 
     return delta
+
+  def frame_size_after_refinements(self, value: float, k: int) -> float:
+    """A frame size `value` after `k` refinements: the granular sequence
+    (mantissa 5 -> 2 -> 1 -> 5 with the exponent decreasing) divides it by
+    10 every three refinements."""
+    for _ in range(k):
+      if not np.isfinite(value) or value <= 0:
+        return value
+      exp = np.floor(np.log10(value))
+      mant = round(value / 10.0 ** exp, 6)
+      value = 5.0 * 10.0 ** (exp - 1) if mant <= 1 else (
+          10.0 ** exp if mant <= 2 else 2.0 * 10.0 ** exp)
+    return value
 
   def refine_delta_frame_size(self):
     #  Compute the new values frameSizeMant and frameSizeExp first.

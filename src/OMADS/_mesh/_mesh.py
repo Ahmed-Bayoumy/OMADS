@@ -24,6 +24,8 @@
 """
 
 from typing import Any
+
+import numpy as np
 from .._include import DType
 from .._points._point import Point
 from .._setup._parameters import Parameters
@@ -119,6 +121,40 @@ class Mesh(ABC):
   @abstractmethod
   def refine_delta_frame_size(self):
     pass
+
+  def lattice_scale(self) -> np.ndarray:
+    """Per-variable unit of the mesh in the variables' own units: poll steps
+    are expressed in units of (ub - lb) / scaling (see Dirs2n.scale), so the
+    mesh lattice is the mesh size times that unit. 1 for granular (integer)
+    variables and for ranges or scalings that are not finite and positive."""
+    n = self._n
+    scaling = self._pb_params.scaling
+    try:
+      s = np.broadcast_to(np.asarray(scaling, dtype=float).ravel()
+                          if np.ndim(scaling) else float(scaling), (n,))
+      span = np.asarray(self._pb_params.ub, dtype=float) - np.asarray(
+          self._pb_params.lb, dtype=float)
+    except (TypeError, ValueError):
+      return np.ones(n)
+    with np.errstate(divide="ignore", invalid="ignore"):
+      sigma = span / s
+    granularity = getattr(self, "_granularity", None)
+    granular = np.zeros(n, dtype=bool) if granularity is None else np.array(
+        [float(granularity[i]) > 0 for i in range(n)])
+    ok = np.isfinite(sigma) & (sigma > 0) & ~granular
+    return np.where(ok, sigma, 1.0)
+
+  def get_lattice_size(self) -> np.ndarray:
+    """Mesh size per variable in the variables' own units (the spacing of
+    the points a poll or search step may generate around a mesh point)."""
+    delta = self.get_delta_mesh_size()
+    delta = getattr(delta, "coordinates", delta)
+    return np.asarray(delta, dtype=float) * self.lattice_scale()
+
+  def frame_size_after_refinements(self, value: float, k: int) -> float:
+    """A frame size `value` after `k` refinements of this mesh type (the
+    factor tau**k of DMulti-MADS); halving by default."""
+    return value * 0.5 ** k
 
   @abstractmethod
   def checkMeshForStopping(self):

@@ -182,11 +182,13 @@ class Omesh(Mesh):
       frame_center = [0.] * self._n
     if self._pb_params.var_type is None:
       self._pb_params.var_type = [VAR_TYPE.REAL.name] * self._n
+    # The lattice in the variables' units, as the poll steps are scaled.
+    lattice = self.get_lattice_size()
     for i in range(self._n):
       if self._pb_params.var_type[i] != VAR_TYPE.CATEGORICAL.name:
         if self._pb_params.var_type[i] == VAR_TYPE.REAL.name:
           point[i] = frame_center[i] + (
-              np.round((point[i] - frame_center[i]) / self.mesh_size[i]) * self.mesh_size[i])
+              np.round((point[i] - frame_center[i]) / lattice[i]) * lattice[i])
         else:
           point[i] = int(
               frame_center[i] +

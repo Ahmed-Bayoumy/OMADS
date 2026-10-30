@@ -89,5 +89,5 @@ A minimal animation of the poll trajectory with matplotlib:
 
 .. note::
 
-   ``save_coordinates`` is supported by ``poll.main``. With ``mads.main`` it raises an
-   ``IndexError`` at the end of the run in this release.
+   ``save_coordinates`` works with ``poll.main``, ``mads.main`` and ``search.main``; each
+   entry holds the points evaluated in one step and the frame centre they came from.

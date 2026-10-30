@@ -33,6 +33,7 @@ from .._points._cache import Cache
 from .._setup._parameters import Parameters
 from .._setup._options import Options
 from .._mesh._mesh import Mesh
+from .._points._point import coordinates_signature
 
 
 def parent_indices(
@@ -149,8 +150,8 @@ class Elements:
     return self._elements[index]
 
   def add_to_candidates_table(self, x: CandidatePoint):
-    if x.signature is None or x.signature != hash(tuple((x._coords))):
-      x.signature = hash(tuple((x._coords)))
+    if x.signature is None or x.signature != coordinates_signature(x._coords):
+      x.signature = coordinates_signature(x._coords)
     # Safeguard to avoid saving duplicates
     if x.signature in self._sig_to_index:
       self.update_candidate_in_cache(x)
@@ -162,8 +163,8 @@ class Elements:
       self._last_index = index
 
   def add_to_candidates_table_index(self, index: int, x: CandidatePoint):
-    if x.signature is None or x.signature != hash(tuple((x._coords))):
-      x.signature = hash(tuple((x._coords)))
+    if x.signature is None or x.signature != coordinates_signature(x._coords):
+      x.signature = coordinates_signature(x._coords)
     # Safeguard to avoid saving duplicates
     if x.signature in self._sig_to_index:
       self.update_candidate_in_cache(x)
@@ -178,8 +179,8 @@ class Elements:
       self._last_index = index
 
   def update_candidate_in_cache(self, x: CandidatePoint):
-    if x.signature is None or x.signature != hash(tuple((x._coords))):
-      x.signature = hash(tuple((x._coords)))
+    if x.signature is None or x.signature != coordinates_signature(x._coords):
+      x.signature = coordinates_signature(x._coords)
     index = self._sig_to_index.get(x.signature)
     if index is not None and self._elements[index] is not None:
       self._elements[index].__dict__.update(x.__dict__)
@@ -250,7 +251,9 @@ class AdaptiveBarrier:
     # self.elements = [None] * max_size  # placeholder for CandidatePoint
     self.meshes = [None] * max_size    # placeholder for Mesh
     # Assuming parent indexes are integers
-    self.parent_indexes = [0] * max_size
+    # Index of the frame center each element was generated from; -1: none
+    # (or forgotten after an unsuccessful iteration).
+    self.parent_indexes = [-1] * max_size
     self.within_fk = [False] * max_size
     self.within_uk = [False] * max_size
     self.within_ik = [False] * max_size
@@ -304,6 +307,13 @@ class AdaptiveBarrier:
     ik_list = ik.tolist() if hasattr(ik, "tolist") else list(ik)
     return fk_list + ik_list
 
+  def pareto_points(self) -> List[CandidatePoint]:
+    """The current Pareto front approximation: the feasible non-dominated
+    points, or the best infeasible ones while no feasible point is known."""
+    fk = self.get_fk()
+    points = fk if len(fk) > 0 else self.get_ik()
+    return points.tolist() if hasattr(points, "tolist") else list(points)
+
   def get_filled_elements(self):
     out = []
     for x in self.elements:
@@ -329,8 +339,8 @@ class AdaptiveBarrier:
     # whole method O(n^2) in the number of accumulated feasible points, and
     # get progressively slower every iteration as the barrier grows).
     fh_indices = [
-        i for i in range(self.last_index + 1)
-        if self.within_fk[i] and self.elements.get_raw(i) is not None]
+        int(i) for i in np.flatnonzero(np.array(self.within_fk[:self.last_index + 1]))
+        if self.elements.get_raw(int(i)) is not None]
     nb_elements_in_fh = len(fh_indices)
 
     # Empty set case
@@ -481,7 +491,7 @@ class AdaptiveBarrier:
 
   def _update_ik_set_after_insertion(self):
     candidate = self.elements.get_raw(self.last_index)
-    domination_flags = [False] * self.last_index  # Initialize with False
+    dominated_indices = []
 
     insert = True
     insertion_flag = INSERTION_FLAG.IMPROVES
@@ -492,18 +502,18 @@ class AdaptiveBarrier:
         comp_flag = self._private_compare_ik_elements(
             candidate, self.elements.get_raw(index))
         if comp_flag == COMPARE_TYPE.DOMINATING:
-          domination_flags[index] = True
+          dominated_indices.append(index)
           insertion_flag = INSERTION_FLAG.DOMINATES
         elif comp_flag in [COMPARE_TYPE.DOMINATED, COMPARE_TYPE.EQUAL]:
           insertion_flag = INSERTION_FLAG.IS_DOMINATED
           insert = False
           break
 
-    # Update the set of best infeasible points (ik)
-    for index, flag in enumerate(domination_flags):
-      if flag:
-        self.within_ik[index] = True
-      else:
+    # Update the set of best infeasible points (ik): only the elements the
+    # candidate dominates leave it; the others stay. (A dominated candidate
+    # cannot dominate any ik element, since ik is mutually non-dominated.)
+    if insert:
+      for index in dominated_indices:
         self.within_ik[index] = False
     self.within_ik[self.last_index] = insert
 
@@ -569,9 +579,10 @@ class AdaptiveBarrier:
               break
         self.within_ik[index] = insert
 
-  def frame_centers(self, w: int, use_dom_selection=True):  # noqa: C901
+  def frame_centers(self, w: Optional[int], use_dom_selection=True,  # noqa: C901
+                    w_plus: int = 3):
     # TODO: Syncing the mesh updates conducted on active barrier elements last index with the center index selected below
-    feasible_index = self.feasible_frame_center(w)
+    feasible_index = self.feasible_frame_center(w, w_plus=w_plus)
 
     infeasible_index = None
     if feasible_index == -1:
@@ -597,7 +608,7 @@ class AdaptiveBarrier:
               tmp_dist = tmp_dom_distance
 
         if tmp_dist == 0:
-          tmp_ind = 0
+          tmp_ind = -1
           tmp_dist = float('inf')
           for ind in range(0, self.last_index + 1):
             if self.within_ik[ind]:
@@ -609,7 +620,7 @@ class AdaptiveBarrier:
                 tmp_dist = tmp_dom_distance
         infeasible_index = tmp_ind
       else:
-        tmp_ind = 0
+        tmp_ind = -1
         tmp_dist = float('inf')
         for ind in range(0, self.last_index + 1):
           if self.within_ik[ind]:
@@ -623,32 +634,46 @@ class AdaptiveBarrier:
 
     return {"feasible": feasible_index, "infeasible": infeasible_index}
 
-  def feasible_frame_center(self, w: int):  # noqa: C901
-    # Get the feasible points (fh)
-    fh = self.get_fk()
-    if len(fh) == 0:
+  def feasible_frame_center(self, w: Optional[int] = None,  # noqa: C901
+                            w_plus: int = 3):
+    """Current incumbent selection of DMulti-MADS (Bigeon et al. 2021,
+    Alg. 4). Candidates have a frame size at least tau**w_plus times the
+    largest one (or 10**-w when the legacy `w` is given)."""
+    # Indices of the feasible points (fh), straight from the flags (get_fk
+    # would clone the whole front every iteration)
+    fk_indexes = [int(i) for i in np.flatnonzero(
+        np.array(self.within_fk[:self.last_index + 1]))]
+    if len(fk_indexes) == 0:
       return -1
 
-    fk_indexes = self.parentindices(self.elements, fh)
-
-    # Get maximum mesh size value
+    # Get maximum mesh size value (the infinity norm of every frame size is
+    # computed once: this runs every iteration over the whole front)
+    frame_norms = {ind: float(np.max(np.abs(np.asarray(
+        self.meshes[ind].get_frame_size_parameter(), dtype=float))))
+        for ind in fk_indexes}
     fh_Δ_max = 0.0
+    ind_Δ_max = fk_indexes[0]
     for ind in fk_indexes:
-      Δ_val = np.linalg.norm(
-          self.meshes[ind].get_frame_size_parameter(), np.inf)
-      fh_Δ_max = max(fh_Δ_max, Δ_val)
+      Δ_val = frame_norms[ind]
+      if Δ_val > fh_Δ_max:
+        fh_Δ_max, ind_Δ_max = Δ_val, ind
+    if w is not None:
+      Δ_threshold = 10.0**(-w) * fh_Δ_max
+    else:
+      Δ_threshold = self.meshes[ind_Δ_max].frame_size_after_refinements(
+          fh_Δ_max, w_plus)
 
     # Select candidates
     fh_selected_indexes = []
     for ind in fk_indexes:
-      fh_elt_mesh = self.meshes[ind]
-      Δ_val = np.linalg.norm(fh_elt_mesh.get_frame_size_parameter(), np.inf)
-      if (10.0**(-w) * fh_Δ_max) <= Δ_val and not fh_elt_mesh.check_mesh_for_stopping():
+      if Δ_threshold <= frame_norms[ind] and               not self.meshes[ind].check_mesh_for_stopping():
         fh_selected_indexes.append(ind)
 
-    # The selection must always work
+    # The selection must always work: with every frame below the stopping
+    # threshold, return an element with the largest frame size (Bigeon et al.
+    # 2021, remark after Alg. 4); the run then stops at the next iteration.
     if len(fh_selected_indexes) == 0:
-      return fk_indexes[0]
+      return max(fk_indexes, key=lambda ind: frame_norms[ind])
 
     # Only one point
     if len(fh_selected_indexes) == 1:
@@ -658,7 +683,8 @@ class AdaptiveBarrier:
     if len(fh_selected_indexes) == 2 and len(fk_indexes) == 2:
       v1f = self.elements.get_raw(fh_selected_indexes[0]).f
       v2f = self.elements.get_raw(fh_selected_indexes[1]).f
-      if np.linalg.norm(v1f, np.inf) > np.linalg.norm(v2f, np.inf):
+      # Alg. 4: the point with the largest objective value, max_i f_i(x^j)
+      if max(v1f) > max(v2f):
         return fh_selected_indexes[0]
       else:
         return fh_selected_indexes[1]
@@ -667,38 +693,45 @@ class AdaptiveBarrier:
     frame_ind = -1
     maximum_gap = -1.0  # negative to deal with the case where two points in fh_selected_indexes
 
+    # Vectorized over the front (it runs every iteration and the front can
+    # hold thousands of points); same rule as the loop of Alg. 4: interior
+    # points in increasing order of the objective with ">=" (the last of
+    # equal largest gaps wins), then the two extreme points with ">".
+    F = np.array([self.elements.get_raw(ind).f for ind in fk_indexes], dtype=float)
+    ids = np.asarray(fk_indexes)
+    selected = np.isin(ids, fh_selected_indexes)
     for obj in range(self.dims[1]):
-      fvalues = np.array([(self.elements.get_raw(ind).f[obj], ind)
-                         for ind in fk_indexes])
-      sorted_indices = np.argsort(fvalues[:, 0])
-      fvalues = fvalues[sorted_indices]
+      order = np.argsort(F[:, obj])
+      v, ids_o, sel_o = F[order, obj], ids[order], selected[order]
 
       # Get extreme points according to one objective
-      fmin = fvalues[0][0]
-      fmax = fvalues[-1][0]
+      fmin, fmax = v[0], v[-1]
 
       # Can happen for example when we have several minima or for more than three objectives
       if fmin == fmax:
         fmin = 0.0
         fmax = 1.0
+      span = fmax - fmin
 
       # Intermediate points
-      for i in range(1, len(fvalues) - 1):
-        current_gap = (fvalues[i + 1][0] - fvalues[i - 1][0]) / (fmax - fmin)
-        if fvalues[i][1] in fh_selected_indexes and current_gap >= maximum_gap:
-          maximum_gap = current_gap
-          frame_ind = fvalues[i][1]
+      cand = np.flatnonzero(sel_o[1:-1])
+      if len(cand):
+        gaps = (v[cand + 2] - v[cand]) / span
+        gmax = gaps.max()
+        if gmax >= maximum_gap:
+          maximum_gap = gmax
+          frame_ind = ids_o[cand[np.flatnonzero(gaps == gmax)[-1]] + 1]
 
       # Extreme points
-      current_gap = 2 * (fvalues[-1][0] - fvalues[-2][0]) / (fmax - fmin)
-      if fvalues[-1][1] in fh_selected_indexes and current_gap > maximum_gap:
+      current_gap = 2 * (v[-1] - v[-2]) / span
+      if sel_o[-1] and current_gap > maximum_gap:
         maximum_gap = current_gap
-        frame_ind = fvalues[-1][1]
+        frame_ind = ids_o[-1]
 
-      current_gap = 2 * (fvalues[1][0] - fvalues[0][0]) / (fmax - fmin)
-      if fvalues[0][1] in fh_selected_indexes and current_gap > maximum_gap:
+      current_gap = 2 * (v[1] - v[0]) / span
+      if sel_o[0] and current_gap > maximum_gap:
         maximum_gap = current_gap
-        frame_ind = fvalues[0][1]
+        frame_ind = ids_o[0]
 
     return int(frame_ind)
 
@@ -740,7 +773,7 @@ class AdaptiveBarrier:
     if len(ik_selected_indexes) == 2 and len(ik_indexes) == 2:
       v1f = self.elements.get_raw(ik_selected_indexes[0]).f
       v2f = self.elements.get_raw(ik_selected_indexes[1]).f
-      if np.linalg.norm(v1f, np.inf) > np.linalg.norm(v2f, np.inf):
+      if max(v1f) > max(v2f):
         return ik_selected_indexes[0]
       else:
         return ik_selected_indexes[1]

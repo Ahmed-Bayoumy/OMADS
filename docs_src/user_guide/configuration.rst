@@ -94,8 +94,9 @@ Problem definition
        multi-objective runs.
    * - ``scaling``
      - ``10.0``
-     - Scalar or per-variable divisor :math:`s`: poll steps are expressed in units of
-       :math:`(u-\ell)/s`. Use ``ub - lb`` to work in the original units.
+     - Scalar or per-variable divisor :math:`s`: the mesh and the poll steps are expressed
+       in units of :math:`(u-\ell)/s` (integer variables excepted). Use ``ub - lb`` to work
+       in the original units.
    * - ``var_type``
      - all ``"R"``
      - Variable types: ``"R"`` real, ``"I"`` integer, ``"D_<set>"`` discrete and
@@ -193,14 +194,25 @@ Multi-objective and barrier
      - Run a Pareto study (required when ``nobj > 1``).
    * - ``ref_point``
      - ``None``
-     - Reference point for the hypervolume indicator; computed from the front when omitted.
+     - Reference point for the hypervolume ``HV``. Without it, the reference point and the
+       scaling come from the front itself, so ``HV`` cannot be compared across runs.
+   * - ``ideal_point``
+     - ``None``
+     - Ideal point (or a lower bound of each objective). With ``ref_point``, ``HV`` is the
+       hypervolume of the box they bound, scaled to :math:`[0, 1]`; without it, ``HV`` is the
+       raw hypervolume.
    * - ``function_weights``
      - equal
      - Objective weights (normalized to sum to one).
+   * - ``w_plus``
+     - ``3``
+     - A feasible point can become a frame centre only if its frame size is at most
+       ``w_plus`` refinements below the largest one (:math:`w^{+}` of DMulti-MADS,
+       :numref:`A3`). On the granular mesh, three refinements divide the frame size by 10.
    * - ``w_min``
-     - ``1``
-     - A feasible point can become a frame centre only if its frame size is at least
-       :math:`10^{-w}` times the largest one.
+     - ``None``
+     - Legacy form of ``w_plus``: a frame size of at least :math:`10^{-w}` times the largest
+       one (on the granular mesh, ``w_min = w_plus / 3``). Overrides ``w_plus`` when set.
    * - ``lhs_search_initialization``
      - ``False``
      - Use :math:`(n+1)(n+2)` Latin hypercube samples at the first search step.
@@ -241,16 +253,40 @@ Multi-objective and barrier
      - ``False``
      - Skip candidates already in the cache. Recommended: ``True``.
    * - ``rich_direction``
-     - ``False``
-     - Random Householder directions (asymptotically dense). Recommended: ``True``.
+     - ``None``
+     - Random Householder directions (asymptotically dense). ``None``: ``True`` when
+       ``nobj > 1``, ``False`` otherwise. Recommended: ``True``.
    * - ``direction_type``
-     - ``"ORTHO_2N"``
+     - ``None``
      - ``"ORTHO_2N"`` (:math:`2n` orthogonal poll directions) or ``"N+1"`` (:math:`n`
        orthogonal directions and their negative sum; real variables only, otherwise falls
-       back to :math:`2n`).
+       back to :math:`2n`). After a success, the poll points are ordered by their angle with
+       the last successful step, and the ``"N+1"`` basis takes from each pair of opposite
+       directions the one closer to it. ``None``: ``"N+1"`` when ``nobj > 1``,
+       ``"ORTHO_2N"`` otherwise.
    * - ``opportunistic``
      - ``False``
-     - Stop evaluating the current poll or search set at the first full success.
+     - Stop evaluating the current poll or search set at the first full success (the same
+       success rule as the iteration's). In parallel mode, evaluations already running
+       when it stops are still recorded.
+   * - ``snap_to_bounds``
+     - ``True``
+     - Replace a poll or speculative point outside the bounds by the closest mesh point
+       inside them. ``False``: drop it unevaluated (the extreme barrier of DMulti-MADS).
+   * - ``mo_search``
+     - ``True``
+     - Multiobjective problems only: before each poll, besides the speculative search,
+       evaluate the point that quadratic models of the objectives and constraints
+       predict to dominate the frame centre the most, the minimizer of one objective's
+       model when the frame centre is an extreme point of the front, and the middle
+       point between the frame centre and its neighbour across the larger gap of the
+       front. ``False``: the speculative search alone, as in DMulti-MADS (2021).
+   * - ``constraint_strategy``
+     - ``"PB"``
+     - ``"PB"``: progressive barrier for the constraints declared ``PB``.
+       ``"TWO_PHASE"``: minimize the constraint violation until a feasible point is
+       found, then optimize from it with every constraint as an extreme barrier
+       (DMulti-MADS-TEB). Both phases share the budget; needs a callable blackbox.
    * - ``parallel_mode``
      - ``False``
      - Evaluate candidate sets in parallel processes.
@@ -332,7 +368,8 @@ Multi-objective and barrier
        evaluations left in the budget. ``None`` draws 10.
    * - ``criterion``
      - ``None``
-     - Space-filling criterion of the Latin hypercube sampler (for example ``"maximin"``).
+     - Space-filling criterion of the Latin hypercube sampler: ``"maximin"``, ``"center"``,
+       ``"centermaximin"``, ``"correlation"`` (formerly ``"corr"``) or ``"ExactSE"``.
    * - ``weights``
      - ``None``
      - Level weights of the full-factorial sampler.

@@ -23,7 +23,7 @@
 # ------------------------------------------------------------------------------------#
 """
 
-from .._include import SUCCESS_TYPES
+from .._include import SUCCESS_TYPES, INSERTION_FLAG, COMPARE_TYPE
 from .._include import AdaptiveBarrier
 from .._include import CandidatePoint
 from .._analytics._metadata import MadsState
@@ -62,9 +62,13 @@ def compute_success(  # noqa: C901
       # The set of feasible points can be empty before the insertion of the new point.
       if state.fk_frame_center != -1:
         if options.use_dms_success and insertion_flag in [
-                'dominates', 'extends', 'improves']:
+                INSERTION_FLAG.DOMINATES, INSERTION_FLAG.EXTENDS,
+                INSERTION_FLAG.IMPROVES]:
           success_flag = SUCCESS_TYPES.FS
-        if v <= active_barrier.elements[state.fk_frame_center]:
+        # Strict dominance of the frame center (Bigeon et al. 2021, Alg. 2):
+        # a point with equal objective values is not a success.
+        if v.__compare__(active_barrier.elements[state.fk_frame_center]) == \
+                COMPARE_TYPE.DOMINATING:
           success_flag = SUCCESS_TYPES.FS
       # If Fk is empty, consider it as a full success, similar to the Nomad software.
       else:
@@ -82,7 +86,9 @@ def compute_success(  # noqa: C901
           if v.h < active_barrier.elements[state.uk_frame_center].h:
             success_flag = SUCCESS_TYPES.PS
         # Success if change in Iᵏ with h(x) <= h_max.
-        if state.uk_frame_center != -1 and v <= active_barrier.elements[state.uk_frame_center]:
+        if state.uk_frame_center != -1 and v.__compare__(
+                active_barrier.elements[state.uk_frame_center]) == \
+                COMPARE_TYPE.DOMINATING:
           success_flag = SUCCESS_TYPES.FS
           #  if v.h <= model.barrier.elements[model.state.Uk_frame_center].h and insertion_flag in
           # ['dominates', 'extends', 'improves']:

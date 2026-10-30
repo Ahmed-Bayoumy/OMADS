@@ -1,5 +1,4 @@
 """Bi-objective Binh and Korn problem, solved with a Pareto poll study."""
-import numpy as np
 import pandas as pd
 from OMADS import poll
 
@@ -23,6 +22,7 @@ data = {
         "nobj": 2,
         "is_pareto": True,
         "ref_point": [140.0, 50.0],
+        "ideal_point": [0.0, 4.0],
         "post_dir": "./post",
     },
     "options": {"seed": 0, "budget": 1500, "tol": 1e-9,
@@ -32,19 +32,16 @@ data = {
 
 
 def pareto_front(csv_path, objectives):
-  """Non-dominated feasible rows of an OMADS results file."""
+  """The non-dominated points of an OMADS Pareto file, sorted by `objectives[0]`."""
   df = pd.read_csv(csv_path, skipinitialspace=True)
   df.columns = df.columns.str.strip()
-  df = df[df["Status"].str.strip() == "FEASIBLE"].drop_duplicates(objectives)
-  F = df[objectives].to_numpy()
-  keep = [not np.any(np.all(F <= f, axis=1) & np.any(F < f, axis=1)) for f in F]
-  return df[keep].sort_values(objectives[0])
+  return df.sort_values(objectives[0])
 
 
 if __name__ == "__main__":
   out, _ = poll.main(data)
   print("hypervolume =", round(out["HV"], 4))
 
-  front = pareto_front("post/binh_korn_run/binh_korn_all.out", ["f1", "f2"])
+  front = pareto_front("post/binh_korn_ND/binh_korn_Pareto.out", ["f1", "f2"])
   print(len(front), "non-dominated points, e.g.")
   print(front[["x1", "x2", "f1", "f2"]].iloc[::len(front) // 5].to_string(index=False))

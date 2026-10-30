@@ -30,6 +30,7 @@ import numpy as np
 
 from .._include import DESIGN_STATUS
 from ._candidate_point import CandidatePoint
+from ._point import coordinates_signature
 
 
 class Cache:
@@ -198,8 +199,8 @@ class Cache:
     return self._candidates[idxs[-1]]
 
   def add_to_cache(self, x: CandidatePoint):
-    if x.signature is None or x.signature != hash(tuple((x._coords))):
-      x.signature = hash(tuple((x._coords)))
+    if x.signature is None or x.signature != coordinates_signature(x._coords):
+      x.signature = coordinates_signature(x._coords)
     index = self._sig_to_index.get(x.signature)
     if index is not None:
       self.update_candidate_in_cache(x)
@@ -212,8 +213,8 @@ class Cache:
       self._sync_flag_indices(index)
 
   def update_candidate_in_cache(self, x: CandidatePoint):
-    if x.signature is None or x.signature != hash(tuple((x._coords))):
-      x.signature = hash(tuple((x._coords)))
+    if x.signature is None or x.signature != coordinates_signature(x._coords):
+      x.signature = coordinates_signature(x._coords)
     index = self._sig_to_index.get(x.signature)
     if index is not None:
       self._candidates[index].__dict__.update(x.__dict__)
@@ -390,6 +391,34 @@ class Cache:
             np.asarray([r[1] for r in rows], dtype=float),
             np.asarray([r[2] for r in rows], dtype=float))
 
+  def get_points_objectives_and_c(
+          self) -> "tuple[np.ndarray, np.ndarray, np.ndarray]":
+    """Like `get_points_f_and_c`, with one column per objective instead of
+    their sum (regression data for multiobjective surrogate models).
+
+    Called every iteration by the model search, so the rows are gathered
+    incrementally: only the candidates added since the previous call are
+    read (evaluated points do not change once cached)."""
+    rows = self.__dict__.setdefault("_mo_rows", [])
+    start = self.__dict__.get("_mo_upto", 0)
+    stop = self._last_index + 1
+    for c in self._candidates[start:stop]:
+      if c._status not in (DESIGN_STATUS.FEASIBLE, DESIGN_STATUS.INFEASIBLE):
+        continue
+      f = np.ravel(np.asarray(c._freal, dtype=float))
+      cons = np.ravel(np.asarray(c._c_ineq, dtype=float))
+      if np.all(np.isfinite(f)) and np.all(np.isfinite(cons)):
+        rows.append((np.asarray(c._coords, dtype=float), f, cons))
+    self._mo_upto = max(start, stop)
+    if not rows or len({(len(r[1]), len(r[2])) for r in (rows[0], rows[-1])}) != 1:
+      return np.empty((0, 0)), np.empty((0, 0)), np.empty((0, 0))
+    try:
+      return (np.asarray([r[0] for r in rows], dtype=float),
+              np.asarray([r[1] for r in rows], dtype=float),
+              np.asarray([r[2] for r in rows], dtype=float))
+    except ValueError:   # rows of different lengths
+      return np.empty((0, 0)), np.empty((0, 0)), np.empty((0, 0))
+
   def get_all_feasible_nd_candidates(
           self, nsamples: int = None) -> List[CandidatePoint]:
     x = [c.clone() for c in self._candidates[:self._last_index]
@@ -455,8 +484,8 @@ class Cache:
     :return: A boolean flag indicate whether the point exist in the cache memory
     :rtype: bool
     """
-    if x.signature is None or x.signature != hash(tuple((x._coords))):
-      x.signature = hash(tuple((x._coords)))
+    if x.signature is None or x.signature != coordinates_signature(x._coords):
+      x.signature = coordinates_signature(x._coords)
     is_dup = x.signature in self._sig_to_index
     if not is_dup and add:
       self.add_to_cache(x)
@@ -473,11 +502,11 @@ class Cache:
     :rtype: bool
     """
     is_dup: bool = False
-    if xp.signature is None or xp.signature != hash(tuple((xp._coords))):
-      xp.signature = hash(tuple((xp._coords)))
+    if xp.signature is None or xp.signature != coordinates_signature(xp._coords):
+      xp.signature = coordinates_signature(xp._coords)
     for i, x in enumerate(x_pool):
-      if x.signature is None or x.signature != hash(tuple((x._coords))):
-        x.signature = hash(tuple((x._coords)))
+      if x.signature is None or x.signature != coordinates_signature(x._coords):
+        x.signature = coordinates_signature(x._coords)
       if xp.signature == x.signature:
         is_dup = True
         break
@@ -492,7 +521,7 @@ class Cache:
     """
     for xt in x:
       if not isinstance(xt.signature, int) or xt.signature is None:
-        xt.signature = hash(tuple((xt.coordinates)))
+        xt.signature = coordinates_signature(xt.coordinates)
       if xt.signature in self._sig_to_index:
         self.update_candidate_in_cache(xt)
       else:

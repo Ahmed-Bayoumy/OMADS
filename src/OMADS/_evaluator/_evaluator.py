@@ -31,7 +31,7 @@ import platform
 import os
 import sys
 import time
-from typing import List, Any, Optional, Tuple
+from typing import List, Any, Callable, Optional, Tuple
 
 import paramiko
 
@@ -110,7 +110,11 @@ class Evaluator:
           self, sampler: GenericSamplerBase, centers: List[int],
           options: Options, stats: Any, active_barrier: AdaptiveBarrier,
           post: PostMADS, step_name: str, parent_indices: List[int],
-          out: Output, hashtable=None, internal: bool = False):
+          out: Output, hashtable=None, internal: bool = False,
+          full_success: Optional[Callable[[CandidatePoint, Any], bool]] = None):
+    # `full_success(candidate, insertion_flag)` is the step's own success
+    # rule, which the opportunistic strategy stops on; without it, the
+    # strategy stops on a point better than its center in every objective.
 
     self.candidates = sampler._candidate_points_set
     insertion_flag = [None] * len(sampler._candidate_points_set)
@@ -153,24 +157,27 @@ class Evaluator:
 
       post.psize.append(sampler.mesh.get_delta_frame_size().coordinates)
       post.x_incumbent.append(active_barrier.elements[centers[index]])
+      # One results row per evaluated point, including the one that stops
+      # the loop below.
+      post.poll_dirs.append(sampler._candidate_points_set[index])
 
-      if options.opportunistic and self.candidates[index] < self.incumbent:
+      if options.opportunistic and (
+              self.candidates[index] < self.incumbent if full_success is None
+              else full_success(self.candidates[index], insertion_flag[index])):
         stats.nopportunistic_triggers += 1
         break
       if stats.neval_bb == options.budget:
         break
 
-    # COMPLETED: Output results here
-      post.iter.append(sampler._iter)
-      post.poll_dirs.append(sampler._candidate_points_set[index])
     sampler._candidate_points_set = self.candidates
     if options.save_coordinates:
       post.coords.append(sampler._candidate_points_set)
+      post.coords_centers.append(
+          active_barrier.elements[centers[0]] if centers else None)
 
-    if sampler.prob_params.is_pareto:
-      post.output_nd_results(out=out)
-    else:
-      post.output_results(out=out, all_res=False)
+    # Append the new evaluations to the results file (multiobjective runs
+    # too: the solvers write the Pareto file separately).
+    post.output_results(out=out, all_res=False)
 
     return insertion_flag, post
 
@@ -244,7 +251,9 @@ class Evaluator:
           self, sampler: GenericSamplerBase, centers: List[int],
           options: Options, stats: Any, active_barrier: AdaptiveBarrier,
           post: PostMADS, step_name: str, parent_indices: List[int],
-          out: Output, hashtable=None):
+          out: Output, hashtable=None,
+          full_success: Optional[Callable[[CandidatePoint, Any], bool]] = None):
+    # See run_callable_serial_local for `full_success`.
     self.candidates = sampler.candidate_points_set
     insertion_flag = []
     insertion_flag = [None] * len(sampler._candidate_points_set)
@@ -254,8 +263,11 @@ class Evaluator:
     future_to_index = {
         executor.submit(self.evaluate_blackbox_parallel, point): (i, point)
         for i, point in enumerate(self.candidates)}
-    completed_result = None
-    for future in concurrent.futures.as_completed(future_to_index):
+    recorded = set()
+
+    def record(future, check_stop: bool = True) -> bool:
+      """Record one finished evaluation; True when the loop must stop."""
+      recorded.add(future)
       toc = time.perf_counter()
       index, point = future_to_index[future]
       stats.neval_bb += 1
@@ -288,25 +300,35 @@ class Evaluator:
         post.step_name = []
         post.step_name.append(step_name)
       post.psize.append(sampler.mesh.get_delta_frame_size().coordinates)
-      if options.opportunistic and sampler.candidate_points_set[index] < self.incumbent:
+      post.poll_dirs.append(sampler.candidate_points_set[index])
+      if not check_stop:
+        return False
+      if options.opportunistic and (
+              sampler.candidate_points_set[index] < self.incumbent
+              if full_success is None else full_success(
+                  sampler.candidate_points_set[index], insertion_flag[index])):
         stats.nopportunistic_triggers += 1
-        completed_result = future.result()
+        return True
+      return stats.neval_bb >= options.budget
+
+    for future in concurrent.futures.as_completed(future_to_index):
+      if record(future):
+        # Cancel the evaluations not started yet; those already running are
+        # paid for, so wait for them and record them too.
+        running = [f for f in future_to_index if not f.cancel()
+                   and f not in recorded]
+        for f in concurrent.futures.as_completed(running):
+          record(f, check_stop=False)
         break
-      if stats.neval_bb == options.budget:
-        completed_result = future.result()
-        break
-    if (completed_result):
-      for f in future_to_index:
-        if not f.done():
-          f.cancel()
 
     if options.save_coordinates:
       post.coords.append(sampler.candidate_points_set)
+      post.coords_centers.append(
+          active_barrier.elements[centers[0]] if centers else None)
 
-    if sampler.prob_params.is_pareto:
-      post.output_nd_results(out=out)
-    else:
-      post.output_results(out=out, all_res=False)
+    # Append the new evaluations to the results file (multiobjective runs
+    # too: the solvers write the Pareto file separately).
+    post.output_results(out=out, all_res=False)
 
     return insertion_flag, post
 
@@ -425,6 +447,8 @@ class Evaluator:
     """Evaluate an external executable."""
     evalerr = False
     timouterr = False
+    # The executable reads this point from the input file.
+    self.write_input(values)
     pwd = os.getcwd()
     os.chdir(self.path)
 
@@ -451,9 +475,10 @@ class Evaluator:
     finally:
       os.chdir(pwd)
 
-    # Read output
+    # Read output (a failure or a timeout is an evaluation error, with the
+    # same [[f], [c]] shape as a failed callable)
     if evalerr or timouterr:
-      return [inf, [inf]], evalerr
+      return [[inf], [inf]], True
 
     output = self.read_output()
     return [output[0], output[1:]], evalerr

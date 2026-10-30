@@ -23,7 +23,7 @@
 # ------------------------------------------------------------------------------------#
 """
 from dataclasses import dataclass
-from typing import List, Dict
+from typing import List, Dict, Optional
 import copy
 
 import numpy as np
@@ -296,11 +296,13 @@ class Dirs2n(GenericSamplerBaseData, GenericSamplerBase):
 
   def create_housholder(self, is_rich: bool, domain: List[int] = None,  # noqa: C901
                         is_one_dir: bool = False,
-                        n_plus_1: bool = False) -> np.ndarray:
+                        n_plus_1: bool = False,
+                        target: Optional[np.ndarray] = None) -> np.ndarray:
     """Create householder matrix
 
     :param is_rich:  A flag that indicates if the rich direction option is enabled
     :type is_rich: bool
+    :param target: Target direction for the N+1 basis (see `_ortho_n_plus_1`)
     :return: The householder matrix
     :rtype: np.ndarray
     """
@@ -333,7 +335,7 @@ class Dirs2n(GenericSamplerBaseData, GenericSamplerBase):
         (np.abs(hhm, dtype=self._dtype.dtype)).max(1) ** (-1)))
     if n_plus_1 and not is_one_dir and all(
             t in (VAR_TYPE.REAL, VAR_TYPE.REAL.name) for t in domain):
-      return self._ortho_n_plus_1(hhm)
+      return self._ortho_n_plus_1(hhm, target=target)
     # Rounding( and transpose)
     tmp = np.multiply(self.mesh.get_rho(), hhm, dtype=self._dtype.dtype)
     hhm = np.transpose(
@@ -363,7 +365,8 @@ class Dirs2n(GenericSamplerBaseData, GenericSamplerBase):
 
     return hhm
 
-  def _ortho_n_plus_1(self, hhm: np.ndarray) -> np.ndarray:
+  def _ortho_n_plus_1(self, hhm: np.ndarray,
+                      target: Optional[np.ndarray] = None) -> np.ndarray:
     """N+1 poll set (Audet, Ianni, Le Digabel & Tribes 2014): the n
     mesh-rounded orthogonal directions plus the negative of their sum
     rescaled to the frame -- a positive spanning set of n+1 instead of 2n
@@ -373,11 +376,22 @@ class Dirs2n(GenericSamplerBaseData, GenericSamplerBase):
     basis is rounded exactly like the 2n set; the extra direction is
     built from the *rounded* basis so it stays its negative sum (rounding
     it after normalizing would zero its negative entries when rho = 1).
+
+    With a nonzero `target` direction (the last successful step), the basis
+    takes from each pair of opposite directions of the 2n set the one making
+    the smaller angle with it, as in DMulti-MADS (Bigeon et al. 2021), so the
+    completing direction points away from the last success.
     """
     rho = np.asarray(self.mesh.get_rho(), dtype=self._dtype.dtype)
     delta = np.asarray(self.mesh.get_delta_mesh_size().coordinates,
                        dtype=self._dtype.dtype)
     basis = np.ceil(np.multiply(rho, hhm, dtype=self._dtype.dtype))
+    if target is not None and np.any(target):
+      steps = np.dot(np.multiply(delta, basis, dtype=self._dtype.dtype),
+                     self.scaling)
+      signs = np.where(np.dot(steps, np.asarray(target, dtype=float)) < 0,
+                       -1.0, 1.0)
+      basis = basis * signs[:, None]
     neg = -basis.sum(axis=0)
     if not np.any(neg):
       dirs = np.vstack((basis, -basis))
@@ -391,7 +405,9 @@ class Dirs2n(GenericSamplerBaseData, GenericSamplerBase):
           lb: List[float], fc: CandidatePoint, fci: int,
           it: int, var_type: List, var_sets: Dict, var_link: List[str],
           c_types: List[BARRIER_TYPES] = None,
-          rich_direction: bool = True, direction_type: str = "ORTHO_2N"):
+          rich_direction: bool = True, direction_type: str = "ORTHO_2N",
+          target_direction: Optional[np.ndarray] = None,
+          snap_to_bounds: bool = True):
     """Create the poll directions
 
     :param hhm: Householder matrix
@@ -402,23 +418,45 @@ class Dirs2n(GenericSamplerBaseData, GenericSamplerBase):
     :type lb: List[float]
     :param it: iteration
     :type it: int
+    :param target_direction: The last successful step (None if unknown):
+      orients the N+1 basis and orders the poll points by their angle with it
+    :type target_direction: np.ndarray
+    :param snap_to_bounds: Clip the poll points to the bounds; False: drop
+      the ones outside (extreme barrier)
+    :type snap_to_bounds: bool
     """
     del self.candidate_points_set
     del self.poll_dirs
     hhm = self.create_housholder(
         rich_direction,
         domain=self.prob_params.var_type,
-        n_plus_1=direction_type in ("N+1", "ORTHO_N+1"))  # former name
+        n_plus_1=direction_type in ("N+1", "ORTHO_N+1"),  # former name
+        target=target_direction)
     temp = np.add(
         hhm, np.array(
             fc.coordinates).T,
         dtype=self._dtype.dtype)
 
     temp = self.rng.permutation(temp)
+    if not snap_to_bounds:
+      temp = temp[np.all((temp >= np.asarray(lb)) & (temp <= np.asarray(ub)),
+                         axis=1)]
     temp = np.minimum(temp, ub, dtype=self._dtype.dtype)
     temp = np.maximum(temp, lb, dtype=self._dtype.dtype)
     temp = np.unique(temp, axis=0)
-    if isinstance(temp, list) or isinstance(temp, np.ndarray):
+    if target_direction is not None and np.any(target_direction) and \
+            temp.ndim == 2 and len(temp) > 1:
+      # Most promising first (Audet et al. 2014): decreasing cosine with the
+      # target direction, which matters with the opportunistic strategy.
+      t = np.asarray(target_direction, dtype=float)
+      steps = temp - np.asarray(fc.coordinates, dtype=float)
+      norms = np.linalg.norm(steps, axis=1) * np.linalg.norm(t)
+      cosines = np.divide(steps @ t, norms, out=np.full(len(temp), -np.inf),
+                          where=norms > 0)
+      temp = temp[np.argsort(-cosines, kind="stable")]
+    if len(temp) == 0:  # every poll point was outside the bounds
+      ndirs = 0
+    elif isinstance(temp, list) or isinstance(temp, np.ndarray):
       ndirs = len(temp) if isinstance(
           temp[0],
           list) or isinstance(
@@ -447,6 +485,47 @@ class Dirs2n(GenericSamplerBaseData, GenericSamplerBase):
     del temp
 
     self.iter = it
+
+  def create_speculative_point(
+          self, ub: List[float], lb: List[float], fc: CandidatePoint, fci: int,
+          it: int, var_type: List, var_sets: Dict, var_link: List[str],
+          step: np.ndarray, c_types: List[BARRIER_TYPES] = None,
+          snap_to_bounds: bool = True):
+    """Candidate set with the single speculative point fc + step (clipped
+    to the bounds, or none outside them without `snap_to_bounds`), which
+    repeats the step that generated the frame center (speculative search of
+    DMulti-MADS, Bigeon et al. 2021, Sect. 6.3)."""
+    del self.candidate_points_set
+    del self.poll_dirs
+    self.iter = it
+    if step is None:
+      return
+    coords = np.add(fc.coordinates, step, dtype=self._dtype.dtype)
+    if not snap_to_bounds and (np.any(coords < np.asarray(lb)) or
+                               np.any(coords > np.asarray(ub))):
+      return
+    self.add_points_from_coords(
+        [coords], lb=lb, ub=ub, fc=fc, fci=fci, var_type=var_type,
+        var_sets=var_sets, var_link=var_link, c_types=c_types)
+
+  def add_points_from_coords(
+          self, coords_list: List[np.ndarray], lb: List[float],
+          ub: List[float], fc: CandidatePoint, fci: int, var_type: List,
+          var_sets: Dict, var_link: List[str],
+          c_types: List[BARRIER_TYPES] = None):
+    """Append the points `coords_list` (clipped to the bounds) to the
+    candidate set, as trial points generated around the frame center `fc`
+    (e.g. by the multiobjective model and middle-point searches)."""
+    for coords in coords_list:
+      coords = np.clip(np.asarray(coords, dtype=self._dtype.dtype), lb, ub)
+      tmp = CandidatePoint()
+      tmp.create_candidate_point_from_coords(
+          temp=coords, var_type=var_type, var_sets=var_sets,
+          var_link=var_link, c_types=c_types, fc_index=fci, other=fc)
+      tmp.direction = tmp - fc
+      tmp.fc_index = fc
+      self.candidate_points_set = tmp
+      self.poll_dirs = tmp - fc
 
   def scale(self, ub: List[float], lb: List[float], factor: float = 10.0):
     self.scaling = np.divide(np.subtract(ub, lb, dtype=self._dtype.dtype),
@@ -533,8 +612,9 @@ class Dirs2n(GenericSamplerBaseData, GenericSamplerBase):
       px.coordinates = self.candidate_points_set[k].coordinates
       candidate = m.project_on_mesh(point=px, frame_center=x_center)
 
-      # 2. Snap to bounds if necessary
-      δ = m.get_delta_mesh_size()
+      # 2. Snap to bounds if necessary (to mesh points, in the variables'
+      # units: see Mesh.get_lattice_size)
+      δ = m.get_lattice_size()
       # snapped_candidate = np.zeros(m.n)
 
       for i in range(m.n):
