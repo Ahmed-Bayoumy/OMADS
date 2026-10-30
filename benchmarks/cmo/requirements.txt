@@ -1,0 +1,6 @@
+# Requirements of the constrained bi-objective benchmark, in addition to OMADS
+# itself (pip install -e . from the repository root):
+#   pip install -r benchmarks/cmo/requirements.txt
+pymoo>=0.6.1
+matplotlib>=3.10
+scipy>=1.15

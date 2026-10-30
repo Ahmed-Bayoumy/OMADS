@@ -53,7 +53,9 @@ Pareto fronts obtained by OMADS on bi-objective test problems from the literatur
 .. figure:: ../_static/ConstrainedMO.png
    :width: 100%
 
-   Constrained bi-objective test problems.
+   Constrained bi-objective test problems solved by ``mads.main`` (one run, seed 0,
+   5,000 evaluations), with the true Pareto fronts in black; produced by
+   ``benchmarks/cmo/plot_constrained_mo.py``.
 
 .. figure:: ../_static/UnconstrainedMO.png
    :width: 100%

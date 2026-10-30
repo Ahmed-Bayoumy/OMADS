@@ -92,7 +92,9 @@ Multi-objective results
 -----------------------
 
 The figures below show Pareto fronts obtained by OMADS on constrained (top) and
-unconstrained (bottom) bi-objective test problems from the literature.
+unconstrained (bottom) bi-objective test problems from the literature. The top
+figure, with the true Pareto fronts in black, is produced by
+``benchmarks/cmo/plot_constrained_mo.py``.
 
 .. image:: _static/ConstrainedMO.png
    :width: 100%
