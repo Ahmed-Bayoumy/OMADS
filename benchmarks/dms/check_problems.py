@@ -347,7 +347,7 @@ class MatlabSubset:
     return env[out] if raw else env[out].ravel(order="F")
 
   # statements
-  def run(self, stmts, env):
+  def run(self, stmts, env):  # noqa: C901
     for s in stmts:
       kind = s[0]
       if kind == "assign":
@@ -428,7 +428,7 @@ class MatlabSubset:
   _end = []
 
   # expressions
-  def ev(self, n, env):
+  def ev(self, n, env):  # noqa: C901
     kind = n[0]
     if kind == "num":
       return _m(n[1])

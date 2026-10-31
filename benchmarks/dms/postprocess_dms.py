@@ -214,7 +214,7 @@ def data_profiles(results, algs, problems, eps_i, kappas):
   return out
 
 
-def plot_all(results, algs, out):
+def plot_all(results, algs, out):  # noqa: C901
   import matplotlib
   matplotlib.use("Agg")
   import matplotlib.pyplot as plt

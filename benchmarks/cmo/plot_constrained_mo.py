@@ -155,7 +155,10 @@ def hv_ratio(front, true):
   import moocore
   ref_front = nondominated(np.vstack([true, front]))
   ideal, nadir = ref_front.min(axis=0), ref_front.max(axis=0)
-  scale = lambda Y: (Y - ideal) / (nadir - ideal)
+
+  def scale(Y):
+    return (Y - ideal) / (nadir - ideal)
+
   ref = np.full(2, 1.1)
   return moocore.hypervolume(scale(front), ref=ref) / moocore.hypervolume(scale(ref_front), ref=ref)
 

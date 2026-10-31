@@ -238,7 +238,10 @@ def _bowl_data(n=2, seed=0, npts=40):
   a, b, xk = np.array([1.0, 0.0]), np.array([0.0, 1.0]), np.array([1.0, 1.0])
   X = xk + rng.uniform(-0.5, 0.5, size=(npts, n))
   F = np.column_stack([np.sum((X - a) ** 2, 1), np.sum((X - b) ** 2, 1)])
-  f = lambda x: np.array([np.sum((x - a) ** 2), np.sum((x - b) ** 2)])
+
+  def f(x):
+    return np.array([np.sum((x - a) ** 2), np.sum((x - b) ** 2)])
+
   return X, F, xk, f
 
 

@@ -207,7 +207,7 @@ def _poll_cycle(poll: Dirs2n, options: Options, param: Parameters,  # noqa: C901
   # toc = time.perf_counter()
 
 
-def poll_step(
+def poll_step(  # noqa: C901
         poll: Dirs2n, options: Options, param: Parameters, state: MadsState,
         stats: MadsStatistics, active_barrier: AdaptiveBarrier, iteration: int,
         frame_center: int, log: logger, post: PostMADS, hashtable: Cache,

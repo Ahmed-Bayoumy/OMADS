@@ -236,7 +236,7 @@ def plot_convergence(args):
       ax.set_title(titles[fid], fontsize=8)
       ax.grid(True, color="#ebeae6", lw=0.5)
       ax.tick_params(labelsize=7)
-    handles, labels = {}, {}
+    handles = {}
     for ax in axes.flat:
       for h, lab in zip(*ax.get_legend_handles_labels()):
         handles.setdefault(lab, h)
