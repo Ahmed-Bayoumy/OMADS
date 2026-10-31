@@ -40,7 +40,7 @@ from numpy import inf
 from .._post._postprocess import PostMADS, Output
 from .._setup._options import Options
 from .._include import CandidatePoint
-from .._include import DType, DESIGN_STATUS, PassException
+from .._include import DType, DESIGN_STATUS, PassException, StopEvaluation
 from .._templates._optimizer import GenericSamplerBase
 from .._include import AdaptiveBarrier
 
@@ -67,6 +67,9 @@ class Evaluator:
     Tutorials->Blackbox evaluation->User parameters
     :param _dtype: The precision delegator of the numpy library
     :param timeout: The time out of the evaluation process
+    :param nobj: Number of objectives, the length of the (infinite)
+    objective vector given to a failed evaluation; set from the problem
+    parameters
   """
 
   def __init__(
@@ -74,8 +77,9 @@ class Evaluator:
           path="..\\tests\\Rosen", input="input.inp", output="output.out",
           constants=None, bb_eval=0, _dtype=None, timeout=1000000,
           local_exec_jobs=None, candidates=None, directions=None, mesh=None,
-          incumbent=None):
+          incumbent=None, nobj=1):
     self.blackbox = blackbox
+    self.nobj = nobj
     self.command_options = command_options
     self.internal = internal
     self.path = path
@@ -143,6 +147,8 @@ class Evaluator:
             self.candidates[index],
             sampler.mesh)
         stats.neval_bb_infeasible += 1
+      elif self.candidates[index].status == DESIGN_STATUS.ERROR:
+        active_barrier.add_failed(self.candidates[index], sampler.mesh)
 
       active_barrier.parent_indexes[active_barrier.last_index] = parent_indices[index]
 
@@ -288,6 +294,9 @@ class Evaluator:
             sampler.candidate_points_set[index],
             sampler.mesh)
         stats.neval_bb_infeasible += 1
+      elif sampler.candidate_points_set[index].status == DESIGN_STATUS.ERROR:
+        active_barrier.add_failed(
+            sampler.candidate_points_set[index], sampler.mesh)
 
       active_barrier.parent_indexes[active_barrier.last_index] = parent_indices[index]
       post.x_incumbent.append(active_barrier.elements[centers[index]])
@@ -408,40 +417,52 @@ class Evaluator:
     return self._evaluate_executable(values)
 
   def _evaluate_callable(self, values: List[float]) -> Tuple[List[float], bool]:
-    """Evaluate a callable blackbox function."""
-    evalerr = False
+    """Evaluate a callable blackbox function.
+
+    An exception raised by the callable is a failed evaluation, as a nonzero
+    exit code is for an executable: the point gets infinite outputs and the
+    ERROR status. ``StopEvaluation`` (and ``KeyboardInterrupt``) still stop
+    the run, and a callable with the wrong signature is an input error.
+    """
+    # Determine expected number of args
+    sig = signature(self.blackbox)
+    npar = len(sig.parameters)
+    inputs = str(sig).replace(
+        "(", "").replace(
+        ")", "").replace(
+        " ", "").split(',')
+
+    # Check if constants are used
+    if self.constants is None:
+      if not self._is_valid_callable_signature(npar, inputs):
+        raise IOError(
+            f"Callable {self.blackbox} requires {npar} args, "
+            "but only one input can be provided. "
+            "Use the constants list for additional parameters.")
+      args = (values,)
+    else:
+      if not self._is_valid_callable_with_constants(npar, inputs):
+        raise IOError(
+            f"Callable {self.blackbox} requires {npar} args, "
+            "but only two inputs can be provided with constants.")
+      args = (values, self.constants)
+
     try:
-      # Determine expected number of args
-      sig = signature(self.blackbox)
-      npar = len(sig.parameters)
-      inputs = str(sig).replace(
-          "(", "").replace(
-          ")", "").replace(
-          " ", "").split(',')
-
-      # Check if constants are used
-      if self.constants is None:
-        if not self._is_valid_callable_signature(npar, inputs):
-          raise IOError(
-              f"Callable {self.blackbox} requires {npar} args, "
-              "but only one input can be provided. "
-              "Use the constants list for additional parameters.")
-        f_eval = self.blackbox(values)
-      else:
-        if not self._is_valid_callable_with_constants(npar, inputs):
-          raise IOError(
-              f"Callable {self.blackbox} requires {npar} args, "
-              "but only two inputs can be provided with constants.")
-        f_eval = self.blackbox(values, self.constants)
-
-      return self._format_evaluation_result(f_eval), evalerr
-
-    except PassException:
-      evalerr = True
+      f_eval = self.blackbox(*args)
+    except StopEvaluation:
+      raise
+    except Exception as exc:  # pylint: disable=broad-except
       logging.error(
-          "Callable %s evaluation failed at poll point %s", self.blackbox,
-          values)
-      return [[inf], [inf]], evalerr
+          "Callable %s evaluation failed at poll point %s: %r",
+          self.blackbox, values, exc)
+      return self._failed_output(), True
+
+    return self._format_evaluation_result(f_eval), False
+
+  def _failed_output(self) -> List[List[float]]:
+    """Outputs of a failed evaluation: every objective and the constraint
+    violation infinite."""
+    return [[inf] * max(int(getattr(self, "nobj", 1)), 1), [inf]]
 
   def _evaluate_executable(self, values: List[float]) -> Tuple[List[float], bool]:
     """Evaluate an external executable."""
@@ -478,7 +499,7 @@ class Evaluator:
     # Read output (a failure or a timeout is an evaluation error, with the
     # same [[f], [c]] shape as a failed callable)
     if evalerr or timouterr:
-      return [[inf], [inf]], True
+      return self._failed_output(), True
 
     output = self.read_output()
     return [output[0], output[1:]], evalerr

@@ -42,7 +42,7 @@ from typing import Dict
 import cocoex
 import numpy as np
 
-from OMADS import mads, poll
+from OMADS import StopEvaluation, mads, poll
 
 SUITE_NAME = "bbob-constrained"
 # bbob-constrained combines 9 raw functions with 6 constraint counts each;
@@ -86,8 +86,11 @@ def search_samples(problem, args: argparse.Namespace) -> int:
   return int(ns)
 
 
-class TargetHit(Exception):
-  """Raised from the blackbox to stop MADS once COCO's final target is hit."""
+class TargetHit(StopEvaluation):
+  """Raised from the blackbox to stop MADS once COCO's final target is hit.
+
+  A StopEvaluation, so OMADS lets it through instead of counting it as a
+  failed evaluation."""
 
 
 def make_blackbox(problem):

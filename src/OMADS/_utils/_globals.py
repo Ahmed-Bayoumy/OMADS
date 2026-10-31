@@ -36,6 +36,15 @@ class PassException(Exception):
   pass
 
 
+class StopEvaluation(Exception):
+  """Raised from a callable blackbox to stop the run.
+
+  Any other exception raised by the blackbox marks that evaluation as failed
+  and the run goes on; this one propagates out of ``mads.main``,
+  ``poll.main`` and ``search.main``.
+  """
+
+
 class DType:
   """A numpy data type delegator for decimal precision control
 

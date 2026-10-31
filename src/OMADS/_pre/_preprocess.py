@@ -261,10 +261,13 @@ class preprocess:
         param=param, options=options)  # if param.is_pareto else Barrier(param)
     barrier_defined.h_max = param.h_max
     ev = Evaluator(**self.data["evaluator"])
+    ev.nobj = param.nobj
     ms: MultiSource = None
     if not ignore_ms and "multisource" in self.data.keys():
       evaluators = {k: Evaluator(**e)
                     for k, e in self.data["multisource"]["sources"].items()}
+      for e in evaluators.values():
+        e.nobj = param.nobj
       self.data["multisource"]["sources"] = evaluators
       ms = MultiSource(**self.data["multisource"])
     if self.log is not None:

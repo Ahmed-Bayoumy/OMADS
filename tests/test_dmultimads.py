@@ -697,3 +697,52 @@ def test_coordinates_file_survives_empty_batches(tmp_path):
   saved = json.load(open(tmp_path / "c_run" / "coords.json"))
   assert [saved[k]["x_incumbent"] for k in ("1", "2", "3")] == \
       [[0, 0], [0, 0], [1, 0]]
+
+
+def test_callable_exception_is_a_failed_evaluation():
+  from OMADS import StopEvaluation
+  from OMADS._evaluator._evaluator import Evaluator
+  inf = float("inf")
+
+  def crash(x):
+    raise ValueError("diverged")
+
+  assert Evaluator(blackbox=crash).eval([0.0]) == ([[inf], [inf]], True)
+  assert Evaluator(blackbox=crash, nobj=2).eval([0.0]) == \
+      ([[inf, inf], [inf]], True)
+
+  def stop(x):
+    raise StopEvaluation
+
+  with pytest.raises(StopEvaluation):
+    Evaluator(blackbox=stop).eval([0.0])
+  # A wrong signature is an input error, not a failed evaluation.
+  with pytest.raises(IOError):
+    Evaluator(blackbox=lambda x, y, z: 0.0).eval([0.0])
+
+
+@pytest.mark.parametrize("solver,nobj", [
+    ("poll", 1), ("mads", 1), ("poll", 2), ("mads", 2)])
+def test_solvers_survive_a_failing_blackbox(tmp_path, solver, nobj):
+  from OMADS import mads, poll
+
+  def blackbox(x):
+    if x[0] > 0.5:
+      raise RuntimeError("simulation crashed")
+    return _bi(x) if nobj == 2 else [[(x[0] - 0.2) ** 2 + x[1] ** 2], [0]]
+
+  param = {"name": "s", "baseline": [0.3, 0.6], "lb": [-2, -2],
+           "ub": [2, 2], "var_names": ["x1", "x2"], "post_dir": str(tmp_path)}
+  if nobj == 2:
+    param.update(fun_names=["f1", "f2"], nobj=2, is_pareto=True)
+  data = {"evaluator": {"blackbox": blackbox}, "param": param,
+          "options": {"seed": 0, "budget": 80, "check_cache": True,
+                      "store_cache": True, "display": False,
+                      "save_results": True},
+          "search": {"type": "sampling", "s_method": "LH", "ns": 8,
+                     "visualize": False}}
+  out = {"mads": mads.main, "poll": poll.main}[solver](data)
+  out = out[0] if isinstance(out, tuple) else out
+  rows = _read_out(tmp_path / "s_run" / "s_all.out")
+  assert out["nbb_evals"] == len(rows) == 80
+  assert out["xmin"][0] <= 0.5

@@ -380,6 +380,20 @@ class AdaptiveBarrier:
 
     return insertion_flag
 
+  def add_failed(self, v: CandidatePoint, m: Mesh):
+    """Record a point whose evaluation failed.
+
+    It takes the next element slot, as every evaluated point does (so the
+    barrier stays index-aligned with the cache), but joins none of the
+    feasible, filter or best infeasible sets. No insertion flag: the step
+    counts it as unsuccessful."""
+    self.check_dimension(v, m)
+    self.check_is_full()
+    self.last_index += 1
+    self.elements[self.last_index] = v
+    self.meshes[self.last_index] = copy.deepcopy(m)
+    return None
+
   def add_infeasible(self, v: CandidatePoint, m: Mesh):  # noqa: C901
     # Preliminary checks
     self.check_dimension(v, m)

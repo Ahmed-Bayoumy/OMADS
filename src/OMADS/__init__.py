@@ -26,5 +26,6 @@
 from OMADS._poll import poll
 from OMADS._search import search
 from OMADS._mads import mads
+from OMADS._utils._globals import StopEvaluation
 
-__all__ = ['poll', 'mads', 'search']
+__all__ = ['poll', 'mads', 'search', 'StopEvaluation']
