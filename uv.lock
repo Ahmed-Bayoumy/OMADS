@@ -1186,7 +1186,7 @@ wheels = [
 
 [[package]]
 name = "omads"
-version = "2612.0"
+version = "2612.1"
 source = { editable = "." }
 dependencies = [
     { name = "deap" },
@@ -1232,7 +1232,7 @@ requires-dist = [
     { name = "pytest", marker = "extra == 'test'", specifier = ">=8.0" },
     { name = "pytest-cov", marker = "extra == 'test'", specifier = ">=7.0.0" },
     { name = "requests", specifier = ">=2.32.4" },
-    { name = "samplerslib", specifier = ">=2610.0" },
+    { name = "samplerslib", specifier = ">=2612.0" },
     { name = "scipy", specifier = ">=1.15.3" },
 ]
 provides-extras = ["visualization", "test"]
@@ -1775,7 +1775,7 @@ wheels = [
 
 [[package]]
 name = "samplerslib"
-version = "2610.0"
+version = "2612.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -1789,9 +1789,9 @@ dependencies = [
     { name = "scipy", version = "1.17.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "seaborn" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/00/ae/c709fd6a09a73493c52b68515c46b8dfa437fec1d142f00d744690872ffd/samplerslib-2610.0.tar.gz", hash = "sha256:ff431e3a4730d9e6243f3d189759a4aad7a01a00dd760c4283be0928c5515624", size = 13451096, upload-time = "2026-10-11T21:32:10.146Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/b8/88/ab38860b31dec7f28f406b3695321999b32b31f1bfaadeb7e444dad32482/samplerslib-2612.0.tar.gz", hash = "sha256:fc03ec334363b092323cfe69b74aee2474f3e1d875f69878a73da67a23bbb539", size = 15543865, upload-time = "2026-11-03T01:00:34.368Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/65/2e/7e9aa1283a7fe795c467a8c263cafcacc96bd644cf8e8b1b54333e5359f8/samplerslib-2610.0-py3-none-any.whl", hash = "sha256:ac1b7f148afa9d25d3d9140f4eb187d4840f9991f757c3be6bd6430a9457254d", size = 4763331, upload-time = "2026-10-11T21:32:06.334Z" },
+    { url = "https://files.pythonhosted.org/packages/32/f3/9201ca3d71c94989deeafc89ab029bb48b4ba33057dddf1a0c2863047f04/samplerslib-2612.0-py3-none-any.whl", hash = "sha256:3a515e59265af3a400abe65f9fd3847ab7cc54ca934cecac8fbfe4a9e781bfbb", size = 6865704, upload-time = "2026-11-03T01:00:30.185Z" },
 ]
 
 [[package]]
