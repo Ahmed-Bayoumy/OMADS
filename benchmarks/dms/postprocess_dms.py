@@ -60,8 +60,15 @@ NAMES = {"OMADS": "OMADS-poll", "OMADS-MADS-HALTON-ns10": "OMADS-mads",
          "OMADS-NOMS": "OMADS-poll (no model search)",
          "OMADS-MADS-HALTON-ns10-NOMS": "OMADS-mads (no model search)",
          "NSGA-II": "NSGA-II"}
-COLORS = {"OMADS": "#1c5cab", "OMADS-MADS-HALTON-ns10": "#7b3fa0", "NSGA-II": "#eb6834",
-          "OMADS-NOMS": "#86b6ef", "OMADS-MADS-HALTON-ns10-NOMS": "#c79a00"}
+# Okabe-Ito colours (distinguishable with colour-vision deficiencies), each solver
+# also with its own line style.
+COLORS = {"OMADS": "#0072B2", "OMADS-MADS-HALTON-ns10": "#009E73", "NSGA-II": "#D55E00",
+          "OMADS-NOMS": "#56B4E9", "OMADS-MADS-HALTON-ns10-NOMS": "#E69F00"}
+LINESTYLES = {"OMADS": "-", "OMADS-MADS-HALTON-ns10": "--", "NSGA-II": "-.",
+              "OMADS-NOMS": ":", "OMADS-MADS-HALTON-ns10-NOMS": (0, (5, 1, 1, 1))}
+# Figure widths in inches, drawn at print size for an ACM single-column page
+# (text width about 5.5 in), so that 8 pt text stays 8 pt in the paper.
+FULL_WIDTH, NARROW_WIDTH = 5.6, 4.8
 
 
 # --- Nondominated sets -------------------------------------------------------
@@ -218,25 +225,25 @@ def plot_all(results, algs, out):  # noqa: C901
   import matplotlib
   matplotlib.use("Agg")
   import matplotlib.pyplot as plt
-  plt.rcParams.update({"font.size": 9})
+  plt.rcParams.update({"font.size": 8, "legend.fontsize": 7.5, "axes.titlesize": 8,
+                       "lines.linewidth": 1.3, "pdf.fonttype": 42})
   files = []
   for label, sel in (("all", lambda r: True), ("m2", lambda r: r["m"] == 2)):
     problems = [p for p, r in results.items() if sel(r)]
     kappas = np.linspace(0, 650, 651)
-    fig, axes = plt.subplots(1, 3, figsize=(13, 3.8), sharey=True)
+    fig, axes = plt.subplots(1, 3, figsize=(FULL_WIDTH, 2.4), sharey=True)
     for i, (ax, eps) in enumerate(zip(axes, EPSILONS)):
       for a, (mean, lo, hi, nruns) in data_profiles(results, algs, problems, i, kappas).items():
-        ax.plot(kappas, 100 * mean, color=COLORS.get(a), label=f"{NAMES.get(a, a)} ({nruns} runs)")
+        ax.plot(kappas, 100 * mean, color=COLORS.get(a), ls=LINESTYLES.get(a, "-"),
+                label=f"{NAMES.get(a, a)} ({nruns} runs)")
         ax.fill_between(kappas, 100 * lo, 100 * hi, color=COLORS.get(a), alpha=0.15, lw=0)
       ax.set_title(f"$\\varepsilon_\\tau$ = {eps:g}")
-      ax.set_xlabel("Groups of n + 1 function evaluations")
+      ax.set_xlabel("Groups of $n+1$ evaluations")
       ax.grid(alpha=0.3)
-    axes[0].set_ylabel("Percentage of problems solved")
-    axes[0].legend(loc="lower right", fontsize=7)
-    fig.suptitle(f"Hypervolume data profiles, {len(problems)} problems"
-                 + (" with 2 objectives" if label == "m2" else "")
-                 + " (mean over runs, band: lowest to highest run)")
-    fig.tight_layout()
+    axes[0].set_ylabel("Problems solved (%)")
+    handles, labels = axes[0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc="lower center", ncol=len(labels), frameon=False)
+    fig.tight_layout(rect=(0, 0.08, 1, 1))
     path = os.path.join(out, f"dms_data_profiles_{label}.png")
     fig.savefig(path, dpi=150)
     fig.savefig(path[:-4] + ".pdf")   # vector copy for the paper
@@ -247,7 +254,8 @@ def plot_all(results, algs, out):  # noqa: C901
   taus = np.concatenate([np.linspace(1, 2, 101), np.linspace(2, 20, 181)[1:]])
   # Purity, pairwise, best and worst runs.
   pairs = [(a, b) for i, a in enumerate(algs) for b in algs[i + 1:]]
-  fig, axes = plt.subplots(len(pairs), 2, figsize=(10, 3.2 * len(pairs)), squeeze=False)
+  fig, axes = plt.subplots(len(pairs), 2, figsize=(NARROW_WIDTH, 1.75 * len(pairs) + 0.2),
+                           squeeze=False)
   for row, (a, b) in enumerate(pairs):
     for col, which in enumerate(("best", "worst")):
       T = np.zeros((len(problems), 2))
@@ -260,15 +268,15 @@ def plot_all(results, algs, out):  # noqa: C901
       rho = perf_profile(T, taus)
       ax = axes[row, col]
       for s, alg in enumerate((a, b)):
-        ax.step(taus, rho[s], where="post", color=COLORS.get(alg), label=NAMES.get(alg, alg))
+        ax.step(taus, rho[s], where="post", color=COLORS.get(alg), ls=LINESTYLES.get(alg, "-"),
+                label=NAMES.get(alg, alg))
       k = min(CUSTODIO_RUNS, *(len(results[p]["algs"][x]["hv"]) for p in problems
                                 for x in (a, b)))
-      ax.set_title(f"Purity, {which} of {k} runs: {NAMES.get(a, a)} vs {NAMES.get(b, b)}",
-                   fontsize=8)
+      ax.set_title(f"{which.capitalize()} of {k} runs")
       ax.set_xlabel(r"$\tau$")
       ax.set_ylim(0, 1.02)
       ax.grid(alpha=0.3)
-      ax.legend(loc="lower right", fontsize=7)
+      ax.legend(loc="lower right")
   fig.tight_layout()
   path = os.path.join(out, "dms_purity_profiles.png")
   fig.savefig(path, dpi=150)
@@ -276,17 +284,18 @@ def plot_all(results, algs, out):  # noqa: C901
   plt.close(fig)
   files.append(path)
   # Spread metrics, all solvers together.
-  fig, axes = plt.subplots(1, 2, figsize=(10, 3.6))
+  fig, axes = plt.subplots(1, 2, figsize=(NARROW_WIDTH, 2.3))
   for ax, metric, title in zip(axes, ("gamma", "delta"), (r"$\Gamma$", r"$\Delta$")):
     T = np.array([[results[p]["algs"][a][metric] for a in algs] for p in problems])
     rho = perf_profile(T, taus)
     for s, a in enumerate(algs):
-      ax.step(taus, rho[s], where="post", color=COLORS.get(a), label=NAMES.get(a, a))
-    ax.set_title(f"{title} performance profile (average of {CUSTODIO_RUNS} runs)")
+      ax.step(taus, rho[s], where="post", color=COLORS.get(a), ls=LINESTYLES.get(a, "-"),
+              label=NAMES.get(a, a))
+    ax.set_title(f"{title} (average of {CUSTODIO_RUNS} runs)")
     ax.set_xlabel(r"$\tau$")
     ax.set_ylim(0, 1.02)
     ax.grid(alpha=0.3)
-    ax.legend(loc="lower right", fontsize=7)
+    ax.legend(loc="lower right")
   fig.tight_layout()
   path = os.path.join(out, "dms_spread_profiles.png")
   fig.savefig(path, dpi=150)

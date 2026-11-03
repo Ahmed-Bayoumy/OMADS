@@ -6,16 +6,16 @@
 #  email: ahmed.bayoumy@mail.mcgill.ca                                                #
 #                                                                                     #
 #  This program is free software: you can redistribute it and/or modify it under the  #
-#  terms of the BSD 3-Clause License as published by the Free Software   #
+#  terms of the GNU General Public License as published by the Free Software          #
 #  Foundation, either version 3 of the License, or (at your option) any later         #
 #  version.                                                                           #
 #                                                                                     #
 #  This program is distributed in the hope that it will be useful, but WITHOUT ANY    #
 #  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A    #
-#  PARTICULAR PURPOSE.  See the BSD 3-Clause License for more details.   #
+#  PARTICULAR PURPOSE.  See the GNU General Public License for more details.          #
 #                                                                                     #
-#  You should have received a copy of the BSD 3-Clause License along     #
-#  with this program. If not, see <https://opensource.org/license/bsd-3-clause/>.     #
+#  You should have received a copy of the GNU General Public License along            #
+#  with this program. If not, see <https://www.gnu.org/licenses/>.                    #
 #                                                                                     #
 #  You can find information on OMADS at                                               #
 #  https://github.com/Ahmed-Bayoumy/OMADS                                             #
@@ -556,21 +556,26 @@ class AdaptiveBarrier:
     if h_max < 0:
       raise ValueError("h_max cannot be negative")
     self.h_max = h_max
+    # Every element, the last one included: skipping it could leave ik empty
+    # while uk is not; the infeasible frame centre then fell back to element
+    # 0, already above the threshold, and the next unsuccessful iteration
+    # raised h_max to its violation (h_max must not increase).
+    n = self.last_index + 1
 
-    filter_flags = [False] * self.last_index
+    filter_flags = [False] * n
 
     # Mark uk elements that exceed h_max
-    for index, is_in_uk in enumerate(self.within_uk[:self.last_index]):
+    for index, is_in_uk in enumerate(self.within_uk[:n]):
       if is_in_uk and self.elements.get_raw(index).h > self.h_max:
         filter_flags[index] = True
 
     # Remove all uk elements above the threshold
-    for i in range(self.last_index):
+    for i in range(n):
       if filter_flags[i]:
         self.within_uk[i] = False
 
     # Remove all ik elements above the threshold
-    for i in range(self.last_index):
+    for i in range(n):
       if filter_flags[i]:
         self.within_ik[i] = False
 
@@ -578,11 +583,12 @@ class AdaptiveBarrier:
     self._update_ik_after_h_max_setting()
 
   def _update_ik_after_h_max_setting(self):
-    for index, is_in_uk in enumerate(self.within_uk[:self.last_index]):
+    n = self.last_index + 1
+    for index, is_in_uk in enumerate(self.within_uk[:n]):
       if is_in_uk and not self.within_ik[index]:
         # Check if the element indexed by 'index' can be inserted in the set ik
         insert = True
-        for index_2, is_in_uk_2 in enumerate(self.within_uk[:self.last_index]):
+        for index_2, is_in_uk_2 in enumerate(self.within_uk[:n]):
           if is_in_uk_2 and index != index_2:
             comp_flag = self._private_compare_ik_elements(
                 self.elements.get_raw(index), self.elements.get_raw(index_2))

@@ -28,6 +28,7 @@ the runs.
 Usage, from the repository root:
 
   python benchmarks/cmo/plot_constrained_mo.py [--budget 5000] [--seed 0]
+  python benchmarks/cmo/plot_constrained_mo.py --replot   # redraw from the saved runs
 """
 import argparse
 import contextlib
@@ -213,7 +214,9 @@ def plot(results, path):
   import matplotlib
   matplotlib.use("Agg")
   import matplotlib.pyplot as plt
-  fig, axes = plt.subplots(2, 3, figsize=(13, 7.6))
+  # Drawn at print size for an ACM single-column page (text width about 5.5 in).
+  plt.rcParams.update({"font.size": 8, "legend.fontsize": 7.5, "pdf.fonttype": 42})
+  fig, axes = plt.subplots(2, 3, figsize=(5.6, 4.3))
   for ax, (name, (F, G, ref_front, ratio)) in zip(axes.ravel(), results.items()):
     feas = np.all(G <= 0, axis=1)
     front = nondominated(F[feas]) if feas.any() else np.empty((0, 2))
@@ -223,23 +226,24 @@ def plot(results, path):
     # Axis limits: the true front with a margin, so stray points do not hide it.
     lo, hi = ref_front.min(axis=0), ref_front.max(axis=0)
     pad = 0.12 * (hi - lo)
-    ax.scatter(*F[~feas].T, s=5, color="#f2b134", alpha=0.6, lw=0, label="infeasible")
-    ax.scatter(*F[feas & ~on_front].T, s=5, color="#9a9a9a", alpha=0.6, lw=0,
+    ax.scatter(*F[~feas].T, s=2, color="#f2b134", alpha=0.6, lw=0, label="infeasible")
+    ax.scatter(*F[feas & ~on_front].T, s=2, color="#9a9a9a", alpha=0.6, lw=0,
                label="dominated feasible")
     order = np.argsort(ref_front[:, 0])
-    ax.scatter(*front.T, s=11, color="#1c5cab", lw=0, label="OMADS front", zorder=3)
-    ax.plot(*ref_front[order].T, ".", ms=1.2, color="black", label="true Pareto front",
+    ax.scatter(*front.T, s=5, color="#1c5cab", lw=0, label="OMADS front", zorder=3)
+    ax.plot(*ref_front[order].T, ".", ms=0.8, color="black", label="true Pareto front",
             zorder=4)
     ax.set_xlim(lo[0] - pad[0], hi[0] + pad[0])
     ax.set_ylim(lo[1] - pad[1], hi[1] + pad[1])
     n = len(PROBLEMS[name][1])
-    ax.set_title(f"{name} ($n={n}$): HV ratio {ratio:.3f}", fontsize=10)
+    ax.set_title(f"{name}\n$n={n}$, HV ratio {ratio:.3f}", fontsize=8)
     ax.set_xlabel("$f_1$")
     ax.set_ylabel("$f_2$")
     ax.grid(alpha=0.3)
   handles, labels = axes.ravel()[0].get_legend_handles_labels()
-  fig.legend(handles, labels, loc="lower center", ncol=4, frameon=False, markerscale=3)
-  fig.tight_layout(rect=(0, 0.05, 1, 1))
+  fig.legend(handles, labels, loc="lower center", ncol=4, frameon=False, markerscale=3,
+             handletextpad=0.2, columnspacing=1.0)
+  fig.tight_layout(rect=(0, 0.05, 1, 1), h_pad=0.6, w_pad=0.4)
   fig.savefig(path + ".png", dpi=150)
   fig.savefig(path + ".pdf")
   plt.close(fig)
@@ -253,9 +257,25 @@ def main():
                       help="OMADS constraint_strategy (default: %(default)s)")
   parser.add_argument("--out", default=os.path.join(ROOT, "ppdata", "cmo", "constrained_mo"),
                       help="figure path without extension (default: %(default)s)")
+  parser.add_argument("--replot", action="store_true",
+                      help="redraw the figure from the runs saved in <out>_runs.npz")
   args = parser.parse_args()
   warnings.filterwarnings("ignore")
   os.makedirs(os.path.dirname(args.out), exist_ok=True)
+  runs = args.out + "_runs.npz"
+  if args.replot:
+    saved = np.load(runs)
+    results = {}
+    for name in PROBLEMS:
+      F, G = saved[name + "/F"], saved[name + "/G"]
+      ref_front = true_front(name)
+      feas = np.all(G <= 0, axis=1)
+      ratio = hv_ratio(nondominated(F[feas]), ref_front) if feas.any() else 0.0
+      results[name] = (F, G, ref_front, ratio)
+      print(f"  {name:20s} HV ratio {ratio:.4f}")
+    plot(results, args.out)
+    print("wrote", args.out + ".png", "and .pdf")
+    return
   print("Checking the problems against pymoo")
   check_against_pymoo()
   results = {}
@@ -267,8 +287,11 @@ def main():
     results[name] = (F, G, ref_front, ratio)
     print(f"  {name:20s} {len(F)} evaluations, {feas.sum()} feasible, "
           f"HV ratio {ratio:.4f}")
+  # The evaluations, so that the figure can be redrawn without the runs (--replot).
+  np.savez_compressed(runs, **{f"{name}/{k}": v for name, (F, G, _, _) in results.items()
+                               for k, v in (("F", F), ("G", G))})
   plot(results, args.out)
-  print("wrote", args.out + ".png", "and .pdf")
+  print("wrote", args.out + ".png", "and .pdf, runs in", runs)
 
 
 if __name__ == "__main__":

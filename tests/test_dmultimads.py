@@ -52,6 +52,23 @@ def test_ik_keeps_non_dominated_infeasible_points():
   assert _ik(b) == [0, 1, 2]
 
 
+def test_threshold_update_keeps_the_last_point_in_ik():
+  # The last element is in uk but not ik (its f is worse). Lowering h_max
+  # removes the only ik element; the last one must take its place, or the
+  # infeasible frame centre falls back to element 0, above the threshold.
+  class FramedMesh(_Mesh):
+    def get_frame_size_parameter(self):
+      return [1.0, 1.0]
+
+  b = _barrier()
+  b.add_infeasible(_point([0, 0], [1, 1], h=2.0), FramedMesh())
+  b.add_infeasible(_point([1, 0], [5, 5], h=1.0), FramedMesh())
+  assert _ik(b) == [0]
+  b.update_barrier(1.0)
+  assert _ik(b) == [1]
+  assert b.infeasible_frame_center() == 1
+
+
 def test_ik_drops_only_the_dominated_points():
   b = _barrier()
   b.add_infeasible(_point([0, 0], [1, 5], h=1.0), _Mesh())
