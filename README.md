@@ -34,6 +34,11 @@ derivatives, no surrogate to train and no solver to compile.
   **61% of the (function, target) pairs within 100 × n evaluations**, and **97%** with
   restarts (as simulated by COCO): ahead of fmincon (92%) and close to COBYLA and
   AL1-CMA-ES (100%), which were run with up to 10⁷ × n evaluations.
+- **Multi-objective, measured against NSGA-II.** On the 100 bound-constrained problems of
+  Custódio et al., following the protocol of the DMulti-MADS article (NOMAD 4's
+  multi-objective solver), OMADS reaches the hypervolume targets of the problems that both
+  solve with **about five times fewer evaluations than NSGA-II**, and its fronts have the
+  higher purity on about **72% of the problems** (best of 10 runs).
 - **Constraints the way engineers have them.** Relaxable constraints are steered towards
   feasibility with a progressive barrier; points that violate hard constraints (where the
   code cannot even run) are rejected; failed evaluations are discarded and the search
@@ -42,8 +47,8 @@ derivatives, no surrogate to train and no solver to compile.
   unconstrained, single- and multi-objective (Pareto) problems, serial or parallel
   evaluation, and any Python callable, including wrappers around external programs.
 - **Results you can check.** Every published benchmark is reproducible with a single command
-  (`python benchmarks/coco/reproduce_results.py`), and a regression suite runs on Linux,
-  Windows and macOS in continuous integration.
+  (`python benchmarks/coco/reproduce_results.py`, `python benchmarks/dms/run_dms_benchmark.py`),
+  and a regression suite runs on Linux, Windows and macOS in continuous integration.
 
 <p align="center">
   <picture>
@@ -66,10 +71,10 @@ OMADS budget and at 10⁷ × n. Details in the
 - Three solvers with one input format: full MADS (`mads`), poll only (`poll`) and search only (`search`)
 - Householder poll directions: `2n` orthogonal directions (`ORTHO_2N`) or `n+1` directions (`N+1`)
 - Orthogonal mesh or anisotropic granular mesh (`GMESH`)
-- Progressive (`PB`) and extreme (`EB`) barriers for constraints
+- Progressive (`PB`) and extreme (`EB`) barriers for constraints, or a two-phase strategy (`constraint_strategy="TWO_PHASE"`)
 - A cheap speculative step plus a constraint-aware quadratic model search at every iteration
 - An `ACTIVE` sampling search (BiTPE density-ratio sampling with Halton, LHS, simulated annealing and particle swarm fallbacks)
-- Multi-objective Pareto studies with the hypervolume indicator
+- Multi-objective Pareto studies in the spirit of DMulti-MADS, with model searches that move towards points dominating the frame centre, extend the front from its extremes and fill its largest gaps (`mo_search`), and an exact hypervolume indicator
 - Cache, opportunistic evaluation, parallel evaluation, CSV logs and reproducible seeds
 
 ## Installation
@@ -112,7 +117,7 @@ Each solver also accepts the path to a JSON file holding the same dictionary.
 |---|---|---|
 | `evaluator` | How to evaluate a point | `blackbox` (callable or executable), `constants`, `path`, `input`, `output`, `timeout` |
 | `param` | The problem | `name`, `baseline`, `lb`, `ub`, `var_names`, `scaling`, `post_dir`, `constraints_type`, `h_max`, `mesh_type`, `nobj`, `is_pareto` |
-| `options` | Algorithm and run options | `seed`, `budget`, `tol`, `psize_init`, `store_cache`, `check_cache`, `rich_direction`, `direction_type`, `opportunistic`, `parallel_mode`, `np`, `save_results` |
+| `options` | Algorithm and run options | `seed`, `budget`, `tol`, `psize_init`, `store_cache`, `check_cache`, `rich_direction`, `direction_type`, `opportunistic`, `parallel_mode`, `np`, `save_results`, `mo_search`, `constraint_strategy` |
 | `search` | The search step (`mads`, `search`) | `type` (`sampling` or `VNS`), `s_method` (`ACTIVE`, `LH`, `RS`, `HALTON`, `FULLFACTORIAL`), `ns` |
 
 The blackbox receives the design vector and returns `[f, [c1, c2, ...]]`, with constraints
@@ -126,13 +131,32 @@ feasible when `c_j(x) <= 0`. Every key, with its default, is listed in the
 ## Multi-objective MADS
 
 Return a list of objectives from the blackbox and set `"nobj"` and `"is_pareto": True` in
-`param` to run a Pareto study (use `poll.main` in this release). See the
+`param` to run a Pareto study with `poll.main` or `mads.main`. See the
 [multi-objective tutorial](https://ahmed-bayoumy.github.io/OMADS/tutorials/multiobjective.html).
-The figures below show fronts found on test problems from the literature.
+
+### Benchmark against NSGA-II
+
+<p align="center">
+  <img width="870" alt="Hypervolume data profiles of OMADS and NSGA-II on the 100 problems of Custódio et al." src="https://ahmed-bayoumy.github.io/OMADS/_static/dms_data_profiles.png?v=2613">
+</p>
+
+*Hypervolume data profiles on the 100 bound-constrained multi-objective problems of Custódio
+et al. (2 to 4 objectives, 1 to 30 variables), with the protocol of the DMulti-MADS article:
+20,000 evaluations per run, 10 runs of each OMADS solver, 50 of NSGA-II (pymoo, population
+100). A problem is solved with tolerance ε when the hypervolume of the front reaches
+(1 − ε) times that of the best front found by all runs. Run with
+`python benchmarks/dms/run_dms_benchmark.py` and `benchmarks/dms/postprocess_dms.py`, which
+also draws the purity and spread profiles of Custódio et al.*
 
 ### Constrained test functions
 
-![BM_res_ConstrainedMOO](https://github.com/user-attachments/assets/033012c6-8e4f-4f8f-b6e3-982ef4ec1f47)
+<p align="center">
+  <img width="870" alt="Pareto fronts of OMADS on six constrained bi-objective test problems" src="https://ahmed-bayoumy.github.io/OMADS/_static/ConstrainedMO.png?v=2613">
+</p>
+
+*One run of `mads.main` per problem (seed 0, 5,000 evaluations, progressive barrier), with
+the true Pareto fronts in black; the titles give the hypervolume ratio to the best known
+front. Run with `python benchmarks/cmo/plot_constrained_mo.py`.*
 
 ### Unconstrained test functions
 
@@ -143,6 +167,10 @@ The figures below show fronts found on test problems from the literature.
 - `pytest tests` runs the regression suite (Rosenbrock in 2, 10 and 20 dimensions, constrained
   and geometric-programming problems), with a target value for each solver.
 - `benchmarks/coco/run_mads_bbob_constrained.py` runs OMADS on the COCO `bbob-constrained` suite.
+- `benchmarks/dms/run_dms_benchmark.py` and `postprocess_dms.py` compare OMADS with NSGA-II on the
+  100 multi-objective problems of Custódio et al. (DMulti-MADS protocol);
+  `check_problems.py` checks the problem definitions against the original MATLAB files.
+- `benchmarks/cmo/plot_constrained_mo.py` draws the fronts on six constrained bi-objective problems.
 
 See the [benchmarking page](https://ahmed-bayoumy.github.io/OMADS/benchmarking.html).
 
@@ -174,8 +202,8 @@ If you use this code, please cite it as follows.
   title     = {OMADS: Optimization using Mesh Adaptive Direct Search},
   year      = {2022},
   publisher = {GitHub},
-  version   = {2610},
-  doi       = {10.5281/zenodo.23407559},
+  version   = {2612.1},
+  doi       = {https://doi.org/10.5281/zenodo.23407606},
   url       = {https://github.com/Ahmed-Bayoumy/OMADS}
 }
 ```

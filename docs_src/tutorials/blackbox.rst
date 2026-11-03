@@ -59,15 +59,11 @@ is :math:`f(0.5, 1.5) = 0.5`.
 
    OMADS can also run an executable directly when ``blackbox`` is a file name. Set ``path``
    (the working directory), ``input``, ``output``, and optionally ``command_options`` and
-   ``timeout``. OMADS runs ``./<blackbox> <command_options>`` (on Windows, the
+   ``timeout``. Before each evaluation OMADS writes the point to the input file (one
+   coordinate per line), runs ``./<blackbox> <command_options>`` (on Windows, the
    ``command_options`` string, or the blackbox name) and reads one value per line from the
-   output file.
-
-   .. warning::
-
-      In this release the built-in mode does **not** write the input file before running
-      the executable, so the program reads stale inputs. Use the wrapper approach above
-      until this is fixed.
+   output file: the objective, then the constraints. A non-zero exit code or a timeout
+   counts as a failed evaluation.
 
 Serial mode
 ===========

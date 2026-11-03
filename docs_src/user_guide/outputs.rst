@@ -35,14 +35,12 @@ Every entry point returns a tuple whose first item is a results dictionary:
    * - ``msize``
      - Final mesh size of the best frame centre.
    * - ``HV``
-     - Hypervolume of the Pareto front for multi-objective runs, ``"NA"`` otherwise.
+     - Hypervolume of the Pareto front for multi-objective runs, ``"NA"`` otherwise:
+       scaled to :math:`[0, 1]` with ``ref_point`` and ``ideal_point``, raw with
+       ``ref_point`` only. Without ``ref_point`` it is relative to the front itself and
+       cannot be compared across runs (see :doc:`configuration`).
    * - ``Secondary fmin``, ``Secondary hmin``
      - (``poll.main`` only) Objective and violation of the best infeasible point.
-
-.. note::
-
-   In this release ``poll.main`` reports ``nbb_evals = 1`` and ``nb_success = 0`` whatever
-   the run did. Use ``niterations`` or the ``<name>_all.out`` file to count evaluations.
 
 The second and third items are the poll (``Dirs2n``) and search (``EfficientExploration``)
 objects at the end of the run, for users who want to inspect the final mesh or sampler.
@@ -56,7 +54,7 @@ Files in ``post_dir``
    ├── OMADS.log                      # always: settings, per-iteration status, run summary
    ├── <name>_run/
    │   ├── <name>_all.out             # save_results=True: one row per evaluation
-   │   └── coords.json                # save_coordinates=True (poll.main): poll points per iteration
+   │   └── coords.json                # save_coordinates=True: evaluated points per step
    └── <name>_ND/
        └── <name>_Pareto.out          # multi-objective runs
 
@@ -127,14 +125,10 @@ trajectory:
      }
    }
 
-.. note::
-
-   ``save_coordinates`` works with ``poll.main``. With ``mads.main`` it raises an
-   ``IndexError`` at the end of the run in this release.
-
 Multi-objective files
 ^^^^^^^^^^^^^^^^^^^^^
 
-``<name>_Pareto.out`` has the same columns as ``<name>_all.out``. In this release it only
-keeps the starting point, so extract the front from ``<name>_all.out`` instead; see
-:doc:`../tutorials/multiobjective`.
+``<name>_Pareto.out`` has the same columns as ``<name>_all.out`` and holds the current
+non-dominated feasible points (the best infeasible ones while no feasible point is known),
+one per objective vector, with the iteration, frame size and step they were evaluated
+with. It is rewritten at every iteration; see :doc:`../tutorials/multiobjective`.

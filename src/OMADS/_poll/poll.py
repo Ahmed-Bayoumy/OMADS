@@ -6,16 +6,16 @@
 #  email: ahmed.bayoumy@mail.mcgill.ca                                                #
 #                                                                                     #
 #  This program is free software: you can redistribute it and/or modify it under the  #
-#  terms of the BSD 3-Clause License as published by the Free Software   #
+#  terms of the GNU General Public License as published by the Free Software          #
 #  Foundation, either version 3 of the License, or (at your option) any later         #
 #  version.                                                                           #
 #                                                                                     #
 #  This program is distributed in the hope that it will be useful, but WITHOUT ANY    #
 #  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A    #
-#  PARTICULAR PURPOSE.  See the BSD 3-Clause License for more details.   #
+#  PARTICULAR PURPOSE.  See the GNU General Public License for more details.          #
 #                                                                                     #
-#  You should have received a copy of the BSD 3-Clause License along     #
-#  with this program. If not, see <https://opensource.org/license/bsd-3-clause/>.     #
+#  You should have received a copy of the GNU General Public License along            #
+#  with this program. If not, see <https://www.gnu.org/licenses/>.                    #
 #                                                                                     #
 #  You can find information on OMADS at                                               #
 #  https://github.com/Ahmed-Bayoumy/OMADS                                             #
@@ -39,6 +39,7 @@ from .._include import Metrics
 from .._include import MadsState, MadsStatistics
 
 from ._poll_step import poll_cycle
+from .._mads import _two_phase
 from .._include import set_frame_centers_and_hvalues, update
 from .._include import preprocess
 from .._include import ProgressBar
@@ -67,6 +68,8 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
   # """ Validate and parse the parameters file """
   validate = validator()
   data: dict = validate.check_input_file(args=args)
+  if _two_phase.requested(data):
+    return _two_phase.run(main, data, *args[1:])
 
   # Install the wrapper
   # 1. Suppress Python warnings
@@ -124,11 +127,13 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
     set_frame_centers_and_hvalues(
         state=state, active_barrier=active_barrier, param=param,
         options=options)
-    # 2- Run the poll step
+    # 2- Run the poll step, after the speculative search of DMulti-MADS for
+    # multiobjective problems (`mads.main` runs it in its model search step)
     poll_cycle(
         poll=poll, options=options, param=param, state=state, stats=stats,
         active_barrier=active_barrier, iteration=iteration,
-        log=log, post=post, bb_handle=bb_handle, out=out, hashtable=hashtable)
+        log=log, post=post, bb_handle=bb_handle, out=out, hashtable=hashtable,
+        speculative=param.nobj > 1)
     # 3- Updates
     update(sampler=poll, state=state, active_barrier=active_barrier,
            stats=stats, options=options, hashtable=hashtable)
@@ -214,7 +219,8 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
     perf_m = Metrics(
         nd_solutions=active_barrier.get_filled_elements(
         ) if not param.is_pareto else active_barrier.get_nd_elements(),
-        nobj=active_barrier.dims[1], ref_point=rp)
+        nobj=active_barrier.dims[1], ref_point=rp,
+        ideal_point=param.ideal_point)
     hv = perf_m.hypervolume()
 
   xmin_found = False
@@ -257,8 +263,7 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
     out.h_max = active_barrier.h_max
     post.output_results(out=out, all_res=False)
     if param.is_pareto:
-      for i in range(len(active_barrier.get_filled_elements())):
-        post.nd_points.append(active_barrier.get_filled_elements()[i])
+      post.nd_points = active_barrier.pareto_points()
       post.output_nd_results(out_p)
 
   if log:
@@ -278,10 +283,10 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
           msg=f" Secondary xmin = {xsc.coordinates}", msg_type=MSG_TYPE.INFO)
       log.log_msg(msg=f" Secondary hmin = {xsc.h}", msg_type=MSG_TYPE.INFO)
       log.log_msg(msg=f" Secondary fmin = {xsc.fobj}", msg_type=MSG_TYPE.INFO)
-    log.log_msg(msg=f" #bb_eval =  {poll.bb_eval}", msg_type=MSG_TYPE.INFO)
+    log.log_msg(msg=f" #bb_eval =  {stats.neval_bb}", msg_type=MSG_TYPE.INFO)
     log.log_msg(msg=f" #iteration =  {iteration}", msg_type=MSG_TYPE.INFO)
     log.log_msg(
-        msg=f"  nb_success = {poll.nb_success}", msg_type=MSG_TYPE.INFO)
+        msg=f"  nb_success = {poll.n_successes}", msg_type=MSG_TYPE.INFO)
     log.log_msg(
         msg=f" psize = {poll.mesh.get_delta_frame_size().coordinates}",
         msg_type=MSG_TYPE.INFO)
@@ -300,9 +305,9 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
       print(" Secondary xmin =" + str(xsc.coordinates))
       print(" Secondary hmin = " + str(xsc.h))
       print(" Secondary fmin = " + str(xsc.fobj))
-    print(" #bb_eval = " + str(poll.bb_eval))
+    print(" #bb_eval = " + str(stats.neval_bb))
     print(" #iteration = " + str(iteration))
-    print(" nb_success = " + str(poll.nb_success))
+    print(" nb_success = " + str(poll.n_successes))
     print(" psize = " + str(poll.mesh.get_delta_frame_size().coordinates))
     print(
         " psize_success = " +
@@ -325,9 +330,9 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
                             "hmin": xmin.h,
                             "Secondary fmin": xsc.f,
                             "Secondary hmin": xsc.h,
-                            "nbb_evals": poll.bb_eval,
+                            "nbb_evals": stats.neval_bb,
                             "niterations": iteration,
-                            "nb_success": poll.nb_success,
+                            "nb_success": poll.n_successes,
                             "psize":
                             active_barrier.meshes[state.ordered_frame_centers[0]].get_delta_frame_size(
                             ).coordinates,

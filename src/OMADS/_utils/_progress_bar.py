@@ -34,10 +34,20 @@ class ProgressBar:
     if status_list is None:
       status_list = ["pending"] * self.options.budget
 
-    nf = ninf = nu = npen = nerr = 0
-    elements: List[CandidatePoint] = [self.active_barrier.elements[i]
-                                      for i in range(self.options.budget)]
-    for idx, elem in enumerate(elements):
+    # Statuses do not change once a point is evaluated, so the counts of
+    # the slots already scanned are kept on the barrier and only the new
+    # slots are read (by reference): rescanning, and cloning, the whole
+    # budget range every iteration made long runs quadratic. The slots
+    # beyond the filled ones are pending.
+    filled = min(self.active_barrier.last_index + 1, self.options.budget)
+    start, nf, ninf, nu, nerr = getattr(
+        self.active_barrier, "_progress_counts", (0, 0, 0, 0, 0))
+    if start > filled:
+      start, nf, ninf, nu, nerr = 0, 0, 0, 0, 0
+    npen = self.options.budget - filled
+    elements: List[CandidatePoint] = [self.active_barrier.elements.get_raw(i)
+                                      for i in range(start, filled)]
+    for idx, elem in enumerate(elements, start=start):
       if elem is None or elem.status == DESIGN_STATUS.UNEVALUATED:
         status_list[idx] = "pending"
         npen += 1
@@ -53,6 +63,7 @@ class ProgressBar:
       elif elem.status == DESIGN_STATUS.ERROR:
         status_list[idx] = "error"
         nerr += 1
+    self.active_barrier._progress_counts = (filled, nf, ninf, nu, nerr)
 
     return nf, ninf, nu, npen, nerr, status_list
 

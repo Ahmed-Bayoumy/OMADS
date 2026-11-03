@@ -6,16 +6,16 @@
 #  email: ahmed.bayoumy@mail.mcgill.ca                                                #
 #                                                                                     #
 #  This program is free software: you can redistribute it and/or modify it under the  #
-#  terms of the BSD 3-Clause License as published by the Free Software   #
+#  terms of the GNU General Public License as published by the Free Software          #
 #  Foundation, either version 3 of the License, or (at your option) any later         #
 #  version.                                                                           #
 #                                                                                     #
 #  This program is distributed in the hope that it will be useful, but WITHOUT ANY    #
 #  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A    #
-#  PARTICULAR PURPOSE.  See the BSD 3-Clause License for more details.   #
+#  PARTICULAR PURPOSE.  See the GNU General Public License for more details.          #
 #                                                                                     #
-#  You should have received a copy of the BSD 3-Clause License along     #
-#  with this program. If not, see <https://opensource.org/license/bsd-3-clause/>.     #
+#  You should have received a copy of the GNU General Public License along            #
+#  with this program. If not, see <https://www.gnu.org/licenses/>.                    #
 #                                                                                     #
 #  You can find information on OMADS at                                               #
 #  https://github.com/Ahmed-Bayoumy/OMADS                                             #
@@ -24,7 +24,7 @@
 """
 from dataclasses import field
 import os
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Tuple
 import json
 import csv
 
@@ -168,44 +168,67 @@ class PostMADS:
   step_name: Optional[List[str]] = None
   nd_points: List[CandidatePoint] = field(default_factory=list)
   counter: int = 0
+  # evaluation number -> (iteration, frame size, step name) of every row
+  # written to the results file, so the Pareto file can reuse them.
+  rows_info: Dict[int, Tuple[Any, Any, str]] = field(default_factory=dict)
 
-  def __init__(self, x_incumbent: List[CandidatePoint] = [],
+  def __init__(self, x_incumbent: Optional[List[CandidatePoint]] = None,
                xmin: CandidatePoint = None,
-               coords: List[List[CandidatePoint]] = [],
-               poll_dirs: List[CandidatePoint] = [],
-               iter: List[int] = [],
-               bb_eval: List[int] = [],
-               psize: List[float] = [],
-               step_name: Optional[List[str]] = [],
-               nd_points: List[CandidatePoint] = [],
+               coords: Optional[List[List[CandidatePoint]]] = None,
+               poll_dirs: Optional[List[CandidatePoint]] = None,
+               iter: Optional[List[int]] = None,
+               bb_eval: Optional[List[int]] = None,
+               psize: Optional[List[float]] = None,
+               step_name: Optional[List[str]] = None,
+               nd_points: Optional[List[CandidatePoint]] = None,
                counter: int = 0):
-    self.x_incumbent = x_incumbent
+    # Fresh lists per instance: shared mutable defaults made every run in a
+    # process append to (and misalign) the previous runs' lists.
+    self.x_incumbent = [] if x_incumbent is None else x_incumbent
     self.xmin = xmin
-    self.coords = coords
-    self.poll_dirs = poll_dirs
-    self.iter = iter
-    self.bb_eval = bb_eval
-    self.psize = psize
-    self.step_name = step_name
-    self.nd_points = nd_points
+    self.coords = [] if coords is None else coords
+    self.poll_dirs = [] if poll_dirs is None else poll_dirs
+    self.iter = [] if iter is None else iter
+    self.bb_eval = [] if bb_eval is None else bb_eval
+    self.psize = [] if psize is None else psize
+    self.step_name = [] if step_name is None else step_name
+    self.nd_points = [] if nd_points is None else nd_points
     self.counter = counter
+    self.rows_info = {}
+    # Frame center of each batch in `coords` (None for an empty batch).
+    self.coords_centers: List[Optional[CandidatePoint]] = []
+
+  def _row_info(self, i: int, n: int):
+    """(iteration, frame size, step name) of the i-th of the n pending rows.
+
+    The evaluators append one entry per evaluated point to `iter`, `psize`
+    and `step_name`, so the pending points are the last n entries; after a
+    flush, `iter` and `psize` keep their last entry (the frame size of the
+    next step's first row may be unknown otherwise)."""
+    def tail(values, default):
+      j = len(values) - n + i
+      return values[j] if values and 0 <= j < len(values) else default
+    psize = tail(self.psize, self.psize[-1] if self.psize else [np.nan])
+    return (tail(self.iter, self.iter[-1] if self.iter else 0), psize,
+            tail(self.step_name, "Poll-2n"))
 
   def output_results(self, out: Output, all_res: bool = True):
     """ Create a results file from the saved cache"""
     if all_res:
       self.counter = 0
     self.h_max = out.h_max
+    n = len(self.poll_dirs)
     for i, p in enumerate(self.poll_dirs):
       if p.evaluated:
+        iterno, psize, step = self._row_info(i, n)
+        self.rows_info[p.eval_no] = (iterno, psize, step)
         out.add_row(
-            eval_time=p.eval_time, iterno=self.iter[i],
-            evalno=self.bb_eval[i],
-            poll_size=self.psize[i],
+            eval_time=p.eval_time, iterno=iterno, evalno=p.eval_no,
+            poll_size=psize,
             source=p.source, m_name=p.model, f=p.f, status=p.status.name,
             h=self.h_max,
             fobj=p.fobj, rho=p.rho, lambdas=p.lambda_multipliers,
-            x=p.coordinates, hmax=self.h_max, step_name="Poll-2n"
-            if self.step_name is None else self.step_name[i],
+            x=p.coordinates, hmax=self.h_max, step_name=step,
             fnames=out.fnames)
         self.counter += 1
 
@@ -215,38 +238,47 @@ class PostMADS:
     del self.step_name
     self.step_name = []
 
-    self.bb_eval = [self.bb_eval[-1]]
-    self.psize = [self.psize[-1]]
-    self.iter = [self.iter[-1]]
+    self.bb_eval = self.bb_eval[-1:]
+    self.psize = self.psize[-1:]
+    self.iter = self.iter[-1:]
 
   def output_nd_results(self, out: Output):
-    """ Create a results file from the saved cache"""
-    counter = 0
+    """Rewrite the Pareto file with the current non-dominated points
+    (`nd_points`), each with the iteration, frame size and step it was
+    evaluated with (see `output_results`)."""
     out.clear_csv_content()
     self.h_max = out.h_max
-    for p in self.nd_points:
-      if p.evaluated and counter < len(self.iter):
+    fallback = (self.iter[-1] if self.iter else 0,
+                self.psize[-1] if self.psize else [np.nan], "Poll-2n")
+    for p in sorted(self.nd_points, key=lambda q: q.eval_no):
+      if p.evaluated:
+        iterno, psize, step = self.rows_info.get(p.eval_no, fallback)
         out.add_row(
-            eval_time=p.eval_time, iterno=self.iter[counter],
-            evalno=p.eval_no, poll_size=self.psize[counter],
+            eval_time=p.eval_time, iterno=iterno, evalno=p.eval_no,
+            poll_size=psize,
             source=p.source, m_name=p.model, f=p.f, status=p.status.name,
             h=self.h_max,
             fobj=p.fobj, rho=p.rho, lambdas=p.lambda_multipliers,
-            x=p.coordinates, hmax=self.h_max, step_name="Poll-2n"
-            if not self.step_name or counter >= len(self.step_name) else self.step_name[counter],
+            x=p.coordinates, hmax=self.h_max, step_name=step,
             fnames=out.fnames)
-        counter += 1
 
   def output_coordinates(self, out: Output):
     """ Save spinners in a json file """
     with open(out.file_path + f"/{out.runfolder}/coords.json", "w", encoding='utf-8') as json_file:
       dict_out = {}
+      # Each batch with its own frame center: `x_incumbent` has one entry per
+      # evaluated point, not per batch, and empty batches made it run out.
+      center = self.x_incumbent[0] if self.x_incumbent else None
       for ii, ob in enumerate(self.coords, start=1):
+        batch_center = (self.coords_centers[ii - 1]
+                        if ii - 1 < len(self.coords_centers) else None)
+        if batch_center is not None:
+          center = batch_center
         entry: Dict[Any, Any] = {}
         p = [ib.coordinates for ib in ob]
         entry['iter'] = ii
         entry['coord'] = p
-        entry['x_incumbent'] = self.x_incumbent[ii - 1].coordinates
+        entry['x_incumbent'] = None if center is None else center.coordinates
         dict_out[ii] = entry
         del entry
       json.dump(dict_out, json_file, indent=4, sort_keys=True)

@@ -6,16 +6,16 @@
 #  email: ahmed.bayoumy@mail.mcgill.ca                                                #
 #                                                                                     #
 #  This program is free software: you can redistribute it and/or modify it under the  #
-#  terms of the BSD 3-Clause License as published by the Free Software   #
+#  terms of the GNU General Public License as published by the Free Software          #
 #  Foundation, either version 3 of the License, or (at your option) any later         #
 #  version.                                                                           #
 #                                                                                     #
 #  This program is distributed in the hope that it will be useful, but WITHOUT ANY    #
 #  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A    #
-#  PARTICULAR PURPOSE.  See the BSD 3-Clause License for more details.   #
+#  PARTICULAR PURPOSE.  See the GNU General Public License for more details.          #
 #                                                                                     #
-#  You should have received a copy of the BSD 3-Clause License along     #
-#  with this program. If not, see <https://opensource.org/license/bsd-3-clause/>.     #
+#  You should have received a copy of the GNU General Public License along            #
+#  with this program. If not, see <https://www.gnu.org/licenses/>.                    #
 #                                                                                     #
 #  You can find information on OMADS at                                               #
 #  https://github.com/Ahmed-Bayoumy/OMADS                                             #
@@ -23,7 +23,7 @@
 # ------------------------------------------------------------------------------------#
 """
 import os
-from typing import List, Dict
+from typing import List, Dict, Optional
 import warnings
 import copy
 
@@ -69,10 +69,17 @@ class Parameters:
     :param is_pareto: Run a Pareto (multi-objective) study
     :param nobj: Number of objectives
     :param ref_point: Reference point of the hypervolume indicator
+    :param ideal_point: Ideal point of the problem (or a lower bound of each
+      objective); with ``ref_point``, the hypervolume is scaled to [0, 1] by
+      the box they bound
     :param lhs_search_initialization: Use (n+1)(n+2) Latin hypercube samples
       at the first search step
-    :param w_min: Frame-size ratio (``10**-w_min``) below which a feasible
-      point is not selected as frame centre
+    :param w_plus: A feasible point can be selected as frame centre only if
+      its frame size is at most ``w_plus`` refinements below the largest one
+      (the parameter w+ of DMulti-MADS, Bigeon et al. 2021, Alg. 4)
+    :param w_min: Legacy alternative to ``w_plus``: the frame-size ratio
+      ``10**-w_min`` (on the default granular mesh, ``w_min = w_plus / 3``).
+      None (default): use ``w_plus``
   """
 
   def __init__(  # noqa: C901
@@ -110,10 +117,13 @@ class Parameters:
           incumbent_selection_param: int = 1,
           barrier_initialized_from_cache: bool = True,
           ref_point: List[float] = None,
+          ideal_point: List[float] = None,
           lhs_search_initialization: bool = False,
           mesh_adjustment: float = 2.0,
-          w_min: int = 1):
+          w_min: Optional[int] = None,
+          w_plus: int = 3):
     self.w_min = w_min
+    self.w_plus = w_plus
     self.incumbent_selection_param = incumbent_selection_param
     self.barrier_initialized_from_cache = barrier_initialized_from_cache
     self.nobj = nobj
@@ -125,7 +135,7 @@ class Parameters:
       self.x0 = copy.deepcopy(self.baseline)
     elif isinstance(self.baseline, List):
       if all(isinstance(item, list) for item in self.baseline):
-        self.x0 = [Point(self._n)] * len(self.baseline)
+        self.x0 = [Point(self._n) for _ in self.baseline]
         for i, _ in enumerate((self.baseline)):
           self.x0[i].coordinates = copy.deepcopy(self.baseline[i])
       elif all(isinstance(item, Point) for item in self.baseline):
@@ -266,6 +276,7 @@ class Parameters:
 
     self._initialized_and_checked = True
     self.ref_point = ref_point
+    self.ideal_point = ideal_point
     self.mesh_adjustment = mesh_adjustment
 
   def set_initial_mesh_parameters(self):  # noqa: C901
@@ -299,7 +310,7 @@ class Parameters:
     is_list_of_list = all(isinstance(item, list) for item in self.baseline)
     if is_list_of_list:
       min_bl = np.min(self.baseline, axis=0)
-      max_bl = np.min(self.baseline, axis=0)
+      max_bl = np.max(self.baseline, axis=0)
     else:
       min_bl = max_bl = self.baseline
     for j in range(self.n):

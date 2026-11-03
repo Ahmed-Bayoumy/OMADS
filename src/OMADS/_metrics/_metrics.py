@@ -6,16 +6,16 @@
 #  email: ahmed.bayoumy@mail.mcgill.ca                                                #
 #                                                                                     #
 #  This program is free software: you can redistribute it and/or modify it under the  #
-#  terms of the BSD 3-Clause License as published by the Free Software   #
+#  terms of the GNU General Public License as published by the Free Software          #
 #  Foundation, either version 3 of the License, or (at your option) any later         #
 #  version.                                                                           #
 #                                                                                     #
 #  This program is distributed in the hope that it will be useful, but WITHOUT ANY    #
 #  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A    #
-#  PARTICULAR PURPOSE.  See the BSD 3-Clause License for more details.   #
+#  PARTICULAR PURPOSE.  See the GNU General Public License for more details.          #
 #                                                                                     #
-#  You should have received a copy of the BSD 3-Clause License along     #
-#  with this program. If not, see <https://opensource.org/license/bsd-3-clause/>.     #
+#  You should have received a copy of the GNU General Public License along            #
+#  with this program. If not, see <https://www.gnu.org/licenses/>.                    #
 #                                                                                     #
 #  You can find information on OMADS at                                               #
 #  https://github.com/Ahmed-Bayoumy/OMADS                                             #
@@ -25,21 +25,57 @@
 import copy
 from typing import List, Optional
 import numpy as np
-from deap.tools._hypervolume import pyhv as hv
 
 
 from .._include import CandidatePoint
 from .._include import Point
 
 
+
+def exact_hypervolume(points: np.ndarray, ref: np.ndarray) -> float:
+  """Exact hypervolume of `points` (rows, minimization) with respect to the
+  reference point `ref`; points that do not strictly dominate `ref` are
+  ignored. A sweep in two objectives; in more, slices along the last
+  objective, each the hypervolume of the points below it in one dimension
+  less. Dominated points need no filtering: they add nothing to the union
+  measured by the sweep."""
+  P = np.asarray(points, dtype=float).reshape(-1, len(ref))
+  ref = np.asarray(ref, dtype=float)
+  P = np.unique(P[np.all(P < ref, axis=1)], axis=0)
+  if len(P) == 0:
+    return 0.0
+  return _hv_sorted(P[np.argsort(P[:, -1], kind="stable")], ref)
+
+
+def _hv_sorted(P: np.ndarray, ref: np.ndarray) -> float:
+  # P sorted by its last column, every row strictly below `ref`.
+  d = P.shape[1]
+  if d == 1:
+    return float(ref[0] - P[0, 0])
+  if d == 2:
+    # Sweep along the second objective: each point extends the covered
+    # width to the left in the first one.
+    heights = np.diff(np.append(P[:, 1], ref[1]))
+    return float(np.sum(heights * (ref[0] - np.minimum.accumulate(P[:, 0]))))
+  vol = 0.0
+  for i in range(len(P)):
+    depth = (P[i + 1, -1] if i + 1 < len(P) else ref[-1]) - P[i, -1]
+    if depth > 0:
+      Q = P[:i + 1, :-1]
+      vol += _hv_sorted(Q[np.argsort(Q[:, -1], kind="stable")], ref[:-1]) * depth
+  return float(vol)
+
+
 class Metrics:
 
   def __init__(
           self, nd_solutions: Optional[List[CandidatePoint]] = None, nobj: int = 2,
-          ref_point: Optional[Point] = None):
+          ref_point: Optional[Point] = None,
+          ideal_point: Optional[List[float]] = None):
     self.nd_solutions: Optional[List[CandidatePoint]] = nd_solutions
     self.nobj: int = nobj
     self.ref_point: Optional[Point] = ref_point
+    self.ideal_point: Optional[List[float]] = ideal_point
 
   def find_ref_point(self):
     if self.nd_solutions:
@@ -80,18 +116,15 @@ class Metrics:
     min_vals = np.min(pareto_front, axis=0)
     max_vals = np.max(pareto_front, axis=0)
 
-    # Ensure that min and max values are not the same to avoid division by zero
-    if np.any(max_vals == min_vals):
-      raise ValueError(
-          "Max and min values for at least one objective are the same. \
-            ormalization cannot be performed.")
+    # An objective with a single value (e.g. a one-point front) is only
+    # translated, to avoid dividing by zero.
+    span = np.where(max_vals > min_vals, max_vals - min_vals, 1.0)
 
     # Normalize Pareto points
-    normalized_pareto_front = (pareto_front - min_vals) / (max_vals - min_vals)
+    normalized_pareto_front = (pareto_front - min_vals) / span
 
     # Normalize reference point
-    normalized_reference_point = (
-        reference_point - min_vals) / (max_vals - min_vals)
+    normalized_reference_point = (reference_point - min_vals) / span
 
     return normalized_pareto_front, normalized_reference_point
 
@@ -99,25 +132,38 @@ class Metrics:
     """
     Compute the hypervolume indicator of a Pareto front.
 
-    Parameters:
-    - self._ref_point: A list or array representing the reference point.
-    - front: A list of tuples, where each tuple represents a solution's objective values.
+    - With a reference point and an ideal point: the hypervolume in the box
+      they bound, scaled to [0, 1] (comparable across runs on a problem).
+    - With a reference point only: the raw hypervolume (also comparable).
+    - Without a reference point: the reference point is derived from the
+      front itself and the front is scaled by its own extent, so the value
+      only describes this front's shape and is NOT comparable across runs.
+
+    Points that do not strictly dominate the reference point contribute
+    nothing (Bigeon et al. 2021, Sect. 6.2).
 
     Returns:
     - The hypervolume indicator value.
     """
-    if not self.ref_point:
+    pf = np.array(self.get_pareto_points(), dtype=float)
+    if pf.size == 0:
+      return 0.0
+    self_referenced = not self.ref_point
+    if self_referenced:
       self.find_ref_point()
-    ref_p = tuple(self.ref_point.coordinates)
-    pf = self.get_pareto_points()
-    pf_n, ref_n = self.normalize_data(pareto_front=pf, reference_point=ref_p)
-    # Create a Hypervolume object with the reference point
-    pf_n_list = []
-    for i, _ in enumerate((pf_n)):
-      pf_n_list.append(list(pf_n[i]))
-
-    pf_n_list = np.array(pf_n_list)
-    return hv.hypervolume(pointset=pf_n_list, ref=np.array(list(ref_n)))
+    ref = np.array(self.ref_point.coordinates, dtype=float)
+    if self.ideal_point is not None:
+      ideal = np.array(self.ideal_point, dtype=float)
+      if np.any(ref <= ideal):
+        raise ValueError(
+            "The reference point must be worse than the ideal point in every objective.")
+      pf, ref = (pf - ideal) / (ref - ideal), np.ones_like(ref)
+    elif self_referenced:
+      pf, ref = self.normalize_data(pareto_front=pf, reference_point=ref)
+    pf = pf[np.all(pf < ref, axis=1)]
+    if len(pf) == 0:
+      return 0.0
+    return exact_hypervolume(pf, ref)
 
   def calculate_hypervolume(self, pf, rp):
     """

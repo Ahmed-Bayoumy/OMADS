@@ -6,16 +6,16 @@
 #  email: ahmed.bayoumy@mail.mcgill.ca                                                #
 #                                                                                     #
 #  This program is free software: you can redistribute it and/or modify it under the  #
-#  terms of the BSD 3-Clause License as published by the Free Software   #
+#  terms of the GNU General Public License as published by the Free Software          #
 #  Foundation, either version 3 of the License, or (at your option) any later         #
 #  version.                                                                           #
 #                                                                                     #
 #  This program is distributed in the hope that it will be useful, but WITHOUT ANY    #
 #  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A    #
-#  PARTICULAR PURPOSE.  See the BSD 3-Clause License for more details.   #
+#  PARTICULAR PURPOSE.  See the GNU General Public License for more details.          #
 #                                                                                     #
-#  You should have received a copy of the BSD 3-Clause License along     #
-#  with this program. If not, see <https://opensource.org/license/bsd-3-clause/>.     #
+#  You should have received a copy of the GNU General Public License along            #
+#  with this program. If not, see <https://www.gnu.org/licenses/>.                    #
 #                                                                                     #
 #  You can find information on OMADS at                                               #
 #  https://github.com/Ahmed-Bayoumy/OMADS                                             #
@@ -163,8 +163,7 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
       out.h_max = active_barrier.h_max
       post.output_results(out=out, all_res=False)
       if param.is_pareto:
-        for i in range(len(active_barrier.get_filled_elements())):
-          post.nd_points.append(active_barrier.get_filled_elements()[i])
+        post.nd_points = active_barrier.pareto_points()
         post.output_nd_results(out_p)
 
     post.h_max = active_barrier.h_max
@@ -246,7 +245,8 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
       rp.coordinates = param.ref_point
     perf_m = Metrics(
         nd_solutions=active_barrier.get_filled_elements(),
-        nobj=active_barrier.dims[1], ref_point=rp)
+        nobj=active_barrier.dims[1], ref_point=rp,
+        ideal_point=param.ideal_point)
     hv = perf_m.hypervolume()
 
   xmin_found = False

@@ -6,16 +6,16 @@
 #  email: ahmed.bayoumy@mail.mcgill.ca                                                #
 #                                                                                     #
 #  This program is free software: you can redistribute it and/or modify it under the  #
-#  terms of the BSD 3-Clause License as published by the Free Software   #
+#  terms of the GNU General Public License as published by the Free Software          #
 #  Foundation, either version 3 of the License, or (at your option) any later         #
 #  version.                                                                           #
 #                                                                                     #
 #  This program is distributed in the hope that it will be useful, but WITHOUT ANY    #
 #  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A    #
-#  PARTICULAR PURPOSE.  See the BSD 3-Clause License for more details.   #
+#  PARTICULAR PURPOSE.  See the GNU General Public License for more details.          #
 #                                                                                     #
-#  You should have received a copy of the BSD 3-Clause License along     #
-#  with this program. If not, see <https://opensource.org/license/bsd-3-clause/>.     #
+#  You should have received a copy of the GNU General Public License along            #
+#  with this program. If not, see <https://www.gnu.org/licenses/>.                    #
 #                                                                                     #
 #  You can find information on OMADS at                                               #
 #  https://github.com/Ahmed-Bayoumy/OMADS                                             #
@@ -31,7 +31,7 @@ import platform
 import os
 import sys
 import time
-from typing import List, Any, Optional, Tuple
+from typing import List, Any, Callable, Optional, Tuple
 
 import paramiko
 
@@ -40,7 +40,7 @@ from numpy import inf
 from .._post._postprocess import PostMADS, Output
 from .._setup._options import Options
 from .._include import CandidatePoint
-from .._include import DType, DESIGN_STATUS, PassException
+from .._include import DType, DESIGN_STATUS, PassException, StopEvaluation
 from .._templates._optimizer import GenericSamplerBase
 from .._include import AdaptiveBarrier
 
@@ -67,6 +67,9 @@ class Evaluator:
     Tutorials->Blackbox evaluation->User parameters
     :param _dtype: The precision delegator of the numpy library
     :param timeout: The time out of the evaluation process
+    :param nobj: Number of objectives, the length of the (infinite)
+    objective vector given to a failed evaluation; set from the problem
+    parameters
   """
 
   def __init__(
@@ -74,8 +77,9 @@ class Evaluator:
           path="..\\tests\\Rosen", input="input.inp", output="output.out",
           constants=None, bb_eval=0, _dtype=None, timeout=1000000,
           local_exec_jobs=None, candidates=None, directions=None, mesh=None,
-          incumbent=None):
+          incumbent=None, nobj=1):
     self.blackbox = blackbox
+    self.nobj = nobj
     self.command_options = command_options
     self.internal = internal
     self.path = path
@@ -110,7 +114,11 @@ class Evaluator:
           self, sampler: GenericSamplerBase, centers: List[int],
           options: Options, stats: Any, active_barrier: AdaptiveBarrier,
           post: PostMADS, step_name: str, parent_indices: List[int],
-          out: Output, hashtable=None, internal: bool = False):
+          out: Output, hashtable=None, internal: bool = False,
+          full_success: Optional[Callable[[CandidatePoint, Any], bool]] = None):
+    # `full_success(candidate, insertion_flag)` is the step's own success
+    # rule, which the opportunistic strategy stops on; without it, the
+    # strategy stops on a point better than its center in every objective.
 
     self.candidates = sampler._candidate_points_set
     insertion_flag = [None] * len(sampler._candidate_points_set)
@@ -139,6 +147,8 @@ class Evaluator:
             self.candidates[index],
             sampler.mesh)
         stats.neval_bb_infeasible += 1
+      elif self.candidates[index].status == DESIGN_STATUS.ERROR:
+        active_barrier.add_failed(self.candidates[index], sampler.mesh)
 
       active_barrier.parent_indexes[active_barrier.last_index] = parent_indices[index]
 
@@ -153,24 +163,27 @@ class Evaluator:
 
       post.psize.append(sampler.mesh.get_delta_frame_size().coordinates)
       post.x_incumbent.append(active_barrier.elements[centers[index]])
+      # One results row per evaluated point, including the one that stops
+      # the loop below.
+      post.poll_dirs.append(sampler._candidate_points_set[index])
 
-      if options.opportunistic and self.candidates[index] < self.incumbent:
+      if options.opportunistic and (
+              self.candidates[index] < self.incumbent if full_success is None
+              else full_success(self.candidates[index], insertion_flag[index])):
         stats.nopportunistic_triggers += 1
         break
       if stats.neval_bb == options.budget:
         break
 
-    # COMPLETED: Output results here
-      post.iter.append(sampler._iter)
-      post.poll_dirs.append(sampler._candidate_points_set[index])
     sampler._candidate_points_set = self.candidates
     if options.save_coordinates:
       post.coords.append(sampler._candidate_points_set)
+      post.coords_centers.append(
+          active_barrier.elements[centers[0]] if centers else None)
 
-    if sampler.prob_params.is_pareto:
-      post.output_nd_results(out=out)
-    else:
-      post.output_results(out=out, all_res=False)
+    # Append the new evaluations to the results file (multiobjective runs
+    # too: the solvers write the Pareto file separately).
+    post.output_results(out=out, all_res=False)
 
     return insertion_flag, post
 
@@ -244,7 +257,9 @@ class Evaluator:
           self, sampler: GenericSamplerBase, centers: List[int],
           options: Options, stats: Any, active_barrier: AdaptiveBarrier,
           post: PostMADS, step_name: str, parent_indices: List[int],
-          out: Output, hashtable=None):
+          out: Output, hashtable=None,
+          full_success: Optional[Callable[[CandidatePoint, Any], bool]] = None):
+    # See run_callable_serial_local for `full_success`.
     self.candidates = sampler.candidate_points_set
     insertion_flag = []
     insertion_flag = [None] * len(sampler._candidate_points_set)
@@ -254,8 +269,11 @@ class Evaluator:
     future_to_index = {
         executor.submit(self.evaluate_blackbox_parallel, point): (i, point)
         for i, point in enumerate(self.candidates)}
-    completed_result = None
-    for future in concurrent.futures.as_completed(future_to_index):
+    recorded = set()
+
+    def record(future, check_stop: bool = True) -> bool:
+      """Record one finished evaluation; True when the loop must stop."""
+      recorded.add(future)
       toc = time.perf_counter()
       index, point = future_to_index[future]
       stats.neval_bb += 1
@@ -276,6 +294,9 @@ class Evaluator:
             sampler.candidate_points_set[index],
             sampler.mesh)
         stats.neval_bb_infeasible += 1
+      elif sampler.candidate_points_set[index].status == DESIGN_STATUS.ERROR:
+        active_barrier.add_failed(
+            sampler.candidate_points_set[index], sampler.mesh)
 
       active_barrier.parent_indexes[active_barrier.last_index] = parent_indices[index]
       post.x_incumbent.append(active_barrier.elements[centers[index]])
@@ -288,25 +309,35 @@ class Evaluator:
         post.step_name = []
         post.step_name.append(step_name)
       post.psize.append(sampler.mesh.get_delta_frame_size().coordinates)
-      if options.opportunistic and sampler.candidate_points_set[index] < self.incumbent:
+      post.poll_dirs.append(sampler.candidate_points_set[index])
+      if not check_stop:
+        return False
+      if options.opportunistic and (
+              sampler.candidate_points_set[index] < self.incumbent
+              if full_success is None else full_success(
+                  sampler.candidate_points_set[index], insertion_flag[index])):
         stats.nopportunistic_triggers += 1
-        completed_result = future.result()
+        return True
+      return stats.neval_bb >= options.budget
+
+    for future in concurrent.futures.as_completed(future_to_index):
+      if record(future):
+        # Cancel the evaluations not started yet; those already running are
+        # paid for, so wait for them and record them too.
+        running = [f for f in future_to_index if not f.cancel()
+                   and f not in recorded]
+        for f in concurrent.futures.as_completed(running):
+          record(f, check_stop=False)
         break
-      if stats.neval_bb == options.budget:
-        completed_result = future.result()
-        break
-    if (completed_result):
-      for f in future_to_index:
-        if not f.done():
-          f.cancel()
 
     if options.save_coordinates:
       post.coords.append(sampler.candidate_points_set)
+      post.coords_centers.append(
+          active_barrier.elements[centers[0]] if centers else None)
 
-    if sampler.prob_params.is_pareto:
-      post.output_nd_results(out=out)
-    else:
-      post.output_results(out=out, all_res=False)
+    # Append the new evaluations to the results file (multiobjective runs
+    # too: the solvers write the Pareto file separately).
+    post.output_results(out=out, all_res=False)
 
     return insertion_flag, post
 
@@ -386,45 +417,59 @@ class Evaluator:
     return self._evaluate_executable(values)
 
   def _evaluate_callable(self, values: List[float]) -> Tuple[List[float], bool]:
-    """Evaluate a callable blackbox function."""
-    evalerr = False
+    """Evaluate a callable blackbox function.
+
+    An exception raised by the callable is a failed evaluation, as a nonzero
+    exit code is for an executable: the point gets infinite outputs and the
+    ERROR status. ``StopEvaluation`` (and ``KeyboardInterrupt``) still stop
+    the run, and a callable with the wrong signature is an input error.
+    """
+    # Determine expected number of args
+    sig = signature(self.blackbox)
+    npar = len(sig.parameters)
+    inputs = str(sig).replace(
+        "(", "").replace(
+        ")", "").replace(
+        " ", "").split(',')
+
+    # Check if constants are used
+    if self.constants is None:
+      if not self._is_valid_callable_signature(npar, inputs):
+        raise IOError(
+            f"Callable {self.blackbox} requires {npar} args, "
+            "but only one input can be provided. "
+            "Use the constants list for additional parameters.")
+      args = (values,)
+    else:
+      if not self._is_valid_callable_with_constants(npar, inputs):
+        raise IOError(
+            f"Callable {self.blackbox} requires {npar} args, "
+            "but only two inputs can be provided with constants.")
+      args = (values, self.constants)
+
     try:
-      # Determine expected number of args
-      sig = signature(self.blackbox)
-      npar = len(sig.parameters)
-      inputs = str(sig).replace(
-          "(", "").replace(
-          ")", "").replace(
-          " ", "").split(',')
-
-      # Check if constants are used
-      if self.constants is None:
-        if not self._is_valid_callable_signature(npar, inputs):
-          raise IOError(
-              f"Callable {self.blackbox} requires {npar} args, "
-              "but only one input can be provided. "
-              "Use the constants list for additional parameters.")
-        f_eval = self.blackbox(values)
-      else:
-        if not self._is_valid_callable_with_constants(npar, inputs):
-          raise IOError(
-              f"Callable {self.blackbox} requires {npar} args, "
-              "but only two inputs can be provided with constants.")
-        f_eval = self.blackbox(values, self.constants)
-
-      return self._format_evaluation_result(f_eval), evalerr
-
-    except PassException:
-      evalerr = True
+      f_eval = self.blackbox(*args)
+    except StopEvaluation:
+      raise
+    except Exception as exc:  # pylint: disable=broad-except
       logging.error(
-          "Callable %s evaluation failed at poll point %s", self.blackbox,
-          values)
-      return [[inf], [inf]], evalerr
+          "Callable %s evaluation failed at poll point %s: %r",
+          self.blackbox, values, exc)
+      return self._failed_output(), True
+
+    return self._format_evaluation_result(f_eval), False
+
+  def _failed_output(self) -> List[List[float]]:
+    """Outputs of a failed evaluation: every objective and the constraint
+    violation infinite."""
+    return [[inf] * max(int(getattr(self, "nobj", 1)), 1), [inf]]
 
   def _evaluate_executable(self, values: List[float]) -> Tuple[List[float], bool]:
     """Evaluate an external executable."""
     evalerr = False
     timouterr = False
+    # The executable reads this point from the input file.
+    self.write_input(values)
     pwd = os.getcwd()
     os.chdir(self.path)
 
@@ -451,9 +496,10 @@ class Evaluator:
     finally:
       os.chdir(pwd)
 
-    # Read output
+    # Read output (a failure or a timeout is an evaluation error, with the
+    # same [[f], [c]] shape as a failed callable)
     if evalerr or timouterr:
-      return [inf, [inf]], evalerr
+      return self._failed_output(), True
 
     output = self.read_output()
     return [output[0], output[1:]], evalerr

@@ -6,16 +6,16 @@
 #  email: ahmed.bayoumy@mail.mcgill.ca                                                #
 #                                                                                     #
 #  This program is free software: you can redistribute it and/or modify it under the  #
-#  terms of the BSD 3-Clause License as published by the Free Software   #
+#  terms of the GNU General Public License as published by the Free Software          #
 #  Foundation, either version 3 of the License, or (at your option) any later         #
 #  version.                                                                           #
 #                                                                                     #
 #  This program is distributed in the hope that it will be useful, but WITHOUT ANY    #
 #  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A    #
-#  PARTICULAR PURPOSE.  See the BSD 3-Clause License for more details.   #
+#  PARTICULAR PURPOSE.  See the GNU General Public License for more details.          #
 #                                                                                     #
-#  You should have received a copy of the BSD 3-Clause License along     #
-#  with this program. If not, see <https://opensource.org/license/bsd-3-clause/>.     #
+#  You should have received a copy of the GNU General Public License along            #
+#  with this program. If not, see <https://www.gnu.org/licenses/>.                    #
 #                                                                                     #
 #  You can find information on OMADS at                                               #
 #  https://github.com/Ahmed-Bayoumy/OMADS                                             #
@@ -31,6 +31,7 @@ import random
 from samplersLib.samplers import LHS
 import samplersLib as explore
 from .._include import Cache
+from .._points._point import coordinates_signature
 
 import numpy as np
 from scipy.optimize import minimize
@@ -46,6 +47,7 @@ from .._directions._directions import Dirs2n
 from .._setup._parameters import Parameters
 from .._templates._optimizer import GenericSamplerBase, GenericSamplerBaseData
 from .._analytics._metadata import MadsStatistics
+from ._mo_search import convexify, fit_quad, mo_cheap_points, scaling_vector
 
 
 def _bitpe_supports_reduction() -> bool:
@@ -504,16 +506,21 @@ class EfficientExploration(GenericSamplerBaseData, GenericSamplerBase):
 
   def generate_quad_model_points(
           self, hashtable: Cache, fc: CandidatePoint,
-          x_parent: Optional[List[float]] = None):
-    """Cheap search, meant to run first every iteration (at most two
+          x_parent: Optional[List[float]] = None, snap_to_bounds: bool = True,
+          front: Optional[List[CandidatePoint]] = None, mo_search: bool = True):
+    """Cheap search, meant to run first every iteration (a few
     evaluations):
 
     - speculative search: right after a success (`x_parent` is the point
       the incumbent was generated from), repeat that successful step once
       more from the incumbent;
-    - quadratic model search (see `_quad_model_point`).
+    - quadratic model search (see `_quad_model_point`) for a single
+      objective; for several objectives (with `mo_search`), the
+      multiobjective model and middle-point searches of
+      `OMADS._heuristics._mo_search.mo_cheap_points` around the frame
+      center, given the feasible front `front`.
 
-    Single-objective only. With constraints (`constraints_type` set), the
+    With constraints (`constraints_type` set), the
     constraints are modelled too and the frame center may be infeasible
     (see `_constrained_quad_model_point`); otherwise the incumbent must be
     feasible. Leaves the candidate set empty when there is nothing worth
@@ -521,7 +528,8 @@ class EfficientExploration(GenericSamplerBaseData, GenericSamplerBase):
     """
     self._candidate_points_set = []
     constrained = bool(self.prob_params.constraints_type)
-    if self.prob_params.is_pareto or fc is None or fc.status not in (
+    multiobjective = self.prob_params.is_pareto or self.prob_params.nobj > 1
+    if fc is None or fc.status not in (
             (DESIGN_STATUS.FEASIBLE, DESIGN_STATUS.INFEASIBLE) if constrained
             else (DESIGN_STATUS.FEASIBLE,)):
       return
@@ -531,10 +539,24 @@ class EfficientExploration(GenericSamplerBaseData, GenericSamplerBase):
     points = []
     if x_parent is not None:
       step = xk - np.asarray(x_parent, dtype=float)
-      if np.any(step != 0):
-        points.append(np.clip(xk + step, v[:, 0], v[:, 1]))
-    x_model = self._constrained_quad_model_point(hashtable, fc, v) \
-        if constrained else self._quad_model_point(hashtable, fc, v)
+      x_spec = xk + step
+      inside = np.all((x_spec >= v[:, 0]) & (x_spec <= v[:, 1]))
+      # Outside the bounds: clipped, or dropped (extreme barrier).
+      if np.any(step != 0) and (snap_to_bounds or inside):
+        points.append(np.clip(x_spec, v[:, 0], v[:, 1]))
+    if multiobjective:
+      x_model = None
+      if mo_search:
+        points.extend(mo_cheap_points(
+            hashtable, [] if front is None else front, fc,
+            frame_size=self.mesh.get_delta_frame_size().coordinates,
+            mesh_size=self.mesh.get_delta_mesh_size().coordinates,
+            scaling=scaling_vector(getattr(self, "scaling", None), self.dim),
+            lb=v[:, 0], ub=v[:, 1]))
+    elif constrained:
+      x_model = self._constrained_quad_model_point(hashtable, fc, v)
+    else:
+      x_model = self._quad_model_point(hashtable, fc, v)
     if x_model is not None:
       points.append(x_model)
     if points:
@@ -605,42 +627,10 @@ class EfficientExploration(GenericSamplerBaseData, GenericSamplerBase):
   _model_reg_dist: float = 2.0
   _model_reg_mult: int = 2
 
-  @staticmethod
-  def _fit_quad(S: np.ndarray, y: np.ndarray, ridge: float = 1e-3
-                ) -> "Optional[tuple[float, np.ndarray, np.ndarray]]":
-    """Quadratic regression y ~ c + g.s + s.H.s/2 in scaled coordinates,
-    or None when it fails. Ridge penalty on the quadratic terms only: with
-    few points this behaves like a minimum-Frobenius-norm model, with many
-    it is a lightly regularized regression."""
-    n = S.shape[1]
-    iu = np.triu_indices(n, k=1)
-    M_L = np.hstack([np.ones((len(S), 1)), S])
-    M_Q = np.hstack([0.5 * S ** 2, S[:, iu[0]] * S[:, iu[1]]])
-    n_q = M_Q.shape[1]
-    A = np.vstack([np.hstack([M_L, M_Q]),
-                   np.hstack([np.zeros((n_q, n + 1)),
-                              np.sqrt(ridge) * np.eye(n_q)])])
-    try:
-      coef = np.linalg.lstsq(A, np.concatenate([y, np.zeros(n_q)]),
-                             rcond=None)[0]
-    except np.linalg.LinAlgError:
-      return None
-    if not np.all(np.isfinite(coef)):
-      return None
-    c_Q = coef[n + 1:]
-    H = np.diag(c_Q[:n])
-    H[iu] = c_Q[n:]
-    H[(iu[1], iu[0])] = c_Q[n:]
-    return float(coef[0]), coef[1:n + 1], H
-
-  @staticmethod
-  def _convexify(H: np.ndarray, floor: float = 1e-3) -> np.ndarray:
-    """Saddle-free Hessian (|eigenvalues|, floored at `floor` times the
-    largest): an indefinite model always sends its minimizer to a corner of
-    the box; this turns it into a damped Newton step instead."""
-    w, V = np.linalg.eigh(H)
-    w = np.maximum(np.abs(w), floor * max(float(np.max(np.abs(w))), 1e-12))
-    return (V * w) @ V.T
+  # Quadratic regression and saddle-free Hessian, shared with the
+  # multiobjective model search.
+  _fit_quad = staticmethod(fit_quad)
+  _convexify = staticmethod(convexify)
 
   def _constrained_quad_model_point(  # noqa: C901
           self, hashtable: Cache, fc: CandidatePoint, v: np.ndarray,
@@ -1057,8 +1047,9 @@ class EfficientExploration(GenericSamplerBaseData, GenericSamplerBase):
       px.coordinates = self._candidate_points_set[k].coordinates
       candidate = m.project_on_mesh(point=px, frame_center=x_center)
 
-      # 2. Snap to bounds if necessary
-      δ = m.get_delta_mesh_size()
+      # 2. Snap to bounds if necessary (to mesh points, in the variables'
+      # units: see Mesh.get_lattice_size)
+      δ = m.get_lattice_size()
       # snapped_candidate = np.zeros(m.n)
 
       for i in range(m.n):
@@ -1166,7 +1157,9 @@ class EfficientExploration(GenericSamplerBaseData, GenericSamplerBase):
     elif self.sampling_t == SAMPLING_METHOD.LH.name:
       sampling = explore.samplers.LHS(ns=nsamples, vlim=v)
       sampling.options["randomness"] = self.seed+self.iter
-      sampling.options["criterion"] = self.sampling_criter if self.iter > 1 else "corr"
+      # samplersLib renamed the "corr" criterion "correlation".
+      sampling.options["criterion"] = (
+          self.sampling_criter if self.iter > 1 else "correlation")
       sampling.options["msize"] = self.mesh.get_delta_mesh_size().coordinates
       is_lhs = True
     else:
@@ -1180,7 +1173,7 @@ class EfficientExploration(GenericSamplerBaseData, GenericSamplerBase):
       # TODO: Checking if n_non_errors is better
       if self.iter == 1 or (
               self.prob_params.is_pareto and len(
-                  hashtable.get_all_nd_candidates) < 5) or hashtable.n_all_non_error_candidates() < 5:
+                  hashtable.get_all_nd_candidates()) < 5) or hashtable.n_all_non_error_candidates() < 5:
         sampling = explore.samplers.Halton(
             ns=nsamples, vlim=v) if active_barrier is None or (
             not self.explore_new and not switch_to_global_sampling and self.
@@ -1572,7 +1565,8 @@ class EfficientExploration(GenericSamplerBaseData, GenericSamplerBase):
         break
       is_dup = xtry is None or hashtable.is_duplicate(
           xtry, add=False)
-      coord_key = None if xtry is None else tuple(xtry.coordinates)
+      coord_key = None if xtry is None else coordinates_signature(
+          xtry.coordinates)
       is_dup_in_the_set = xtry is None or coord_key in seen_coords
       if xtry is not None:
         seen_coords.add(coord_key)

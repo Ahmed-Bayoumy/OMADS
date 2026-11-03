@@ -259,7 +259,7 @@ success it lowers :math:`h_{\max}` below the infeasible centre's violation.
         \IF{phase one, i.e. no evaluated point has $h \leq h^{k}_{\max}$}
             \STATE{$x^{k}_{F} \gets \arg\min_{x \in V^{k}} h(x)$ and there is no secondary centre}
         \ELSE
-            \STATE{$x^{k}_{F} \gets$ the point of $F^{k}$ with the largest objective-space gap among those with $\|\Delta\|_{\infty} \geq 10^{-w} \max_{y \in F^{k}} \|\Delta_{y}\|_{\infty}$}
+            \STATE{$x^{k}_{F} \gets$ the point of $F^{k}$ with the largest objective-space gap among those with $\|\Delta\|_{\infty} \geq \tau^{w^{+}} \max_{y \in F^{k}} \|\Delta_{y}\|_{\infty}$ (\texttt{w\_plus}, default 3)}
             \STATE{$x^{k}_{I} \gets$ the point of $I^{k}$, with $h \leq h^{k}_{\max}$, farthest from being dominated by $F^{k}$}
             \IF{$F^{k} = \emptyset$}
                 \STATE{primary centre $x^{k}_{I}$, no secondary centre}
@@ -479,6 +479,9 @@ sum of its (rounded) columns gives a minimal positive basis of :math:`n+1` direc
         \IF{the direction type is ORTHO 2N}
             \STATE{set $\mathbb{D}^{k}_{\Delta} = \mathbb{B}^{k} \cup (-\mathbb{B}^{k})$ }
         \ELSE
+            \IF{the target direction $w^{k} = x^{k} - x^{k}_{\text{parent}}$ is known}
+                \STATE{replace each $b_{j}$ by $-b_{j}$ whose poll step makes an obtuse angle with $w^{k}$}
+            \ENDIF
             \STATE{$b_{n+1} = \text{round}\left(\frac{\Delta^{k}}{\delta^{k}}\frac{-\sum_{j} b_{j}}{\|\sum_{j} b_{j}\|_{\infty}}\right)$}
             \STATE{set $\mathbb{D}^{k}_{\Delta} = \mathbb{B}^{k} \cup \{b_{n+1}\}$ }
         \ENDIF
@@ -486,6 +489,9 @@ sum of its (rounded) columns gives a minimal positive basis of :math:`n+1` direc
     \PROCEDURE{Create-poll-points}{}
         \STATE{$P^{k} = \{x^{k} + \delta^{k}\,\text{diag}((u - \ell)/s)\,d : d \in \mathbb{D}^{k}_{\Delta}\}$}
         \STATE{shuffle $P^{k}$, clip it to $[\ell, u]$ and remove repeated points}
+        \IF{the target direction $w^{k}$ is known}
+            \STATE{order $P^{k}$ by decreasing cosine between $x - x^{k}$ and $w^{k}$}
+        \ENDIF
         \STATE{project $P^{k}$ on the mesh $M^{k}$ and drop the points already in the cache}
     \ENDPROCEDURE
     \end{algorithmic}
@@ -494,7 +500,10 @@ sum of its (rounded) columns gives a minimal positive basis of :math:`n+1` direc
 In OMADS, :numref:`A2` is implemented in the poll class ``Dirs2n``: ``create_housholder``
 builds the scaled, rounded direction matrix, ``_ortho_n_plus_1`` builds the
 :math:`n+1` set (``options["direction_type"] = "N+1"``, real variables only) and
-``create_poll_set`` turns the directions into candidate points.
+``create_poll_set`` turns the directions into candidate points. The target direction
+:math:`w^{k}` is the step that generated the frame center; it is forgotten after an
+unsuccessful iteration. For multiobjective problems (``nobj > 1``), rich directions and
+the :math:`n+1` set are the defaults, as in DMulti-MADS :cite:p:`bigeon2021dmultimads`.
 
 .. literalinclude:: ../src/OMADS/_directions/_directions.py
    :language: python

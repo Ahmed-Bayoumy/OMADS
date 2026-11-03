@@ -7,16 +7,16 @@
 #  email: ahmed.bayoumy@mail.mcgill.ca                                                #
 #                                                                                     #
 #  This program is free software: you can redistribute it and/or modify it under the  #
-#  terms of the BSD 3-Clause License as published by the Free Software   #
+#  terms of the GNU General Public License as published by the Free Software          #
 #  Foundation, either version 3 of the License, or (at your option) any later         #
 #  version.                                                                           #
 #                                                                                     #
 #  This program is distributed in the hope that it will be useful, but WITHOUT ANY    #
 #  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A    #
-#  PARTICULAR PURPOSE.  See the BSD 3-Clause License for more details.   #
+#  PARTICULAR PURPOSE.  See the GNU General Public License for more details.          #
 #                                                                                     #
-#  You should have received a copy of the BSD 3-Clause License along     #
-#  with this program. If not, see <https://opensource.org/license/bsd-3-clause/>.     #
+#  You should have received a copy of the GNU General Public License along            #
+#  with this program. If not, see <https://www.gnu.org/licenses/>.                    #
 #                                                                                     #
 #  You can find information on OMADS at                                               #
 #  https://github.com/Ahmed-Bayoumy/OMADS                                             #
@@ -51,6 +51,7 @@ from .._include import MadsState, MadsStatistics
 from .._include import poll_cycle
 from .._include import search_cycle
 from .._updates._updates import set_frame_centers_and_hvalues, update
+from . import _two_phase
 
 np.set_printoptions(legacy='1.21')
 
@@ -103,8 +104,10 @@ class MADS:
     """
     if self.param.rho <= 0:
       raise IOError("ρ is a positive parameter")
-    if self.param.w_min < 0:
+    if self.param.w_min is not None and self.param.w_min < 0:
       raise IOError("w_min is a positive parameter")
+    if self.param.w_plus < 0:
+      raise IOError("w_plus is a positive parameter")
     if self.param.h_init < 0:
       raise IOError("h_init is a positive parameter")
     if self.param.max_size <= 0:
@@ -212,6 +215,8 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
   # """ Validate and parse the parameters file """
   validate = validator()
   data: dict = validate.check_input_file(args=args)
+  if _two_phase.requested(data):
+    return _two_phase.run(main, data, *args[1:])
 
   # Install the wrapper
   # 1. Suppress Python warnings
@@ -237,14 +242,16 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
   # of optimization process """
   pre = preprocess(
       data=data, log=log, sampler_t=SAMPLER_TYPE.POLL)
-  iteration, _, poll_sampler, options, param, post, out, active_barrier, \
+  iteration, x_start, poll_sampler, options, param, post, out, active_barrier, \
       out_p, state, stats, bb_handle, hashtable, ms = pre.initialize_from_dict()
   del pre
 
+  # The search sampler reuses the evaluated starting point: evaluating the
+  # starting points again would exceed the budget.
   pre = preprocess(
       data=data, log=log, sampler_t=SAMPLER_TYPE.SEARCH)
   _, _, search_sampler, _, _, _, _, _, _, _, _, _, _, _ = pre.initialize_from_dict(
-      ignore_ms=True)
+      xs=x_start, ignore_ms=True)
   del pre
 
   # mads_agent: MADS = MADS(data=data)
@@ -429,6 +436,10 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
           hashtable=hashtable, out=out, ms=ms)
       toc = time.perf_counter()
       total_time += toc - tic
+      # A failed search refines the mesh again, on top of the failed poll's
+      # refinement. Deliberate: extra refinements keep the MADS convergence
+      # analysis valid, and refining only after failed polls did worse
+      # (e.g. on ZDT1 and on the thin_con test problem).
       update(sampler=search_sampler, state=state,
              active_barrier=active_barrier, stats=stats, options=options,
              hashtable=hashtable)
@@ -503,10 +514,7 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
       out.h_max = active_barrier.h_max
       post.output_results(out, False)
       if param.is_pareto:
-        post.nd_points = []
-        for i in range(len(active_barrier.get_filled_elements())):
-          post.nd_points.append(
-              active_barrier.get_filled_elements()[i])
+        post.nd_points = active_barrier.pareto_points()
         post.output_nd_results(out_p)
     state.last_success = SUCCESS_TYPES.US
     pb = ProgressBar(options, active_barrier, p_name=param.name)
@@ -554,7 +562,8 @@ def main(*args) -> Dict[str, Any]:  # noqa: C901
         nd_solutions=[elem
                       for elem in
                       active_barrier.get_fk()],
-        nobj=active_barrier.nobj, ref_point=rp)
+        nobj=active_barrier.dims[1], ref_point=rp,
+        ideal_point=param.ideal_point)
     hv = perf_m.hypervolume()
 
   # out_step: Any = None

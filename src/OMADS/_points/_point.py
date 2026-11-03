@@ -6,16 +6,16 @@
 #  email: ahmed.bayoumy@mail.mcgill.ca                                                #
 #                                                                                     #
 #  This program is free software: you can redistribute it and/or modify it under the  #
-#  terms of the BSD 3-Clause License as published by the Free Software   #
+#  terms of the GNU General Public License as published by the Free Software          #
 #  Foundation, either version 3 of the License, or (at your option) any later         #
 #  version.                                                                           #
 #                                                                                     #
 #  This program is distributed in the hope that it will be useful, but WITHOUT ANY    #
 #  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A    #
-#  PARTICULAR PURPOSE.  See the BSD 3-Clause License for more details.   #
+#  PARTICULAR PURPOSE.  See the GNU General Public License for more details.          #
 #                                                                                     #
-#  You should have received a copy of the BSD 3-Clause License along     #
-#  with this program. If not, see <https://opensource.org/license/bsd-3-clause/>.     #
+#  You should have received a copy of the GNU General Public License along            #
+#  with this program. If not, see <https://www.gnu.org/licenses/>.                    #
 #                                                                                     #
 #  You can find information on OMADS at                                               #
 #  https://github.com/Ahmed-Bayoumy/OMADS                                             #
@@ -29,6 +29,19 @@ import numpy as np
 
 
 from .._include import DType
+
+
+def coordinates_signature(coords) -> int:
+  """Hash of a point's coordinates, rounded to 12 significant digits so
+  that coordinates differing only by floating-point error (e.g. 0.3 and
+  0.30000000000000004 after a mesh projection) are the same cache entry."""
+  key = []
+  for c in coords:
+    try:
+      key.append(float(f"{float(c):.12g}"))
+    except (TypeError, ValueError):
+      key.append(c)
+  return hash(tuple(key))
 
 
 class Point:
@@ -135,7 +148,7 @@ class Point:
     """ Get the coordinates of the point. """
     self._n = len(coords)
     self._coords = list(coords)
-    self._signature = hash(tuple(self._coords))
+    self._signature = coordinates_signature(self._coords)
     self._defined = [True] * self._n
 
   @coordinates.deleter
