@@ -202,8 +202,8 @@ If you use this code, please cite it as follows.
   title     = {OMADS: Optimization using Mesh Adaptive Direct Search},
   year      = {2022},
   publisher = {GitHub},
-  version   = {2610},
-  doi       = {10.5281/zenodo.23407559},
+  version   = {2612.1},
+  doi       = {https://doi.org/10.5281/zenodo.23407606},
   url       = {https://github.com/Ahmed-Bayoumy/OMADS}
 }
 ```
