@@ -556,26 +556,21 @@ class AdaptiveBarrier:
     if h_max < 0:
       raise ValueError("h_max cannot be negative")
     self.h_max = h_max
-    # Every element, the last one included: skipping it could leave ik empty
-    # while uk is not; the infeasible frame centre then fell back to element
-    # 0, already above the threshold, and the next unsuccessful iteration
-    # raised h_max to its violation (h_max must not increase).
-    n = self.last_index + 1
 
-    filter_flags = [False] * n
+    filter_flags = [False] * self.last_index
 
     # Mark uk elements that exceed h_max
-    for index, is_in_uk in enumerate(self.within_uk[:n]):
+    for index, is_in_uk in enumerate(self.within_uk[:self.last_index]):
       if is_in_uk and self.elements.get_raw(index).h > self.h_max:
         filter_flags[index] = True
 
     # Remove all uk elements above the threshold
-    for i in range(n):
+    for i in range(self.last_index):
       if filter_flags[i]:
         self.within_uk[i] = False
 
     # Remove all ik elements above the threshold
-    for i in range(n):
+    for i in range(self.last_index):
       if filter_flags[i]:
         self.within_ik[i] = False
 
@@ -583,12 +578,11 @@ class AdaptiveBarrier:
     self._update_ik_after_h_max_setting()
 
   def _update_ik_after_h_max_setting(self):
-    n = self.last_index + 1
-    for index, is_in_uk in enumerate(self.within_uk[:n]):
+    for index, is_in_uk in enumerate(self.within_uk[:self.last_index]):
       if is_in_uk and not self.within_ik[index]:
         # Check if the element indexed by 'index' can be inserted in the set ik
         insert = True
-        for index_2, is_in_uk_2 in enumerate(self.within_uk[:n]):
+        for index_2, is_in_uk_2 in enumerate(self.within_uk[:self.last_index]):
           if is_in_uk_2 and index != index_2:
             comp_flag = self._private_compare_ik_elements(
                 self.elements.get_raw(index), self.elements.get_raw(index_2))
